@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GaleraNaFila.MainPage"
+             Title="Galera Na Fila">
+
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" Padding="20">
+        <Label 
+            Text="Fila de C"
+            FontSize="28"
+            FontAttributes="Bold"
+            HorizontalOptions="Center"
+            Grid.Row="0"
+            Margin="0,20,0,10"/>
+
+        <Label 
+            Text="Modo Participante"
+            FontSize="18"
+            HorizontalOptions="Center"
+            Grid.Row="1"
+            Margin="0,0,0,20"/>
+
+        <Entry 
+            x:Name="fullNameEntry"  Placeholder="Digite seu nome completo"
+            Keyboard="Text"
+            ReturnType="Done"
+            Grid.Row="2"
+            Margin="0,0,0,10"/>
+
+        <Button 
+            Text="Adicionar à Fila"
+            Clicked="OnAddToQueueClicked"
+            Grid.Row="3"
+            VerticalOptions="Start"/>
+
+        <Label
+            x:Name="validationMessageLabel" Text=""
+            TextColor="Red"
+            HorizontalOptions="Center"
+            Grid.Row="4"
+            Margin="0,5,0,0"/>
+
+        <Button
+            Text="Mudar para Modo Admin"
+            Clicked="OnSwitchToAdminModeClicked"
+            Grid.Row="5"
+            VerticalOptions="End"
+            HorizontalOptions="Center"
+            Margin="0,50,0,20" />
+    </Grid>
+
+</ContentPage>

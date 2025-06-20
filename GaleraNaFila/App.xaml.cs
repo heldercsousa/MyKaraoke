@@ -1,48 +1,47 @@
 ﻿// ####################################################################################################
 // # Arquivo: GaleraNaFila/App.xaml.cs
 // # Descrição: Lógica de inicialização da aplicação.
-// #            ATUALIZADO: Construtor de App recebe IServiceProvider e define MainPage.
+// #            ATUALIZADO: Agora sempre inicia na SplashPage (tela de loading personalizada).
 // ####################################################################################################
-using GaleraNaFila.Services; // Ajuste o using para o namespace do seu QueueService
-using Microsoft.Extensions.DependencyInjection; // Necessário para IServiceProvider e GetRequiredService
+using GaleraNaFila.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
 
-namespace GaleraNaFila // Verifique e ajuste o namespace para o nome do seu projeto raiz
+namespace GaleraNaFila
 {
     public partial class App : Application
     {
-        // AGORA O CONSTRUTOR DE APP RECEBE O SERVICEPROVIDER DIRETAMENTE
-        public App(IServiceProvider serviceProvider) // <--- NOVO: Construtor com parâmetro
+        public App()
         {
             InitializeComponent();
 
-            // A lógica de definir MainPage e inicializar o BD agora vai aqui, no construtor.
-            bool isAdminMode = Preferences.Get("IsAdminMode", false);
+            // MUDANÇA: Sempre inicia na SplashPage (tela de loading personalizada)
+            MainPage = new SplashPage();
+        }
 
-            if (isAdminMode)
-            {
-                MainPage = new NavigationPage(serviceProvider.GetRequiredService<AdminPage>());
-            }
-            else
-            {
-                MainPage = new NavigationPage(serviceProvider.GetRequiredService<MainPage>());
-            }
+        protected override Window CreateWindow(IActivationState activationState)
+        {
+            var window = base.CreateWindow(activationState);
 
-            // Inicialização do banco de dados também usa o serviceProvider injetado
+            // Inicialização do banco de dados de forma assíncrona
             Task.Run(async () =>
             {
-                var queueService = serviceProvider.GetRequiredService<QueueService>();
-                await queueService.InitializeDatabaseAsync();
+                try
+                {
+                    var serviceProvider = Handler?.MauiContext?.Services;
+                    if (serviceProvider != null)
+                    {
+                        var queueService = serviceProvider.GetRequiredService<QueueService>();
+                        await queueService.InitializeDatabaseAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Erro ao inicializar banco: {ex.Message}");
+                }
             });
-        }
 
-        // REMOVA O MÉTODO InitializeApp() COMPLETAMENTE. Ele não é mais necessário.
-        /*
-        public void InitializeApp(IServiceProvider serviceProvider)
-        {
-            // ... código antigo ...
+            return window;
         }
-        */
     }
 }

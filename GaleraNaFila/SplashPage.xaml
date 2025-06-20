@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="GaleraNaFila.SplashPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid>
+        <!-- Background Gradient baseado na Imagem 5 -->
+        <Rectangle>
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#6B46C1" Offset="0.0" />
+                    <GradientStop Color="#8B5CF6" Offset="0.5" />
+                    <GradientStop Color="#A855F7" Offset="1.0" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <!-- Main Content -->
+        <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="40" Padding="40">
+            
+            <!-- Logo -->
+            <Image Source="logo.png" 
+                   WidthRequest="180" 
+                   HeightRequest="180"
+                   HorizontalOptions="Center" />
+            
+            <!-- App Title -->
+            <Label Text="Fila de Karaokê" 
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+            
+            <!-- Loading -->
+            <ActivityIndicator IsRunning="True" 
+                              Color="White" 
+                              HeightRequest="40"
+                              WidthRequest="40" />
+            
+        </StackLayout>
+
+        <!-- Footer -->
+        <StackLayout VerticalOptions="End" Margin="20">
+            <Label Text="by helder.ezuse@gmail.com"
+                   FontSize="12"
+                   TextColor="White"
+                   Opacity="0.7"
+                   HorizontalOptions="Center" />
+        </StackLayout>
+    </Grid>
+</ContentPage>

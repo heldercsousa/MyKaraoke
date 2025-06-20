@@ -6,7 +6,7 @@
 
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" Padding="20">
         <Label 
-            Text="Fila de C"
+            Text="Fila "
             FontSize="28"
             FontAttributes="Bold"
             HorizontalOptions="Center"

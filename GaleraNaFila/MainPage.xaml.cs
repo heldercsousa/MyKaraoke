@@ -8,6 +8,7 @@ using GaleraNaFila.Services;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage; // Para Preferences
 using System.Text.Json;
+using System;
 
 namespace GaleraNaFila
 {

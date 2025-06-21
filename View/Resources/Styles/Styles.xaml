@@ -2,17 +2,13 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MyKaraoke.View.Resources;assembly=MyKaraoke.View">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- Gradiente de fundo horizontal reutilizável -->
     <LinearGradientBrush x:Key="BackgroundGradient" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="#221b3c" Offset="0.0" />
         <GradientStop Color="#331e6e" Offset="1.0" />
     </LinearGradientBrush>
-
-    <!-- Remova ou comente esta linha -->
-    <!-- <local:GradientTextDrawable x:Key="GradientTextDrawable" /> -->
 
     <!-- Estilo para Cards -->
     <Style x:Key="CardStyle" TargetType="Frame">

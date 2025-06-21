@@ -8,8 +8,8 @@ namespace MyKaraoke.View
         {
             InitializeComponent();
 
-            // MUDANÇA: Sempre inicia na SplashPage (tela de loading personalizada)
-            PersonPage = new SplashPage();
+            // Sempre começa pela SplashPage
+            MainPage = new SplashPage();
         }
 
         protected override Window CreateWindow(IActivationState activationState)
@@ -24,7 +24,7 @@ namespace MyKaraoke.View
                     var serviceProvider = Handler?.MauiContext?.Services;
                     if (serviceProvider != null)
                     {
-                        var queueService = serviceProvider.GetRequiredService<QueueService>();
+                        var queueService = serviceProvider.GetRequiredService<IQueueService>();
                         await queueService.InitializeDatabaseAsync();
                     }
                 }

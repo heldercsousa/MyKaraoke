@@ -1,15 +1,10 @@
-﻿// # Arquivo: FilaDeC.Application/Services/QueueService.cs
-// # Descrição: Serviço de lógica de negócios, AGORA AGNOSTICO À PLATAFORMA (sem Preferences).
-// ####################################################################################################
-// FilaDeC.Application.Contracts NÃO É USADO DIRETAMENTE AQUI, APENAS PARA MAPPING (se fosse usar AutoMapper, por exemplo)
-
-using MyKaraoke.Domain;
+﻿using MyKaraoke.Domain;
 using MyKaraoke.Domain.Repositories;
 using MyKaraoke.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyKaraoke.Services;
-public class QueueService
+public class QueueService : IQueueService
 {
     private readonly AppDbContext _dbContext; // Direto para migrações
     private readonly IPessoaRepository _pessoaRepository;

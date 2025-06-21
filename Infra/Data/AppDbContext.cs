@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<Estabelecimento> Estabelecimentos { get; set; }
     public DbSet<Evento> Eventos { get; set; }
     public DbSet<ParticipacaoEvento> ParticipacoesEventos { get; set; }
+    public DbSet<ConfiguracaoSistema> ConfiguracoesSistema { get; set; }
 
     // Este construtor é o que será usado pela Injeção de Dependência
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }

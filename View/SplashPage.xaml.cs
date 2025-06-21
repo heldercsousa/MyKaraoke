@@ -1,11 +1,28 @@
-﻿namespace MyKaraoke.View
+﻿using Microsoft.Extensions.DependencyInjection;
+using MyKaraoke.Services;
+
+namespace MyKaraoke.View
 {
     public partial class SplashPage : ContentPage
     {
+        private ServiceProvider _serviceProvider;
+
+        // Garanta que este é o ÚNICO construtor na classe
         public SplashPage()
         {
             InitializeComponent();
             _ = StartLoadingProcess();
+        }
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+            
+            if (Handler != null)
+            {
+                // Inicializa o ServiceProvider quando o Handler estiver disponível
+                _serviceProvider = ServiceProvider.FromPage(this);
+            }
         }
 
         private async Task StartLoadingProcess()
@@ -48,18 +65,47 @@
                     loadingElement.IsRunning = false;
                 }
 
-                // Navega para a HomePage
+                // Certifica-se que o ServiceProvider está inicializado
+                if (_serviceProvider == null && Handler?.MauiContext?.Services != null)
+                {
+                    _serviceProvider = ServiceProvider.FromPage(this);
+                }
+
+                // Verifica se o idioma já foi selecionado (usando tanto o serviço quanto preferências)
+                bool languageSelected = false;
+                
+                try
+                {
+                    var languageService = _serviceProvider.GetService<ILanguageService>();
+                    languageSelected = languageService.IsLanguageSelected();
+                }
+                catch
+                {
+                    // Fallback para preferências locais se o banco de dados falhar
+                    languageSelected = !string.IsNullOrEmpty(Preferences.Get("UserLanguage", string.Empty));
+                }
+
+                // Navega para a página apropriada
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     if (Application.Current != null)
                     {
-                        Application.Current.PersonPage = new NavigationPage(new HomePage());
+                        if (languageSelected)
+                        {
+                            Application.Current.MainPage = new NavigationPage(new StackPage());
+                            System.Diagnostics.Debug.WriteLine("Navegando para StackPage - idioma já selecionado");
+                        }
+                        else
+                        {
+                            Application.Current.MainPage = new NavigationPage(new TonguePage());
+                            System.Diagnostics.Debug.WriteLine("Navegando para TonguePage - idioma não selecionado");
+                        }
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao navegar para HomePage: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Erro ao navegar: {ex.Message}");
             }
         }
 

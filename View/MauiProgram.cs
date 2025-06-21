@@ -34,13 +34,16 @@ namespace MyKaraoke.View
             builder.Services.AddScoped<IParticipacaoEventoRepository, ParticipacaoEventoRepository>();
 
             // Registrar Serviços
-            builder.Services.AddScoped<QueueService>();
+            builder.Services.AddSingleton<IQueueService, QueueService>();
+            builder.Services.AddSingleton<ILanguageService, LanguageService>();
+
 
             // Registrar Páginas
             builder.Services.AddTransient<SplashPage>();
-            builder.Services.AddTransient<HomePage>();
             builder.Services.AddTransient<PersonPage>();
             builder.Services.AddTransient<StackPage>();
+
+            builder.Services.AddTransient<TonguePage>();
 
             // Adicionar logging para debug
 #if DEBUG

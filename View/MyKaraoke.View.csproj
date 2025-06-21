@@ -124,12 +124,6 @@
 	    <AutoGen>True</AutoGen>
 	    <DependentUpon>AppResources_zh-CN.resx</DependentUpon>
 	  </Compile>
-	  <Compile Update="TonguePage.xaml.cs">
-	    <DependentUpon>TonguePage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="StackPage.xaml.cs">
-	    <DependentUpon>StackPage.xaml</DependentUpon>
-	  </Compile>
 	  <Compile Update="PersonPage.xaml.cs">
 	    <DependentUpon>PersonPage.xaml</DependentUpon>
 	  </Compile>
@@ -193,22 +187,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="AboutPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="EventPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="PlacePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ReleasePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="StackPage.xaml">
+	  <MauiXaml Update="App.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="App.xaml">
+	  <MauiXaml Update="StackPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="TonguePage.xaml">

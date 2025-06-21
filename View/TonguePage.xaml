@@ -1,122 +1,305 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="MyKaraoke.View.HomePage"
-             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:MyKaraoke.Services"
-             Title="My Karaoke">
+             x:Class="MyKaraoke.View.TonguePage"
+             Title="Selecionar Idioma"
+             NavigationPage.HasNavigationBar="False">
 
+    <!-- Usando o gradiente horizontal reutilizável conforme padrão (#221b3c → #331e6e) -->
     <Grid>
-        <!-- Background gradiente horizontal reutilizável -->
-        <Rectangle Fill="{StaticResource BackgroundGradient}" />
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="#221b3c" Offset="0.0" />
+                <GradientStop Color="#331e6e" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <!-- Main Content -->
-        <ScrollView>
-            <StackLayout Padding="20" Spacing="25">
+        <!-- Botão voltar no canto superior esquerdo -->
+        <Button Grid.Row="0"
+                HorizontalOptions="Start"
+                VerticalOptions="Start"
+                Margin="10,10,0,0"
+                HeightRequest="40"
+                WidthRequest="40"
+                Padding="0"
+                Clicked="OnBackButtonClicked"
+                BackgroundColor="Transparent"
+                BorderColor="Transparent"
+                Text="←"
+                TextColor="White"
+                FontSize="24"
+                FontAttributes="Bold" />
+        
+        <!-- Cabeçalho - Apenas o título "MyKaraoke" -->
+        <StackLayout Grid.Row="0" Padding="0,40,0,10">
+            <Label Text="MyKaraoke" 
+                   FontSize="28" 
+                   TextColor="White" 
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold"/>
+        </StackLayout>
 
-                <!-- Header Section -->
-                <StackLayout Spacing="15" Margin="0,30,0,40">
-                    <!-- Logo -->
-                    <Image Source="logo.png" 
-                           HeightRequest="120" 
-                           WidthRequest="120"
-                           HorizontalOptions="Center" />
-
-                    <!-- Title usando seu estilo -->
-                    <Label Text="My Karaoke"
-                           Style="{StaticResource TitleStyle}"
-                           FontSize="32" />
-                </StackLayout>
-
-                <!-- Queue Status Card usando seu CardStyle -->
-                <Frame Style="{StaticResource CardStyle}"
-                       BackgroundColor="White"
-                       Padding="30">
-
-                    <StackLayout Spacing="20">
-                        <!-- Círculo branco com ponto vermelho -->
-                        <Grid WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
-                            <Ellipse Fill="White" 
-                                     Stroke="#E0E0E0"
-                                     StrokeThickness="2" />
-                            <Ellipse Fill="#E74C3C" 
-                                     WidthRequest="12" 
-                                     HeightRequest="12" />
-                        </Grid>
-
-                        <!-- Texto FILA -->
-                        <Label Text="FILA" 
-                               FontSize="20" 
-                               FontAttributes="Bold"
-                               TextColor="#333333" 
-                               HorizontalOptions="Center" />
-
-                        <!-- Texto KARAOKÊ -->
-                        <Label Text="KARAOKE" 
-                               FontSize="14" 
-                               TextColor="#666666" 
-                               HorizontalOptions="Center"
-                               Margin="0,-15,0,0" />
-                    </StackLayout>
+        <!-- Botões de idioma em formato vertical (um por linha) -->
+        <ScrollView Grid.Row="2" Margin="20,10,20,0">
+            <StackLayout x:Name="languageContainer" Spacing="10">
+                
+                <!-- Inglês (pré-selecionado) -->
+                <Frame BackgroundColor="#d5528a" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="en" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="English" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="United States / United Kingdom" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇺🇸 🇬🇧" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
                 </Frame>
 
-                <!-- Action Buttons usando seus estilos -->
-                <StackLayout Spacing="20" Margin="0,20,0,0">
+                <!-- Português -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="pt-BR" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="Português" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="Brasil / Portugal" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇧🇷 🇵🇹" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
-                    <!-- Create New Queue Button -->
-                    <Frame BackgroundColor="Transparent" 
-                           BorderColor="#4ECDC4"
-                           CornerRadius="15"
-                           HasShadow="False"
-                           Padding="0">
-                        <Button x:Name="CreateQueueButton"
-                                Text="{local:Translate NewQueue}"
-                                FontSize="18"
-                                FontAttributes="Bold"
-                                TextColor="White"
-                                BackgroundColor="Transparent"
-                                HeightRequest="60"
-                                Clicked="OnCreateQueueClicked" />
-                    </Frame>
+                <!-- Espanhol -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="es" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="Español" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="España / América Latina" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇪🇸 🇲🇽" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
-                    <Label Text="Clique no botão acima para iniciar uma nova fila de participantes do zero definindo também o evento"
-                           Style="{StaticResource SubtitleStyle}"
-                           FontSize="12"
-                           Margin="20,0" />
+                <!-- Francês -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="fr" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="Français" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="France / Canada" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇫🇷 🇨🇦" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
-                    <!-- Closed Queues Button usando seu estilo -->
-                    <Button x:Name="ClosedQueuesButton"
-                            Text="Filas encerradas"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            BackgroundColor="#F39C12"
-                            FontSize="18"
-                            HeightRequest="60"
-                            Clicked="OnClosedQueuesClicked" />
+                <!-- Alemão -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="de" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="Deutsch" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="Deutschland / Österreich" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇩🇪 🇦🇹" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
-                    <Label Text="Lista da fila já finalizadas, ordenadas por data decrescente"
-                           Style="{StaticResource SubtitleStyle}"
-                           FontSize="12"
-                           Margin="20,0" />
-                </StackLayout>
+                <!-- Chinês simplificado -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="zh-CN" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="简体中文" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="中国大陆 / 新加坡" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇨🇳 🇸🇬" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
-                <!-- Footer -->
-                <StackLayout Spacing="5" Margin="0,40,0,20">
-                    <Label Text="by helder.ezuse@gmail.com"
-                           FontSize="11"
-                           TextColor="{StaticResource TextSecondary}"
-                           HorizontalOptions="Center" />
+                <!-- Japonês -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="ja" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="日本語" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="日本" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇯🇵" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
-                    <Label Text="free commercial use under apache license"
-                           FontSize="9"
-                           TextColor="{StaticResource TextSecondary}"
-                           Opacity="0.8"
-                           HorizontalOptions="Center" />
+                <!-- Coreano -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="ko" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="한국어" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="대한민국" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇰🇷" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
-                    <Label Text="build 0.123.334"
-                           FontSize="9"
-                           TextColor="{StaticResource TextSecondary}"
-                           Opacity="0.8"
-                           HorizontalOptions="Center" />
-                </StackLayout>
+                <!-- Árabe -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="ar" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="العربية" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="المملكة العربية السعودية / مصر" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇸🇦 🇪🇬" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
+
+                <!-- Russo -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="ru" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="Русский" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="Россия" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇷🇺" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
+
+                <!-- Hindi -->
+                <Frame BackgroundColor="Transparent" 
+                       CornerRadius="6" 
+                       Padding="10" 
+                       HeightRequest="60" 
+                       HasShadow="False"
+                       BorderColor="White">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageSelected" CommandParameter="hi" />
+                    </Frame.GestureRecognizers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackLayout Grid.Column="0" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Label Text="हिन्दी" FontSize="16" FontAttributes="Bold" TextColor="White" />
+                            <Label Text="भारत" FontSize="12" TextColor="White" />
+                        </StackLayout>
+                        <Label Grid.Column="1" Text="🇮🇳" FontSize="20" VerticalOptions="Center" TextColor="White" />
+                    </Grid>
+                </Frame>
 
             </StackLayout>
         </ScrollView>

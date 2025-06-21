@@ -8,19 +8,31 @@ namespace MyKaraoke.View
 {
     public partial class StackPage : ContentPage
     {
-        private readonly QueueService _queueService;
+        private IQueueService _queueService;
+        private ServiceProvider _serviceProvider;
         private ObservableCollection<PessoaListItemDto> _fila;
         private const string ActiveQueueKey = "ActiveFilaDeCQueue"; // Chave para a fila ativa nas Preferences
 
-        public StackPage(QueueService queueService)
+        public StackPage()
         {
             InitializeComponent();
-            _queueService = queueService;
 
             _fila = new ObservableCollection<PessoaListItemDto>();
             filaCollectionView.ItemsSource = _fila;
 
             filaCollectionView.ReorderCompleted += OnFilaReorderCompleted;
+        }
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+            if (Handler != null)
+            {
+                // Inicializa o ServiceProvider quando o Handler estiver disponível
+                _serviceProvider = ServiceProvider.FromPage(this);
+                _queueService = _serviceProvider.GetService<IQueueService>();
+            }
         }
 
         protected override void OnAppearing()

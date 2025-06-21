@@ -1,11 +1,4 @@
-﻿// ####################################################################################################
-// # Arquivo: GaleraNaFila.Domain/Pessoa.cs
-// # Descrição: Classe de modelo de DOMÍNIO pura para representar uma pessoa (participante).
-// #           NÃO contém lógica de UI (INotifyPropertyChanged) ou contadores de evento ativo.
-// ####################################################################################################
-using System;
-
-namespace GaleraNaFila.Domain
+﻿namespace MyKaraoke.Domain
 {
     public class Pessoa
     {

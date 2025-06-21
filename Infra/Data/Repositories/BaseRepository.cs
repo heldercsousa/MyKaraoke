@@ -1,12 +1,7 @@
-﻿using GaleraNaFila.Domain.Repositories;
+﻿using MyKaraoke.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GaleraNaFila.Infra.Data.Repositories
+namespace MyKaraoke.Infra.Data.Repositories
 {
     public class BaseRepository<T> : IBaseRepository<T> where T : class
     {

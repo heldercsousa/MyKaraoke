@@ -1,10 +1,4 @@
-﻿// ####################################################################################################
-// # Arquivo: GaleraNaFila.Domain/ParticipacaoEvento.cs
-// # Descrição: Classe de modelo de DOMÍNIO para registrar participação em evento.
-// ####################################################################################################
-using System;
-
-namespace GaleraNaFila.Domain
+﻿namespace MyKaraoke.Domain
 {
     public class ParticipacaoEvento
     {

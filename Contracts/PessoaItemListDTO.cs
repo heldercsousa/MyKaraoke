@@ -1,9 +1,9 @@
-﻿using GaleraNaFila.Domain;
+﻿using MyKaraoke.Domain;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization; // Para JsonIgnore ao serializar para Preferences
+using System.Text.Json.Serialization;
 
-namespace GaleraNaFila.Contracts
+namespace MyKaraoke.Contracts
 {
     public class PessoaListItemDto : INotifyPropertyChanged
     {

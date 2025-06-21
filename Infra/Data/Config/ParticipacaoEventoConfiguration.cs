@@ -1,13 +1,8 @@
-﻿using GaleraNaFila.Domain;
+﻿using MyKaraoke.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GaleraNaFila.Infra.Data.Config
+namespace MyKaraoke.Infra.Data.Config
 {
     public class ParticipacaoEventoConfiguration : IEntityTypeConfiguration<ParticipacaoEvento>
     {

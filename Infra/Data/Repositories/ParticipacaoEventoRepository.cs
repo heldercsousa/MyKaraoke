@@ -1,9 +1,8 @@
-﻿using GaleraNaFila.Domain;
-using GaleraNaFila.Domain.Repositories;
+﻿using MyKaraoke.Domain;
+using MyKaraoke.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
-namespace GaleraNaFila.Infra.Data.Repositories
+namespace MyKaraoke.Infra.Data.Repositories
 {
     public class ParticipacaoEventoRepository : BaseRepository<ParticipacaoEvento>, IParticipacaoEventoRepository
     {

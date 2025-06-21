@@ -1,10 +1,4 @@
-﻿// ####################################################################################################
-// # Arquivo: GaleraNaFila.Domain/Estabelecimento.cs
-// # Descrição: Classe de modelo de DOMÍNIO para representar um estabelecimento.
-// ####################################################################################################
-using System.Collections.Generic;
-
-namespace GaleraNaFila.Domain
+﻿namespace MyKaraoke.Domain
 {
     public class Estabelecimento
     {

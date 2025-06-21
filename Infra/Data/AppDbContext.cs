@@ -1,13 +1,9 @@
-﻿using GaleraNaFila.Domain;
-using GaleraNaFila.Infra.Data.Config;
+﻿using MyKaraoke.Domain;
+using MyKaraoke.Infra.Data.Config;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace GaleraNaFila.Infra.Data;
+namespace MyKaraoke.Infra.Data;
+
 public class AppDbContext : DbContext
 {
     public DbSet<Pessoa> Pessoas { get; set; }
@@ -29,21 +25,13 @@ public class AppDbContext : DbContext
     // mas ele não será usado em tempo de execução do app MAUI.
     public AppDbContext() { }
 
-
-    // --- IMPORTANTE: REMOVA O MÉTODO OnConfiguring DAQUI ---
-    // A configuração da string de conexão será feita no MauiProgram.cs.
-    // Se você tiver este método aqui, remova-o:
-    /*
+    // No contexto do EF Core, ao configurar o SQLite
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // REMOVA ESTE BLOCO:
-        if (!optionsBuilder.IsConfigured)
-        {
-            string dbPath = Path.Combine(FileSystem.AppDataDirectory, "FilaDeC.db"); // Isso causava o erro
-            optionsBuilder.UseSqlite($"Filename={dbPath}");
-        }
+        optionsBuilder.UseSqlite("Data Source=mykaraoke.db", 
+            options => options.CommandTimeout(60)
+            .MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
     }
-    */
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,5 +41,27 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new EstabelecimentoConfiguration());
         modelBuilder.ApplyConfiguration(new EventoConfiguration());
         modelBuilder.ApplyConfiguration(new ParticipacaoEventoConfiguration());
+
+        // Configure collation para colunas específicas
+        modelBuilder.Entity<Pessoa>()
+            .Property(e => e.NomeCompleto)
+            .UseCollation("NOCASE"); // Para SQLite, Unicode é suportado por padrão
+
+        modelBuilder.Entity<Estabelecimento>()
+            .Property(e => e.Nome)
+            .UseCollation("NOCASE"); // Para SQLite, Unicode é suportado por padrão
+
+        modelBuilder.Entity<Evento>()
+            .Property(e => e.NomeEvento)
+            .UseCollation("NOCASE"); // Para SQLite, Unicode é suportado por padrão
+
+        modelBuilder.Entity<Evento>()
+            .Property(e => e.NomeEvento)
+            .UseCollation("NOCASE"); // Para SQLite, Unicode é suportado por padrão
+
+        //// Exemplo para especificar precisão em campos decimais, se necessário
+        //modelBuilder.Entity<AlgumaEntidade>()
+        //    .Property(e => e.ValorDecimal)
+        //    .HasPrecision(18, 2);  // 18 dígitos no total, 2 casas decimais
     }
 }

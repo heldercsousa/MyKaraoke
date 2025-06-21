@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design; // Necessário para IDesignTimeDbContextFactory
-using System.IO; // Para Path
 
-namespace GaleraNaFila.Infra.Data
+namespace MyKaraoke.Infra.Data
 {
     // Esta fábrica é usada pelas ferramentas 'dotnet ef' para criar uma instância do DbContext
     // em tempo de design (quando você executa 'dotnet ef migrations add' ou 'dotnet ef database update').

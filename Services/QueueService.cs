@@ -3,12 +3,12 @@
 // ####################################################################################################
 // FilaDeC.Application.Contracts NÃO É USADO DIRETAMENTE AQUI, APENAS PARA MAPPING (se fosse usar AutoMapper, por exemplo)
 
-using GaleraNaFila.Domain;
-using GaleraNaFila.Domain.Repositories;
-using GaleraNaFila.Infra.Data;
+using MyKaraoke.Domain;
+using MyKaraoke.Domain.Repositories;
+using MyKaraoke.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace GaleraNaFila.Services;
+namespace MyKaraoke.Services;
 public class QueueService
 {
     private readonly AppDbContext _dbContext; // Direto para migrações

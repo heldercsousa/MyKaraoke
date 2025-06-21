@@ -1,11 +1,4 @@
-﻿// ####################################################################################################
-// # Arquivo: GaleraNaFila.Domain/Evento.cs
-// # Descrição: Classe de modelo de DOMÍNIO para representar um evento.
-// ####################################################################################################
-using System;
-using System.Collections.Generic;
-
-namespace GaleraNaFila.Domain
+﻿namespace MyKaraoke.Domain
 {
     public class Evento
     {

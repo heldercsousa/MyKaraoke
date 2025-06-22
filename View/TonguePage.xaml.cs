@@ -1,22 +1,55 @@
-﻿using MyKaraoke.Services;
 using Microsoft.Maui.Controls;
+using MyKaraoke.Contracts.Models;
+using MyKaraoke.Services;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace MyKaraoke.View
 {
     public partial class TonguePage : ContentPage
     {
-        private ILanguageService _languageService;
-        private IQueueService _queueService;
-        private ServiceProvider _serviceProvider;
+        private ObservableCollection<LanguageItem> languages;
+        private ILanguageService? _languageService;
+        private IQueueService? _queueService;
+        private ServiceProvider? _serviceProvider;
         private string selectedLanguage = "en"; // Idioma padrão
+        private Label headerLabel; // Referência para o label de título
+
+        // Dicionário de traduções para a palavra "Language" em diferentes idiomas
+        private readonly Dictionary<string, string> languageTranslations = new Dictionary<string, string>
+        {
+            { "en", "Language" },
+            { "pt", "Língua" },
+            { "es", "Idioma" },
+            { "fr", "Langue" },
+            { "de", "Sprache" },
+            { "zh", "语言" },
+            { "ja", "言語" },
+            { "ko", "언어" },
+            { "ar", "اللغة" },
+            { "ru", "Язык" },
+            { "hi", "भाषा" }
+        };
 
         public TonguePage()
         {
             InitializeComponent();
-            LoadCurrentLanguage();
+
+            // Inicialização da lista de idiomas
+            languages = new ObservableCollection<LanguageItem>
+            {
+                new LanguageItem { Code = "en", Name = "English", Countries = "United States / United Kingdom", Flag = "🇺🇸 🇬🇧", IsSelected = true },
+                new LanguageItem { Code = "pt", Name = "Português", Countries = "Brasil / Portugal", Flag = "🇧🇷 🇵🇹" },
+                new LanguageItem { Code = "es", Name = "Español", Countries = "España / América Latina", Flag = "🇪🇸 🇲🇽" },
+                new LanguageItem { Code = "fr", Name = "Français", Countries = "France / Canada", Flag = "🇫🇷 🇨🇦" },
+                new LanguageItem { Code = "de", Name = "Deutsch", Countries = "Deutschland / Österreich", Flag = "🇩🇪 🇦🇹" },
+                new LanguageItem { Code = "zh", Name = "简体中文", Countries = "中国大陆 / 新加坡", Flag = "🇨🇳 🇸🇬" },
+                new LanguageItem { Code = "ja", Name = "日本語", Countries = "日本", Flag = "🇯🇵" },
+                new LanguageItem { Code = "ko", Name = "한국어", Countries = "대한민국", Flag = "🇰🇷" },
+                new LanguageItem { Code = "ar", Name = "العربية", Countries = "السعودية / مصر", Flag = "🇸🇦 🇪🇬" },
+                new LanguageItem { Code = "ru", Name = "Русский", Countries = "Россия", Flag = "🇷🇺" },
+                new LanguageItem { Code = "hi", Name = "हिन्दी", Countries = "भारत", Flag = "🇮🇳" }
+            };
         }
 
         protected override void OnHandlerChanged()
@@ -38,63 +71,191 @@ namespace MyKaraoke.View
                 }
             }
         }
-
-        private void LoadCurrentLanguage()
-        {
-            // Carrega o idioma atual das preferências ou banco de dados
-            selectedLanguage = Preferences.Get("AppLanguage", "en");
-            UpdateUIForSelectedLanguage(selectedLanguage);
-        }
-
-        private async void OnLanguageSelected(object sender, TappedEventArgs e)
-        {
-            // Obtém o código do idioma do parâmetro do comando
-            string languageCode = e.Parameter?.ToString();
-
-            if (string.IsNullOrEmpty(languageCode))
-                return;
-
-            selectedLanguage = languageCode;
-
-            // Atualiza a UI para mostrar o idioma selecionado
-            UpdateUIForSelectedLanguage(selectedLanguage);
-
-            // Salva o idioma no banco de dados ou preferências
-            await SaveSelectedLanguageAsync(selectedLanguage);
-
-            // Aplica o idioma ao aplicativo
-            ApplyLanguageToApp(selectedLanguage);
+        
+        protected override async void OnAppearing()
+        {   
+            base.OnAppearing();
             
-            // Removida a navegação automática para StackPage
-            // Agora a navegação ocorre apenas pelos botões voltar
+            // Aguarda um tempo para garantir que a UI esteja pronta
+            await Task.Delay(50);
+            
+            // Carrega os botões de idioma quando a página aparece
+            CreateLanguageButtons();
+            
+            // Debug para verificar se os botões foram criados
+            System.Diagnostics.Debug.WriteLine($"Botões criados: {languagesContainer?.Count ?? 0}");
         }
-
-        private void UpdateUIForSelectedLanguage(string languageCode)
+        
+        private void CreateLanguageButtons()
         {
-            // Reseta todos os frames para transparente com borda branca
-            foreach (var child in languageContainer.Children)
+            try
             {
-                if (child is Frame frame)
+                // Limpa os botões existentes
+                if (languagesContainer != null)
                 {
-                    frame.BackgroundColor = Colors.Transparent;
-                    frame.BorderColor = Colors.White;
+                    languagesContainer.Clear();
+                    System.Diagnostics.Debug.WriteLine("Container limpo com sucesso");
+                    
+                    // Cria os botões de idioma
+                    foreach (var language in languages)
+                    {
+                        // Debug para verificar cada item sendo processado
+                        System.Diagnostics.Debug.WriteLine($"Criando botão para: {language.Name}, Bandeira: {language.Flag}");
+                        
+                        var frame = new Frame
+                        {
+                            HeightRequest = 55,
+                            CornerRadius = 40,
+                            Margin = new Thickness(0),
+                            Padding = new Thickness(30, 5, 30, 5), // Aumentado padding conforme solicitado
+                            BorderColor = language.IsSelected ? Colors.Transparent : Color.FromArgb("#6c4794"),
+                            HasShadow = language.IsSelected
+                        };
+
+                        // Aplicar o background como SolidColorBrush ou o gradiente
+                        if (language.IsSelected)
+                        {
+                            // Verificamos se o recurso existe antes de tentar acessá-lo
+                            object gradientResource = null;
+                            if (Application.Current != null && Application.Current.Resources.TryGetValue("SelectedButtonGradient", out gradientResource) && gradientResource is Brush)
+                            {
+                                frame.Background = gradientResource as Brush;
+                            }
+                            else
+                            {
+                                // Fallback se o recurso não existir
+                                frame.Background = new SolidColorBrush(Color.FromArgb("#e52067"));
+                            }
+                        }
+                        else
+                        {
+                            frame.Background = new SolidColorBrush(Color.FromArgb("#4c426f"));
+                        }
+                        
+                        var grid = new Grid
+                        {
+                            ColumnDefinitions = 
+                            { 
+                                new ColumnDefinition { Width = GridLength.Star },
+                                new ColumnDefinition { Width = GridLength.Auto } 
+                            }
+                        };
+                        
+                        // Nome do idioma
+                        var nameLabel = new Label
+                        {
+                            Text = language.Name,
+                            FontAttributes = FontAttributes.Bold,
+                            FontSize = 18,
+                            TextColor = Colors.White,
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center
+                        };
+                        
+                        // Para idiomas RTL (árabe), alinhamento à direita
+                        if (language.Code == "ar")
+                        {
+                            nameLabel.HorizontalOptions = LayoutOptions.End;
+                            nameLabel.FlowDirection = FlowDirection.RightToLeft;
+                        }
+                        
+                        // Bandeira do idioma
+                        var flagLabel = new Label
+                        {
+                            Text = language.Flag,
+                            FontSize = 20,
+                            TextColor = Colors.White,
+                            HorizontalOptions = LayoutOptions.End,
+                            VerticalOptions = LayoutOptions.Center
+                        };
+                        
+                        System.Diagnostics.Debug.WriteLine($"Texto do label: '{nameLabel.Text}', Bandeira: '{flagLabel.Text}'");
+                        
+                        // Adiciona os elementos ao grid usando a sintaxe correta para .NET MAUI
+                        grid.Add(nameLabel, 0, 0);
+                        grid.Add(flagLabel, 1, 0);
+                        
+                        // Configura o frame com o grid
+                        frame.Content = grid;
+                        
+                        // Adicionar tap recognizer
+                        var languageCode = language.Code;
+                        var tapGesture = new TapGestureRecognizer();
+                        
+                        tapGesture.Tapped += async (s, e) => 
+                        {
+                            await SelectLanguage(languageCode);
+                        };
+                        
+                        frame.GestureRecognizers.Add(tapGesture);
+                        
+                        // Adiciona o frame ao container
+                        languagesContainer.Add(frame);
+                        System.Diagnostics.Debug.WriteLine($"Botão para {language.Name} adicionado com sucesso");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("ERRO: languagesContainer é null!");
                 }
             }
-
-            // Encontra o frame do idioma selecionado e muda sua cor
-            var selectedFrame = languageContainer.Children.FirstOrDefault(c =>
+            catch (Exception ex)
             {
-                if (c is Frame frame &&
-                    frame.GestureRecognizers.FirstOrDefault() is TapGestureRecognizer tap &&
-                    tap.CommandParameter?.ToString() == languageCode)
-                    return true;
-                return false;
-            }) as Frame;
+                System.Diagnostics.Debug.WriteLine($"Erro ao criar botões de idioma: {ex.Message}\nStack: {ex.StackTrace}");
+            }
+        }
 
-            if (selectedFrame != null)
+        private async Task SelectLanguage(string languageCode)
+        {
+            try
             {
-                selectedFrame.BackgroundColor = Color.FromArgb("#d5528a");
-                selectedFrame.BorderColor = Colors.Transparent;
+                // Atualiza a seleção de idioma
+                foreach (var language in languages)
+                {
+                    language.IsSelected = (language.Code == languageCode);
+                    if (language.IsSelected)
+                    {
+                        selectedLanguage = language.Code;
+                    }
+                }
+                
+                // Recria os botões para refletir a nova seleção visual
+                CreateLanguageButtons();
+                
+                // Atualiza o título para mostrar a tradução (sem salvar no banco)
+                UpdateLanguageTitle(selectedLanguage);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao selecionar idioma: {ex.Message}");
+            }
+        }
+
+        private void UpdateLanguageTitle(string languageCode)
+        {
+            try
+            {
+                // Atualiza o texto do título com base no idioma selecionado
+                if (languageTranslations.TryGetValue(languageCode, out string translation))
+                {
+                    titleText.Text = translation;
+                    
+                    // Configurações específicas para RTL (árabe)
+                    if (languageCode == "ar")
+                    {
+                        titleText.HorizontalOptions = LayoutOptions.End;
+                        titleText.FlowDirection = FlowDirection.RightToLeft;
+                    }
+                    else
+                    {
+                        titleText.HorizontalOptions = LayoutOptions.Start;
+                        titleText.FlowDirection = FlowDirection.LeftToRight;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar título de idioma: {ex.Message}");
             }
         }
 
@@ -112,49 +273,127 @@ namespace MyKaraoke.View
                 }
                 else
                 {
-                    Console.WriteLine("Serviço de idioma não disponível");
+                    System.Diagnostics.Debug.WriteLine("Serviço de idioma não disponível");
                 }
             }
             catch (Exception ex)
             {
-                // Log do erro ou notificação ao usuário
-                Console.WriteLine($"Erro ao salvar idioma: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Erro ao salvar idioma: {ex.Message}");
             }
         }
 
         private void ApplyLanguageToApp(string languageCode)
         {
             // Aplica o idioma ao aplicativo
-            // Isso depende da sua implementação de localização
-
-            // Exemplo:
-            // LocalizationResourceManager.Instance.SetLanguage(new CultureInfo(languageCode));
+            System.Diagnostics.Debug.WriteLine($"Idioma {languageCode} aplicado ao app");
         }
 
-        private void OnBackButtonClicked(object sender, EventArgs e)
+        private async void OnBackButtonClicked(object sender, EventArgs e)
         {
-            // Navegar para StackPage ao clicar no botão voltar
-            if (Application.Current != null)
-            {
-                Application.Current.MainPage = new NavigationPage(new StackPage());
-            }
+            await HandleBackButtonAction();
         }
 
         // Captura o botão voltar do Android
         protected override bool OnBackButtonPressed()
         {
             // Mesmo comportamento do botão voltar na UI
-            if (Application.Current != null)
-            {
-                Application.Current.MainPage = new NavigationPage(new StackPage());
-            }
+            MainThread.BeginInvokeOnMainThread(async () => {
+                await HandleBackButtonAction();
+            });
+            
             return true; // Impede o comportamento padrão de sair do app
         }
-
-        // Este método pode ser removido
-        private void OnConfirmLanguage(object sender, EventArgs e)
+        
+        private async Task HandleBackButtonAction()
         {
-            // Método não é mais usado após a remoção do botão confirmar
+            try
+            {
+                // Encontra o idioma selecionado
+                var selectedItem = languages.FirstOrDefault(l => l.IsSelected);
+                if (selectedItem == null) return;
+                
+                // Encontra o nome traduzido do idioma
+                string languageDisplayName = selectedItem.Name;
+                string englishName = GetEnglishNameForLanguage(selectedItem.Code);
+                
+                // Exibe diálogo de confirmação sempre em inglês
+                bool confirmed = await DisplayAlert(
+                    "Confirmation",
+                    $"Confirm {englishName} ({languageDisplayName}) language?",
+                    "Confirm",
+                    "Cancel"
+                );
+                
+                if (confirmed)
+                {
+                    // Salva a preferência no banco de dados
+                    await SaveSelectedLanguageAsync(selectedLanguage);
+                    
+                    // Aplica o idioma
+                    ApplyLanguageToApp(selectedLanguage);
+                    
+                    // Navega para StackPage
+                    if (Application.Current != null)
+                    {
+                        await Navigation.PushAsync(new StackPage());
+                    }
+                }
+                // Se cancelar, permanece na página atual sem ação adicional
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao processar ação de voltar: {ex.Message}");
+            }
         }
+        
+        private string GetEnglishNameForLanguage(string languageCode)
+        {
+            // Mapeia os códigos de idioma para nomes em inglês
+            Dictionary<string, string> englishNames = new Dictionary<string, string>
+            {
+                { "en", "English" },
+                { "pt", "Portuguese" },
+                { "es", "Spanish" },
+                { "fr", "French" },
+                { "de", "German" },
+                { "zh", "Chinese" },
+                { "ja", "Japanese" },
+                { "ko", "Korean" },
+                { "ar", "Arabic" },
+                { "ru", "Russian" },
+                { "hi", "Hindi" }
+            };
+            
+            if (englishNames.TryGetValue(languageCode, out string name))
+                return name;
+                
+            return languageCode; // fallback para o código se não encontrar nome
+        }
+    }
+
+    // Modelo para representar um item de idioma
+    public class LanguageItem : INotifyPropertyChanged
+    {
+        private bool isSelected;
+
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Countries { get; set; } = string.Empty;
+        public string Flag { get; set; } = string.Empty;
+
+        public bool IsSelected
+        {
+            get => isSelected;
+            set
+            {
+                if (isSelected != value)
+                {
+                    isSelected = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

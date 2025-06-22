@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyKaraoke.View.SplashLoadingPage"
+             Background="{StaticResource AppBackgroundGradient}"
+             NavigationPage.HasNavigationBar="False">
+
+    <Grid RowDefinitions="*, Auto, Auto">
+        <!-- Logo ou Imagem Central -->
+        <Image Grid.Row="0" 
+               Source="mykaraokesplashpage.jpg"
+               Aspect="AspectFit"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Opacity="0.5" />
+
+        <!-- Indicador de Carregamento -->
+        <ActivityIndicator Grid.Row="1" 
+                           IsRunning="True" 
+                           Color="#e91e63"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Start" 
+                           HeightRequest="50"
+                           WidthRequest="50"
+                           Margin="0,0,0,30" />
+
+        <!-- Texto de Status -->
+        <StackLayout Grid.Row="2" Margin="20,0,20,50">
+            <Label x:Name="StatusLabel"
+                   Text="Iniciando aplicativo..."
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   FontSize="16" />
+
+            <ProgressBar x:Name="LoadingProgressBar"
+                         Progress="0.1"
+                         ProgressColor="#e91e63"
+                         BackgroundColor="#33FFFFFF"
+                         HeightRequest="5"
+                         Margin="0,10,0,0" />
+        </StackLayout>
+    </Grid>
+</ContentPage>

@@ -42,8 +42,8 @@ namespace MyKaraoke.View
             builder.Services.AddTransient<SplashPage>();
             builder.Services.AddTransient<PersonPage>();
             builder.Services.AddTransient<StackPage>();
-
             builder.Services.AddTransient<TonguePage>();
+            builder.Services.AddTransient<SplashLoadingPage>();
 
             // Adicionar logging para debug
 #if DEBUG

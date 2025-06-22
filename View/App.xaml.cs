@@ -8,8 +8,8 @@ namespace MyKaraoke.View
         {
             InitializeComponent();
 
-            // Sempre começa pela SplashPage
-            MainPage = new SplashPage();
+            // Inicia com a página de carregamento
+            MainPage = new SplashLoadingPage();
         }
 
         protected override Window CreateWindow(IActivationState activationState)
@@ -21,16 +21,26 @@ namespace MyKaraoke.View
             {
                 try
                 {
-                    var serviceProvider = Handler?.MauiContext?.Services;
+                    // Aguarda um momento para o handler ser associado completamente
+                    await Task.Delay(1000);
+                    
+                    var serviceProvider = window?.Handler?.MauiContext?.Services;
                     if (serviceProvider != null)
                     {
-                        var queueService = serviceProvider.GetRequiredService<IQueueService>();
-                        await queueService.InitializeDatabaseAsync();
+                        var queueService = serviceProvider.GetService<IQueueService>();
+                        if (queueService != null)
+                        {
+                            await queueService.InitializeDatabaseAsync();
+                        }
+
+                        // Atualiza a página principal com o serviço ou cria uma nova instância
+                        MainPage = serviceProvider.GetService<SplashLoadingPage>() ?? new SplashLoadingPage();
                     }
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Erro ao inicializar banco: {ex.Message}");
+                    // Não lança exceção para não interromper o fluxo principal
                 }
             });
 

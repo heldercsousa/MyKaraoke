@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background gradient matching app style -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#221b3c"
+                android:endColor="#331e6e"
+                android:angle="0"/>
+        </shape>
+    </item>
+    
+    <!-- Optional logo centered if you have one -->
+    <!-- 
+    <item android:gravity="center">
+        <bitmap
+            android:src="@drawable/applogo" 
+            android:gravity="center" />
+    </item>
+    -->
+</layer-list>

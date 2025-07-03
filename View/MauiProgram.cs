@@ -18,6 +18,13 @@ namespace MyKaraoke.View
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                })
+                .ConfigureMauiHandlers(handlers =>
+                {
+#if ANDROID
+                    // Registra o handler customizado para Entry no Android
+                    handlers.AddHandler<Entry, MyKaraoke.View.Platforms.Android.CustomEntryHandler>();
+#endif
                 });
 
             // Configurar o AppDbContext com SQLite
@@ -36,7 +43,6 @@ namespace MyKaraoke.View
             // Registrar Serviços
             builder.Services.AddSingleton<IQueueService, QueueService>();
             builder.Services.AddSingleton<ILanguageService, LanguageService>();
-
 
             // Registrar Páginas
             builder.Services.AddTransient<SplashPage>();

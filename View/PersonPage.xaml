@@ -34,7 +34,7 @@
                    BorderColor="Transparent">
                 
                 <!-- Conteúdo do card -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
                     
                     <!-- Título do Card com ícone -->
                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,25">
@@ -58,21 +58,21 @@
                                VerticalOptions="Center" />
                     </Grid>
 
-                    <!-- Entry para nome completo -->
-                    <Entry Grid.Row="1"
-                           x:Name="fullNameEntry"  
-                           Placeholder="Digite seu nome completo"
-                           Keyboard="Text"
-                           ReturnType="Done"
-                           BackgroundColor="#4a3f6b"
-                           TextColor="White"
-                           PlaceholderColor="#b0a8c7"
-                           FontSize="16"
-                           HeightRequest="45"
-                           Margin="0,0,0,15" />
+                    <!-- Label "Nome do cantor" -->
+                    <Label Grid.Row="1"
+                           Text="Nome do cantor"
+                           Style="{StaticResource InputLabelStyle}" />
+
+                    <!-- Entry para nome completo usando estilos reutilizáveis -->
+                    <Frame Grid.Row="2"
+                           Style="{StaticResource InputFieldStyle}">
+                        <Entry x:Name="fullNameEntry"  
+                               Placeholder="digite o nome"
+                               Style="{StaticResource InputEntryStyle}" />
+                    </Frame>
 
                     <!-- Botão Adicionar à Fila -->
-                    <Button Grid.Row="2"
+                    <Button Grid.Row="3"
                             Text="Adicionar à Fila"
                             Style="{StaticResource GradientButtonStyle}"
                             Clicked="OnAddToQueueClicked"
@@ -80,7 +80,7 @@
                             VerticalOptions="Start" />
 
                     <!-- Label de validação -->
-                    <Label Grid.Row="3"
+                    <Label Grid.Row="4"
                            x:Name="validationMessageLabel" 
                            Text=""
                            TextColor="#ff6b6b"
@@ -91,7 +91,7 @@
                            Margin="0,5,0,0" />
 
                     <!-- Espaço flexível -->
-                    <Grid Grid.Row="4" />
+                    <Grid Grid.Row="5" />
                 </Grid>
             </Frame>
         </Frame>

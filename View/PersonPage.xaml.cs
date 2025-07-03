@@ -1,6 +1,8 @@
 ﻿using MyKaraoke.Contracts;
 using MyKaraoke.Services;
 using System.Text.Json;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace MyKaraoke.View
 {
@@ -13,6 +15,32 @@ namespace MyKaraoke.View
         public PersonPage()
         {
             InitializeComponent();
+            
+            // Configure the entry for international text input
+            fullNameEntry.TextChanged += OnTextChanged;
+        }
+
+        private void OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            var entry = sender as Entry;
+            if (entry == null || string.IsNullOrEmpty(e.NewTextValue))
+                return;
+
+            // Detect Arabic text and adjust flow direction
+            if (ContainsArabicText(e.NewTextValue))
+            {
+                entry.HorizontalTextAlignment = TextAlignment.End;
+            }
+            else
+            {
+                entry.HorizontalTextAlignment = TextAlignment.Start;
+            }
+        }
+
+        private bool ContainsArabicText(string text)
+        {
+            // Arabic Unicode range: U+0600 to U+06FF
+            return Regex.IsMatch(text, @"[\u0600-\u06FF]");
         }
 
         protected override void OnHandlerChanged()

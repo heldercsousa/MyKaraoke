@@ -139,6 +139,20 @@
         <GradientStop Color="#904ab4" Offset="1.0" />
     </LinearGradientBrush>
 
+    <!-- Form Button Style - Based on "Ativar fila" button from HTML -->
+    <Style x:Key="FormButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource SelectedButtonGradient}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="12,12,24,12" />
+        <Setter Property="Margin" Value="0,20,0,10" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+        <Setter Property="VerticalOptions" Value="Start" />
+        <Setter Property="BorderWidth" Value="0" />
+    </Style>
+
     <!-- Language Button Selected/Unselected Styles -->
     <Style x:Key="LanguageButtonSelectedStyle" TargetType="Frame">
         <Setter Property="Background" Value="{StaticResource SelectedButtonGradient}" />

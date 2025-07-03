@@ -1,36 +1,45 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:MyKaraoke.Contracts;assembly=MyKaraoke.Contracts" x:Class="MyKaraoke.View.StackPage"
-             Title="Fila |nomeEvento| - |nomEstabelecimento| - |dataEvento|">
+             xmlns:local="clr-namespace:MyKaraoke.Contracts;assembly=MyKaraoke.Contracts" 
+             x:Class="MyKaraoke.View.StackPage"
+             Title="Fila |nomeEvento| - |nomEstabelecimento| - |dataEvento|"
+             Background="{StaticResource AppBackgroundGradient}"
+             NavigationPage.HasNavigationBar="False">
 
-    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto" ColumnDefinitions="*" Padding="20">
+    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" ColumnDefinitions="*" Padding="20">
+
+        <!-- Botão voltar -->
+        <Button Grid.Row="0" 
+                Text="←" 
+                Style="{StaticResource BackButtonStyle}"
+                Clicked="OnBackButtonClicked" />
 
         <Label
             Text="Fila"
             FontSize="28"
             FontAttributes="Bold"
             HorizontalOptions="Center"
-            Grid.Row="0"
+            Grid.Row="1"
             Margin="0,20,0,10"/>
 
         <Label
             Text="Modo Administrador"
             FontSize="18"
             HorizontalOptions="Center"
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="0,0,0,20"/>
 
         <Button
             Text="Chamar Próximo Participante"
             Clicked="OnCallNextParticipantClicked"
-            Grid.Row="2"
+            Grid.Row="3"
             Margin="0,0,0,20"
             HorizontalOptions="FillAndExpand"/>
 
         <CollectionView
             x:Name="filaCollectionView"
-            Grid.Row="3"
+            Grid.Row="4"
             SelectionMode="None"
             >
             <!--CanReorderItems="True"
@@ -85,7 +94,7 @@
         <Button
             Text="Mudar para Modo Participante"
             Clicked="OnSwitchToSimpleModeClicked"
-            Grid.Row="4"
+            Grid.Row="5"
             VerticalOptions="End"
             HorizontalOptions="Center"
             Margin="0,20,0,20" />

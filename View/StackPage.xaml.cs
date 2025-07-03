@@ -141,7 +141,27 @@ namespace MyKaraoke.View
         private async void OnSwitchToSimpleModeClicked(object sender, EventArgs e)
         {
             Preferences.Set("IsAdminMode", false);
-            await Navigation.PopToRootAsync();
+            // Modificado: Navegar para PersonPage em vez de voltar à raiz (TonguePage)
+            await Navigation.PushAsync(_serviceProvider.GetService<PersonPage>());
+        }
+
+        // Método para o botão voltar
+        private void OnBackButtonClicked(object sender, EventArgs e)
+        {
+            ExitApplication();
+        }
+
+        // Captura o botão voltar do Android
+        protected override bool OnBackButtonPressed()
+        {
+            ExitApplication();
+            return true; // Impede o comportamento padrão
+        }
+
+        // Método para fechar a aplicação
+        private void ExitApplication()
+        {
+            Application.Current?.Quit();
         }
 
         private string GetString(string key, params object[] args)

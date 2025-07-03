@@ -6,15 +6,77 @@ namespace MyKaraoke.View
 {
     public partial class PersonPage : ContentPage
     {
-        private readonly IServiceProvider _serviceProvider; // NOVO: IServiceProvider injetado
-        private readonly QueueService _queueService;
+        private IQueueService _queueService;
+        private ServiceProvider _serviceProvider;
         private const string ActiveQueueKey = "ActiveFilaDeCQueue";
 
-        public PersonPage(QueueService queueService, IServiceProvider serviceProvider)
+        public PersonPage()
         {
             InitializeComponent();
-            _queueService = queueService;
-            _serviceProvider = serviceProvider; // Armazenar o IServiceProvider
+        }
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+            if (Handler != null)
+            {
+                // Inicializa o ServiceProvider quando o Handler estiver disponível
+                _serviceProvider = ServiceProvider.FromPage(this);
+                _queueService = _serviceProvider.GetService<IQueueService>();
+            }
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+        }
+
+        // Método para o botão voltar
+        private async void OnBackButtonClicked(object sender, EventArgs e)
+        {
+            await NavigateToStackPage();
+        }
+
+        // Captura o botão voltar do Android
+        protected override bool OnBackButtonPressed()
+        {
+            MainThread.BeginInvokeOnMainThread(async () => {
+                await NavigateToStackPage();
+            });
+            
+            return true; // Impede o comportamento padrão
+        }
+
+        // Método para navegar para StackPage
+        private async Task NavigateToStackPage()
+        {
+            try
+            {
+                // Assegura que o ServiceProvider está disponível
+                if (_serviceProvider == null)
+                {
+                    _serviceProvider = ServiceProvider.FromPage(this);
+                }
+                
+                // Obtém a StackPage através do ServiceProvider e navega
+                var stackPage = _serviceProvider.GetService<StackPage>();
+                if (stackPage != null)
+                {
+                    await Navigation.PushAsync(stackPage);
+                }
+                else
+                {
+                    // Fallback: cria uma nova instância da StackPage se o ServiceProvider falhar
+                    await Navigation.PushAsync(new StackPage());
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao navegar para StackPage: {ex.Message}");
+                // Fallback: cria uma nova instância da StackPage
+                await Navigation.PushAsync(new StackPage());
+            }
         }
 
         private async void OnAddToQueueClicked(object sender, EventArgs e)
@@ -26,6 +88,7 @@ namespace MyKaraoke.View
             if (result.success)
             {
                 validationMessageLabel.Text = "";
+                validationMessageLabel.IsVisible = false;
 
                 // Verifica se a pessoa de domínio retornada é nula (embora success=true, é boa prática)
                 if (result.addedDomainPerson == null)
@@ -62,20 +125,8 @@ namespace MyKaraoke.View
             else
             {
                 validationMessageLabel.Text = result.message;
+                validationMessageLabel.IsVisible = true;
             }
-        }
-
-        private async void OnSwitchToAdminModeClicked(object sender, EventArgs e)
-        {
-            Preferences.Set("IsAdminMode", true);
-            // CORRIGIDO: Não use App.Current.Services para navegar para uma página já registrada no DI.
-            // Apenas instancie e navegue, o MAUI injetará as dependências automaticamente.
-            await Navigation.PushAsync(_serviceProvider.GetRequiredService<StackPage>());
-        }
-
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
         }
 
         // --- Métodos de Persistência da Fila Ativa na UI (usando Preferences) ---

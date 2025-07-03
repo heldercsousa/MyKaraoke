@@ -140,9 +140,34 @@ namespace MyKaraoke.View
 
         private async void OnSwitchToSimpleModeClicked(object sender, EventArgs e)
         {
-            Preferences.Set("IsAdminMode", false);
-            // Modificado: Navegar para PersonPage em vez de voltar à raiz (TonguePage)
-            await Navigation.PushAsync(_serviceProvider.GetService<PersonPage>());
+            try
+            {
+                Preferences.Set("IsAdminMode", false);
+                
+                // Assegura que o ServiceProvider está disponível
+                if (_serviceProvider == null)
+                {
+                    _serviceProvider = ServiceProvider.FromPage(this);
+                }
+                
+                // Obtém a PersonPage através do ServiceProvider e navega
+                var personPage = _serviceProvider.GetService<PersonPage>();
+                if (personPage != null)
+                {
+                    await Navigation.PushAsync(personPage);
+                }
+                else
+                {
+                    // Fallback: cria uma nova instância da PersonPage se o ServiceProvider falhar
+                    await Navigation.PushAsync(new PersonPage());
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao navegar para PersonPage: {ex.Message}");
+                // Fallback: cria uma nova instância da PersonPage
+                await Navigation.PushAsync(new PersonPage());
+            }
         }
 
         // Método para o botão voltar

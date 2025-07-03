@@ -2,51 +2,98 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MyKaraoke.View.PersonPage"
-             Title="Galera Na Fila">
+             Title="PersonPage"
+             Background="{StaticResource AppBackgroundGradient}"
+             NavigationPage.HasNavigationBar="False">
 
-    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" Padding="20">
-        <Label 
-            Text="Fila "
-            FontSize="28"
-            FontAttributes="Bold"
-            HorizontalOptions="Center"
-            Grid.Row="0"
-            Margin="0,20,0,10"/>
+    <Grid Padding="0,0,0,15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <Label 
-            Text="Modo Participante"
-            FontSize="18"
-            HorizontalOptions="Center"
-            Grid.Row="1"
-            Margin="0,0,0,20"/>
+        <!-- Botão voltar -->
+        <Button Grid.Row="0" 
+                Text="←" 
+                Style="{StaticResource BackButtonStyle}"
+                Clicked="OnBackButtonClicked" />
 
-        <Entry 
-            x:Name="fullNameEntry"  Placeholder="Digite seu nome completo"
-            Keyboard="Text"
-            ReturnType="Done"
-            Grid.Row="2"
-            Margin="0,0,0,10"/>
+        <!-- Card principal com borda "espessa" (usando frames aninhados) -->
+        <Frame Grid.Row="1" 
+               BorderColor="#533682"
+               Background="Transparent"
+               Padding="0"
+               CornerRadius="27"
+               Margin="15,10,15,0"
+               HasShadow="False">
+            
+            <Frame Background="{StaticResource CardBackgroundGradient}"
+                   CornerRadius="27"
+                   HasShadow="False"
+                   Padding="20,30,20,20"
+                   BorderColor="Transparent">
+                
+                <!-- Conteúdo do card -->
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+                    
+                    <!-- Título do Card com ícone -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,25">
+                        <Frame BackgroundColor="#e91e63" 
+                               CornerRadius="20"
+                               HeightRequest="40"
+                               WidthRequest="40"
+                               Padding="10"
+                               HorizontalOptions="Start"
+                               VerticalOptions="Center"
+                               Grid.Column="0">
+                            <Label Text="👤"
+                                   FontSize="20"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   TextColor="White" />
+                        </Frame>
+                        <Label Grid.Column="1" 
+                               Text="Adicionar Participante" 
+                               Style="{StaticResource CardTitleStyle}"
+                               VerticalOptions="Center" />
+                    </Grid>
 
-        <Button 
-            Text="Adicionar à Fila"
-            Clicked="OnAddToQueueClicked"
-            Grid.Row="3"
-            VerticalOptions="Start"/>
+                    <!-- Entry para nome completo -->
+                    <Entry Grid.Row="1"
+                           x:Name="fullNameEntry"  
+                           Placeholder="Digite seu nome completo"
+                           Keyboard="Text"
+                           ReturnType="Done"
+                           BackgroundColor="#4a3f6b"
+                           TextColor="White"
+                           PlaceholderColor="#b0a8c7"
+                           FontSize="16"
+                           HeightRequest="45"
+                           Margin="0,0,0,15" />
 
-        <Label
-            x:Name="validationMessageLabel" Text=""
-            TextColor="Red"
-            HorizontalOptions="Center"
-            Grid.Row="4"
-            Margin="0,5,0,0"/>
+                    <!-- Botão Adicionar à Fila -->
+                    <Button Grid.Row="2"
+                            Text="Adicionar à Fila"
+                            Style="{StaticResource GradientButtonStyle}"
+                            Clicked="OnAddToQueueClicked"
+                            Margin="0,0,0,10"
+                            VerticalOptions="Start" />
 
-        <Button
-            Text="Mudar para Modo Admin"
-            Clicked="OnSwitchToAdminModeClicked"
-            Grid.Row="5"
-            VerticalOptions="End"
-            HorizontalOptions="Center"
-            Margin="0,50,0,20" />
+                    <!-- Label de validação -->
+                    <Label Grid.Row="3"
+                           x:Name="validationMessageLabel" 
+                           Text=""
+                           TextColor="#ff6b6b"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Start"
+                           IsVisible="False"
+                           Margin="0,5,0,0" />
+
+                    <!-- Espaço flexível -->
+                    <Grid Grid.Row="4" />
+                </Grid>
+            </Frame>
+        </Frame>
     </Grid>
-
 </ContentPage>

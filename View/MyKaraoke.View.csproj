@@ -46,7 +46,10 @@
 	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-xhdpi\icone.png" />
 	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-xxhdpi\icone.png" />
 	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-xxxhdpi\icone.png" />
-	  <AndroidResource Remove="Platforms\Android\Resources\xml\locales_config.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Platforms\Android\Resources\xml\locales_config.xml" />
 	</ItemGroup>
 
 

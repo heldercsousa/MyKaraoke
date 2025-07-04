@@ -110,6 +110,24 @@ namespace MyKaraoke.View
         private async void OnAddToQueueClicked(object sender, EventArgs e)
         {
             string fullName = fullNameEntry.Text;
+            try
+            {
+                // Verifica se há evento ativo antes de prosseguir
+                var activeEvent = await _queueService.GetActiveEventAsync();
+                if (activeEvent == null || !activeEvent.FilaAtiva)
+                {
+                    validationMessageLabel.Text = "não há fila ativa";
+                    validationMessageLabel.IsVisible = true;
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao verificar fila ativa: {ex.Message}");
+                validationMessageLabel.Text = "não há fila ativa";
+                validationMessageLabel.IsVisible = true;
+                return;
+            }
 
             var result = await _queueService.AddPersonAsync(fullName);
 

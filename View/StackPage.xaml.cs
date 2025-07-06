@@ -35,10 +35,11 @@ namespace MyKaraoke.View
             }
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
             LoadActiveQueueState(); // Chama o método local
+            await CheckActiveQueueAsync(); // Nova verificação de fila ativa
         }
 
         // --- Métodos de Persistência da Fila Ativa na UI (usando Preferences) ---
@@ -66,44 +67,50 @@ namespace MyKaraoke.View
             Preferences.Set(ActiveQueueKey, filaJson);
         }
 
-        private async void OnCallNextParticipantClicked(object sender, EventArgs e)
+        private async Task CheckActiveQueueAsync()
         {
-            if (_fila.Count == 0)
+            try
             {
-                await DisplayAlert("Fila Vazia", GetString("fila_vazia"), "OK");
-                return;
+                if (_queueService == null)
+                {
+                    // Fallback: mostrar estado vazio se serviço não estiver disponível
+                    ShowEmptyQueueState();
+                    return;
+                }
+
+                var activeEvent = await _queueService.GetActiveEventAsync();
+
+                if (activeEvent == null || !activeEvent.FilaAtiva)
+                {
+                    ShowEmptyQueueState();
+                }
+                else
+                {
+                    ShowActiveQueueState();
+                }
             }
-
-            PessoaListItemDto proximo = _fila[0];
-
-            bool compareceu = await DisplayAlert(
-                GetString("call_next_participant"),
-                GetString("call_next_participant_confirm", proximo.NomeCompleto) + "\n\n" + GetString("confirm_presence"),
-                GetString("present"),
-                GetString("absent")
-            );
-
-            ParticipacaoStatus status = compareceu ? ParticipacaoStatus.Presente : ParticipacaoStatus.Ausente;
-
-            // Registra a participação/ausência no histórico (DB)
-            await _queueService.RecordParticipationAsync(proximo.Id, status); // Passa o ID da Pessoa
-
-            // Atualiza os contadores no DTO em memória
-            if (status == ParticipacaoStatus.Presente)
+            catch (Exception ex)
             {
-                proximo.IncrementarParticipacoes();
+                System.Diagnostics.Debug.WriteLine($"Erro ao verificar fila ativa: {ex.Message}");
+                ShowEmptyQueueState();
             }
-            else
-            {
-                proximo.IncrementarAusencias();
-            }
+        }
 
-            // Move a pessoa do DTO da primeira posição para o final da fila ativa
-            _fila.RemoveAt(0);
-            _fila.Add(proximo);
+        private void ShowEmptyQueueState()
+        {
+            emptyQueueMessage.IsVisible = true;
+            filaCollectionView.IsVisible = false;
+            queueStatusLabel.Text = "---";
+        }
 
-            // Salva o novo estado da fila (com a nova ordem e contadores atualizados) nas Preferences
-            SaveActiveQueueState(_fila.ToList());
+        private void ShowActiveQueueState()
+        {
+            emptyQueueMessage.IsVisible = false;
+            filaCollectionView.IsVisible = true;
+
+            // Atualizar badge com número de participantes
+            int participantCount = _fila?.Count ?? 0;
+            queueStatusLabel.Text = participantCount.ToString();
         }
 
         private async void OnParticipouClicked(object sender, EventArgs e)
@@ -136,38 +143,6 @@ namespace MyKaraoke.View
         private void OnFilaReorderCompleted(object sender, EventArgs e)
         {
             SaveActiveQueueState(_fila.ToList());
-        }
-
-        private async void OnSwitchToSimpleModeClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                Preferences.Set("IsAdminMode", false);
-                
-                // Assegura que o ServiceProvider está disponível
-                if (_serviceProvider == null)
-                {
-                    _serviceProvider = ServiceProvider.FromPage(this);
-                }
-                
-                // Obtém a PersonPage através do ServiceProvider e navega
-                var personPage = _serviceProvider.GetService<PersonPage>();
-                if (personPage != null)
-                {
-                    await Navigation.PushAsync(personPage);
-                }
-                else
-                {
-                    // Fallback: cria uma nova instância da PersonPage se o ServiceProvider falhar
-                    await Navigation.PushAsync(new PersonPage());
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao navegar para PersonPage: {ex.Message}");
-                // Fallback: cria uma nova instância da PersonPage
-                await Navigation.PushAsync(new PersonPage());
-            }
         }
 
         // Método para o botão voltar

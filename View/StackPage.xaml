@@ -7,97 +7,173 @@
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
-    <Grid RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" ColumnDefinitions="*" Padding="20">
+    <Grid Padding="0,0,0,15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <!-- Botão voltar -->
-        <Button Grid.Row="0" 
-                Text="←" 
-                Style="{StaticResource BackButtonStyle}"
-                Clicked="OnBackButtonClicked" />
+        <!-- Header with Back Button and Title -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,10">
+            <!-- Botão voltar -->
+            <Button Grid.Column="0"
+                    Text="←" 
+                    Style="{StaticResource BackButtonStyle}"
+                    Clicked="OnBackButtonClicked" />
+            
+            <!-- Title -->
+            <Label Grid.Column="1"
+                   Text="Fila"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Start"
+                   VerticalOptions="Center"
+                   Margin="10,0,0,0" />
+        </Grid>
 
-        <Label
-            Text="Fila"
-            FontSize="28"
-            FontAttributes="Bold"
-            HorizontalOptions="Center"
-            Grid.Row="1"
-            Margin="0,20,0,10"/>
+        <!-- Card principal com borda "espessa" (usando frames aninhados) -->
+        <Frame Grid.Row="1" 
+               BorderColor="#533682"
+               Background="Transparent"
+               Padding="0"
+               CornerRadius="27"
+               Margin="15,10,15,0"
+               HasShadow="False">
+            
+            <Frame Background="{StaticResource CardBackgroundGradient}"
+                   CornerRadius="27"
+                   HasShadow="False"
+                   Padding="20,30,20,20"
+                   BorderColor="Transparent">
+                
+                <!-- Conteúdo do card -->
+                <Grid RowDefinitions="Auto,*">
+                    
+                    <!-- Header do Card com ícone, título e badge -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,25">
+                        <!-- Ícone -->
+                        <Frame BackgroundColor="#e91e63" 
+                               CornerRadius="20"
+                               HeightRequest="40"
+                               WidthRequest="40"
+                               Padding="10"
+                               HorizontalOptions="Start"
+                               VerticalOptions="Center"
+                               Grid.Column="0">
+                            <Label Text="🎵"
+                                   FontSize="20"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   TextColor="White" />
+                        </Frame>
+                        
+                        <!-- Título -->
+                        <Label Grid.Column="1" 
+                               Text="Fila" 
+                               Style="{StaticResource CardTitleStyle}"
+                               VerticalOptions="Center" />
+                        
+                        <!-- Badge de status -->
+                        <Frame Grid.Column="2"
+                               x:Name="queueStatusBadge"
+                               Background="{StaticResource SelectedButtonGradient}"
+                               CornerRadius="15"
+                               Padding="12,6"
+                               HasShadow="False"
+                               VerticalOptions="Center"
+                               HorizontalOptions="End">
+                            <Label x:Name="queueStatusLabel"
+                                   Text="---"
+                                   TextColor="White"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Frame>
+                    </Grid>
 
-        <Label
-            Text="Modo Administrador"
-            FontSize="18"
-            HorizontalOptions="Center"
-            Grid.Row="2"
-            Margin="0,0,0,20"/>
-
-        <Button
-            Text="Chamar Próximo Participante"
-            Clicked="OnCallNextParticipantClicked"
-            Grid.Row="3"
-            Margin="0,0,0,20"
-            HorizontalOptions="FillAndExpand"/>
-
-        <CollectionView
-            x:Name="filaCollectionView"
-            Grid.Row="4"
-            SelectionMode="None"
-            >
-            <!--CanReorderItems="True"
-			CanDragItems="True"-->
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="local:PessoaListItemDto">
-                    <Frame Padding="10" CornerRadius="5" HasShadow="True" BackgroundColor="{StaticResource White}">
-                        <Grid ColumnDefinitions="*, Auto, Auto, Auto" RowDefinitions="Auto">
-                            <StackLayout Grid.Column="0" VerticalOptions="CenterAndExpand">
-                                <Label Text="{Binding NomeCompleto}"
-                                       FontSize="18"
-                                       FontAttributes="Bold"
-                                       TextColor="Black"/>
-                                <Label Text="{Binding NumeroParticipacoesAusencias}"
-                                       FontSize="12"
-                                       TextColor="Gray"/>
+                    <!-- Content area -->
+                    <Grid Grid.Row="1" x:Name="contentGrid">
+                        <!-- Empty queue message (will be shown/hidden programmatically) -->
+                        <StackLayout x:Name="emptyQueueMessage" 
+                                     IsVisible="False"
+                                     Spacing="15"
+                                     VerticalOptions="Start">
+                            <Label Text="Não há fila ativa neste momento."
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="White"
+                                   HorizontalOptions="Start" />
+                            
+                            <StackLayout Spacing="8">
+                                <Label Text="• Toque no botão Nova Fila para permitir que cantores que participarão do karaokê entrem na fila de hoje"
+                                       FontSize="14"
+                                       TextColor="#b0a8c7"
+                                       HorizontalOptions="Start"
+                                       LineBreakMode="WordWrap" />
+                                
+                                <Label Text="• Reative a última fila entrando na opção Histórico abaixo"
+                                       FontSize="14"
+                                       TextColor="#b0a8c7"
+                                       HorizontalOptions="Start"
+                                       LineBreakMode="WordWrap" />
                             </StackLayout>
+                        </StackLayout>
 
-                            <Button Text="✔"
-                                    Clicked="OnParticipouClicked"
-                                    CommandParameter="{Binding .}"
-                                    Grid.Column="1"
-                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
-                                    BackgroundColor="Green" TextColor="White"
-                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
+                        <!-- Active queue content (existing CollectionView) -->
+                        <CollectionView x:Name="filaCollectionView"
+                                        SelectionMode="None">
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="local:PessoaListItemDto">
+                                    <Frame Padding="10" CornerRadius="5" HasShadow="True" BackgroundColor="{StaticResource White}">
+                                        <Grid ColumnDefinitions="*, Auto, Auto, Auto" RowDefinitions="Auto">
+                                            <StackLayout Grid.Column="0" VerticalOptions="CenterAndExpand">
+                                                <Label Text="{Binding NomeCompleto}"
+                                                       FontSize="18"
+                                                       FontAttributes="Bold"
+                                                       TextColor="Black"/>
+                                                <Label Text="{Binding NumeroParticipacoesAusencias}"
+                                                       FontSize="12"
+                                                       TextColor="Gray"/>
+                                            </StackLayout>
 
-                            <Button Text="✖"
-                                    Clicked="OnAusenteClicked"
-                                    CommandParameter="{Binding .}"
-                                    Grid.Column="2"
-                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
-                                    BackgroundColor="Red" TextColor="White"
-                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
+                                            <Button Text="✔"
+                                                    Clicked="OnParticipouClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    Grid.Column="1"
+                                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
+                                                    BackgroundColor="Green" TextColor="White"
+                                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
 
-                            <Button Text="&#x2193;"
-                                    Clicked="OnMoveToBottomClicked"
-                                    CommandParameter="{Binding .}"
-                                    Grid.Column="3"
-                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
-                                    BackgroundColor="LightGray" TextColor="Black"
-                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
+                                            <Button Text="✖"
+                                                    Clicked="OnAusenteClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    Grid.Column="2"
+                                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
+                                                    BackgroundColor="Red" TextColor="White"
+                                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
 
-                        </Grid>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                                            <Button Text="&#x2193;"
+                                                    Clicked="OnMoveToBottomClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    Grid.Column="3"
+                                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
+                                                    BackgroundColor="LightGray" TextColor="Black"
+                                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
 
-        <Button
-            Text="Mudar para Modo Participante"
-            Clicked="OnSwitchToSimpleModeClicked"
-            Grid.Row="5"
-            VerticalOptions="End"
-            HorizontalOptions="Center"
-            Margin="0,20,0,20" />
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </Grid>
+            </Frame>
+        </Frame>
     </Grid>
 
 </ContentPage>

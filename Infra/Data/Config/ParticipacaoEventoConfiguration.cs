@@ -9,6 +9,8 @@ namespace MyKaraoke.Infra.Data.Config
         public void Configure(EntityTypeBuilder<ParticipacaoEvento> builder)
         {
             builder.HasKey(pe => pe.Id);
+            builder.Property(pe => pe.Id)
+                   .ValueGeneratedOnAdd();
 
             builder.Property(pe => pe.Timestamp)
                    .IsRequired();

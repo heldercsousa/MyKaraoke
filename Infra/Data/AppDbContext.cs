@@ -42,6 +42,7 @@ public class AppDbContext : DbContext
         modelBuilder.ApplyConfiguration(new EstabelecimentoConfiguration());
         modelBuilder.ApplyConfiguration(new EventoConfiguration());
         modelBuilder.ApplyConfiguration(new ParticipacaoEventoConfiguration());
+        modelBuilder.ApplyConfiguration(new ConfiguracaoSistemaConfiguration());
 
         // Configure collation para colunas específicas
         modelBuilder.Entity<Pessoa>()
@@ -50,10 +51,6 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Estabelecimento>()
             .Property(e => e.Nome)
-            .UseCollation("NOCASE"); // Para SQLite, Unicode é suportado por padrão
-
-        modelBuilder.Entity<Evento>()
-            .Property(e => e.NomeEvento)
             .UseCollation("NOCASE"); // Para SQLite, Unicode é suportado por padrão
 
         modelBuilder.Entity<Evento>()

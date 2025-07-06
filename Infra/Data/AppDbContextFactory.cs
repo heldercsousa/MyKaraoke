@@ -24,7 +24,7 @@ namespace MyKaraoke.Infra.Data
             // Geralmente, o banco de dados é criado na pasta de saída do build do projeto Infra
             // ou em uma pasta de usuário para o design time.
             string basePath = AppContext.BaseDirectory; // Caminho base da execução da ferramenta
-            string dbPath = Path.Combine(basePath, "FilaDeC_Design.db"); // Nome temporário ou de design
+            string dbPath = Path.Combine(basePath, "mykaraoke.db"); // Nome temporário ou de design
 
             optionsBuilder.UseSqlite($"Filename={dbPath}");
 

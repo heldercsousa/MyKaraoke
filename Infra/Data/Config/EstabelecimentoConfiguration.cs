@@ -10,14 +10,12 @@ namespace MyKaraoke.Infra.Data.Config
         {
             builder.HasKey(e => e.Id);
 
-            builder.Property(e => e.Nome)
-                   .IsRequired()
-                   .HasMaxLength(100);
+            builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
-            builder.HasData(
-                new Estabelecimento { Id = 1, Nome = "Salão Principal" },
-                new Estabelecimento { Id = 2, Nome = "Área Externa" }
-            );
+            builder.Property(e => e.Nome)
+                   .HasColumnType("nvarchar(30)")
+                   .IsRequired()
+                   .HasMaxLength(30);
         }
     }
 

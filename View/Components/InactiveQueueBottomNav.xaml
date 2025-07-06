@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyKaraoke.View.Components.InactiveQueueBottomNav">
+
+    <Grid ColumnDefinitions="*,*,*,*,*" 
+          Padding="5,8,5,8"
+          HorizontalOptions="FillAndExpand"
+          VerticalOptions="FillAndExpand"
+          BackgroundColor="Transparent">
+
+        <!-- Locais Button -->
+        <StackLayout Grid.Column="0" 
+                     HorizontalOptions="Center" 
+                     VerticalOptions="Center" 
+                     Spacing="2">
+            <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnLocaisClicked" />
+            </StackLayout.GestureRecognizers>
+            <Image Source="locais.png" 
+                   WidthRequest="20" 
+                   HeightRequest="20" 
+                   HorizontalOptions="Center" />
+            <Label Text="Locais" 
+                   FontSize="12" 
+                   HorizontalOptions="Center" 
+                   TextColor="#D1D5DB" />
+        </StackLayout>
+
+        <!-- Cantores Button -->
+        <StackLayout Grid.Column="1" 
+                     HorizontalOptions="Center" 
+                     VerticalOptions="Center" 
+                     Spacing="2">
+            <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCantoresClicked" />
+            </StackLayout.GestureRecognizers>
+            <Image Source="cantores.png" 
+                   WidthRequest="20" 
+                   HeightRequest="20" 
+                   HorizontalOptions="Center" />
+            <Label Text="Cantores" 
+                   FontSize="12" 
+                   HorizontalOptions="Center" 
+                   TextColor="#D1D5DB" />
+        </StackLayout>
+
+        <!-- Nova Fila Button -->
+        <StackLayout Grid.Column="2" 
+                     HorizontalOptions="Center" 
+                     VerticalOptions="Center" 
+                     Spacing="2">
+            <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnNovaFilaClicked" />
+            </StackLayout.GestureRecognizers>
+            <Image Source="novo.png" 
+                   WidthRequest="20" 
+                   HeightRequest="20" 
+                   HorizontalOptions="Center" />
+            <Label Text="Nova Fila" 
+                   FontSize="12" 
+                   HorizontalOptions="Center" 
+                   TextColor="#FF9800" />
+        </StackLayout>
+
+        <!-- Bandas/Musicos Button -->
+        <StackLayout Grid.Column="3" 
+                     HorizontalOptions="Center" 
+                     VerticalOptions="Center" 
+                     Spacing="2">
+            <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBandasMusicosClicked" />
+            </StackLayout.GestureRecognizers>
+            <Image Source="musicos.png" 
+                   WidthRequest="20" 
+                   HeightRequest="20" 
+                   HorizontalOptions="Center" />
+            <Label Text="Bandas/Músicos" 
+                   FontSize="12" 
+                   HorizontalOptions="Center" 
+                   TextColor="#D1D5DB" />
+        </StackLayout>
+
+        <!-- Historico Button -->
+        <StackLayout Grid.Column="4" 
+                     HorizontalOptions="Center" 
+                     VerticalOptions="Center" 
+                     Spacing="2">
+            <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnHistoricoClicked" />
+            </StackLayout.GestureRecognizers>
+            <Image Source="historico.png" 
+                   WidthRequest="20" 
+                   HeightRequest="20" 
+                   HorizontalOptions="Center" />
+            <Label Text="Histórico" 
+                   FontSize="12" 
+                   HorizontalOptions="Center" 
+                   TextColor="#D1D5DB" />
+        </StackLayout>
+
+    </Grid>
+
+</ContentView>

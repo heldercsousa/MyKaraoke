@@ -26,7 +26,9 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
-
+	<Target Name="ValidateXamlEncoding" BeforeTargets="BeforeBuild">
+		<Exec Command="powershell -Command &quot;Get-ChildItem -Filter '*.xaml' -Recurse | ForEach-Object { if ((Get-Content $_.FullName -Raw) -match '[👤🏠➕🎸📋🎵✔✖⬇áéíóúàèìòùâêîôûãõç]') { Write-Error 'Caracteres problemáticos em: ' + $_.Name } }&quot;" ContinueOnError="false" />
+	</Target>
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
@@ -50,6 +52,21 @@
 
 	<ItemGroup>
 	  <None Remove="Platforms\Android\Resources\xml\locales_config.xml" />
+	  <None Remove="Resources\AppIcon\cantores.png" />
+	  <None Remove="Resources\AppIcon\historico.png" />
+	  <None Remove="Resources\AppIcon\locais.png" />
+	  <None Remove="Resources\AppIcon\musicos.png" />
+	  <None Remove="Resources\AppIcon\novo.png" />
+	  <None Remove="Resources\AppIcon\setaesquerda.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiImage Include="Resources\AppIcon\cantores.png" />
+	  <MauiImage Include="Resources\AppIcon\historico.png" />
+	  <MauiImage Include="Resources\AppIcon\locais.png" />
+	  <MauiImage Include="Resources\AppIcon\musicos.png" />
+	  <MauiImage Include="Resources\AppIcon\novo.png" />
+	  <MauiImage Include="Resources\AppIcon\setaesquerda.png" />
 	</ItemGroup>
 
 
@@ -122,7 +139,7 @@
 	    <AutoGen>True</AutoGen>
 	    <DependentUpon>AppResources_pt-BR.resx</DependentUpon>
 	  </Compile>
-		<Compile Update="TonguePageb.xaml.cs">
+		<Compile Update="TonguePage.xaml.cs">
 			<DependentUpon>TonguePage.xaml</DependentUpon>
 		</Compile>
 	</ItemGroup>
@@ -175,6 +192,21 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Components\BottomNavigationBar.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Components\CardHeaderComponent.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Components\CardWrapperComponent.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Components\HeaderComponent.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Components\InactiveQueueBottomNav.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="EventPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

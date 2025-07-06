@@ -2,16 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:MyKaraoke.View"
-             xmlns:converters="clr-namespace:MyKaraoke.View.Converters"
              x:Class="MyKaraoke.View.TonguePage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
-
-    <ContentPage.Resources>
-        <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
-        <converters:BoolToBorderColorConverter x:Key="BoolToBorderColorConverter"/>
-        <converters:BoolToStyleConverter x:Key="BoolToStyleConverter"/>
-    </ContentPage.Resources>
 
     <Grid Padding="0,0,0,15">
         <Grid.RowDefinitions>
@@ -19,11 +12,14 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Botão voltar -->
+        <!-- Botão voltar padronizado -->
         <Button Grid.Row="0" 
-                Text="←" 
-                Style="{StaticResource BackButtonStyle}"
-                Clicked="OnBackButtonClicked" />
+                Style="{StaticResource CompactBackButtonStyle}"
+                Clicked="OnBackButtonClicked">
+            <Button.ImageSource>
+                <FileImageSource File="setaesquerda.png" />
+            </Button.ImageSource>
+        </Button>
 
         <!-- Card principal com borda "espessa" (usando frames aninhados) -->
         <Frame Grid.Row="1" 
@@ -33,12 +29,13 @@
                CornerRadius="27"
                Margin="15,10,15,0"
                HasShadow="False">
-            
+
             <Frame Background="{StaticResource CardBackgroundGradient}"
                    CornerRadius="27"
                    HasShadow="False"
                    Padding="20,30,20,20"
                    BorderColor="Transparent">
+
                 <!-- Conteúdo do card -->
                 <Grid RowDefinitions="Auto,*">
                     <!-- Título do Card com ícone -->

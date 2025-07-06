@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<?xaml-comp compile="true" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
@@ -7,6 +6,12 @@
     <!-- Cores Principais -->
     <Color x:Key="PrimaryPurple">#8B4CB8</Color>
     <Color x:Key="PrimaryPink">#E91E63</Color>
+
+    <!-- Background gradient for app - MOVED FROM CardStyles.xaml -->
+    <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#221b3c" Offset="0.0" />
+        <GradientStop Color="#331e6e" Offset="1.0" />
+    </LinearGradientBrush>
 
     <!-- Gradientes -->
     <LinearGradientBrush x:Key="PurpleGradient" StartPoint="0,0" EndPoint="1,1">
@@ -30,7 +35,7 @@
     <Color x:Key="TextSecondary">#B0B0B0</Color>
     <Color x:Key="TextAccent">#E91E63</Color>
 
-    <!-- Cores de Botões -->
+    <!-- Cores de Botoes -->
     <Color x:Key="ButtonPrimary">#E91E63</Color>
     <Color x:Key="ButtonSecondary">#8B4CB8</Color>
     <Color x:Key="ButtonDanger">#FF4444</Color>
@@ -41,7 +46,7 @@
     <Color x:Key="Error">#F44336</Color>
     <Color x:Key="Info">#2196F3</Color>
 
-    <!-- Transparências -->
+    <!-- Transparencias -->
     <Color x:Key="Overlay">#80000000</Color>
     <Color x:Key="CardBorder">#40FFFFFF</Color>
 

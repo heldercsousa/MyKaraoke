@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyKaraoke.View.EmergencyPage"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="#221b3c">
+
+    <Grid RowDefinitions="*, Auto, *">
+        <StackLayout Grid.Row="1" 
+                     Padding="40"
+                     Spacing="30">
+
+            <!-- Titulo -->
+            <Label Text="MyKaraoke"
+                   FontSize="42"
+                   FontAttributes="Bold"
+                   TextColor="#e91e63"
+                   HorizontalOptions="Center" />
+
+            <!-- Mensagem de Erro -->
+            <Label Text="Erro de Inicialização"
+                   FontSize="18"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+
+            <!-- Descricao -->
+            <Label Text="Houve um problema ao carregar o aplicativo. Tente reiniciar ou entre em contato com o suporte técnico."
+                   FontSize="14"
+                   TextColor="#b0a8c7"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   LineBreakMode="WordWrap" />
+
+            <!-- Botao Tentar Novamente -->
+            <Button Text="Tentar Novamente"
+                    BackgroundColor="#e91e63"
+                    TextColor="White"
+                    CornerRadius="20"
+                    HeightRequest="50"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    Clicked="OnRetryClicked"
+                    Margin="0,20,0,0" />
+
+        </StackLayout>
+    </Grid>
+</ContentPage>

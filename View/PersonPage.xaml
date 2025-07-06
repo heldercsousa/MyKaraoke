@@ -12,11 +12,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Botão voltar -->
         <Button Grid.Row="0" 
-                Text="←" 
-                Style="{StaticResource BackButtonStyle}"
-                Clicked="OnBackButtonClicked" />
+        Style="{StaticResource CompactBackButtonStyle}"
+        Clicked="OnBackButtonClicked">
+            <Button.ImageSource>
+                <FileImageSource File="setaesquerda.png" />
+            </Button.ImageSource>
+        </Button>
 
         <!-- Card principal com borda "espessa" (usando frames aninhados) -->
         <Frame Grid.Row="1" 

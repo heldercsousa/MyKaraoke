@@ -1,79 +1,79 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:MyKaraoke.Contracts;assembly=MyKaraoke.Contracts" 
              x:Class="MyKaraoke.View.StackPage"
              Title="Fila |nomeEvento| - |nomEstabelecimento| - |dataEvento|"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
-    <Grid Padding="0,0,0,15">
+    <Grid Padding="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Header with Back Button and Title -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,10">
-            <!-- Botão voltar -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,5" Padding="0,0,0,5">
+            <!-- Botao voltar compacto -->
             <Button Grid.Column="0"
-                    Text="←" 
-                    Style="{StaticResource BackButtonStyle}"
-                    Clicked="OnBackButtonClicked" />
-            
-            <!-- Title -->
+                    Style="{StaticResource CompactBackButtonStyle}"
+                    Clicked="OnBackButtonClicked">
+                <Button.ImageSource>
+                    <FileImageSource File="setaesquerda.png" />
+                </Button.ImageSource>
+            </Button>
+
+            <!-- Title dinâmico -->
             <Label Grid.Column="1"
+                   x:Name="headerTitle"
                    Text="Fila"
-                   FontSize="28"
-                   FontAttributes="Bold"
-                   TextColor="White"
-                   HorizontalOptions="Start"
-                   VerticalOptions="Center"
-                   Margin="10,0,0,0" />
+                   Style="{StaticResource HeaderTitleStyle}" />
         </Grid>
 
-        <!-- Card principal com borda "espessa" (usando frames aninhados) -->
+        <!-- Card principal com altura automática -->
         <Frame Grid.Row="1" 
                BorderColor="#533682"
                Background="Transparent"
                Padding="0"
                CornerRadius="27"
-               Margin="15,10,15,0"
-               HasShadow="False">
-            
+               Margin="15,5,15,5"
+               HasShadow="False"
+               VerticalOptions="Start">
+
             <Frame Background="{StaticResource CardBackgroundGradient}"
                    CornerRadius="27"
                    HasShadow="False"
                    Padding="20,30,20,20"
-                   BorderColor="Transparent">
-                
-                <!-- Conteúdo do card -->
-                <Grid RowDefinitions="Auto,*">
-                    
-                    <!-- Header do Card com ícone, título e badge -->
+                   BorderColor="Transparent"
+                   VerticalOptions="Start">
+
+                <!-- Conteudo do card -->
+                <Grid RowDefinitions="Auto,Auto" VerticalOptions="Start">
+
+                    <!-- Header do Card com icone, titulo e badge -->
                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,25">
-                        <!-- Ícone -->
+                        <!-- Icone -->
                         <Frame BackgroundColor="#e91e63" 
                                CornerRadius="20"
                                HeightRequest="40"
                                WidthRequest="40"
-                               Padding="10"
+                               Padding="8"
                                HorizontalOptions="Start"
                                VerticalOptions="Center"
                                Grid.Column="0">
-                            <Label Text="🎵"
-                                   FontSize="20"
+                            <Image Source="novo.png"
+                                   Aspect="AspectFit"
                                    HorizontalOptions="Center"
-                                   VerticalOptions="Center"
-                                   TextColor="White" />
+                                   VerticalOptions="Center" />
                         </Frame>
-                        
-                        <!-- Título -->
+
+                        <!-- Titulo -->
                         <Label Grid.Column="1" 
                                Text="Fila" 
                                Style="{StaticResource CardTitleStyle}"
                                VerticalOptions="Center" />
-                        
+
                         <!-- Badge de status -->
                         <Frame Grid.Column="2"
                                x:Name="queueStatusBadge"
@@ -94,79 +94,117 @@
                     </Grid>
 
                     <!-- Content area -->
-                    <Grid Grid.Row="1" x:Name="contentGrid">
-                        <!-- Empty queue message (will be shown/hidden programmatically) -->
-                        <StackLayout x:Name="emptyQueueMessage" 
-                                     IsVisible="False"
-                                     Spacing="15"
-                                     VerticalOptions="Start">
-                            <Label Text="Não há fila ativa neste momento."
-                                   FontSize="18"
-                                   FontAttributes="Bold"
-                                   TextColor="White"
-                                   HorizontalOptions="Start" />
-                            
-                            <StackLayout Spacing="8">
-                                <Label Text="• Toque no botão Nova Fila para permitir que cantores que participarão do karaokê entrem na fila de hoje"
-                                       FontSize="14"
-                                       TextColor="#b0a8c7"
-                                       HorizontalOptions="Start"
-                                       LineBreakMode="WordWrap" />
-                                
-                                <Label Text="• Reative a última fila entrando na opção Histórico abaixo"
-                                       FontSize="14"
-                                       TextColor="#b0a8c7"
-                                       HorizontalOptions="Start"
-                                       LineBreakMode="WordWrap" />
-                            </StackLayout>
-                        </StackLayout>
+                    <Grid Grid.Row="1" x:Name="contentGrid" VerticalOptions="Start">
+                        <!-- Empty queue message com estilos reutilizáveis -->
+                        <Frame x:Name="emptyQueueMessage" 
+                               IsVisible="True"
+                               VerticalOptions="Start"
+                               BackgroundColor="Transparent"
+                               BorderColor="Transparent"
+                               Padding="0"
+                               HasShadow="False">
 
-                        <!-- Active queue content (existing CollectionView) -->
+                            <!-- Frame com gradiente reutilizável -->
+                            <Frame Style="{StaticResource EmptyQueueFrameStyle}">
+                                <StackLayout Spacing="8" VerticalOptions="Start">
+                                    <!-- Título principal -->
+                                    <Label Text="Não há fila ativa neste momento"
+                                           Style="{StaticResource EmptyQueueTitleStyle}" />
+
+                                    <!-- Instruções com estilos reutilizáveis -->
+                                    <StackLayout Spacing="8">
+                                        <Label Style="{StaticResource EmptyQueueTextStyle}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="• Toque no botão " />
+                                                    <Span Text="Nova Fila" TextColor="White" FontAttributes="Bold" />
+                                                    <Span Text=" para permitir que cantores que participarão do karaokê entrem na fila de hoje" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+
+                                        <Label Style="{StaticResource EmptyQueueTextStyle}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="• " />
+                                                    <Span Text="Reative" TextColor="White" FontAttributes="Bold" />
+                                                    <Span Text=" a última " />
+                                                    <Span Text="fila" TextColor="White" FontAttributes="Bold" />
+                                                    <Span Text=" entrando na opção " />
+                                                    <Span Text="Histórico" TextColor="White" FontAttributes="Bold" />
+                                                    <Span Text=" abaixo" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                    </StackLayout>
+                                </StackLayout>
+                            </Frame>
+                        </Frame>
+
+                        <!-- Active queue content -->
                         <CollectionView x:Name="filaCollectionView"
-                                        SelectionMode="None">
+                                        SelectionMode="None"
+                                        IsVisible="False">
                             <CollectionView.ItemsLayout>
                                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="local:PessoaListItemDto">
-                                    <Frame Padding="10" CornerRadius="5" HasShadow="True" BackgroundColor="{StaticResource White}">
-                                        <Grid ColumnDefinitions="*, Auto, Auto, Auto" RowDefinitions="Auto">
-                                            <StackLayout Grid.Column="0" VerticalOptions="CenterAndExpand">
-                                                <Label Text="{Binding NomeCompleto}"
-                                                       FontSize="18"
-                                                       FontAttributes="Bold"
-                                                       TextColor="Black"/>
-                                                <Label Text="{Binding NumeroParticipacoesAusencias}"
-                                                       FontSize="12"
-                                                       TextColor="Gray"/>
-                                            </StackLayout>
+                                <DataTemplate>
+                                    <Grid Padding="10" 
+                                          ColumnDefinitions="*, Auto, Auto, Auto" 
+                                          RowDefinitions="Auto"
+                                          BackgroundColor="White"
+                                          Margin="5,2">
+                                        <StackLayout Grid.Column="0" VerticalOptions="CenterAndExpand">
+                                            <Label Text="{Binding NomeCompleto}"
+                                                   FontSize="18"
+                                                   FontAttributes="Bold"
+                                                   TextColor="Black"/>
+                                            <Label Text="{Binding NumeroParticipacoesAusencias}"
+                                                   FontSize="12"
+                                                   TextColor="Gray"/>
+                                        </StackLayout>
 
-                                            <Button Text="✔"
-                                                    Clicked="OnParticipouClicked"
-                                                    CommandParameter="{Binding .}"
-                                                    Grid.Column="1"
-                                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
-                                                    BackgroundColor="Green" TextColor="White"
-                                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
+                                        <Button Text="OK"
+                                                Clicked="OnParticipouClicked"
+                                                CommandParameter="{Binding .}"
+                                                Grid.Column="1"
+                                                WidthRequest="45" 
+                                                HeightRequest="40" 
+                                                CornerRadius="20"
+                                                BackgroundColor="Green" 
+                                                TextColor="White"
+                                                FontSize="12"
+                                                VerticalOptions="Center" 
+                                                HorizontalOptions="Center" 
+                                                Margin="5,0"/>
 
-                                            <Button Text="✖"
-                                                    Clicked="OnAusenteClicked"
-                                                    CommandParameter="{Binding .}"
-                                                    Grid.Column="2"
-                                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
-                                                    BackgroundColor="Red" TextColor="White"
-                                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
+                                        <Button Text="X"
+                                                Clicked="OnAusenteClicked"
+                                                CommandParameter="{Binding .}"
+                                                Grid.Column="2"
+                                                WidthRequest="40" 
+                                                HeightRequest="40" 
+                                                CornerRadius="20"
+                                                BackgroundColor="Red" 
+                                                TextColor="White"
+                                                VerticalOptions="Center" 
+                                                HorizontalOptions="Center" 
+                                                Margin="5,0"/>
 
-                                            <Button Text="&#x2193;"
-                                                    Clicked="OnMoveToBottomClicked"
-                                                    CommandParameter="{Binding .}"
-                                                    Grid.Column="3"
-                                                    WidthRequest="40" HeightRequest="40" CornerRadius="20"
-                                                    BackgroundColor="LightGray" TextColor="Black"
-                                                    VerticalOptions="Center" HorizontalOptions="Center" Margin="5,0"/>
-
-                                        </Grid>
-                                    </Frame>
+                                        <Button Text="v"
+                                                Clicked="OnMoveToBottomClicked"
+                                                CommandParameter="{Binding .}"
+                                                Grid.Column="3"
+                                                WidthRequest="40" 
+                                                HeightRequest="40" 
+                                                CornerRadius="20"
+                                                BackgroundColor="LightGray" 
+                                                TextColor="Black"
+                                                VerticalOptions="Center" 
+                                                HorizontalOptions="Center" 
+                                                Margin="5,0"/>
+                                    </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
@@ -174,6 +212,99 @@
                 </Grid>
             </Frame>
         </Frame>
+
+        <!-- Bottom Navigation Bar com estilos reutilizáveis -->
+        <Grid Grid.Row="2" 
+              x:Name="bottomNavBar" 
+              IsVisible="True"
+              Style="{StaticResource CompactBottomNavBarStyle}">
+
+            <BoxView BackgroundColor="#533682"
+                     HeightRequest="1"
+                     HorizontalOptions="FillAndExpand"
+                     VerticalOptions="Start" />
+
+            <Grid ColumnDefinitions="*,*,*,*,*" 
+                  Padding="5,2,5,2"
+                  HorizontalOptions="FillAndExpand"
+                  VerticalOptions="FillAndExpand">
+
+                <!-- Locais Button -->
+                <StackLayout Grid.Column="0" 
+                             HorizontalOptions="Center" 
+                             VerticalOptions="Center" 
+                             Spacing="1">
+                    <StackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBottomNavLocaisClicked" />
+                    </StackLayout.GestureRecognizers>
+                    <Image Source="locais.png" 
+                           Style="{StaticResource CompactBottomNavIconStyle}" />
+                    <Label Text="Locais" 
+                           Style="{StaticResource CompactBottomNavLabelStyle}" />
+                </StackLayout>
+
+                <!-- Cantores Button -->
+                <StackLayout Grid.Column="1" 
+                             HorizontalOptions="Center" 
+                             VerticalOptions="Center" 
+                             Spacing="1">
+                    <StackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBottomNavCantoresClicked" />
+                    </StackLayout.GestureRecognizers>
+                    <Image Source="cantores.png" 
+                           Style="{StaticResource CompactBottomNavIconStyle}" />
+                    <Label Text="Cantores" 
+                           Style="{StaticResource CompactBottomNavLabelStyle}" />
+                </StackLayout>
+
+                <!-- Nova Fila Button -->
+                <StackLayout Grid.Column="2" 
+                             HorizontalOptions="Center" 
+                             VerticalOptions="Center" 
+                             Spacing="1">
+                    <StackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBottomNavNovaFilaClicked" />
+                    </StackLayout.GestureRecognizers>
+                    <Image Source="novo.png" 
+                           WidthRequest="22" 
+                           HeightRequest="22" 
+                           HorizontalOptions="Center" />
+                    <Label Text="Nova Fila" 
+                           Style="{StaticResource CompactBottomNavLabelStyle}" />
+                </StackLayout>
+
+                <!-- Bandas/Musicos Button -->
+                <StackLayout Grid.Column="3" 
+                             HorizontalOptions="Center" 
+                             VerticalOptions="Center" 
+                             Spacing="1">
+                    <StackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBottomNavBandasMusicosClicked" />
+                    </StackLayout.GestureRecognizers>
+                    <Image Source="musicos.png" 
+                           Style="{StaticResource CompactBottomNavIconStyle}" />
+                    <Label Text="Bandas/Mus." 
+                           Style="{StaticResource CompactBottomNavLabelStyle}"
+                           LineBreakMode="TailTruncation"
+                           MaxLines="1" />
+                </StackLayout>
+
+                <!-- Historico Button -->
+                <StackLayout Grid.Column="4" 
+                             HorizontalOptions="Center" 
+                             VerticalOptions="Center" 
+                             Spacing="1">
+                    <StackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnBottomNavHistoricoClicked" />
+                    </StackLayout.GestureRecognizers>
+                    <Image Source="historico.png" 
+                           Style="{StaticResource CompactBottomNavIconStyle}" />
+                    <Label Text="Historico" 
+                           Style="{StaticResource CompactBottomNavLabelStyle}" />
+                </StackLayout>
+
+            </Grid>
+        </Grid>
     </Grid>
 
 </ContentPage>

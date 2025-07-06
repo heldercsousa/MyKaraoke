@@ -31,7 +31,6 @@
                    TextColor="White"
                    HorizontalOptions="Center"
                    FontSize="16" />
-
             <ProgressBar x:Name="LoadingProgressBar"
                          Progress="0.1"
                          ProgressColor="#e91e63"

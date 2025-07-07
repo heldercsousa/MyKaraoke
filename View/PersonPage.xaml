@@ -1,43 +1,28 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:MyKaraoke.View.Components"
              x:Class="MyKaraoke.View.PersonPage"
              Title="PersonPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
-    <Grid Padding="0,0,0,15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Grid RowDefinitions="Auto,*">
 
-        <Button Grid.Row="0" 
-        Style="{StaticResource CompactBackButtonStyle}"
-        Clicked="OnBackButtonClicked">
-            <Button.ImageSource>
-                <FileImageSource File="setaesquerda.png" />
-            </Button.ImageSource>
-        </Button>
+        <!-- Header Component -->
+        <components:HeaderComponent Grid.Row="0" 
+                                   x:Name="headerComponent"
+                                   Title=""
+                                   HeaderMargin="15,40,15,5" />
 
-        <!-- Card principal com borda "espessa" (usando frames aninhados) -->
-        <Frame Grid.Row="1" 
-               BorderColor="#533682"
-               Background="Transparent"
-               Padding="0"
-               CornerRadius="27"
-               Margin="15,10,15,0"
-               HasShadow="False">
-            
-            <Frame Background="{StaticResource CardBackgroundGradient}"
-                   CornerRadius="27"
-                   HasShadow="False"
-                   Padding="20,30,20,20"
-                   BorderColor="Transparent">
-                
-                <!-- Conteúdo do card -->
+        <!-- Card Wrapper Component -->
+        <components:CardWrapperComponent Grid.Row="1" 
+                                        CardMargin="15,10,15,0">
+            <components:CardWrapperComponent.CardContent>
+
+                <!-- Conteúdo do Card -->
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
-                    
+
                     <!-- Título do Card com ícone -->
                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,25">
                         <Frame BackgroundColor="#e91e63" 
@@ -94,7 +79,8 @@
                     <!-- Espaço flexível -->
                     <Grid Grid.Row="5" />
                 </Grid>
-            </Frame>
-        </Frame>
+
+            </components:CardWrapperComponent.CardContent>
+        </components:CardWrapperComponent>
     </Grid>
 </ContentPage>

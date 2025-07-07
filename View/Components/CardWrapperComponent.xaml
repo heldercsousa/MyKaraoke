@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyKaraoke.View.Components.CardWrapperComponent"
+             x:Name="CardRoot">
+
+    <Frame BorderColor="#533682"
+           Background="Transparent"
+           Padding="0"
+           CornerRadius="27"
+           Margin="{Binding Source={x:Reference CardRoot}, Path=CardMargin}"
+           HasShadow="False"
+           VerticalOptions="{Binding Source={x:Reference CardRoot}, Path=VerticalOptions}">
+
+        <Frame Background="{StaticResource CardBackgroundGradient}"
+               CornerRadius="27"
+               HasShadow="False"
+               Padding="{Binding Source={x:Reference CardRoot}, Path=CardPadding}"
+               BorderColor="Transparent"
+               VerticalOptions="{Binding Source={x:Reference CardRoot}, Path=VerticalOptions}">
+
+            <ContentPresenter Content="{Binding Source={x:Reference CardRoot}, Path=CardContent}" />
+        </Frame>
+    </Frame>
+</ContentView>

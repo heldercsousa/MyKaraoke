@@ -15,7 +15,7 @@ namespace MyKaraoke.View
         public PersonPage()
         {
             InitializeComponent();
-            
+
             // Configure the entry for international text input
             fullNameEntry.TextChanged += OnTextChanged;
         }
@@ -52,6 +52,9 @@ namespace MyKaraoke.View
                 // Inicializa o ServiceProvider quando o Handler estiver disponível
                 _serviceProvider = ServiceProvider.FromPage(this);
                 _queueService = _serviceProvider.GetService<IQueueService>();
+
+                // Configura o comando de voltar do HeaderComponent
+                headerComponent.BackCommand = new Command(OnBackPressed);
             }
         }
 
@@ -60,8 +63,8 @@ namespace MyKaraoke.View
             base.OnAppearing();
         }
 
-        // Método para o botão voltar
-        private async void OnBackButtonClicked(object sender, EventArgs e)
+        // Método chamado pelo HeaderComponent e botão físico do Android
+        private async void OnBackPressed()
         {
             await NavigateToStackPage();
         }
@@ -72,7 +75,7 @@ namespace MyKaraoke.View
             MainThread.BeginInvokeOnMainThread(async () => {
                 await NavigateToStackPage();
             });
-            
+
             return true; // Impede o comportamento padrão
         }
 
@@ -86,7 +89,7 @@ namespace MyKaraoke.View
                 {
                     _serviceProvider = ServiceProvider.FromPage(this);
                 }
-                
+
                 // Obtém a StackPage através do ServiceProvider e navega
                 var stackPage = _serviceProvider.GetService<StackPage>();
                 if (stackPage != null)

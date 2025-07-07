@@ -4,13 +4,13 @@
 
     <!-- Background Gradients -->
     <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#221b3c" Offset="0.0" />
-        <GradientStop Color="#331e6e" Offset="1.0" />
+        <GradientStop Color="#1A1024" Offset="0.0" />
+        <GradientStop Color="#2D1B69" Offset="1.0" />
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="CardBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#362c58" Offset="0.0" />
-        <GradientStop Color="#3b2c6c" Offset="1.0" />
+        <GradientStop Color="#33275d" Offset="0.0" />
+        <GradientStop Color="#513486" Offset="1.0" />
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="SelectedButtonGradient" StartPoint="0,0" EndPoint="1,0">
@@ -19,8 +19,8 @@
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="EmptyQueueGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#4a3f6b" Offset="0.0" />
-        <GradientStop Color="#5c4f7c" Offset="1.0" />
+        <GradientStop Color="#4b3c6d" Offset="0.0" />
+        <GradientStop Color="#684992" Offset="0.5" />
     </LinearGradientBrush>
 
     <!-- Button Styles -->
@@ -55,10 +55,10 @@
     </Style>
 
     <Style x:Key="StandardBackButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="WidthRequest" Value="32" />
         <Setter Property="HeightRequest" Value="32" />
         <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderWidth" Value="0" />
         <Setter Property="HorizontalOptions" Value="Start" />
         <Setter Property="VerticalOptions" Value="Center" />
@@ -88,7 +88,7 @@
 
     <!-- Label Styles -->
     <Style x:Key="HeaderTitleStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="White" />
+        <Setter Property="TextColor" Value="#BB86FC" />
         <Setter Property="FontSize" Value="22" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="HorizontalOptions" Value="Center" />
@@ -115,10 +115,10 @@
     </Style>
 
     <Style x:Key="EmptyQueueTitleStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="#e91e63" />
+        <Setter Property="TextColor" Value="#FFFFFF" />
         <Setter Property="FontSize" Value="18" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="Start" />
         <Setter Property="VerticalOptions" Value="Center" />
         <Setter Property="Margin" Value="0,0,0,10" />
     </Style>
@@ -126,9 +126,9 @@
     <Style x:Key="EmptyQueueTextStyle" TargetType="Label">
         <Setter Property="TextColor" Value="#b0a8c7" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="Start" />
         <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="HorizontalTextAlignment" Value="Start" />
         <Setter Property="Margin" Value="0" />
     </Style>
 
@@ -163,11 +163,11 @@
         <Setter Property="CornerRadius" Value="15" />
         <Setter Property="HasShadow" Value="False" />
         <Setter Property="Padding" Value="30,25" />
-        <Setter Property="Margin" Value="20,10" />
+        <Setter Property="Margin" Value="0,0" />
         <Setter Property="Background" Value="{StaticResource EmptyQueueGradient}" />
     </Style>
 
-    <!-- Bottom Navigation Styles -->
+    <!-- Bottom Navigation Styles - RESTAURADOS -->
     <Style x:Key="CompactBottomNavBarStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Black" />
         <Setter Property="BorderColor" Value="#533682" />
@@ -196,12 +196,52 @@
         <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 
+    <Style x:Key="CompactUpperNavIconStyle" TargetType="Image">
+        <Setter Property="WidthRequest" Value="24" />
+        <Setter Property="HeightRequest" Value="24" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+        <Setter Property="VerticalOptions" Value="Start" />
+        <Setter Property="Margin" Value="0,8,0,2" />
+    </Style>
+
+    <Style x:Key="CompactUpperNavLabelStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#D1D5DB" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+        <Setter Property="VerticalOptions" Value="Start" />
+        <Setter Property="HorizontalTextAlignment" Value="Start" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <!-- Estilos adicionais mantidos -->
+    <Style x:Key="BottomNavigationBarStyle" TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="Black" />
+        <Setter Property="BorderColor" Value="#533682" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HasShadow" Value="False" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="HeightRequest" Value="65" />
+        <Setter Property="VerticalOptions" Value="End" />
+    </Style>
+
     <Style x:Key="BottomNavIconStyle" TargetType="Image">
         <Setter Property="WidthRequest" Value="24" />
         <Setter Property="HeightRequest" Value="24" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Start" />
         <Setter Property="Margin" Value="0,12,0,4" />
+    </Style>
+
+    <Style x:Key="BottomNavButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="#D1D5DB" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+        <Setter Property="VerticalOptions" Value="Fill" />
     </Style>
 
 </ResourceDictionary>

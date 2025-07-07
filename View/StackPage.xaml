@@ -14,16 +14,19 @@
         </Grid.RowDefinitions>
 
         <!-- Header with Back Button and Title -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,5" Padding="0,0,0,5">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="15,0,0,5" Padding="0,0,0,5">
             <!-- Botao voltar compacto -->
-            <Button Grid.Column="0"
-                    Style="{StaticResource CompactBackButtonStyle}"
-                    Clicked="OnBackButtonClicked">
-                <Button.ImageSource>
-                    <FileImageSource File="setaesquerda.png" />
-                </Button.ImageSource>
-            </Button>
-
+            <StackLayout Grid.Column="1" 
+             HorizontalOptions="Start" 
+             VerticalOptions="Start" 
+             Spacing="1">
+                <StackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBackButtonClicked" />
+                </StackLayout.GestureRecognizers>
+                <Image Source="setaesquerda.png" Style="{StaticResource CompactUpperNavIconStyle}" />
+                <!--<Label Text="Sair" Style="{StaticResource CompactUpperNavLabelStyle}" />-->
+            </StackLayout>
+           
             <!-- Title dinâmico -->
             <Label Grid.Column="1"
                    x:Name="headerTitle"
@@ -44,7 +47,7 @@
             <Frame Background="{StaticResource CardBackgroundGradient}"
                    CornerRadius="27"
                    HasShadow="False"
-                   Padding="20,30,20,20"
+                   Padding="20,10,20,20"
                    BorderColor="Transparent"
                    VerticalOptions="Start">
 
@@ -54,18 +57,19 @@
                     <!-- Header do Card com icone, titulo e badge -->
                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,25">
                         <!-- Icone -->
-                        <Frame BackgroundColor="#e91e63" 
-                               CornerRadius="20"
+                        <Frame
                                HeightRequest="40"
                                WidthRequest="40"
                                Padding="8"
                                HorizontalOptions="Start"
                                VerticalOptions="Center"
-                               Grid.Column="0">
-                            <Image Source="novo.png"
+                               Grid.Column="0"
+                               BackgroundColor="Transparent">
+                            <Image Source="stack_purple.png"
                                    Aspect="AspectFit"
                                    HorizontalOptions="Center"
-                                   VerticalOptions="Center" />
+                                   VerticalOptions="Center" 
+                                   BackgroundColor="Transparent"/>
                         </Frame>
 
                         <!-- Titulo -->
@@ -102,23 +106,24 @@
                                BackgroundColor="Transparent"
                                BorderColor="Transparent"
                                Padding="0"
-                               HasShadow="False">
+                               HasShadow="False"
+                               >
 
                             <!-- Frame com gradiente reutilizável -->
                             <Frame Style="{StaticResource EmptyQueueFrameStyle}">
-                                <StackLayout Spacing="8" VerticalOptions="Start">
+                                <StackLayout Spacing="0" VerticalOptions="Start" >
                                     <!-- Título principal -->
-                                    <Label Text="Não há fila ativa neste momento"
+                                    <Label Text="Não há fila ativa neste momento" 
                                            Style="{StaticResource EmptyQueueTitleStyle}" />
 
                                     <!-- Instruções com estilos reutilizáveis -->
-                                    <StackLayout Spacing="8">
+                                    <StackLayout Spacing="20">
                                         <Label Style="{StaticResource EmptyQueueTextStyle}">
                                             <Label.FormattedText>
                                                 <FormattedString>
                                                     <Span Text="• Toque no botão " />
                                                     <Span Text="Nova Fila" TextColor="White" FontAttributes="Bold" />
-                                                    <Span Text=" para permitir que cantores que participarão do karaokê entrem na fila de hoje" />
+                                                    <Span Text=" para iniciar inclusão dos cantores no karaokê" />
                                                 </FormattedString>
                                             </Label.FormattedText>
                                         </Label>

@@ -9,34 +9,35 @@ namespace MyKaraoke.View
             try
             {
                 InitializeComponent();
-                
-                // Inicia com página minimalista e auto-contida
+
+                // Inicia com SplashLoadingPage (substitui tela rosa)
                 MainPage = new SplashLoadingPage();
+                System.Diagnostics.Debug.WriteLine("[DEBUG] App iniciado com SplashLoadingPage");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao inicializar App: {ex.Message}");
-                
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Erro ao inicializar App: {ex.Message}");
+
                 // Fallback para página de emergência
                 try
                 {
-                    MainPage = new EmergencyPage();
-                }
-                catch
-                {
-                    // Se até a página de emergência falhar, cria uma ContentPage básica
                     MainPage = new ContentPage
                     {
-                        BackgroundColor = Colors.DarkSlateBlue,
+                        BackgroundColor = Color.FromHex("#221b3c"),
                         Content = new Label
                         {
-                            Text = "MyKaraoke - Erro de Inicialização",
+                            Text = "MyKaraoke\nInicializando...",
                             TextColor = Colors.White,
                             FontSize = 24,
                             HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center
+                            VerticalOptions = LayoutOptions.Center,
+                            HorizontalTextAlignment = TextAlignment.Center
                         }
                     };
+                }
+                catch (Exception criticalEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[CRITICAL] Fallback falhou: {criticalEx.Message}");
                 }
             }
         }
@@ -45,14 +46,13 @@ namespace MyKaraoke.View
         {
             var window = base.CreateWindow(activationState);
 
-            // Inicialização simplificada e robusta do banco de dados
+            // Inicialização do banco em background (não bloqueia UI)
             Task.Run(async () =>
             {
                 try
                 {
-                    // Aguarda brevemente para o handler estar disponível
-                    await Task.Delay(300);
-                    
+                    await Task.Delay(500); // Aguarda handler estar disponível
+
                     var serviceProvider = window?.Handler?.MauiContext?.Services;
                     if (serviceProvider != null)
                     {
@@ -60,14 +60,14 @@ namespace MyKaraoke.View
                         if (queueService != null)
                         {
                             await queueService.InitializeDatabaseAsync();
-                            System.Diagnostics.Debug.WriteLine("Banco de dados inicializado com sucesso");
+                            System.Diagnostics.Debug.WriteLine("[SUCCESS] Banco inicializado em background");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao inicializar banco: {ex.Message}");
-                    // Não propaga exceção para não afetar a UI
+                    System.Diagnostics.Debug.WriteLine($"[WARNING] Erro ao inicializar banco em background: {ex.Message}");
+                    // Não propaga erro - app funciona com Preferences
                 }
             });
 

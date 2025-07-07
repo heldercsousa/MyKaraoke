@@ -10,10 +10,8 @@ namespace MyKaraoke.View
     {
         private ObservableCollection<LanguageItem> languages;
         private ILanguageService? _languageService;
-        private IQueueService? _queueService;
         private ServiceProvider? _serviceProvider;
         private string selectedLanguage = "en"; // Idioma padrão
-        private Label headerLabel; // Referência para o label de título
 
         // Dicionário de traduções para a palavra "Language" em diferentes idiomas
         private readonly Dictionary<string, string> languageTranslations = new Dictionary<string, string>
@@ -63,7 +61,6 @@ namespace MyKaraoke.View
                     // Inicializa o ServiceProvider quando o Handler estiver disponível
                     _serviceProvider = ServiceProvider.FromPage(this);
                     _languageService = _serviceProvider.GetService<ILanguageService>();
-                    _queueService = _serviceProvider.GetService<IQueueService>();
                 }
                 catch (Exception ex)
                 {
@@ -71,21 +68,21 @@ namespace MyKaraoke.View
                 }
             }
         }
-        
+
         protected override async void OnAppearing()
-        {   
+        {
             base.OnAppearing();
-            
+
             // Aguarda um tempo para garantir que a UI esteja pronta
             await Task.Delay(50);
-            
+
             // Carrega os botões de idioma quando a página aparece
             CreateLanguageButtons();
-            
+
             // Debug para verificar se os botões foram criados
             System.Diagnostics.Debug.WriteLine($"Botões criados: {languagesContainer?.Count ?? 0}");
         }
-        
+
         private void CreateLanguageButtons()
         {
             try
@@ -95,19 +92,19 @@ namespace MyKaraoke.View
                 {
                     languagesContainer.Clear();
                     System.Diagnostics.Debug.WriteLine("Container limpo com sucesso");
-                    
+
                     // Cria os botões de idioma
                     foreach (var language in languages)
                     {
                         // Debug para verificar cada item sendo processado
                         System.Diagnostics.Debug.WriteLine($"Criando botão para: {language.Name}, Bandeira: {language.Flag}");
-                        
+
                         var frame = new Frame
                         {
                             HeightRequest = 55,
                             CornerRadius = 40,
                             Margin = new Thickness(0),
-                            Padding = new Thickness(30, 5, 30, 5), // Aumentado padding conforme solicitado
+                            Padding = new Thickness(30, 5, 30, 5),
                             BorderColor = language.IsSelected ? Colors.Transparent : Color.FromArgb("#6c4794"),
                             HasShadow = language.IsSelected
                         };
@@ -131,16 +128,16 @@ namespace MyKaraoke.View
                         {
                             frame.Background = new SolidColorBrush(Color.FromArgb("#4c426f"));
                         }
-                        
+
                         var grid = new Grid
                         {
-                            ColumnDefinitions = 
-                            { 
+                            ColumnDefinitions =
+                            {
                                 new ColumnDefinition { Width = GridLength.Star },
-                                new ColumnDefinition { Width = GridLength.Auto } 
+                                new ColumnDefinition { Width = GridLength.Auto }
                             }
                         };
-                        
+
                         // Nome do idioma
                         var nameLabel = new Label
                         {
@@ -151,14 +148,14 @@ namespace MyKaraoke.View
                             HorizontalOptions = LayoutOptions.Start,
                             VerticalOptions = LayoutOptions.Center
                         };
-                        
+
                         // Para idiomas RTL (árabe), alinhamento à direita
                         if (language.Code == "ar")
                         {
                             nameLabel.HorizontalOptions = LayoutOptions.End;
                             nameLabel.FlowDirection = FlowDirection.RightToLeft;
                         }
-                        
+
                         // Bandeira do idioma
                         var flagLabel = new Label
                         {
@@ -168,27 +165,27 @@ namespace MyKaraoke.View
                             HorizontalOptions = LayoutOptions.End,
                             VerticalOptions = LayoutOptions.Center
                         };
-                        
+
                         System.Diagnostics.Debug.WriteLine($"Texto do label: '{nameLabel.Text}', Bandeira: '{flagLabel.Text}'");
-                        
+
                         // Adiciona os elementos ao grid usando a sintaxe correta para .NET MAUI
                         grid.Add(nameLabel, 0, 0);
                         grid.Add(flagLabel, 1, 0);
-                        
+
                         // Configura o frame com o grid
                         frame.Content = grid;
-                        
+
                         // Adicionar tap recognizer
                         var languageCode = language.Code;
                         var tapGesture = new TapGestureRecognizer();
-                        
-                        tapGesture.Tapped += async (s, e) => 
+
+                        tapGesture.Tapped += async (s, e) =>
                         {
                             await SelectLanguage(languageCode);
                         };
-                        
+
                         frame.GestureRecognizers.Add(tapGesture);
-                        
+
                         // Adiciona o frame ao container
                         languagesContainer.Add(frame);
                         System.Diagnostics.Debug.WriteLine($"Botão para {language.Name} adicionado com sucesso");
@@ -218,10 +215,10 @@ namespace MyKaraoke.View
                         selectedLanguage = language.Code;
                     }
                 }
-                
+
                 // Recria os botões para refletir a nova seleção visual
                 CreateLanguageButtons();
-                
+
                 // Atualiza o título para mostrar a tradução (sem salvar no banco)
                 UpdateLanguageTitle(selectedLanguage);
             }
@@ -239,7 +236,7 @@ namespace MyKaraoke.View
                 if (languageTranslations.TryGetValue(languageCode, out string translation))
                 {
                     titleText.Text = translation;
-                    
+
                     // Configurações específicas para RTL (árabe)
                     if (languageCode == "ar")
                     {
@@ -264,7 +261,7 @@ namespace MyKaraoke.View
             try
             {
                 // Salva o idioma nas preferências do aplicativo
-                Preferences.Set("AppLanguage", languageCode);
+                Preferences.Set("UserLanguage", languageCode);
 
                 // Usa o serviço de idioma para persistir a seleção
                 if (_languageService != null)
@@ -288,34 +285,37 @@ namespace MyKaraoke.View
             System.Diagnostics.Debug.WriteLine($"Idioma {languageCode} aplicado ao app");
         }
 
+        // Botão voltar da UI - corrigido para usar NavigationPage
         private async void OnBackButtonClicked(object sender, EventArgs e)
         {
-            await HandleBackButtonAction();
+            await NavigateToStackPage();
         }
 
-        // Captura o botão voltar do Android
+        // Botão físico do Android - corrigido para usar NavigationPage
         protected override bool OnBackButtonPressed()
         {
-            // Mesmo comportamento do botão voltar na UI
             MainThread.BeginInvokeOnMainThread(async () => {
-                await HandleBackButtonAction();
+                await NavigateToStackPage();
             });
-            
-            return true; // Impede o comportamento padrão de sair do app
+
+            return true; // Impede o comportamento padrão
         }
-        
-        private async Task HandleBackButtonAction()
+
+        // Método corrigido de navegação usando Application.Current.MainPage com NavigationPage
+        private async Task NavigateToStackPage()
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("[DEBUG] TonguePage: Navegando para StackPage");
+
                 // Encontra o idioma selecionado
                 var selectedItem = languages.FirstOrDefault(l => l.IsSelected);
                 if (selectedItem == null) return;
-                
+
                 // Encontra o nome traduzido do idioma
                 string languageDisplayName = selectedItem.Name;
                 string englishName = GetEnglishNameForLanguage(selectedItem.Code);
-                
+
                 // Exibe diálogo de confirmação sempre em inglês
                 bool confirmed = await DisplayAlert(
                     "Confirmation",
@@ -323,29 +323,43 @@ namespace MyKaraoke.View
                     "Confirm",
                     "Cancel"
                 );
-                
+
                 if (confirmed)
                 {
                     // Salva a preferência no banco de dados
                     await SaveSelectedLanguageAsync(selectedLanguage);
-                    
+
                     // Aplica o idioma
                     ApplyLanguageToApp(selectedLanguage);
-                    
-                    // Navega para StackPage
-                    if (Application.Current != null)
+
+                    // Usa Application.Current.MainPage com NavigationPage para corrigir navegação
+                    await MainThread.InvokeOnMainThreadAsync(() =>
                     {
-                        await Navigation.PushAsync(new StackPage());
-                    }
+                        Application.Current.MainPage = new NavigationPage(new StackPage());
+                        System.Diagnostics.Debug.WriteLine("[SUCCESS] Navegação para StackPage realizada");
+                    });
                 }
-                // Se cancelar, permanece na página atual sem ação adicional
+                // Se cancelar, permanece na página atual
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao processar ação de voltar: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Erro ao navegar para StackPage: {ex.Message}");
+
+                // Fallback simples
+                try
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        Application.Current.MainPage = new StackPage();
+                    });
+                }
+                catch (Exception fallbackEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ERROR] Fallback também falhou: {fallbackEx.Message}");
+                }
             }
         }
-        
+
         private string GetEnglishNameForLanguage(string languageCode)
         {
             // Mapeia os códigos de idioma para nomes em inglês
@@ -363,10 +377,10 @@ namespace MyKaraoke.View
                 { "ru", "Russian" },
                 { "hi", "Hindi" }
             };
-            
+
             if (englishNames.TryGetValue(languageCode, out string name))
                 return name;
-                
+
             return languageCode; // fallback para o código se não encontrar nome
         }
     }

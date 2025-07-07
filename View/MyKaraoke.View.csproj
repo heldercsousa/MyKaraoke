@@ -58,6 +58,7 @@
 	  <None Remove="Resources\AppIcon\musicos.png" />
 	  <None Remove="Resources\AppIcon\novo.png" />
 	  <None Remove="Resources\AppIcon\setaesquerda.png" />
+	  <None Remove="Resources\AppIcon\stack_purple.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -67,6 +68,7 @@
 	  <MauiImage Include="Resources\AppIcon\musicos.png" />
 	  <MauiImage Include="Resources\AppIcon\novo.png" />
 	  <MauiImage Include="Resources\AppIcon\setaesquerda.png" />
+	  <MauiImage Include="Resources\AppIcon\stack_purple.png" />
 	</ItemGroup>
 
 

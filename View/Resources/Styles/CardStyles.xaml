@@ -87,6 +87,36 @@
     </Style>
 
     <!-- Label Styles -->
+    
+    <!-- Header Title base para as sombras -->
+    <Style x:Key="HeaderTitleShadowBaseStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="Transparent" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <!-- Header Title Sombra externa -->
+    <Style x:Key="HeaderTitleShadowOuterStyle" TargetType="Label" BasedOn="{StaticResource HeaderTitleShadowBaseStyle}">
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#BB86FC" Offset="0,0" Radius="20" Opacity="0.8" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Header Title Sombra média -->
+    <Style x:Key="HeaderTitleShadowMiddleStyle" TargetType="Label" BasedOn="{StaticResource HeaderTitleShadowBaseStyle}">
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#BB86FC" Offset="0,0" Radius="10" Opacity="0.9" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Header Title - Texto principal com glow sutil -->
     <Style x:Key="HeaderTitleStyle" TargetType="Label">
         <Setter Property="TextColor" Value="#BB86FC" />
         <Setter Property="FontSize" Value="22" />
@@ -94,6 +124,11 @@
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
         <Setter Property="Margin" Value="0" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#BB86FC" Offset="0,0" Radius="5" Opacity="1" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="CardTitleStyle" TargetType="Label">
@@ -211,6 +246,58 @@
         <Setter Property="VerticalOptions" Value="Start" />
         <Setter Property="HorizontalTextAlignment" Value="Start" />
         <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+
+    <!-- botão amarelo - Style para o  -->
+    <Style x:Key="YellowGradientFrameStyle" TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,4,0,0" />
+        <Setter Property="WidthRequest" Value="60" />
+        <Setter Property="HeightRequest" Value="32" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HasShadow" Value="False" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFD700" Offset="0" />
+                    <GradientStop Color="#FFA500" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#FFD700" Offset="0,2" Radius="8" Opacity="0.3" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- botão amarelo - Style para o label do "+" -->
+    <Style x:Key="PlusLabelStyle" TargetType="Label">
+        <Setter Property="Text" Value="+" />
+        <Setter Property="TextColor" Value="#1A1024" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+
+    <!-- Style para o label do "+" -->
+    <Style x:Key="PlusLabelStyle" TargetType="Label">
+        <Setter Property="Text" Value="+" />
+        <Setter Property="TextColor" Value="#1A1024" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
     </Style>
 
     <!-- Estilos adicionais mantidos -->

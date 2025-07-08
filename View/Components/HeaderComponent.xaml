@@ -13,6 +13,14 @@
             </Button.ImageSource>
         </Button>
 
+		<!-- Sombra externa (glow maior) -->
+		<Label Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+			   Style="{StaticResource HeaderTitleShadowOuterStyle}" />
+
+		<!-- Sombra média -->
+		<Label Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+			   Style="{StaticResource HeaderTitleShadowMiddleStyle}" />
+		
         <Label Grid.Column="1"
                Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
                Style="{StaticResource HeaderTitleStyle}" />

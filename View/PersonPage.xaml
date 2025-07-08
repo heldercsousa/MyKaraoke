@@ -12,7 +12,7 @@
         <!-- Header Component -->
         <components:HeaderComponent Grid.Row="0" 
                                    x:Name="headerComponent"
-                                   Title=""
+                                   Title="Entrar na fila"
                                    HeaderMargin="15,40,15,5" />
 
         <!-- Card Wrapper Component -->

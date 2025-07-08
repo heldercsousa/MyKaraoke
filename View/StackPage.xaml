@@ -30,8 +30,8 @@
             <!-- Title dinâmico -->
             <Label Grid.Column="1"
                    x:Name="headerTitle"
-                   Text="Fila"
-                   Style="{StaticResource HeaderTitleStyle}" />
+                   Text="My Karaoke"
+                   Style="{StaticResource HeaderTitleStyle}"/>
         </Grid>
 
         <!-- Card principal com altura automática -->
@@ -263,7 +263,7 @@
                 </StackLayout>
 
                 <!-- Nova Fila Button -->
-                <StackLayout Grid.Column="2" 
+                <!--<StackLayout Grid.Column="2" 
                              HorizontalOptions="Center" 
                              VerticalOptions="Center" 
                              Spacing="1">
@@ -276,7 +276,46 @@
                            HorizontalOptions="Center" />
                     <Label Text="Nova Fila" 
                            Style="{StaticResource CompactBottomNavLabelStyle}" />
+                </StackLayout>-->
+                
+                <!-- Nova Fila Button - Versão Amarela -->
+                <!--<StackLayout Grid.Column="2" 
+                     HorizontalOptions="Center" 
+                     VerticalOptions="Center" 
+                     Spacing="0">
+
+                    --><!-- Botão principal com gradiente amarelo --><!--
+                    <Button Text="+" 
+                        Style="{StaticResource YellowGradientButtonStyle}"
+                        TextColor="#1A1024"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        Clicked="OnBottomNavNovaFilaClicked" />
+
+                    --><!-- Label abaixo do botão --><!--
+                    <Label Text="Nova Fila" Style="{StaticResource CompactBottomNavLabelStyle}" />
+                </StackLayout>-->
+
+                <StackLayout Grid.Column="2" 
+                     HorizontalOptions="Center" 
+                     VerticalOptions="Center" 
+                     Spacing="2">   
+
+                    <!-- Frame com gradiente amarelo (substitui o Button) -->
+                    <Frame Style="{StaticResource YellowGradientFrameStyle}">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBottomNavNovaFilaClicked" />
+                        </Frame.GestureRecognizers>
+
+                        <!-- Label com "+" perfeitamente centralizado -->
+                        <Label Style="{StaticResource PlusLabelStyle}" />
+                    </Frame>
+
+                    <!-- Label abaixo do botão -->
+                    <Label Text="Nova Fila" 
+                    Style="{StaticResource CompactBottomNavLabelStyle}" />
                 </StackLayout>
+
 
                 <!-- Bandas/Musicos Button -->
                 <StackLayout Grid.Column="3" 

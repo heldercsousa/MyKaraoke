@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:MyKaraoke.View.Components"
              x:Class="MyKaraoke.View.StackPage"
-             Title="Fila |nomeEvento| - |nomEstabelecimento| - |dataEvento|"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
@@ -14,8 +14,8 @@
         </Grid.RowDefinitions>
 
         <!-- Header with Back Button and Title -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="15,0,0,5" Padding="0,0,0,5">
-            <!-- Botao voltar compacto -->
+        <!--<Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="15,0,0,5" Padding="0,0,0,5">
+            --><!-- Botao voltar compacto --><!--
             <StackLayout Grid.Column="1" 
              HorizontalOptions="Start" 
              VerticalOptions="Start" 
@@ -24,15 +24,18 @@
                     <TapGestureRecognizer Tapped="OnBackButtonClicked" />
                 </StackLayout.GestureRecognizers>
                 <Image Source="setaesquerda.png" Style="{StaticResource CompactUpperNavIconStyle}" />
-                <!--<Label Text="Sair" Style="{StaticResource CompactUpperNavLabelStyle}" />-->
+                --><!--<Label Text="Sair" Style="{StaticResource CompactUpperNavLabelStyle}" />--><!--
             </StackLayout>
            
-            <!-- Title dinâmico -->
+            --><!-- Title dinâmico --><!--
             <Label Grid.Column="1"
                    x:Name="headerTitle"
                    Text="My Karaoke"
                    Style="{StaticResource HeaderTitleStyle}"/>
-        </Grid>
+        </Grid>-->
+         <!-- Header Component -->
+         <components:HeaderComponent Grid.Row="0" 
+            x:Name="headerComponent"/>
 
         <!-- Card principal com altura automática -->
         <Frame Grid.Row="1" 

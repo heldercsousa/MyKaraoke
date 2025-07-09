@@ -7,8 +7,8 @@ public partial class HeaderComponent : ContentView
     public static readonly BindableProperty TitleProperty =
         BindableProperty.Create(nameof(Title), typeof(string), typeof(HeaderComponent), string.Empty);
 
-    public static readonly BindableProperty HeaderMarginProperty =
-        BindableProperty.Create(nameof(HeaderMargin), typeof(Thickness), typeof(HeaderComponent), new Thickness(15, 40, 15, 5));
+    //public static readonly BindableProperty HeaderMarginProperty =
+    //    BindableProperty.Create(nameof(HeaderMargin), typeof(Thickness), typeof(HeaderComponent), new Thickness(15, 40, 15, 5));
 
     public static readonly BindableProperty BackCommandProperty =
         BindableProperty.Create(nameof(BackCommand), typeof(ICommand), typeof(HeaderComponent), null);
@@ -19,11 +19,11 @@ public partial class HeaderComponent : ContentView
         set => SetValue(TitleProperty, value);
     }
 
-    public Thickness HeaderMargin
-    {
-        get => (Thickness)GetValue(HeaderMarginProperty);
-        set => SetValue(HeaderMarginProperty, value);
-    }
+    //public Thickness HeaderMargin
+    //{
+    //    get => (Thickness)GetValue(HeaderMarginProperty);
+    //    set => SetValue(HeaderMarginProperty, value);
+    //}
 
     public ICommand BackCommand
     {

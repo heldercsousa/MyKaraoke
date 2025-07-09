@@ -28,19 +28,19 @@ public class QueueService : IQueueService
 
     // --- Operações de Banco de Dados e Inicialização ---
 
-    public async Task InitializeDatabaseAsync()
-    {
-        try
-        {
-            await _dbContext.Database.MigrateAsync();
-            await GetOrCreateDefaultEventAsync(); // Garante que há um evento padrão
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro ao inicializar o banco de dados: {ex.Message}");
-            throw;
-        }
-    }
+    //public async Task InitializeDatabaseAsync()
+    //{
+    //    try
+    //    {
+    //        await _dbContext.Database.MigrateAsync();
+    //        await GetOrCreateDefaultEventAsync(); // Garante que há um evento padrão
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine($"Erro ao inicializar o banco de dados: {ex.Message}");
+    //        throw;
+    //    }
+    //}
 
     // --- Operações de Pessoas (Domínio) ---
     // Este método agora retorna a entidade de domínio Pessoa, não o DTO de lista

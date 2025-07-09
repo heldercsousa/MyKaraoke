@@ -4,25 +4,44 @@
              x:Class="MyKaraoke.View.Components.HeaderComponent"
              x:Name="HeaderRoot">
 
-    <Grid ColumnDefinitions="Auto,*" Margin="{Binding Source={x:Reference HeaderRoot}, Path=HeaderMargin}" Padding="0,0,0,5">
-        <Button Grid.Column="0"
+    <Grid ColumnDefinitions="Auto,*" Margin="15,0,0,5" Padding="0,0,0,5">
+        <!--<Button Grid.Column="0"
                 Style="{StaticResource StandardBackButtonStyle}"
                 Clicked="OnBackButtonClicked">
             <Button.ImageSource>
                 <FileImageSource File="setaesquerda.png" />
             </Button.ImageSource>
-        </Button>
+        </Button>-->
+        <!-- Botao voltar compacto -->
+        <StackLayout Grid.Column="0" 
+            HorizontalOptions="Start" 
+            VerticalOptions="Start" 
+            Spacing="1">  
+            <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBackButtonClicked" />
+            </StackLayout.GestureRecognizers>
+            <Image Source="setaesquerda.png" Style="{StaticResource CompactUpperNavIconStyle}" />
+            <!--<Label Text="Sair" Style="{StaticResource CompactUpperNavLabelStyle}" />-->
+        </StackLayout>
 
-		<!-- Sombra externa (glow maior) -->
-		<Label Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+        
+       
+        <!-- Sombra externa (glow maior) -->
+        <Label  Grid.Column="1" Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
 			   Style="{StaticResource HeaderTitleShadowOuterStyle}" />
 
 		<!-- Sombra média -->
-		<Label Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+        <Label  Grid.Column="1" Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
 			   Style="{StaticResource HeaderTitleShadowMiddleStyle}" />
-		
+
+        <!-- Title dinâmico -->
         <Label Grid.Column="1"
+            x:Name="headerTitle"
+            Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+            Style="{StaticResource HeaderTitleStyle}"/>
+        
+        <!--<Label Grid.Column="1"
                Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-               Style="{StaticResource HeaderTitleStyle}" />
+               Style="{StaticResource HeaderTitleStyle}" />-->
     </Grid>
 </ContentView>

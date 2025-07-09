@@ -9,7 +9,7 @@ namespace MyKaraoke.Services
 {
     public interface IQueueService
     {
-        Task InitializeDatabaseAsync();
+        //Task InitializeDatabaseAsync();
         Task<(bool success, string message, Pessoa? addedDomainPerson)> AddPersonAsync(string fullName);
         Task RecordParticipationAsync(int pessoaId, ParticipacaoStatus status);
         Task<Evento?> GetActiveEventAsync();

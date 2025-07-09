@@ -462,10 +462,10 @@ namespace MyKaraoke.View
             {
                 try
                 {
-                    if (headerTitle != null)
+                    if (headerComponent != null)
                     {
-                        headerTitle.Text = hasActiveQueue ? "Fila" : "My Karaoke";
-                        System.Diagnostics.Debug.WriteLine($"Header title updated to: {headerTitle.Text}");
+                        headerComponent.Title = hasActiveQueue ? "Bandokê, Trend´s, 09 jul" : "My Karaoke";
+                        System.Diagnostics.Debug.WriteLine($"Header title updated to: {headerComponent.Title}");
                     }
                 }
                 catch (Exception ex)

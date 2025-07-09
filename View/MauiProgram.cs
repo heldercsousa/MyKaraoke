@@ -22,17 +22,12 @@ namespace MyKaraoke.View
                 .ConfigureMauiHandlers(handlers =>
                 {
 #if ANDROID
-                    // Registra o handler customizado para Entry no Android
                     handlers.AddHandler<Entry, MyKaraoke.View.Platforms.Android.CustomEntryHandler>();
 #endif
                 });
 
-            // Configurar o AppDbContext com SQLite
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            {
-                string dbPath = Path.Combine(FileSystem.AppDataDirectory, "MyKaraoke.db");
-                options.UseSqlite($"Filename={dbPath}");
-            });
+            // **CONFIGURAÇÃO CORRIGIDA DO BANCO DE DADOS**
+            ConfigureDatabase(builder.Services);
 
             // Registrar Repositórios existentes
             builder.Services.AddScoped<IPessoaRepository, PessoaRepository>();
@@ -43,6 +38,7 @@ namespace MyKaraoke.View
             // Registrar Serviços
             builder.Services.AddSingleton<IQueueService, QueueService>();
             builder.Services.AddSingleton<ILanguageService, LanguageService>();
+            builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
 
             // Registrar Páginas
             builder.Services.AddTransient<SplashPage>();
@@ -51,12 +47,39 @@ namespace MyKaraoke.View
             builder.Services.AddTransient<TonguePage>();
             builder.Services.AddTransient<SplashLoadingPage>();
 
-            // Adicionar logging para debug
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
 
             return builder.Build();
+        }
+
+        private static void ConfigureDatabase(IServiceCollection services)
+        {
+            // Garantir que o diretório existe
+            string appDataPath = FileSystem.AppDataDirectory;
+            if (!Directory.Exists(appDataPath))
+            {
+                Directory.CreateDirectory(appDataPath);
+            }
+
+            string dbPath = Path.Combine(appDataPath, "MyKaraoke.db");
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Caminho do banco: {dbPath}");
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Diretório existe: {Directory.Exists(appDataPath)}");
+#endif
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlite($"Data Source={dbPath}", sqliteOptions =>
+                {
+                    sqliteOptions.CommandTimeout(60);
+                });
+
+#if DEBUG
+                options.EnableSensitiveDataLogging();
+                options.LogTo(message => System.Diagnostics.Debug.WriteLine($"[EF] {message}"));
+#endif
+            });
         }
     }
 }

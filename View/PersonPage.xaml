@@ -14,7 +14,6 @@
                                    Title="Entrar na fila"/>
 
         <!-- Card Wrapper Component -->
-        <!-- Card Wrapper Component -->
         <components:CardWrapperComponent Grid.Row="1" 
             TitleText="Preencha"
             IconPath="cantores.png"
@@ -22,41 +21,169 @@
 
             <components:CardWrapperComponent.CardContent>
                 <!-- Conteúdo do Card -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
 
                     <!-- Label "Nome do cantor" -->
                     <Label Grid.Row="0"
-                   Text="Nome do cantor"
-                   Style="{StaticResource InputLabelStyle}" />
+                           Text="Nome do cantor"
+                           Style="{StaticResource InputLabelStyle}" />
 
-                    <!-- Entry para nome completo usando estilos reutilizáveis -->
-                    <Frame Grid.Row="1"
-                   Style="{StaticResource InputFieldStyle}">
-                        <Entry x:Name="fullNameEntry"  
-                       Placeholder="digite o nome"
-                       Style="{StaticResource InputEntryStyle}" />
+                    <!-- Container do campo de entrada com sugestões -->
+                    <Grid Grid.Row="1" RowDefinitions="Auto,Auto">
+
+                        <!-- Entry com limite híbrido de 200 caracteres -->
+                        <Frame Grid.Row="0"
+                               Style="{StaticResource InputFieldStyle}">
+                            <Entry x:Name="fullNameEntry"  
+                                   Placeholder="digite o nome completo"
+                                   Style="{StaticResource InputEntryStyle}"
+                                   MaxLength="200"
+                                   TextChanged="OnNameTextChanged" />
+                        </Frame>
+
+                        <!-- Lista de sugestões -->
+                        <Frame Grid.Row="1"
+                               x:Name="suggestionsFrame"
+                               IsVisible="False"
+                               BackgroundColor="#3b2c6c"
+                               BorderColor="#533682"
+                               CornerRadius="8"
+                               Padding="0"
+                               Margin="0,4,0,0"
+                               HasShadow="False">
+
+                            <CollectionView x:Name="suggestionsCollectionView"
+                                          SelectionMode="Single"
+                                          SelectionChanged="OnSuggestionSelected"
+                                          HeightRequest="144">
+
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Padding="12,8" 
+                                              HeightRequest="48"
+                                              BackgroundColor="Transparent">
+
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnSuggestionTapped" />
+                                            </Grid.GestureRecognizers>
+
+                                            <StackLayout Orientation="Horizontal" 
+                                                       VerticalOptions="Center"
+                                                       Spacing="12">
+
+                                                <!-- Nome da pessoa -->
+                                                <Label Text="{Binding NomeCompleto}"
+                                                       TextColor="White"
+                                                       FontSize="16"
+                                                       VerticalOptions="Center"
+                                                       HorizontalOptions="StartAndExpand" />
+
+                                                <!-- Contador de participações -->
+                                                <Label Text="{Binding ParticipationSummary}"
+                                                       TextColor="#b0a8c7"
+                                                       FontSize="12"
+                                                       VerticalOptions="Center"
+                                                       HorizontalOptions="End" />
+                                            </StackLayout>
+
+                                            <!-- Separador -->
+                                            <BoxView BackgroundColor="#533682"
+                                                     HeightRequest="1"
+                                                     HorizontalOptions="FillAndExpand"
+                                                     VerticalOptions="End"
+                                                     Margin="0,0,0,0" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </Frame>
+                    </Grid>
+
+                    <!-- NOVO: Contador de caracteres (aparece quando >180) -->
+                    <Label Grid.Row="2"
+                           x:Name="characterCounterLabel"
+                           Text="0/200"
+                           FontSize="12"
+                           HorizontalOptions="End"
+                           VerticalOptions="Start"
+                           IsVisible="False"
+                           Margin="8,2,8,0" />
+
+                    <!-- NOVO: Label "Aniversário" -->
+                    <Label Grid.Row="3"
+                           Text="Aniversário (dia/mês)"
+                           Style="{StaticResource InputLabelStyle}"
+                           Margin="0,12,0,0" />
+
+                    <!-- NOVO: Entry para aniversário -->
+                    <Frame Grid.Row="4"
+                           Style="{StaticResource InputFieldStyle}">
+                        <Entry x:Name="birthdayEntry"  
+                               Placeholder="15/03"
+                               Style="{StaticResource InputEntryStyle}"
+                               MaxLength="5"
+                               Keyboard="Numeric" />
                     </Frame>
 
+                    <!-- NOVO: Label "E-mail (opcional)" -->
+                    <Label Grid.Row="5"
+                           Text="E-mail (opcional)"
+                           Style="{StaticResource InputLabelStyle}"
+                           Margin="0,12,0,0" />
+
+                    <!-- NOVO: Entry para e-mail opcional -->
+                    <Frame Grid.Row="6"
+                           Style="{StaticResource InputFieldStyle}">
+                        <Entry x:Name="emailEntry"  
+                               Placeholder="seuemail@exemplo.com"
+                               Style="{StaticResource InputEntryStyle}"
+                               MaxLength="100"
+                               Keyboard="Email" />
+                    </Frame>
+
+                    <!-- Indicador de pessoa nova -->
+                    <Label Grid.Row="7"
+                           x:Name="newPersonIndicator"
+                           Text="✨ Nova pessoa será cadastrada"
+                           TextColor="#4CAF50"
+                           FontSize="14"
+                           HorizontalOptions="Start"
+                           VerticalOptions="Start"
+                           IsVisible="False"
+                           Margin="8,4,0,0" />
+
+                    <!-- Indicador de pessoa existente -->
+                    <Label Grid.Row="8"
+                           x:Name="existingPersonIndicator"
+                           Text="👤 Pessoa já cadastrada"
+                           TextColor="#FF9800"
+                           FontSize="14"
+                           HorizontalOptions="Start"
+                           VerticalOptions="Start"
+                           IsVisible="False"
+                           Margin="8,4,0,0" />
+
                     <!-- Botão Entrar na fila -->
-                    <Button Grid.Row="2"
-                    Text="Entrar na fila"
-                    Style="{StaticResource FormButtonStyle}"
-                    Clicked="OnAddToQueueClicked"
-                    VerticalOptions="Start" />
+                    <Button Grid.Row="9"
+                            Text="Entrar na fila"
+                            Style="{StaticResource FormButtonStyle}"
+                            Clicked="OnAddToQueueClicked"
+                            VerticalOptions="Start"
+                            Margin="0,12,0,0" />
 
                     <!-- Label de validação -->
-                    <Label Grid.Row="3"
-                   x:Name="validationMessageLabel" 
-                   Text=""
-                   TextColor="#ff6b6b"
-                   FontSize="14"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Start"
-                   IsVisible="False"
-                   Margin="0,5,0,0" />
+                    <Label Grid.Row="10"
+                           x:Name="validationMessageLabel" 
+                           Text=""
+                           TextColor="#ff6b6b"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Start"
+                           IsVisible="False"
+                           Margin="0,8,0,0" />
 
                     <!-- Espaço flexível -->
-                    <Grid Grid.Row="4" />
+                    <Grid Grid.Row="11" />
                 </Grid>
             </components:CardWrapperComponent.CardContent>
         </components:CardWrapperComponent>

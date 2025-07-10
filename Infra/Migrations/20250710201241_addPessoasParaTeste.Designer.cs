@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyKaraoke.Infra.Data;
 
@@ -10,9 +11,11 @@ using MyKaraoke.Infra.Data;
 namespace MyKaraoke.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250710201241_addPessoasParaTeste")]
+    partial class addPessoasParaTeste
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -123,23 +126,10 @@ namespace MyKaraoke.Infra.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("DiaMesAniversario")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("NomeCompleto")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("TEXT")
-                        .UseCollation("NOCASE");
-
-                    b.Property<string>("NomeCompletoNormalizado")
-                        .HasMaxLength(250)
-                        .HasColumnType("TEXT")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .UseCollation("NOCASE");
 
                     b.Property<int>("Participacoes")
@@ -148,9 +138,6 @@ namespace MyKaraoke.Infra.Migrations
                         .HasDefaultValue(0);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("NomeCompletoNormalizado")
-                        .HasDatabaseName("IX_Pessoas_NomeCompletoNormalizado");
 
                     b.ToTable("Pessoas");
                 });

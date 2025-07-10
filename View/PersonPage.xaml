@@ -14,70 +14,50 @@
                                    Title="Entrar na fila"/>
 
         <!-- Card Wrapper Component -->
+        <!-- Card Wrapper Component -->
         <components:CardWrapperComponent Grid.Row="1" 
-                                        CardMargin="15,10,15,0">
+            TitleText="Preencha"
+            IconPath="cantores.png"
+            BadgeIsVisible="False">
+
             <components:CardWrapperComponent.CardContent>
-
                 <!-- Conteúdo do Card -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
-
-                    <!-- Título do Card com ícone -->
-                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,25">
-                        <Frame BackgroundColor="#e91e63" 
-                               CornerRadius="20"
-                               HeightRequest="40"
-                               WidthRequest="40"
-                               Padding="10"
-                               HorizontalOptions="Start"
-                               VerticalOptions="Center"
-                               Grid.Column="0">
-                            <Label Text="👤"
-                                   FontSize="20"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center"
-                                   TextColor="White" />
-                        </Frame>
-                        <Label Grid.Column="1" 
-                               Text="Adicionar Participante" 
-                               Style="{StaticResource CardTitleStyle}"
-                               VerticalOptions="Center" />
-                    </Grid>
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
 
                     <!-- Label "Nome do cantor" -->
-                    <Label Grid.Row="1"
-                           Text="Nome do cantor"
-                           Style="{StaticResource InputLabelStyle}" />
+                    <Label Grid.Row="0"
+                   Text="Nome do cantor"
+                   Style="{StaticResource InputLabelStyle}" />
 
                     <!-- Entry para nome completo usando estilos reutilizáveis -->
-                    <Frame Grid.Row="2"
-                           Style="{StaticResource InputFieldStyle}">
+                    <Frame Grid.Row="1"
+                   Style="{StaticResource InputFieldStyle}">
                         <Entry x:Name="fullNameEntry"  
-                               Placeholder="digite o nome"
-                               Style="{StaticResource InputEntryStyle}" />
+                       Placeholder="digite o nome"
+                       Style="{StaticResource InputEntryStyle}" />
                     </Frame>
 
                     <!-- Botão Entrar na fila -->
-                    <Button Grid.Row="3"
-                            Text="Entrar na fila"
-                            Style="{StaticResource FormButtonStyle}"
-                            Clicked="OnAddToQueueClicked"
-                            VerticalOptions="Start" />
+                    <Button Grid.Row="2"
+                    Text="Entrar na fila"
+                    Style="{StaticResource FormButtonStyle}"
+                    Clicked="OnAddToQueueClicked"
+                    VerticalOptions="Start" />
 
                     <!-- Label de validação -->
-                    <Label Grid.Row="4"
-                           x:Name="validationMessageLabel" 
-                           Text=""
-                           TextColor="#ff6b6b"
-                           FontSize="14"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Start"
-                           IsVisible="False"
-                           Margin="0,5,0,0" />
+                    <Label Grid.Row="3"
+                   x:Name="validationMessageLabel" 
+                   Text=""
+                   TextColor="#ff6b6b"
+                   FontSize="14"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Start"
+                   IsVisible="False"
+                   Margin="0,5,0,0" />
 
                     <!-- Espaço flexível -->
-                    <Grid Grid.Row="5" />
+                    <Grid Grid.Row="4" />
                 </Grid>
-
             </components:CardWrapperComponent.CardContent>
         </components:CardWrapperComponent>
     </Grid>

@@ -41,7 +41,7 @@ public class AppDbContext : DbContext
             .Property(e => e.NomeCompleto)
             .UseCollation("NOCASE");
 
-        // NOVA CONFIGURAÇÃO: Collation para coluna normalizada
+        // Configuração: Collation para coluna normalizada
         modelBuilder.Entity<Pessoa>()
             .Property(e => e.NomeCompletoNormalizado)
             .UseCollation("NOCASE");
@@ -53,34 +53,5 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Evento>()
             .Property(e => e.NomeEvento)
             .UseCollation("NOCASE");
-    }
-
-    // NOVA FUNCIONALIDADE: Auto-atualização da coluna normalizada
-    public override int SaveChanges()
-    {
-        UpdateNormalizedNames();
-        return base.SaveChanges();
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        UpdateNormalizedNames();
-        return await base.SaveChangesAsync(cancellationToken);
-    }
-
-    private void UpdateNormalizedNames()
-    {
-        var changedPessoas = ChangeTracker.Entries<Pessoa>()
-            .Where(e => e.State == EntityState.Added ||
-                       (e.State == EntityState.Modified && e.Property(p => p.NomeCompleto).IsModified))
-            .Select(e => e.Entity);
-
-        foreach (var pessoa in changedPessoas)
-        {
-            // Atualiza automaticamente a versão normalizada
-            pessoa.NomeCompletoNormalizado = Pessoa.NormalizeName(pessoa.NomeCompleto);
-
-            System.Diagnostics.Debug.WriteLine($"Normalizando: '{pessoa.NomeCompleto}' → '{pessoa.NomeCompletoNormalizado}'");
-        }
     }
 }

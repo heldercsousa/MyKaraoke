@@ -4,73 +4,78 @@ using MyKaraoke.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyKaraoke.Services;
+
+/// <summary>
+/// Serviço responsável apenas por operações de fila e eventos
+/// Operações de pessoas delegadas para IPessoaService
+/// </summary>
 public class QueueService : IQueueService
 {
     private readonly AppDbContext _dbContext; // Direto para migrações
-    private readonly IPessoaRepository _pessoaRepository;
     private readonly IEstabelecimentoRepository _estabelecimentoRepository;
     private readonly IEventoRepository _eventoRepository;
     private readonly IParticipacaoEventoRepository _participacaoEventoRepository;
+    private readonly IPessoaService _pessoaService; // Nova dependência
 
     public QueueService(
         AppDbContext dbContext,
-        IPessoaRepository pessoaRepository,
         IEstabelecimentoRepository estabelecimentoRepository,
         IEventoRepository eventoRepository,
-        IParticipacaoEventoRepository participacaoEventoRepository)
+        IParticipacaoEventoRepository participacaoEventoRepository,
+        IPessoaService pessoaService)
     {
         _dbContext = dbContext;
-        _pessoaRepository = pessoaRepository;
         _estabelecimentoRepository = estabelecimentoRepository;
         _eventoRepository = eventoRepository;
         _participacaoEventoRepository = participacaoEventoRepository;
+        _pessoaService = pessoaService;
     }
 
-    // --- Operações de Banco de Dados e Inicialização ---
+    // --- Operações de Fila (usando PessoaService para operações de pessoa) ---
 
-    //public async Task InitializeDatabaseAsync()
-    //{
-    //    try
-    //    {
-    //        await _dbContext.Database.MigrateAsync();
-    //        await GetOrCreateDefaultEventAsync(); // Garante que há um evento padrão
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        Console.WriteLine($"Erro ao inicializar o banco de dados: {ex.Message}");
-    //        throw;
-    //    }
-    //}
-
-    // --- Operações de Pessoas (Domínio) ---
-    // Este método agora retorna a entidade de domínio Pessoa, não o DTO de lista
-    public async Task<(bool success, string message, Pessoa? addedDomainPerson)> AddPersonAsync(string fullName)
+    /// <summary>
+    /// Adiciona pessoa à fila - delega criação para PessoaService
+    /// </summary>
+    public async Task<(bool success, string message, Pessoa? addedDomainPerson)> AddPersonToQueueAsync(
+        string fullName, string birthday = null, string email = null)
     {
-        if (!Pessoa.ValidarNome(fullName))
+        try
         {
-            return (false, "Nome inválido. Mínimo 2 caracteres no nome e 1 sobrenome com 2 caracteres.", null);
+            // Verifica se há evento ativo
+            var activeEvent = await GetActiveEventAsync();
+            if (activeEvent == null || !activeEvent.FilaAtiva)
+            {
+                return (false, "Não há fila ativa no momento", null);
+            }
+
+            // Delega criação/busca da pessoa para PessoaService
+            Pessoa? person = null;
+
+            // Primeiro tenta buscar pessoa existente
+            person = await _pessoaService.GetPersonByNameAsync(fullName);
+
+            if (person == null)
+            {
+                // Se não existe, cria nova pessoa
+                var createResult = await _pessoaService.CreatePersonAsync(fullName, birthday, email);
+                if (!createResult.success)
+                {
+                    return (false, createResult.message, null);
+                }
+                person = createResult.person;
+            }
+
+            return (true, $"{person.NomeCompleto} adicionado à fila!", person);
         }
-
-        // Verifica se a pessoa já existe no banco de dados de pessoas mestre
-        Pessoa existingDomainPerson = await _pessoaRepository.GetByNomeCompletoAsync(fullName);
-        Pessoa personToReturn;
-
-        if (existingDomainPerson == null)
+        catch (Exception ex)
         {
-            personToReturn = new Pessoa(fullName);
-            await _pessoaRepository.AddAsync(personToReturn);
-            await _pessoaRepository.SaveChangesAsync(); // Salva a nova pessoa no DB para obter o Id
+            return (false, $"Erro ao adicionar à fila: {ex.Message}", null);
         }
-        else
-        {
-            personToReturn = existingDomainPerson;
-        }
-        // A lógica de resetar Participacoes/Ausencias é da UI ou de um ViewModel para a fila ativa.
-
-        return (true, $"{fullName} adicionado(a) ao banco de dados!", personToReturn);
     }
 
-    // Este método agora aceita o ID da pessoa (do DTO) e o status, sem se preocupar com o DTO em si
+    /// <summary>
+    /// Registra participação no evento ativo
+    /// </summary>
     public async Task RecordParticipationAsync(int pessoaId, ParticipacaoStatus status)
     {
         if (pessoaId == 0)
@@ -78,10 +83,10 @@ public class QueueService : IQueueService
             throw new ArgumentException("ID da Pessoa inválido para registrar participação.");
         }
 
-        var activeEvent = await GetActiveEventAsync(); // Pega o evento ativo do DB
+        var activeEvent = await GetActiveEventAsync();
         if (activeEvent == null)
         {
-            activeEvent = await GetOrCreateDefaultEventAsync(); // Garante que há um evento ativo
+            activeEvent = await GetOrCreateDefaultEventAsync();
         }
 
         var participacao = new ParticipacaoEvento
@@ -94,22 +99,18 @@ public class QueueService : IQueueService
 
         await _participacaoEventoRepository.AddAsync(participacao);
         await _participacaoEventoRepository.SaveChangesAsync();
-        // A atualização dos contadores no DTO na fila ativa é de responsabilidade da UI.
     }
 
-    // --- Gerenciamento de Eventos (Base para Evolutiva 1.3 - continua agnóstico à plataforma) ---
+    // --- Gerenciamento de Eventos ---
 
     public async Task<Evento?> GetActiveEventAsync()
     {
-        // O EventoRepository já busca o evento ativo no DB
         return await _eventoRepository.GetActiveEventAsync();
     }
 
     public async Task SetActiveEventAsync(int eventId)
     {
-        // O EventoRepository já lida com a ativação/desativação no DB
         await _eventoRepository.SetActiveEventAsync(eventId);
-        // A atualização do ActiveEventIdKey nas Preferences e o reset dos contadores na fila ativa são da UI.
     }
 
     public async Task<IEnumerable<Estabelecimento>> GetAllEstablishmentsAsync()
@@ -121,6 +122,8 @@ public class QueueService : IQueueService
     {
         return await _eventoRepository.GetAllAsync();
     }
+
+    // --- Métodos privados ---
 
     private async Task<Evento> GetOrCreateDefaultEventAsync()
     {
@@ -144,9 +147,7 @@ public class QueueService : IQueueService
             };
             await _eventoRepository.AddAsync(activeEvent);
             await _eventoRepository.SaveChangesAsync();
-            // O registro do ID do evento ativo nas Preferences é da UI.
         }
         return activeEvent;
     }
 }
-

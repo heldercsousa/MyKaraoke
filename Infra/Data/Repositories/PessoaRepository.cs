@@ -1,26 +1,33 @@
-﻿using MyKaraoke.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using MyKaraoke.Domain;
 using MyKaraoke.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
+using MyKaraoke.Infra.Utils;
 
 namespace MyKaraoke.Infra.Data.Repositories
 {
     public class PessoaRepository : BaseRepository<Pessoa>, IPessoaRepository
     {
-        public PessoaRepository(AppDbContext context) : base(context) { }
+        private readonly ITextNormalizer _textNormalizer; // 🔄 MUDANÇA: nome atualizado
+
+        public PessoaRepository(AppDbContext context, ITextNormalizer textNormalizer) // 🔄 MUDANÇA
+            : base(context)
+        {
+            _textNormalizer = textNormalizer; // 🔄 MUDANÇA: nome atualizado
+        }
 
         public async Task<Pessoa> GetByNomeCompletoAsync(string nomeCompleto)
         {
             return await _dbSet.FirstOrDefaultAsync(p => p.NomeCompleto == nomeCompleto);
         }
 
-        // NOVA FUNCIONALIDADE: Busca otimizada por nome normalizado
+        // FUNCIONALIDADE: Busca otimizada por nome normalizado
         public async Task<List<Pessoa>> SearchByNameAsync(string searchTerm, int maxResults = 10)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return new List<Pessoa>();
 
-            // Normaliza o termo de busca
-            var normalizedSearch = Pessoa.NormalizeName(searchTerm);
+            // Normaliza o termo de busca usando o utilitário
+            var normalizedSearch = _textNormalizer.NormalizeName(searchTerm); // 🔄 MUDANÇA
 
             System.Diagnostics.Debug.WriteLine($"Buscando: '{searchTerm}' → normalizado: '{normalizedSearch}'");
 
@@ -36,13 +43,13 @@ namespace MyKaraoke.Infra.Data.Repositories
             return results;
         }
 
-        // NOVA FUNCIONALIDADE: Busca otimizada que inicia com termo
+        // FUNCIONALIDADE: Busca otimizada que inicia com termo
         public async Task<List<Pessoa>> SearchByNameStartsWithAsync(string searchTerm, int maxResults = 10)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return new List<Pessoa>();
 
-            var normalizedSearch = Pessoa.NormalizeName(searchTerm);
+            var normalizedSearch = _textNormalizer.NormalizeName(searchTerm); // 🔄 MUDANÇA
 
             // Busca que INICIA com o termo (mais precisa para autocompletar)
             return await _dbSet
@@ -52,13 +59,13 @@ namespace MyKaraoke.Infra.Data.Repositories
                 .ToListAsync();
         }
 
-        // NOVA FUNCIONALIDADE: Busca por qualquer palavra no nome
+        // FUNCIONALIDADE: Busca por qualquer palavra no nome
         public async Task<List<Pessoa>> SearchByAnyWordAsync(string searchTerm, int maxResults = 10)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return new List<Pessoa>();
 
-            var normalizedSearch = Pessoa.NormalizeName(searchTerm);
+            string normalizedSearch = _textNormalizer.NormalizeName(searchTerm); // 🔄 MUDANÇA
             var searchWords = normalizedSearch.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             if (searchWords.Length == 0)
@@ -79,10 +86,10 @@ namespace MyKaraoke.Infra.Data.Repositories
                 .ToListAsync();
         }
 
-        // NOVA FUNCIONALIDADE: Verifica se pessoa existe com nome normalizado
+        // FUNCIONALIDADE: Verifica se pessoa existe com nome normalizado
         public async Task<Pessoa> GetByNormalizedNameAsync(string nomeCompleto)
         {
-            var normalizedName = Pessoa.NormalizeName(nomeCompleto);
+            var normalizedName = _textNormalizer.NormalizeName(nomeCompleto); // 🔄 MUDANÇA
 
             return await _dbSet
                 .FirstOrDefaultAsync(p => p.NomeCompletoNormalizado == normalizedName);

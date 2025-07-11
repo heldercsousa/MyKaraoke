@@ -3,19 +3,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
     <application 
         android:allowBackup="true"
         android:supportsRtl="true"
         android:localeConfig="@xml/locales_config">
-        
-        <!-- Configuração específica para suporte a múltiplos idiomas -->
-        <meta-data 
-            android:name="android.app.default_locale" 
-            android:value="pt-BR" />
-            
+
         <!-- Força suporte a entrada multilíngue -->
         <meta-data 
             android:name="android.app.lib_name" 
@@ -28,9 +20,5 @@
         android:normalScreens="true"
         android:largeScreens="true"
         android:xlargeScreens="true" />
-        
-    <!-- Declaração de suporte a entrada multilíngue -->
-    <uses-feature 
-        android:name="android.software.input_methods" 
-        android:required="false" />
+    
 </manifest>

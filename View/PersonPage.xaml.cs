@@ -2,16 +2,16 @@
 using MyKaraoke.Domain;
 using MyKaraoke.Services;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace MyKaraoke.View
 {
     public partial class PersonPage : ContentPage
     {
         private IQueueService _queueService;
-        private ServiceProvider _serviceProvider;
+        private IPessoaService _pessoaService;
+        private ITextNormalizationService _textNormalizationService;
+        private MyKaraoke.View.ServiceProvider _serviceProvider;
         private const string ActiveQueueKey = "ActiveFilaDeCQueue";
 
         // Coleções para sugestões
@@ -20,7 +20,7 @@ namespace MyKaraoke.View
 
         // Timer para debounce da busca
         private Timer _searchTimer;
-        private const int SearchDelayMs = 300; // 300ms delay para UX otimizada
+        private const int SearchDelayMs = 300;
 
         public PersonPage()
         {
@@ -28,8 +28,6 @@ namespace MyKaraoke.View
 
             // Inicializa coleções
             _suggestions = new ObservableCollection<PersonSuggestion>();
-
-            // Configura CollectionView
             suggestionsCollectionView.ItemsSource = _suggestions;
 
             // Configure the entry for international text input
@@ -42,8 +40,8 @@ namespace MyKaraoke.View
             if (entry == null || string.IsNullOrEmpty(e.NewTextValue))
                 return;
 
-            // Detect Arabic text and adjust flow direction
-            if (ContainsArabicText(e.NewTextValue))
+            // Usa o serviço de normalização para detectar texto árabe (quando disponível)
+            if (_textNormalizationService?.ContainsArabicText(e.NewTextValue) == true)
             {
                 entry.HorizontalTextAlignment = TextAlignment.End;
             }
@@ -53,33 +51,30 @@ namespace MyKaraoke.View
             }
         }
 
-        private bool ContainsArabicText(string text)
-        {
-            // Arabic Unicode range: U+0600 to U+06FF
-            return Regex.IsMatch(text, @"[\u0600-\u06FF]");
-        }
-
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
 
             if (Handler != null)
             {
-                // Inicializa o ServiceProvider quando o Handler estiver disponível
-                _serviceProvider = ServiceProvider.FromPage(this);
-                _queueService = _serviceProvider.GetService<IQueueService>();
+                try
+                {
+                    // Inicializa o ServiceProvider quando o Handler estiver disponível
+                    _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
+                    _queueService = _serviceProvider?.GetService<IQueueService>();
+                    _pessoaService = _serviceProvider?.GetService<IPessoaService>();
+                    _textNormalizationService = _serviceProvider?.GetService<ITextNormalizationService>();
 
-                // Configura o comando de voltar do HeaderComponent
-                headerComponent.BackCommand = new Command(OnBackPressed);
+                    // Configura o comando de voltar do HeaderComponent
+                    headerComponent.BackCommand = new Command(OnBackPressed);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Erro ao inicializar serviços: {ex.Message}");
+                }
             }
         }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-        }
-
-        // FUNCIONALIDADE HÍBRIDA: Busca + Contador de caracteres
         private void OnNameTextChanged(object sender, TextChangedEventArgs e)
         {
             // Cancela busca anterior
@@ -88,7 +83,7 @@ namespace MyKaraoke.View
             var searchText = e.NewTextValue?.Trim() ?? "";
             var currentLength = e.NewTextValue?.Length ?? 0;
 
-            // NOVO: Atualiza contador de caracteres
+            // Atualiza contador de caracteres
             UpdateCharacterCounter(currentLength);
 
             // Se texto vazio, esconde sugestões
@@ -99,22 +94,27 @@ namespace MyKaraoke.View
                 return;
             }
 
-            // Configura timer com debounce para UX otimizada
+            // Configura timer com debounce
             _searchTimer = new Timer(async _ =>
             {
                 await MainThread.InvokeOnMainThreadAsync(async () => await SearchSuggestionsAsync(searchText));
             }, null, SearchDelayMs, Timeout.Infinite);
         }
 
-        // NOVA FUNCIONALIDADE: Contador inteligente de caracteres
         private void UpdateCharacterCounter(int currentLength)
         {
             try
             {
-                // Mostra contador apenas quando próximo do limite (>180 chars)
-                if (Pessoa.ShouldShowCharacterCounter(currentLength))
+                if (_pessoaService == null)
                 {
-                    var (text, isWarning, isError) = Pessoa.GetCharacterCounterInfo(currentLength);
+                    characterCounterLabel.IsVisible = false;
+                    return;
+                }
+
+                // Usa o serviço para determinar se deve mostrar contador
+                if (_pessoaService.ShouldShowCharacterCounter(currentLength))
+                {
+                    var (text, isWarning, isError) = _pessoaService.GetCharacterCounterInfo(currentLength);
 
                     characterCounterLabel.Text = text;
                     characterCounterLabel.IsVisible = true;
@@ -122,15 +122,15 @@ namespace MyKaraoke.View
                     // Cores baseadas na proximidade do limite
                     if (isError)
                     {
-                        characterCounterLabel.TextColor = Color.FromArgb("#ff6b6b"); // Vermelho (limite atingido)
+                        characterCounterLabel.TextColor = Color.FromArgb("#ff6b6b");
                     }
                     else if (isWarning)
                     {
-                        characterCounterLabel.TextColor = Color.FromArgb("#FF9800"); // Laranja (warning)
+                        characterCounterLabel.TextColor = Color.FromArgb("#FF9800");
                     }
                     else
                     {
-                        characterCounterLabel.TextColor = Color.FromArgb("#b0a8c7"); // Cinza claro (normal)
+                        characterCounterLabel.TextColor = Color.FromArgb("#b0a8c7");
                     }
                 }
                 else
@@ -141,52 +141,33 @@ namespace MyKaraoke.View
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro no contador de caracteres: {ex.Message}");
+                characterCounterLabel.IsVisible = false;
             }
         }
 
-        // FUNCIONALIDADE SUPER OTIMIZADA: Busca usando índice normalizado
         private async Task SearchSuggestionsAsync(string searchText)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2)
+                if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2 || _pessoaService == null)
                 {
                     HideSuggestions();
                     HideIndicators();
                     return;
                 }
 
-                // Busca otimizada usando repository com índice normalizado
-                var pessoaRepository = _serviceProvider.GetService<MyKaraoke.Domain.Repositories.IPessoaRepository>();
-                if (pessoaRepository == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("Repository não disponível");
-                    return;
-                }
-
-                // Estratégia de busca em cascata para melhor UX:
-                // 1. Primeiro busca que INICIA com o termo (mais preciso)
-                // 2. Depois busca que CONTÉM o termo (mais abrangente)
-                var exactMatches = await pessoaRepository.SearchByNameStartsWithAsync(searchText, 2);
-                var containsMatches = await pessoaRepository.SearchByNameAsync(searchText, 3);
+                // Busca usando o serviço
+                var exactMatches = await _pessoaService.SearchPersonsStartsWithAsync(searchText, 2);
+                var containsMatches = await _pessoaService.SearchPersonsAsync(searchText, 3);
 
                 // Combina resultados evitando duplicatas
                 var allMatches = exactMatches
                     .Concat(containsMatches.Where(c => !exactMatches.Any(e => e.Id == c.Id)))
-                    .Take(3) // Máximo 3 sugestões (UX mobile guidelines)
+                    .Take(3)
                     .ToList();
 
-                System.Diagnostics.Debug.WriteLine($"Busca '{searchText}': {exactMatches.Count} exatos + {containsMatches.Count} contém = {allMatches.Count} total");
-
                 // Mapeia para sugestões de UI
-                var suggestions = allMatches.Select(p => new PersonSuggestion
-                {
-                    Id = p.Id,
-                    NomeCompleto = p.NomeCompleto,
-                    Participacoes = p.Participacoes,
-                    Ausencias = p.Ausencias,
-                    ParticipationSummary = $"{p.Participacoes}P {p.Ausencias}A"
-                }).ToList();
+                var suggestions = allMatches.Select(PersonSuggestion.FromPessoa).ToList();
 
                 // Atualiza UI no thread principal
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -197,7 +178,6 @@ namespace MyKaraoke.View
                         _suggestions.Add(suggestion);
                     }
 
-                    // Mostra/esconde sugestões e indicadores
                     if (_suggestions.Count > 0)
                     {
                         ShowSuggestions();
@@ -221,7 +201,6 @@ namespace MyKaraoke.View
             }
         }
 
-        // NOVA FUNCIONALIDADE: Seleção de sugestão
         private void OnSuggestionSelected(object sender, SelectionChangedEventArgs e)
         {
             if (e.CurrentSelection.FirstOrDefault() is PersonSuggestion selectedSuggestion)
@@ -242,8 +221,19 @@ namespace MyKaraoke.View
         {
             try
             {
-                // Preenche o campo com o nome selecionado
+                // Preenche os campos
                 fullNameEntry.Text = suggestion.NomeCompleto;
+
+                if (!string.IsNullOrWhiteSpace(suggestion.DiaMesAniversario))
+                {
+                    birthdayEntry.Text = suggestion.DiaMesAniversario;
+                }
+
+                if (!string.IsNullOrWhiteSpace(suggestion.Email))
+                {
+                    emailEntry.Text = suggestion.Email;
+                }
+
                 _selectedSuggestion = suggestion;
 
                 // Esconde sugestões e mostra indicador
@@ -252,8 +242,6 @@ namespace MyKaraoke.View
 
                 // Limpa seleção do CollectionView
                 suggestionsCollectionView.SelectedItem = null;
-
-                System.Diagnostics.Debug.WriteLine($"Sugestão selecionada: {suggestion.NomeCompleto}");
             }
             catch (Exception ex)
             {
@@ -261,7 +249,6 @@ namespace MyKaraoke.View
             }
         }
 
-        // NOVA FUNCIONALIDADE: Controle de visibilidade das sugestões
         private void ShowSuggestions()
         {
             suggestionsFrame.IsVisible = true;
@@ -291,157 +278,92 @@ namespace MyKaraoke.View
             existingPersonIndicator.IsVisible = false;
         }
 
-        // Método chamado pelo HeaderComponent e botão físico do Android
         private async void OnBackPressed()
         {
             await NavigateToStackPage();
         }
 
-        // Captura o botão voltar do Android
         protected override bool OnBackButtonPressed()
         {
             MainThread.BeginInvokeOnMainThread(async () => {
                 await NavigateToStackPage();
             });
-
-            return true; // Impede o comportamento padrão
+            return true;
         }
 
-        // Método para navegar para StackPage
         private async Task NavigateToStackPage()
         {
             try
             {
-                // Assegura que o ServiceProvider está disponível
                 if (_serviceProvider == null)
                 {
-                    _serviceProvider = ServiceProvider.FromPage(this);
+                    _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
                 }
 
-                // Obtém a StackPage através do ServiceProvider e navega
-                var stackPage = _serviceProvider.GetService<StackPage>();
+                var stackPage = _serviceProvider?.GetService<StackPage>();
                 if (stackPage != null)
                 {
                     await Navigation.PushAsync(stackPage);
                 }
                 else
                 {
-                    // Fallback: cria uma nova instância da StackPage se o ServiceProvider falhar
                     await Navigation.PushAsync(new StackPage());
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao navegar para StackPage: {ex.Message}");
-                // Fallback: cria uma nova instância da StackPage
                 await Navigation.PushAsync(new StackPage());
             }
         }
 
-        // FUNCIONALIDADE APRIMORADA: Adicionar à fila com validação híbrida
         private async void OnAddToQueueClicked(object sender, EventArgs e)
         {
-            string fullName = fullNameEntry.Text?.Trim();
-
-            // NOVA VALIDAÇÃO HÍBRIDA: Primeira validação no input (200 chars)
-            var (isInputValid, inputMessage) = Pessoa.ValidarNomeInput(fullName);
-            if (!isInputValid)
+            if (_pessoaService == null || _queueService == null)
             {
-                validationMessageLabel.Text = inputMessage;
+                validationMessageLabel.Text = "Serviços não disponíveis";
+                validationMessageLabel.IsVisible = true;
+                return;
+            }
+
+            string fullName = fullNameEntry.Text?.Trim();
+            string birthday = birthdayEntry.Text?.Trim();
+            string email = emailEntry.Text?.Trim();
+
+            // Validação básica
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                validationMessageLabel.Text = "Nome é obrigatório";
                 validationMessageLabel.IsVisible = true;
                 return;
             }
 
             try
             {
-                // Verifica se há evento ativo antes de prosseguir
+                // Verifica se há evento ativo
                 var activeEvent = await _queueService.GetActiveEventAsync();
                 if (activeEvent == null || !activeEvent.FilaAtiva)
                 {
-                    validationMessageLabel.Text = "não há fila ativa";
+                    validationMessageLabel.Text = "Não há fila ativa";
                     validationMessageLabel.IsVisible = true;
                     return;
                 }
 
-                Pessoa personToAdd;
-
-                // Se uma sugestão foi selecionada, usa a pessoa existente
-                if (_selectedSuggestion != null &&
-                    Pessoa.NormalizeName(_selectedSuggestion.NomeCompleto) == Pessoa.NormalizeName(fullName))
+                // Adiciona pessoa à fila
+                var result = await _queueService.AddPersonToQueueAsync(fullName, birthday, email);
+                if (!result.success)
                 {
-                    // Busca a pessoa existente usando repository
-                    var pessoaRepository = _serviceProvider.GetService<MyKaraoke.Domain.Repositories.IPessoaRepository>();
-                    personToAdd = await pessoaRepository.GetByIdAsync(_selectedSuggestion.Id);
-
-                    if (personToAdd == null)
-                    {
-                        validationMessageLabel.Text = "Erro: pessoa não encontrada";
-                        validationMessageLabel.IsVisible = true;
-                        return;
-                    }
-                }
-                else
-                {
-                    // NOVA VERIFICAÇÃO: Busca por nome normalizado para evitar duplicatas acentuadas
-                    var pessoaRepository = _serviceProvider.GetService<MyKaraoke.Domain.Repositories.IPessoaRepository>();
-                    var existingPerson = await pessoaRepository.GetByNormalizedNameAsync(fullName);
-
-                    if (existingPerson != null)
-                    {
-                        // Pessoa já existe com nome similar (sem acentos)
-                        validationMessageLabel.Text = $"Pessoa similar já existe: {existingPerson.NomeCompleto}";
-                        validationMessageLabel.IsVisible = true;
-                        return;
-                    }
-
-                    // SEGUNDA VALIDAÇÃO: Para banco (250 chars) - safety net
-                    var (isBankValid, bankMessage) = Pessoa.ValidarNomeBanco(fullName);
-                    if (!isBankValid)
-                    {
-                        validationMessageLabel.Text = $"Erro do sistema: {bankMessage}";
-                        validationMessageLabel.IsVisible = true;
-                        return;
-                    }
-
-                    // Adiciona nova pessoa
-                    var result = await _queueService.AddPersonAsync(fullName);
-                    if (!result.success)
-                    {
-                        validationMessageLabel.Text = result.message;
-                        validationMessageLabel.IsVisible = true;
-                        return;
-                    }
-                    personToAdd = result.addedDomainPerson;
-                }
-
-                // Verifica duplicata na fila ativa
-                List<PessoaListItemDto> currentQueueDtos = LoadActiveQueueState();
-                if (currentQueueDtos.Any(p => p.Id == personToAdd.Id))
-                {
-                    validationMessageLabel.Text = "Esta pessoa já está na fila";
+                    validationMessageLabel.Text = result.message;
                     validationMessageLabel.IsVisible = true;
                     return;
                 }
-
-                // Adiciona à fila ativa
-                var personDtoToAdd = new PessoaListItemDto(personToAdd);
-                personDtoToAdd.Participacoes = 0;
-                personDtoToAdd.Ausencias = 0;
-
-                currentQueueDtos.Add(personDtoToAdd);
-                SaveActiveQueueState(currentQueueDtos);
 
                 // Sucesso
                 validationMessageLabel.IsVisible = false;
-                string successMessage = $"{personToAdd.NomeCompleto} adicionado(a) à fila!";
-                await DisplayAlert("Sucesso", successMessage, "OK");
+                await DisplayAlert("Sucesso", $"{result.addedDomainPerson?.NomeCompleto} adicionado à fila!", "OK");
 
-                // Limpa campos e UI
-                fullNameEntry.Text = string.Empty;
-                HideSuggestions();
-                HideIndicators();
-                characterCounterLabel.IsVisible = false; // NOVO: Esconde contador
-                _selectedSuggestion = null;
+                // Limpa campos
+                ClearForm();
             }
             catch (Exception ex)
             {
@@ -451,7 +373,17 @@ namespace MyKaraoke.View
             }
         }
 
-        // --- Métodos de Persistência da Fila Ativa na UI (usando Preferences) ---
+        private void ClearForm()
+        {
+            fullNameEntry.Text = string.Empty;
+            birthdayEntry.Text = string.Empty;
+            emailEntry.Text = string.Empty;
+            HideSuggestions();
+            HideIndicators();
+            characterCounterLabel.IsVisible = false;
+            _selectedSuggestion = null;
+        }
+
         private List<PessoaListItemDto> LoadActiveQueueState()
         {
             string filaJson = Preferences.Get(ActiveQueueKey, string.Empty);
@@ -468,47 +400,10 @@ namespace MyKaraoke.View
             Preferences.Set(ActiveQueueKey, filaJson);
         }
 
-        // Helper para obter strings do arquivo de recursos (strings.xml / strings.resx)
-        private string GetString(string key, params object[] args)
-        {
-            string value = "";
-            switch (key)
-            {
-                case "pessoa_adicionada_sucesso": value = "%s adicionado(a) à fila!"; break;
-                case "pessoa_ja_fila": value = "Esta pessoa já está na fila."; break;
-                default: value = key; break;
-            }
-
-            if (args != null && args.Length > 0)
-            {
-                try
-                {
-                    return string.Format(value, args);
-                }
-                catch (FormatException)
-                {
-                    return value;
-                }
-            }
-            return value;
-        }
-
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-
-            // Cleanup timer
             _searchTimer?.Dispose();
         }
-    }
-
-    // CLASSE: Model para sugestões
-    public class PersonSuggestion
-    {
-        public int Id { get; set; }
-        public string NomeCompleto { get; set; }
-        public int Participacoes { get; set; }
-        public int Ausencias { get; set; }
-        public string ParticipationSummary { get; set; }
     }
 }

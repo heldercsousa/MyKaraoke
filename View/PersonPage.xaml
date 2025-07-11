@@ -37,37 +37,47 @@
                                    TextChanged="OnNameTextChanged" />
                         </Frame>
 
-                        <!-- Lista de sugestões REDESENHADA -->
+                        <!-- Lista de sugestões OTIMIZADA UX MOBILE 2025 -->
                         <Frame Grid.Row="1"
-                               x:Name="suggestionsFrame"
-                               IsVisible="False"
-                               BackgroundColor="Transparent"
-                               BorderColor="Transparent"
-                               CornerRadius="0"
-                               Padding="0"
-                               Margin="0,8,0,0"
-                               HasShadow="False">
+                            x:Name="suggestionsFrame"
+                            IsVisible="False"
+                            BackgroundColor="Transparent"
+                            BorderColor="Transparent"
+                            CornerRadius="0"
+                            Padding="0"
+                            Margin="0,8,0,0"
+                            HasShadow="False">
 
                             <CollectionView x:Name="suggestionsCollectionView"
-                                          SelectionMode="Single"
-                                          SelectionChanged="OnSuggestionSelected"
-                                          HeightRequest="280">
+                                SelectionMode="Single"
+                                SelectionChanged="OnSuggestionSelected"
+                                HeightRequest="200">
 
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <!-- Frame com estilo reutilizável para listas -->
-                                        <Frame Style="{StaticResource CardListItemBackgroundStyle}">
+                                        <!-- Frame otimizado para melhor UX -->
+                                        <Frame Style="{StaticResource CardListItemBackgroundStyle}"
+                                               Padding="12,10,12,10"
+                                               Margin="0,3,0,3">
 
                                             <Frame.GestureRecognizers>
                                                 <TapGestureRecognizer Tapped="OnSuggestionTapped" />
                                             </Frame.GestureRecognizers>
 
-                                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                            <!-- Layout compacto em 2 linhas -->
+                                            <Grid RowDefinitions="Auto,Auto" 
+                                                  RowSpacing="4">
 
-                                                <!-- Nome da pessoa -->
+                                                <!-- LINHA 1: Nome da pessoa (1 linha, otimizado) -->
                                                 <Label Grid.Row="0"
-                                                       Text="{Binding NomeCompleto}"
-                                                       Style="{StaticResource CardListItemMainTextStyle}">
+                                                    Text="{Binding NomeCompleto}"
+                                                    FontSize="15"
+                                                    FontAttributes="Bold"
+                                                    TextColor="White"
+                                                    LineBreakMode="TailTruncation"
+                                                    MaxLines="1"
+                                                    VerticalOptions="Start"
+                                                    HorizontalOptions="Fill">
                                                     <Label.Triggers>
                                                         <!-- Destaque para "Nova pessoa" -->
                                                         <DataTrigger TargetType="Label" Binding="{Binding IsNewPersonOption}" Value="True">
@@ -77,46 +87,47 @@
                                                     </Label.Triggers>
                                                 </Label>
 
-                                                <!-- E-mail (só para pessoas reais) -->
-                                                <Label Grid.Row="1"
-                                                       Text="{Binding Email}"
-                                                       Style="{StaticResource CardListItemSubTextStyle}"
-                                                       LineBreakMode="TailTruncation">
-                                                    <Label.Triggers>
-                                                        <MultiTrigger TargetType="Label">
-                                                            <MultiTrigger.Conditions>
-                                                                <BindingCondition Binding="{Binding IsRealPerson}" Value="True" />
-                                                                <BindingCondition Binding="{Binding HasEmail}" Value="True" />
-                                                            </MultiTrigger.Conditions>
-                                                            <Setter Property="IsVisible" Value="True" />
-                                                        </MultiTrigger>
-                                                    </Label.Triggers>
-                                                    <Label.Style>
-                                                        <Style TargetType="Label" BasedOn="{StaticResource CardListItemSubTextStyle}">
-                                                            <Setter Property="IsVisible" Value="False" />
-                                                        </Style>
-                                                    </Label.Style>
-                                                </Label>
+                                                <!-- LINHA 2: Data + E-mail lado a lado (para pessoas reais) -->
+                                                <Grid Grid.Row="1" 
+                                                      ColumnDefinitions="Auto,Auto,8,Auto,*"
+                                                      ColumnSpacing="6"
+                                                      IsVisible="{Binding IsRealPerson}">
 
-                                                <!-- Aniversário (só para pessoas reais) -->
-                                                <Label Grid.Row="2"
-                                                       Text="{Binding BirthdayDisplay}"
-                                                       Style="{StaticResource CardListItemAccentTextStyle}">
-                                                    <Label.Triggers>
-                                                        <MultiTrigger TargetType="Label">
-                                                            <MultiTrigger.Conditions>
-                                                                <BindingCondition Binding="{Binding IsRealPerson}" Value="True" />
-                                                                <BindingCondition Binding="{Binding HasBirthday}" Value="True" />
-                                                            </MultiTrigger.Conditions>
-                                                            <Setter Property="IsVisible" Value="True" />
-                                                        </MultiTrigger>
-                                                    </Label.Triggers>
-                                                    <Label.Style>
-                                                        <Style TargetType="Label" BasedOn="{StaticResource CardListItemAccentTextStyle}">
-                                                            <Setter Property="IsVisible" Value="False" />
-                                                        </Style>
-                                                    </Label.Style>
-                                                </Label>
+                                                    <!-- Ícone do bolo (sempre visível) -->
+                                                    <Image Grid.Column="0"
+                                                        Source="cake.png"
+                                                        HeightRequest="14"
+                                                        WidthRequest="14"
+                                                        VerticalOptions="Center" />
+
+                                                    <!-- Texto da data ou placeholder -->
+                                                    <Label Grid.Column="1"
+                                                        Text="{Binding BirthdayDisplayOrPlaceholder}"
+                                                        FontSize="12"
+                                                        TextColor="#b0a8c7"
+                                                        VerticalOptions="Center"
+                                                        MinimumWidthRequest="35" />
+
+                                                    <!-- Espaço pequeno (8px) -->
+                                                    <!-- Grid.Column="2" é o espaço de 8px -->
+
+                                                    <!-- Ícone do e-mail -->
+                                                    <Image Grid.Column="3"
+                                                        Source="email.png"
+                                                        HeightRequest="14"
+                                                        WidthRequest="14"
+                                                        VerticalOptions="Center" />
+
+                                                    <!-- E-mail truncado com mais espaço -->
+                                                    <Label Grid.Column="4"
+                                                        Text="{Binding EmailDisplayTruncated}"
+                                                        FontSize="12"
+                                                        TextColor="#b0a8c7"
+                                                        VerticalOptions="Center"
+                                                        LineBreakMode="TailTruncation"
+                                                        MaxLines="1"
+                                                        HorizontalOptions="Fill" />
+                                                </Grid>
 
                                             </Grid>
                                         </Frame>

@@ -122,12 +122,13 @@ namespace MyKaraoke.View
                 ClearExtraFields();
             }
 
-            // Mostra botão "Próximo" se há texto válido
-            var nameText = fullNameEntry.Text?.Trim() ?? "";
-            if (nameText.Length >= 2)
-            {
-                ShowNextButton();
-            }
+            // CORREÇÃO: Remove a lógica que mostrava o botão durante o foco
+            // Agora o botão só aparece quando perde o foco E há texto válido
+            // var nameText = fullNameEntry.Text?.Trim() ?? "";
+            // if (nameText.Length >= 2)
+            // {
+            //     ShowNextButton();
+            // }
         }
 
         private void ShowNextButton()
@@ -153,11 +154,21 @@ namespace MyKaraoke.View
             // Esconde sugestões quando perde o foco
             HideSuggestions();
 
-            // Se nome válido e não há sugestões abertas, avança automaticamente
+            // CORREÇÃO: Agora mostra o botão próximo apenas quando perde o foco
             var nameText = fullNameEntry.Text?.Trim() ?? "";
-            if (nameText.Length >= 2 && !suggestionsFrame.IsVisible)
+            if (nameText.Length >= 2)
             {
+                // Se não há sugestões abertas, mostra o botão próximo
+                if (!suggestionsFrame.IsVisible)
+                {
+                    ShowNextButton();
+                }
+                // Se há texto válido, avança automaticamente apenas se não há sugestões
                 AdvanceToDateFields();
+            }
+            else
+            {
+                HideNextButton();
             }
         }
 
@@ -205,15 +216,19 @@ namespace MyKaraoke.View
                     return;
                 }
 
-                // Mostra botão próximo se há texto válido
-                if (searchText.Length >= 2 && _isNameInputFocused)
-                {
-                    ShowNextButton();
-                }
-                else
-                {
-                    HideNextButton();
-                }
+                // CORREÇÃO: Remove a lógica que mostrava o botão próximo durante a digitação
+                // O botão próximo só deve aparecer quando o campo perde o foco
+                // if (searchText.Length >= 2 && _isNameInputFocused)
+                // {
+                //     ShowNextButton();
+                // }
+                // else
+                // {
+                //     HideNextButton();
+                // }
+
+                // Sempre esconde o botão durante a digitação
+                HideNextButton();
 
                 // Se texto muito curto, apenas esconde sugestões
                 if (searchText.Length < 2)

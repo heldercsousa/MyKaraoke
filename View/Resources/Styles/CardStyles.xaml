@@ -91,31 +91,50 @@
         </Setter>
     </Style>
 
+    <!-- Adicione estes estilos ao CardStyles.xaml existente, mantendo os demais estilos intactos: -->
+
+    <!-- ============================================================================ -->
+    <!-- 🔥 NOVOS ESTILOS PARA LISTA DE SUGESTÕES - MELHORADOS -->
+    <!-- ============================================================================ -->
+
+    <!-- Estilo para ícones das sugestões (seguindo padrão de nomenclatura) -->
+    <Style x:Key="CardListItemSubTextIconStyle" TargetType="Image">
+        <Setter Property="HeightRequest" Value="16" />
+        <Setter Property="WidthRequest" Value="16" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+    </Style>
+
+    <!-- Sobrescrever estilos existentes para melhorar lista de sugestões -->
     <Style x:Key="CardListItemMainTextStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="White" />
         <Setter Property="FontSize" Value="16" />
         <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="LineBreakMode" Value="WordWrap" />
-        <Setter Property="MaxLines" Value="2" />
+        <Setter Property="TextColor" Value="White" />
         <Setter Property="VerticalOptions" Value="Start" />
-        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
-        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="HorizontalOptions" Value="Fill"  />
+        <Setter Property="LineBreakMode" Value="TailTruncation" />
+        <Setter Property="MaxLines" Value="2" />
+        <Setter Property="Margin" Value="0,0,0,6" />
     </Style>
 
     <Style x:Key="CardListItemSubTextStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="#B0B0B0" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="VerticalOptions" Value="Start" />
-        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
-        <Setter Property="Margin" Value="0,2,0,0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontAttributes" Value="None" />
+        <Setter Property="TextColor" Value="#b0a8c7" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+        <Setter Property="LineBreakMode" Value="TailTruncation" />
+        <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style x:Key="CardListItemAccentTextStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="#8B4CB8" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="VerticalOptions" Value="Start" />
-        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
-        <Setter Property="Margin" Value="0,2,0,0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontAttributes" Value="None" />
+        <Setter Property="TextColor" Value="#b0a8c7" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+        <Setter Property="LineBreakMode" Value="NoWrap" />
+        <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style x:Key="CardListItemHighlightBackgroundStyle" TargetType="Frame" BasedOn="{StaticResource CardListItemBackgroundStyle}">

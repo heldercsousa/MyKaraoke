@@ -1,3 +1,7 @@
+Cores: 
+#D1D5DB - cinza claro
+#7167a4 - roxo
+
 Cantores
 https://flaticons.net/customize.php?dir=People&icon=User-Group.png
 

@@ -47,6 +47,7 @@ public static class MauiProgram
         // === SERVIÇOS DE NEGÓCIO (SCOPED - com estado) ===
         builder.Services.AddScoped<IPessoaService, PessoaService>();
         builder.Services.AddScoped<IQueueService, QueueService>();
+        builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 
         // === PÁGINAS (TRANSIENT - sempre nova instância) ===
         builder.Services.AddTransient<SplashPage>();

@@ -1,5 +1,6 @@
 ﻿using MyKaraoke.Contracts;
 using MyKaraoke.Domain;
+using MyKaraoke.Infra.Utils;
 using MyKaraoke.Services;
 using System.Collections.ObjectModel;
 using System.Text.Json;
@@ -10,7 +11,7 @@ namespace MyKaraoke.View
     {
         private IQueueService _queueService;
         private IPessoaService _pessoaService;
-        private ITextNormalizationService _textNormalizationService;
+        private ITextNormalizer _textNormalizer;
         private MyKaraoke.View.ServiceProvider _serviceProvider;
         private const string ActiveQueueKey = "ActiveFilaDeCQueue";
 
@@ -41,7 +42,7 @@ namespace MyKaraoke.View
                 return;
 
             // Usa o serviço de normalização para detectar texto árabe (quando disponível)
-            if (_textNormalizationService?.ContainsArabicText(e.NewTextValue) == true)
+            if (_textNormalizer?.ContainsArabicText(e.NewTextValue) == true)
             {
                 entry.HorizontalTextAlignment = TextAlignment.End;
             }
@@ -63,7 +64,7 @@ namespace MyKaraoke.View
                     _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
                     _queueService = _serviceProvider?.GetService<IQueueService>();
                     _pessoaService = _serviceProvider?.GetService<IPessoaService>();
-                    _textNormalizationService = _serviceProvider?.GetService<ITextNormalizationService>();
+                    _textNormalizer = _serviceProvider?.GetService<ITextNormalizer>();
 
                     // Configura o comando de voltar do HeaderComponent
                     headerComponent.BackCommand = new Command(OnBackPressed);
@@ -77,28 +78,77 @@ namespace MyKaraoke.View
 
         private void OnNameTextChanged(object sender, TextChangedEventArgs e)
         {
-            // Cancela busca anterior
-            _searchTimer?.Dispose();
-
-            var searchText = e.NewTextValue?.Trim() ?? "";
-            var currentLength = e.NewTextValue?.Length ?? 0;
-
-            // Atualiza contador de caracteres
-            UpdateCharacterCounter(currentLength);
-
-            // Se texto vazio, esconde sugestões
-            if (string.IsNullOrWhiteSpace(searchText))
+            try
             {
-                HideSuggestions();
-                HideIndicators();
-                return;
+                // Cancela busca anterior
+                _searchTimer?.Dispose();
+
+                // 🔥 PROTEÇÃO: Validação de entrada
+                var searchText = e.NewTextValue?.Trim() ?? "";
+                var currentLength = e.NewTextValue?.Length ?? 0;
+
+                // 🔥 PROTEÇÃO: Limite de caracteres
+                if (currentLength > 200)
+                {
+                    // Trunca se exceder o limite
+                    if (sender is Entry entry)
+                    {
+                        entry.Text = e.NewTextValue?.Substring(0, 200);
+                        return;
+                    }
+                }
+
+                // Atualiza contador de caracteres
+                UpdateCharacterCounter(currentLength);
+
+                // Se texto vazio, esconde sugestões
+                if (string.IsNullOrWhiteSpace(searchText))
+                {
+                    HideSuggestions();
+                    HideIndicators();
+                    return;
+                }
+
+                // 🔥 PROTEÇÃO: Verifica se texto tem tamanho mínimo
+                if (searchText.Length < 2)
+                {
+                    HideSuggestions();
+                    HideIndicators();
+                    return;
+                }
+
+                // Configura timer com debounce
+                _searchTimer = new Timer(async _ =>
+                {
+                    try
+                    {
+                        await MainThread.InvokeOnMainThreadAsync(async () =>
+                        {
+                            await SearchSuggestionsAsync(searchText);
+                        });
+                    }
+                    catch (Exception timerEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Erro no timer de busca: {timerEx.Message}");
+                    }
+                }, null, SearchDelayMs, Timeout.Infinite);
             }
-
-            // Configura timer com debounce
-            _searchTimer = new Timer(async _ =>
+            catch (Exception ex)
             {
-                await MainThread.InvokeOnMainThreadAsync(async () => await SearchSuggestionsAsync(searchText));
-            }, null, SearchDelayMs, Timeout.Infinite);
+                System.Diagnostics.Debug.WriteLine($"Erro em OnNameTextChanged: {ex.Message}");
+
+                // Fallback seguro
+                try
+                {
+                    HideSuggestions();
+                    HideIndicators();
+                }
+                catch
+                {
+                    // Se até o fallback falhar, apenas loga
+                    System.Diagnostics.Debug.WriteLine("Erro crítico no fallback");
+                }
+            }
         }
 
         private void UpdateCharacterCounter(int currentLength)
@@ -149,16 +199,38 @@ namespace MyKaraoke.View
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(searchText) || searchText.Length < 2 || _pessoaService == null)
+                // 🔥 VALIDAÇÃO ROBUSTA
+                if (string.IsNullOrWhiteSpace(searchText) ||
+                    searchText.Length < 2 ||
+                    _pessoaService == null)
                 {
-                    HideSuggestions();
-                    HideIndicators();
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        HideSuggestions();
+                        HideIndicators();
+                    });
                     return;
                 }
 
-                // Busca usando o serviço
-                var exactMatches = await _pessoaService.SearchPersonsStartsWithAsync(searchText, 2);
-                var containsMatches = await _pessoaService.SearchPersonsAsync(searchText, 3);
+                // 🔥 PROTEÇÃO ADICIONAL: Verifica se searchText é válido
+                var sanitizedSearchText = searchText.Trim();
+                if (sanitizedSearchText.Length < 2)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        HideSuggestions();
+                        HideIndicators();
+                    });
+                    return;
+                }
+
+                // Busca usando o serviço (com try-catch interno)
+                var exactMatches = await _pessoaService.SearchPersonsStartsWithAsync(sanitizedSearchText, 2);
+                var containsMatches = await _pessoaService.SearchPersonsAsync(sanitizedSearchText, 3);
+
+                // 🔥 PROTEÇÃO: Verifica se listas não são nulas
+                exactMatches = exactMatches ?? new List<Pessoa>();
+                containsMatches = containsMatches ?? new List<Pessoa>();
 
                 // Combina resultados evitando duplicatas
                 var allMatches = exactMatches
@@ -172,21 +244,30 @@ namespace MyKaraoke.View
                 // Atualiza UI no thread principal
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    _suggestions.Clear();
-                    foreach (var suggestion in suggestions)
+                    try
                     {
-                        _suggestions.Add(suggestion);
-                    }
+                        _suggestions.Clear();
+                        foreach (var suggestion in suggestions)
+                        {
+                            _suggestions.Add(suggestion);
+                        }
 
-                    if (_suggestions.Count > 0)
-                    {
-                        ShowSuggestions();
-                        ShowExistingPersonIndicator();
+                        if (_suggestions.Count > 0)
+                        {
+                            ShowSuggestions();
+                            ShowExistingPersonIndicator();
+                        }
+                        else
+                        {
+                            HideSuggestions();
+                            ShowNewPersonIndicator();
+                        }
                     }
-                    else
+                    catch (Exception uiEx)
                     {
+                        System.Diagnostics.Debug.WriteLine($"Erro na atualização da UI: {uiEx.Message}");
                         HideSuggestions();
-                        ShowNewPersonIndicator();
+                        HideIndicators();
                     }
                 });
             }

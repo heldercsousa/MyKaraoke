@@ -2,7 +2,53 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Background Gradients -->
+    <!-- ============================================================================ -->
+    <!-- 🔥 CORREÇÃO: ESTILOS BASE PRIMEIRO (Input Field Styles) -->
+    <!-- ============================================================================ -->
+
+    <!-- Input Field Styles - MOVIDOS PARA CIMA -->
+    <Style x:Key="InputFieldStyle" TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="#4a3f6b" />
+        <Setter Property="BorderColor" Value="#533682" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="HasShadow" Value="False" />
+        <Setter Property="Padding" Value="8,0,8,0" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <Style x:Key="InputEntryStyle" TargetType="Entry">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="PlaceholderColor" Value="#b0a8c7" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Keyboard" Value="Text" />
+        <Setter Property="MaxLength" Value="100" />
+        <Setter Property="HorizontalTextAlignment" Value="Start" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+        <Setter Property="IsSpellCheckEnabled" Value="False" />
+        <Setter Property="IsTextPredictionEnabled" Value="False" />
+        <Setter Property="ClearButtonVisibility" Value="Never" />
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- 🔥 ESTILOS QUE DEPENDEM DOS BASE - APÓS OS BASE -->
+    <!-- ============================================================================ -->
+
+    <!-- Input com altura maior - AGORA APÓS OS BASE -->
+    <Style x:Key="LargeInputEntryStyle" TargetType="Entry" BasedOn="{StaticResource InputEntryStyle}">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="MinimumHeightRequest" Value="50" />
+    </Style>
+
+    <Style x:Key="LargeInputFieldStyle" TargetType="Frame" BasedOn="{StaticResource InputFieldStyle}">
+        <Setter Property="Padding" Value="15,12" />
+        <Setter Property="MinimumHeightRequest" Value="50" />
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- BACKGROUND GRADIENTS -->
+    <!-- ============================================================================ -->
+
     <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="#1A1024" Offset="0.0" />
         <GradientStop Color="#2D1B69" Offset="1.0" />
@@ -23,7 +69,76 @@
         <GradientStop Color="#684992" Offset="0.5" />
     </LinearGradientBrush>
 
-    <!-- Button Styles -->
+    <!-- ============================================================================ -->
+    <!-- 🔥 ESTILOS PARA LISTA DE CARDS - INDEPENDENTES -->
+    <!-- ============================================================================ -->
+
+    <Style x:Key="CardListItemBackgroundStyle" TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="#5e3f84" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="HasShadow" Value="False" />
+        <Setter Property="Padding" Value="15" />
+        <Setter Property="Margin" Value="0,5" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4A3B6B" Offset="0.0" />
+                    <GradientStop Color="#5B4485" Offset="0.5" />
+                    <GradientStop Color="#6E4B98" Offset="1.0" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CardListItemMainTextStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="LineBreakMode" Value="WordWrap" />
+        <Setter Property="MaxLines" Value="2" />
+        <Setter Property="VerticalOptions" Value="Start" />
+        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <Style x:Key="CardListItemSubTextStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#B0B0B0" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="VerticalOptions" Value="Start" />
+        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+    </Style>
+
+    <Style x:Key="CardListItemAccentTextStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#8B4CB8" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="VerticalOptions" Value="Start" />
+        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+        <Setter Property="Margin" Value="0,2,0,0" />
+    </Style>
+
+    <Style x:Key="CardListItemHighlightBackgroundStyle" TargetType="Frame" BasedOn="{StaticResource CardListItemBackgroundStyle}">
+        <Setter Property="BackgroundColor" Value="#1B5E20" />
+        <Setter Property="BorderColor" Value="#4CAF50" />
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- BUTTON STYLES -->
+    <!-- ============================================================================ -->
+
+    <Style x:Key="FormButtonStyle" TargetType="Button">
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="20,12,24,12" />
+        <Setter Property="Margin" Value="0,20,0,0" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Background" Value="{StaticResource SelectedButtonGradient}" />
+    </Style>
+
     <Style x:Key="CompactBackButtonStyle" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="TextColor" Value="White" />
@@ -65,18 +180,6 @@
         <Setter Property="Padding" Value="0" />
     </Style>
 
-    <Style x:Key="FormButtonStyle" TargetType="Button">
-        <Setter Property="TextColor" Value="White" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="CornerRadius" Value="20" />
-        <Setter Property="Padding" Value="20,12,24,12" />
-        <Setter Property="Margin" Value="0,20,0,0" />
-        <Setter Property="HorizontalOptions" Value="Start" />
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="Background" Value="{StaticResource SelectedButtonGradient}" />
-    </Style>
-
     <Style x:Key="GradientButtonStyle" TargetType="Button">
         <Setter Property="TextColor" Value="White" />
         <Setter Property="FontSize" Value="16" />
@@ -86,9 +189,19 @@
         <Setter Property="Background" Value="{StaticResource SelectedButtonGradient}" />
     </Style>
 
-    <!-- Label Styles -->
-    
-    <!-- Header Title base para as sombras -->
+    <!-- ============================================================================ -->
+    <!-- LABEL STYLES -->
+    <!-- ============================================================================ -->
+
+    <Style x:Key="InputLabelStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#e91e63" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
     <Style x:Key="HeaderTitleShadowBaseStyle" TargetType="Label">
         <Setter Property="TextColor" Value="Transparent" />
         <Setter Property="FontSize" Value="22" />
@@ -98,7 +211,6 @@
         <Setter Property="Margin" Value="0" />
     </Style>
 
-    <!-- Header Title Sombra externa -->
     <Style x:Key="HeaderTitleShadowOuterStyle" TargetType="Label" BasedOn="{StaticResource HeaderTitleShadowBaseStyle}">
         <Setter Property="Shadow">
             <Setter.Value>
@@ -107,7 +219,6 @@
         </Setter>
     </Style>
 
-    <!-- Header Title Sombra média -->
     <Style x:Key="HeaderTitleShadowMiddleStyle" TargetType="Label" BasedOn="{StaticResource HeaderTitleShadowBaseStyle}">
         <Setter Property="Shadow">
             <Setter.Value>
@@ -115,8 +226,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
-    <!-- Header Title - Texto principal com glow sutil -->
+
     <Style x:Key="HeaderTitleStyle" TargetType="Label">
         <Setter Property="TextColor" Value="#BB86FC" />
         <Setter Property="FontSize" Value="22" />
@@ -140,15 +250,6 @@
         <Setter Property="Margin" Value="15,0,0,0" />
     </Style>
 
-    <Style x:Key="InputLabelStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="#e91e63" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="HorizontalOptions" Value="Start" />
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="Margin" Value="0,0,0,8" />
-    </Style>
-
     <Style x:Key="EmptyQueueTitleStyle" TargetType="Label">
         <Setter Property="TextColor" Value="#FFFFFF" />
         <Setter Property="FontSize" Value="18" />
@@ -167,31 +268,10 @@
         <Setter Property="Margin" Value="0" />
     </Style>
 
-    <!-- Input Field Styles -->
-    <Style x:Key="InputFieldStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="#4a3f6b" />
-        <Setter Property="BorderColor" Value="#533682" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="HasShadow" Value="False" />
-        <Setter Property="Padding" Value="8,0,8,0" />
-        <Setter Property="Margin" Value="0" />
-    </Style>
+    <!-- ============================================================================ -->
+    <!-- FRAME STYLES -->
+    <!-- ============================================================================ -->
 
-    <Style x:Key="InputEntryStyle" TargetType="Entry">
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="White" />
-        <Setter Property="PlaceholderColor" Value="#b0a8c7" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="Keyboard" Value="Text" />
-        <Setter Property="MaxLength" Value="100" />
-        <Setter Property="HorizontalTextAlignment" Value="Start" />
-        <Setter Property="VerticalTextAlignment" Value="Center" />
-        <Setter Property="IsSpellCheckEnabled" Value="False" />
-        <Setter Property="IsTextPredictionEnabled" Value="False" />
-        <Setter Property="ClearButtonVisibility" Value="Never" />
-    </Style>
-
-    <!-- Frame Styles -->
     <Style x:Key="EmptyQueueFrameStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderColor" Value="#533682" />
@@ -202,7 +282,10 @@
         <Setter Property="Background" Value="{StaticResource EmptyQueueGradient}" />
     </Style>
 
-    <!-- Bottom Navigation Styles - RESTAURADOS -->
+    <!-- ============================================================================ -->
+    <!-- BOTTOM NAVIGATION STYLES -->
+    <!-- ============================================================================ -->
+
     <Style x:Key="CompactBottomNavBarStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Black" />
         <Setter Property="BorderColor" Value="#533682" />
@@ -248,8 +331,10 @@
         <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 
+    <!-- ============================================================================ -->
+    <!-- SPECIAL STYLES -->
+    <!-- ============================================================================ -->
 
-    <!-- botão amarelo - Style para o  -->
     <Style x:Key="YellowGradientFrameStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderColor" Value="Transparent" />
@@ -276,7 +361,6 @@
         </Setter>
     </Style>
 
-    <!-- botão amarelo - Style para o label do "+" -->
     <Style x:Key="PlusLabelStyle" TargetType="Label">
         <Setter Property="Text" Value="+" />
         <Setter Property="TextColor" Value="#1A1024" />
@@ -288,19 +372,6 @@
         <Setter Property="VerticalTextAlignment" Value="Center" />
     </Style>
 
-    <!-- Style para o label do "+" --><!--
-    <Style x:Key="PlusLabelStyle" TargetType="Label">
-        <Setter Property="Text" Value="+" />
-        <Setter Property="TextColor" Value="#1A1024" />
-        <Setter Property="FontSize" Value="20" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="HorizontalOptions" Value="Center" />
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="HorizontalTextAlignment" Value="Center" />
-        <Setter Property="VerticalTextAlignment" Value="Center" />
-    </Style>-->
-
-    <!-- Estilos adicionais mantidos -->
     <Style x:Key="BottomNavigationBarStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Black" />
         <Setter Property="BorderColor" Value="#533682" />

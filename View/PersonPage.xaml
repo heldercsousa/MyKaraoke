@@ -15,172 +15,187 @@
 
         <!-- Card Wrapper Component -->
         <components:CardWrapperComponent Grid.Row="1" 
-            TitleText="Preencha"
+            TitleText="Informe o nome"
             IconPath="cantores.png"
             BadgeIsVisible="False">
 
             <components:CardWrapperComponent.CardContent>
                 <!-- Conteúdo do Card -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">
 
-                    <!-- Label "Nome do cantor" -->
-                    <Label Grid.Row="0"
-                           Text="Nome do cantor"
-                           Style="{StaticResource InputLabelStyle}" />
-
+                    <!-- ETAPA 1: INPUT DE NOME (SEM LABEL) -->
                     <!-- Container do campo de entrada com sugestões -->
-                    <Grid Grid.Row="1" RowDefinitions="Auto,Auto">
+                    <Grid Grid.Row="0" RowDefinitions="Auto,Auto">
 
-                        <!-- Entry com limite híbrido de 200 caracteres -->
+                        <!-- Entry MAIOR com destaque -->
                         <Frame Grid.Row="0"
-                               Style="{StaticResource InputFieldStyle}">
+                               Style="{StaticResource LargeInputFieldStyle}">
                             <Entry x:Name="fullNameEntry"  
-                                   Placeholder="digite o nome completo"
-                                   Style="{StaticResource InputEntryStyle}"
+                                   Placeholder="Digite o nome completo"
+                                   Style="{StaticResource LargeInputEntryStyle}"
                                    MaxLength="200"
                                    TextChanged="OnNameTextChanged" />
                         </Frame>
 
-                        <!-- Lista de sugestões com quebra de linha elegante -->
+                        <!-- Lista de sugestões REDESENHADA -->
                         <Frame Grid.Row="1"
                                x:Name="suggestionsFrame"
                                IsVisible="False"
-                               BackgroundColor="#3b2c6c"
-                               BorderColor="#533682"
-                               CornerRadius="8"
+                               BackgroundColor="Transparent"
+                               BorderColor="Transparent"
+                               CornerRadius="0"
                                Padding="0"
-                               Margin="0,4,0,0"
+                               Margin="0,8,0,0"
                                HasShadow="False">
 
                             <CollectionView x:Name="suggestionsCollectionView"
                                           SelectionMode="Single"
                                           SelectionChanged="OnSuggestionSelected"
-                                          HeightRequest="200">
+                                          HeightRequest="280">
 
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Padding="12,10" 
-                                              MinimumHeightRequest="60"
-                                              BackgroundColor="Transparent">
+                                        <!-- Frame com estilo reutilizável para listas -->
+                                        <Frame Style="{StaticResource CardListItemBackgroundStyle}">
 
-                                            <Grid.GestureRecognizers>
+                                            <Frame.GestureRecognizers>
                                                 <TapGestureRecognizer Tapped="OnSuggestionTapped" />
-                                            </Grid.GestureRecognizers>
+                                            </Frame.GestureRecognizers>
 
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="1" />
-                                            </Grid.RowDefinitions>
+                                            <Grid RowDefinitions="Auto,Auto,Auto">
 
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
+                                                <!-- Nome da pessoa -->
+                                                <Label Grid.Row="0"
+                                                       Text="{Binding NomeCompleto}"
+                                                       Style="{StaticResource CardListItemMainTextStyle}">
+                                                    <Label.Triggers>
+                                                        <!-- Destaque para "Nova pessoa" -->
+                                                        <DataTrigger TargetType="Label" Binding="{Binding IsNewPersonOption}" Value="True">
+                                                            <Setter Property="TextColor" Value="#4CAF50" />
+                                                            <Setter Property="HorizontalTextAlignment" Value="Center" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
 
-                                            <!-- Nome da pessoa (com quebra elegante) -->
-                                            <Label Grid.Row="0" Grid.Column="0"
-                                                   Text="{Binding NomeCompleto}"
-                                                   TextColor="White"
-                                                   FontSize="16"
-                                                   FontAttributes="Bold"
-                                                   LineBreakMode="WordWrap"
-                                                   MaxLines="2"
-                                                   VerticalOptions="Start"
-                                                   HorizontalOptions="FillAndExpand" />
+                                                <!-- E-mail (só para pessoas reais) -->
+                                                <Label Grid.Row="1"
+                                                       Text="{Binding Email}"
+                                                       Style="{StaticResource CardListItemSubTextStyle}"
+                                                       LineBreakMode="TailTruncation">
+                                                    <Label.Triggers>
+                                                        <MultiTrigger TargetType="Label">
+                                                            <MultiTrigger.Conditions>
+                                                                <BindingCondition Binding="{Binding IsRealPerson}" Value="True" />
+                                                                <BindingCondition Binding="{Binding HasEmail}" Value="True" />
+                                                            </MultiTrigger.Conditions>
+                                                            <Setter Property="IsVisible" Value="True" />
+                                                        </MultiTrigger>
+                                                    </Label.Triggers>
+                                                    <Label.Style>
+                                                        <Style TargetType="Label" BasedOn="{StaticResource CardListItemSubTextStyle}">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </Style>
+                                                    </Label.Style>
+                                                </Label>
 
-                                            <!-- Contador de participações -->
-                                            <StackLayout Grid.Row="0" Grid.Column="1"
-                                                       Orientation="Horizontal" 
-                                                       VerticalOptions="Start"
-                                                       HorizontalOptions="End"
-                                                       Spacing="4">
+                                                <!-- Aniversário (só para pessoas reais) -->
+                                                <Label Grid.Row="2"
+                                                       Text="{Binding BirthdayDisplay}"
+                                                       Style="{StaticResource CardListItemAccentTextStyle}">
+                                                    <Label.Triggers>
+                                                        <MultiTrigger TargetType="Label">
+                                                            <MultiTrigger.Conditions>
+                                                                <BindingCondition Binding="{Binding IsRealPerson}" Value="True" />
+                                                                <BindingCondition Binding="{Binding HasBirthday}" Value="True" />
+                                                            </MultiTrigger.Conditions>
+                                                            <Setter Property="IsVisible" Value="True" />
+                                                        </MultiTrigger>
+                                                    </Label.Triggers>
+                                                    <Label.Style>
+                                                        <Style TargetType="Label" BasedOn="{StaticResource CardListItemAccentTextStyle}">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </Style>
+                                                    </Label.Style>
+                                                </Label>
 
-                                                <Label Text="{Binding Participacoes}"
-                                                       TextColor="#4CAF50"
-                                                       FontSize="12"
-                                                       FontAttributes="Bold" />
-                                                <Label Text="P"
-                                                       TextColor="#4CAF50"
-                                                       FontSize="10" />
-
-                                                <Label Text="{Binding Ausencias}"
-                                                       TextColor="#FF5722"
-                                                       FontSize="12"
-                                                       FontAttributes="Bold" />
-                                                <Label Text="A"
-                                                       TextColor="#FF5722"
-                                                       FontSize="10" />
-                                            </StackLayout>
-
-                                            <!-- E-mail (se disponível) -->
-                                            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                                   Text="{Binding Email}"
-                                                   TextColor="#b0a8c7"
-                                                   FontSize="12"
-                                                   LineBreakMode="TailTruncation"
-                                                   IsVisible="{Binding HasEmail}"
-                                                   Margin="0,2,0,0"
-                                                   VerticalOptions="Start" />
-
-                                            <!-- Aniversário (se disponível) -->
-                                            <Label Grid.Row="2" Grid.Column="0"
-                                                   Text="{Binding BirthdayDisplay}"
-                                                   TextColor="#e91e63"
-                                                   FontSize="12"
-                                                   IsVisible="{Binding HasBirthday}"
-                                                   VerticalOptions="Start" />
-
-                                            <!-- Separador -->
-                                            <BoxView Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
-                                                     BackgroundColor="#533682"
-                                                     HeightRequest="1"
-                                                     HorizontalOptions="FillAndExpand"
-                                                     VerticalOptions="End"
-                                                     Margin="0,8,0,0" />
-                                        </Grid>
+                                            </Grid>
+                                        </Frame>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
                         </Frame>
                     </Grid>
 
-                    <!-- Contador de caracteres (aparece quando >180) -->
-                    <Label Grid.Row="2"
+                    <!-- Contador de caracteres -->
+                    <Label Grid.Row="1"
                            x:Name="characterCounterLabel"
                            Text="0/200"
                            FontSize="12"
                            HorizontalOptions="End"
                            VerticalOptions="Start"
                            IsVisible="False"
-                           Margin="8,2,8,0" />
+                           Margin="8,4,8,0" />
 
-                    <!-- Label "Aniversário" -->
+                    <!-- Botão Próximo -->
+                    <Button Grid.Row="2"
+                            x:Name="nextButton"
+                            Text="Próximo →"
+                            Style="{StaticResource FormButtonStyle}"
+                            Clicked="OnNextButtonClicked"
+                            IsVisible="False"
+                            HorizontalOptions="End"
+                            Margin="0,16,0,0" />
+
+                    <!-- ETAPA 2: MÊS -->
                     <Label Grid.Row="3"
-                           Text="Aniversário (dia/mês)"
+                           x:Name="monthLabel"
+                           Text="Mês do aniversário"
                            Style="{StaticResource InputLabelStyle}"
-                           Margin="0,12,0,0" />
+                           IsVisible="False"
+                           Margin="0,24,0,0" />
 
-                    <!-- Entry para aniversário -->
                     <Frame Grid.Row="4"
-                           Style="{StaticResource InputFieldStyle}">
-                        <Entry x:Name="birthdayEntry"  
-                               Placeholder="15/03"
-                               Style="{StaticResource InputEntryStyle}"
-                               MaxLength="5"
-                               Keyboard="Numeric" />
+                           x:Name="monthFrame"
+                           Style="{StaticResource InputFieldStyle}"
+                           IsVisible="False">
+                        <Picker x:Name="monthPicker"
+                                Title="Selecione o mês"
+                                TextColor="White"
+                                TitleColor="#b0a8c7"
+                                BackgroundColor="Transparent" />
                     </Frame>
 
-                    <!-- Label "E-mail (opcional)" -->
+                    <!-- ETAPA 3: DIA -->
                     <Label Grid.Row="5"
+                           x:Name="dayLabel"
+                           Text="Dia do aniversário"
+                           Style="{StaticResource InputLabelStyle}"
+                           IsVisible="False"
+                           Margin="0,16,0,0" />
+
+                    <Frame Grid.Row="6"
+                           x:Name="dayFrame"
+                           Style="{StaticResource InputFieldStyle}"
+                           IsVisible="False">
+                        <Picker x:Name="dayPicker"
+                                Title="Selecione o dia"
+                                TextColor="White"
+                                TitleColor="#b0a8c7"
+                                BackgroundColor="Transparent" />
+                    </Frame>
+
+                    <!-- ETAPA 4: EMAIL -->
+                    <Label Grid.Row="7"
+                           x:Name="emailLabel"
                            Text="E-mail (opcional)"
                            Style="{StaticResource InputLabelStyle}"
-                           Margin="0,12,0,0" />
+                           IsVisible="False"
+                           Margin="0,16,0,0" />
 
-                    <!-- Entry para e-mail opcional -->
-                    <Frame Grid.Row="6"
-                           Style="{StaticResource InputFieldStyle}">
+                    <Frame Grid.Row="8"
+                           x:Name="emailFrame"
+                           Style="{StaticResource InputFieldStyle}"
+                           IsVisible="False">
                         <Entry x:Name="emailEntry"  
                                Placeholder="seuemail@exemplo.com"
                                Style="{StaticResource InputEntryStyle}"
@@ -188,35 +203,15 @@
                                Keyboard="Email" />
                     </Frame>
 
-                    <!-- Indicador de pessoa nova -->
-                    <Label Grid.Row="7"
-                           x:Name="newPersonIndicator"
-                           Text="✨ Nova pessoa será cadastrada"
-                           TextColor="#4CAF50"
-                           FontSize="14"
-                           HorizontalOptions="Start"
-                           VerticalOptions="Start"
-                           IsVisible="False"
-                           Margin="8,4,0,0" />
-
-                    <!-- Indicador de pessoa existente -->
-                    <Label Grid.Row="8"
-                           x:Name="existingPersonIndicator"
-                           Text="👤 Pessoa já cadastrada"
-                           TextColor="#FF9800"
-                           FontSize="14"
-                           HorizontalOptions="Start"
-                           VerticalOptions="Start"
-                           IsVisible="False"
-                           Margin="8,4,0,0" />
-
-                    <!-- Botão Entrar na fila -->
+                    <!-- BOTÃO FINAL -->
                     <Button Grid.Row="9"
+                            x:Name="addToQueueButton"
                             Text="Entrar na fila"
                             Style="{StaticResource FormButtonStyle}"
                             Clicked="OnAddToQueueClicked"
                             VerticalOptions="Start"
-                            Margin="0,12,0,0" />
+                            IsVisible="False"
+                            Margin="0,24,0,0" />
 
                     <!-- Label de validação -->
                     <Label Grid.Row="10"
@@ -227,10 +222,10 @@
                            HorizontalOptions="Center"
                            VerticalOptions="Start"
                            IsVisible="False"
-                           Margin="0,8,0,0" />
+                           Margin="0,12,0,0" />
 
                     <!-- Espaço flexível -->
-                    <!-- Grid.Row="11" usado automaticamente pelo último elemento -->
+                    <Grid Grid.Row="11" HeightRequest="40" />
                 </Grid>
             </components:CardWrapperComponent.CardContent>
         </components:CardWrapperComponent>

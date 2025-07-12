@@ -126,11 +126,11 @@ namespace MyKaraoke.View
             }
         }
 
-        private void ShowEmptyQueueState()
+        private async void ShowEmptyQueueState()
         {
             System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - Starting");
 
-            MainThread.BeginInvokeOnMainThread(() =>
+            await MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 try
                 {
@@ -153,6 +153,18 @@ namespace MyKaraoke.View
                     {
                         bottomNav.IsVisible = true;
                         System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav set to VISIBLE");
+
+                        // 🎯 CORREÇÃO: Inicia a animação Nova Fila após um pequeno delay
+                        try
+                        {
+                            await Task.Delay(500); // Aguarda UI renderizar
+                            await bottomNav.StartNovaFilaAnimationAsync();
+                            System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - Animação Nova Fila iniciada com sucesso");
+                        }
+                        catch (Exception animEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"ShowEmptyQueueState - Erro ao iniciar animação: {animEx.Message}");
+                        }
                     }
 
                     if (queueStatusLabel != null)
@@ -168,14 +180,28 @@ namespace MyKaraoke.View
             });
         }
 
-        private void ShowActiveQueueState()
+        private async void ShowActiveQueueState()
         {
             System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - Starting");
 
-            MainThread.BeginInvokeOnMainThread(() =>
+            await MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 try
                 {
+                    // 🎯 CORREÇÃO: Para a animação quando há fila ativa
+                    if (bottomNav != null)
+                    {
+                        try
+                        {
+                            await bottomNav.StopNovaFilaAnimationAsync();
+                            System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - Animação Nova Fila parada");
+                        }
+                        catch (Exception animEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"ShowActiveQueueState - Erro ao parar animação: {animEx.Message}");
+                        }
+                    }
+
                     // Atualizar título para "Fila"
                     UpdateHeaderTitle(true);
 
@@ -442,11 +468,25 @@ namespace MyKaraoke.View
             return value;
         }
 
-        protected override void OnDisappearing()
+        protected override async void OnDisappearing()
         {
             base.OnDisappearing();
             try
             {
+                // 🎯 CORREÇÃO: Para animações ao sair da página
+                if (bottomNav != null)
+                {
+                    try
+                    {
+                        await bottomNav.StopNovaFilaAnimationAsync();
+                        System.Diagnostics.Debug.WriteLine("OnDisappearing - Animação Nova Fila parada");
+                    }
+                    catch (Exception animEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"OnDisappearing - Erro ao parar animação: {animEx.Message}");
+                    }
+                }
+
                 if (filaCollectionView != null)
                     filaCollectionView.ReorderCompleted -= OnFilaReorderCompleted;
             }

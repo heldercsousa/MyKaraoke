@@ -3,102 +3,101 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MyKaraoke.View.Components.InactiveQueueBottomNav">
 
-    <Grid ColumnDefinitions="*,*,*,*,*" 
-          Padding="5,8,5,8"
-          HorizontalOptions="FillAndExpand"
-          VerticalOptions="FillAndExpand"
-          BackgroundColor="Transparent">
+    <!-- Frame principal com estilos da StackPage -->
+    <Frame Style="{StaticResource CompactBottomNavBarStyle}">
 
-        <!-- Locais Button -->
-        <StackLayout Grid.Column="0" 
-                     HorizontalOptions="Center" 
-                     VerticalOptions="Center" 
-                     Spacing="2">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnLocaisClicked" />
-            </StackLayout.GestureRecognizers>
-            <Image Source="locais.png" 
-                   WidthRequest="20" 
-                   HeightRequest="20" 
-                   HorizontalOptions="Center" />
-            <Label Text="Locais" 
-                   FontSize="12" 
-                   HorizontalOptions="Center" 
-                   TextColor="#D1D5DB" />
-        </StackLayout>
+        <!-- Linha separadora superior -->
+        <BoxView BackgroundColor="#533682"
+                 HeightRequest="1"
+                 HorizontalOptions="Fill"
+                 VerticalOptions="Start" />
 
-        <!-- Cantores Button -->
-        <StackLayout Grid.Column="1" 
-                     HorizontalOptions="Center" 
-                     VerticalOptions="Center" 
-                     Spacing="2">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnCantoresClicked" />
-            </StackLayout.GestureRecognizers>
-            <Image Source="cantores.png" 
-                   WidthRequest="20" 
-                   HeightRequest="20" 
-                   HorizontalOptions="Center" />
-            <Label Text="Cantores" 
-                   FontSize="12" 
-                   HorizontalOptions="Center" 
-                   TextColor="#D1D5DB" />
-        </StackLayout>
+        <!-- Grid com 5 colunas igual à StackPage -->
+        <Grid ColumnDefinitions="*,*,*,*,*" 
+              Padding="5,2,5,2"
+              HorizontalOptions="Fill"
+              VerticalOptions="Fill">
 
-        <!-- Nova Fila Button -->
-        <StackLayout Grid.Column="2" 
-                     HorizontalOptions="Center" 
-                     VerticalOptions="Center" 
-                     Spacing="2">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnNovaFilaClicked" />
-            </StackLayout.GestureRecognizers>
-            <Image Source="novo.png" 
-                   WidthRequest="20" 
-                   HeightRequest="20" 
-                   HorizontalOptions="Center" />
-            <Label Text="Nova Fila" 
-                   FontSize="12" 
-                   HorizontalOptions="Center" 
-                   TextColor="#FF9800" />
-        </StackLayout>
+            <!-- Locais Button -->
+            <StackLayout Grid.Column="0" 
+                         HorizontalOptions="Center" 
+                         VerticalOptions="Center" 
+                         Spacing="1">
+                <StackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnLocaisClicked" />
+                </StackLayout.GestureRecognizers>
+                <Image Source="locais.png" 
+                       Style="{StaticResource CompactBottomNavIconStyle}" />
+                <Label Text="Locais" 
+                       Style="{StaticResource CompactBottomNavLabelStyle}" />
+            </StackLayout>
 
-        <!-- Bandas/Musicos Button -->
-        <StackLayout Grid.Column="3" 
-                     HorizontalOptions="Center" 
-                     VerticalOptions="Center" 
-                     Spacing="2">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnBandasMusicosClicked" />
-            </StackLayout.GestureRecognizers>
-            <Image Source="musicos.png" 
-                   WidthRequest="20" 
-                   HeightRequest="20" 
-                   HorizontalOptions="Center" />
-            <Label Text="Bandas/Músicos" 
-                   FontSize="12" 
-                   HorizontalOptions="Center" 
-                   TextColor="#D1D5DB" />
-        </StackLayout>
+            <!-- Cantores Button -->
+            <StackLayout Grid.Column="1" 
+                         HorizontalOptions="Center" 
+                         VerticalOptions="Center" 
+                         Spacing="1">
+                <StackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCantoresClicked" />
+                </StackLayout.GestureRecognizers>
+                <Image Source="cantores.png" 
+                       Style="{StaticResource CompactBottomNavIconStyle}" />
+                <Label Text="Cantores" 
+                       Style="{StaticResource CompactBottomNavLabelStyle}" />
+            </StackLayout>
 
-        <!-- Historico Button -->
-        <StackLayout Grid.Column="4" 
-                     HorizontalOptions="Center" 
-                     VerticalOptions="Center" 
-                     Spacing="2">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnHistoricoClicked" />
-            </StackLayout.GestureRecognizers>
-            <Image Source="historico.png" 
-                   WidthRequest="20" 
-                   HeightRequest="20" 
-                   HorizontalOptions="Center" />
-            <Label Text="Histórico" 
-                   FontSize="12" 
-                   HorizontalOptions="Center" 
-                   TextColor="#D1D5DB" />
-        </StackLayout>
+            <!-- Nova Fila Button - Versão Amarela da StackPage -->
+            <StackLayout Grid.Column="2" 
+                         HorizontalOptions="Center" 
+                         VerticalOptions="Center" 
+                         Spacing="2">
 
-    </Grid>
+                <!-- Frame com gradiente amarelo (mesmo da StackPage) -->
+                <Frame Style="{StaticResource YellowGradientFrameStyle}">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnNovaFilaClicked" />
+                    </Frame.GestureRecognizers>
+
+                    <!-- Label com "+" perfeitamente centralizado -->
+                    <Label Style="{StaticResource PlusLabelStyle}" />
+                </Frame>
+
+                <!-- Label abaixo do botão -->
+                <Label Text="Nova Fila" 
+                       Style="{StaticResource CompactBottomNavLabelStyle}" />
+            </StackLayout>
+
+            <!-- Bandas/Musicos Button -->
+            <StackLayout Grid.Column="3" 
+                         HorizontalOptions="Center" 
+                         VerticalOptions="Center" 
+                         Spacing="1">
+                <StackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBandasMusicosClicked" />
+                </StackLayout.GestureRecognizers>
+                <Image Source="musicos.png" 
+                       Style="{StaticResource CompactBottomNavIconStyle}" />
+                <Label Text="Bandas/Mus." 
+                       Style="{StaticResource CompactBottomNavLabelStyle}"
+                       LineBreakMode="TailTruncation"
+                       MaxLines="1" />
+            </StackLayout>
+
+            <!-- Historico Button -->
+            <StackLayout Grid.Column="4" 
+                         HorizontalOptions="Center" 
+                         VerticalOptions="Center" 
+                         Spacing="1">
+                <StackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnHistoricoClicked" />
+                </StackLayout.GestureRecognizers>
+                <Image Source="historico.png" 
+                       Style="{StaticResource CompactBottomNavIconStyle}" />
+                <Label Text="Historico" 
+                       Style="{StaticResource CompactBottomNavLabelStyle}" />
+            </StackLayout>
+
+        </Grid>
+    </Frame>
 
 </ContentView>

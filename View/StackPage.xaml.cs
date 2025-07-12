@@ -27,7 +27,7 @@ namespace MyKaraoke.View
             }
 
             // Debug: Log component initialization
-            System.Diagnostics.Debug.WriteLine($"StackPage Constructor - bottomNavBar: {bottomNavBar != null}");
+            System.Diagnostics.Debug.WriteLine($"StackPage Constructor - bottomNav: {bottomNav != null}");
             System.Diagnostics.Debug.WriteLine($"StackPage Constructor - emptyQueueMessage: {emptyQueueMessage != null}");
             System.Diagnostics.Debug.WriteLine($"StackPage Constructor - queueStatusLabel: {queueStatusLabel != null}");
         }
@@ -43,7 +43,7 @@ namespace MyKaraoke.View
                 _queueService = _serviceProvider.GetService<IQueueService>();
 
                 // Debug: Log component availability after handler changed
-                System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - bottomNavBar: {bottomNavBar != null}");
+                System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - bottomNav: {bottomNav != null}");
                 System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - emptyQueueMessage: {emptyQueueMessage != null}");
                 System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - queueStatusLabel: {queueStatusLabel != null}");
             }
@@ -54,7 +54,7 @@ namespace MyKaraoke.View
             base.OnAppearing();
 
             // Debug: Log component availability on appearing
-            System.Diagnostics.Debug.WriteLine($"OnAppearing - bottomNavBar: {bottomNavBar != null}");
+            System.Diagnostics.Debug.WriteLine($"OnAppearing - bottomNav: {bottomNav != null}");
             System.Diagnostics.Debug.WriteLine($"OnAppearing - emptyQueueMessage: {emptyQueueMessage != null}");
             System.Diagnostics.Debug.WriteLine($"OnAppearing - queueStatusLabel: {queueStatusLabel != null}");
 
@@ -149,10 +149,10 @@ namespace MyKaraoke.View
                         System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - filaCollectionView set to hidden");
                     }
 
-                    if (bottomNavBar != null)
+                    if (bottomNav != null)
                     {
-                        bottomNavBar.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNavBar set to VISIBLE");
+                        bottomNav.IsVisible = true;
+                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav set to VISIBLE");
                     }
 
                     if (queueStatusLabel != null)
@@ -191,10 +191,10 @@ namespace MyKaraoke.View
                         System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - filaCollectionView set to visible");
                     }
 
-                    if (bottomNavBar != null)
+                    if (bottomNav != null)
                     {
-                        bottomNavBar.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - bottomNavBar set to HIDDEN");
+                        bottomNav.IsVisible = false;
+                        System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - bottomNav set to HIDDEN");
                     }
 
                     int participantCount = _fila?.Count ?? 0;

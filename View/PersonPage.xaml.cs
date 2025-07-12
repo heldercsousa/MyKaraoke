@@ -75,16 +75,14 @@ namespace MyKaraoke.View
             {
                 try
                 {
-                    // Inicializa o ServiceProvider quando o Handler estiver disponível
                     _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
                     _queueService = _serviceProvider?.GetService<IQueueService>();
                     _pessoaService = _serviceProvider?.GetService<IPessoaService>();
                     _textNormalizer = _serviceProvider?.GetService<ITextNormalizer>();
 
-                    // Configura o comando de voltar do HeaderComponent
-                    headerComponent.BackCommand = new Command(OnBackPressed);
+                    // ❌ REMOVER: headerComponent.BackCommand = new Command(OnBackPressed);
+                    // ✅ HeaderComponent cuida automaticamente da navegação!
 
-                    // Configura os pickers de mês e dia
                     SetupDatePickers();
                 }
                 catch (Exception ex)
@@ -93,6 +91,7 @@ namespace MyKaraoke.View
                 }
             }
         }
+
 
         private void SetupDatePickers()
         {
@@ -592,46 +591,6 @@ namespace MyKaraoke.View
             HideExtraFields();
             ClearSelectedSuggestion();
             characterCounterLabel.IsVisible = false;
-        }
-
-        private async void OnBackPressed()
-        {
-            await NavigateToStackPage();
-        }
-
-        protected override bool OnBackButtonPressed()
-        {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await NavigateToStackPage();
-            });
-            return true;
-        }
-
-        private async Task NavigateToStackPage()
-        {
-            try
-            {
-                if (_serviceProvider == null)
-                {
-                    _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
-                }
-
-                var stackPage = _serviceProvider?.GetService<StackPage>();
-                if (stackPage != null)
-                {
-                    await Navigation.PushAsync(stackPage);
-                }
-                else
-                {
-                    await Navigation.PushAsync(new StackPage());
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao navegar para StackPage: {ex.Message}");
-                await Navigation.PushAsync(new StackPage());
-            }
         }
 
         private async void OnAddToQueueClicked(object sender, EventArgs e)

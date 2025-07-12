@@ -6,19 +6,32 @@ namespace MyKaraoke.View.Components
     public partial class InactiveQueueBottomNav : ContentView
     {
         public event EventHandler LocaisClicked;
-        public event EventHandler CantoresClicked;
+        public event EventHandler BandokeClicked;
         public event EventHandler NovaFilaClicked;
-        public event EventHandler BandasMusicosClicked;
         public event EventHandler HistoricoClicked;
+        public event EventHandler AdministrarClicked;
 
         private AnimationManager _animationManager;
 
         public InactiveQueueBottomNav()
         {
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
 
-            // Inicializa o AnimationManager para este componente
-            _animationManager = new AnimationManager("InactiveQueueBottomNav");
+                // Inicializa o AnimationManager para este componente
+                _animationManager = new AnimationManager("InactiveQueueBottomNav");
+
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav inicializado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro na inicialização do InactiveQueueBottomNav: {ex.Message}");
+
+                // Log do erro mas não interrompe a aplicação
+                // O fallback será tratado pela página pai se necessário
+                throw;
+            }
         }
 
         /// <summary>
@@ -40,28 +53,33 @@ namespace MyKaraoke.View.Components
                     return;
                 }
 
-                // 🎯 Configuração de animação mais rápida e intensa para Nova Fila
-                var fastConfig = new AnimationConfig
+                // 🔥 CONFIGURAÇÃO INTENSA PARA NOVA FILA - 100% MAIOR
+                var intensiveConfig = new AnimationConfig
                 {
                     FromScale = 1.0,
-                    ToScale = 1.25, // 25% maior conforme solicitado
-                    PulseDuration = 250, // Mais rápido (era 400ms)
-                    PulsePause = 400,    // Pausa menor (era 800ms)
-                    PulseCount = 5,      // Mais pulses (era 3)
-                    InitialDelay = 1000, // Delay menor (era 2000ms)
-                    CycleInterval = 6000, // Ciclos mais frequentes (era 10000ms)
-                    ExpandEasing = Easing.CubicOut,
+                    ToScale = 1.25, 
+                    PulseDuration = 150, // Muito rápido
+                    PulsePause = 100,    // Pausa curta
+                    PulseCount = 5,      // 5 pulses por ciclo
+                    InitialDelay = 1000, // Inicia rápido
+                    CycleInterval = 6000, // Repete a cada 6 segundos
+                    ExpandEasing = Easing.BounceOut, // 🎯 Easing mais dramático
                     ContractEasing = Easing.CubicIn,
                     AutoRepeat = true
                 };
 
-                // Usa o AnimationManager com configuração customizada
+                System.Diagnostics.Debug.WriteLine($"🎯 Iniciando animação INTENSA: ToScale={intensiveConfig.ToScale}, Duration={intensiveConfig.PulseDuration}ms");
+
+                // ✅ Sistema corrigido: HardwareDetector agora preserva sua configuração
+                // Para Pixel 5 e hardware similar, usará EXATAMENTE sua configuração
                 await _animationManager.StartPulseAsync(
                     animationKey: "NovaFilaButton",
                     target: novaFilaStack,
-                    config: fastConfig,
-                    shouldContinue: () => this.IsVisible // Para quando o componente fica invisível
+                    config: intensiveConfig,
+                    shouldContinue: () => this.IsVisible
                 );
+
+                System.Diagnostics.Debug.WriteLine("🚀 Animação Nova Fila iniciada - sistema automaticamente detectará se hardware suporta");
             }
             catch (Exception ex)
             {
@@ -136,85 +154,10 @@ namespace MyKaraoke.View.Components
             LocaisClicked?.Invoke(sender, e);
         }
 
-        private async void OnCantoresClicked(object sender, EventArgs e)
+        private void OnBandokeClicked(object sender, EventArgs e)
         {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Botão Cantores clicado no BottomNav - navegando para PersonPage");
-
-                // Estratégia 1: Usar ServiceProvider através da página pai
-                var parentPage = FindParentPage();
-                if (parentPage != null)
-                {
-                    try
-                    {
-                        var serviceProvider = new View.ServiceProvider(
-                            parentPage.Handler?.MauiContext?.Services ??
-                            throw new InvalidOperationException("MauiContext não disponível")
-                        );
-
-                        var personPage = serviceProvider.GetService<PersonPage>();
-
-                        if (Application.Current?.MainPage is NavigationPage navPage)
-                        {
-                            await navPage.PushAsync(personPage);
-                            CantoresClicked?.Invoke(sender, e);
-                            return;
-                        }
-                        else if (parentPage.Navigation != null)
-                        {
-                            await parentPage.Navigation.PushAsync(personPage);
-                            CantoresClicked?.Invoke(sender, e);
-                            return;
-                        }
-                    }
-                    catch (Exception serviceEx)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Erro ao usar ServiceProvider: {serviceEx.Message}");
-                        // Continua para o fallback abaixo
-                    }
-                }
-
-                // Estratégia 2: Criação direta de PersonPage
-                System.Diagnostics.Debug.WriteLine("Usando fallback - criação direta de PersonPage");
-                var fallbackPersonPage = new PersonPage();
-
-                if (Application.Current?.MainPage?.Navigation != null)
-                {
-                    await Application.Current.MainPage.Navigation.PushAsync(fallbackPersonPage);
-                    CantoresClicked?.Invoke(sender, e);
-                }
-                else if (parentPage?.Navigation != null)
-                {
-                    await parentPage.Navigation.PushAsync(fallbackPersonPage);
-                    CantoresClicked?.Invoke(sender, e);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Nenhuma forma de navegação disponível");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro crítico na navegação Cantores: {ex.Message}");
-
-                // Estratégia 3: Feedback ao usuário sobre o erro
-                try
-                {
-                    var parentPage = FindParentPage();
-                    if (parentPage != null)
-                    {
-                        await parentPage.DisplayAlert("Erro", "Não foi possível navegar para a página de cantores. Tente novamente.", "OK");
-                    }
-                }
-                catch (Exception alertEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Falha ao exibir alerta: {alertEx.Message}");
-                }
-
-                // Ainda assim invoca o evento para permitir tratamento customizado
-                CantoresClicked?.Invoke(sender, e);
-            }
+            System.Diagnostics.Debug.WriteLine("Botão Bandokê clicado no BottomNav");
+            BandokeClicked?.Invoke(sender, e);
         }
 
         private void OnNovaFilaClicked(object sender, EventArgs e)
@@ -226,16 +169,16 @@ namespace MyKaraoke.View.Components
             NovaFilaClicked?.Invoke(sender, e);
         }
 
-        private void OnBandasMusicosClicked(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Botão Bandas/Músicos clicado no BottomNav");
-            BandasMusicosClicked?.Invoke(sender, e);
-        }
-
         private void OnHistoricoClicked(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("Botão Histórico clicado no BottomNav");
             HistoricoClicked?.Invoke(sender, e);
+        }
+
+        private void OnAdministrarClicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Botão Administrar clicado no BottomNav");
+            AdministrarClicked?.Invoke(sender, e);
         }
 
         /// <summary>

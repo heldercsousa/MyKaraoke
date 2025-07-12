@@ -39,19 +39,20 @@
                 {
                     var displayInfo = DeviceDisplay.MainDisplayInfo;
 
-                    // Hardware limitado: densidade baixa OU resolução muito baixa
-                    bool lowDensity = displayInfo.Density < 2.0;
-                    bool lowResolution = displayInfo.Width < 720;
-                    bool veryLowResolution = displayInfo.Width < 480;
+                    // ✅ CRITÉRIOS MAIS RIGOROSOS: Só desabilita em hardware MUITO ruim
+                    bool veryLowResolution = displayInfo.Width < 480;      // Muito antigo (Android 2.x era)
+                    bool veryLowDensity = displayInfo.Density < 1.5;       // Telas muito antigas
+                    bool terribleCombo = displayInfo.Width < 720 && displayInfo.Density < 2.0; // Combo muito ruim
 
-                    // Critérios para DESABILITAR animações:
-                    if (veryLowResolution) // Muito limitado
+                    // BYPASS (sem animação) apenas para hardware MUITO limitado
+                    if (veryLowResolution || veryLowDensity || terribleCombo)
+                    {
+                        System.Diagnostics.Debug.WriteLine("🚫 Hardware muito limitado - animações desabilitadas para economia de recursos");
                         return false;
+                    }
 
-                    if (lowDensity && lowResolution) // Combinação ruim
-                        return false;
-
-                    // Casos borderline - habilita mas com configuração sutil
+                    // ✅ TODOS os outros phones modernos suportam animação
+                    // Inclui: Pixel 5, iPhone 8+, Galaxy S8+, etc.
                     return true;
                 }
 
@@ -61,52 +62,91 @@
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro na detecção de hardware: {ex.Message}");
-                // Em caso de erro, assume hardware limitado
+                // Em caso de erro, assume hardware limitado por segurança
                 return false;
             }
         }
 
         /// <summary>
         /// Determina a configuração ideal baseada no hardware
+        /// ✅ LÓGICA CORRETA: Só otimiza em hardware MUITO ruim
         /// </summary>
         public static AnimationConfig GetOptimalConfig(AnimationConfig requestedConfig)
         {
+            // ✅ BYPASS = Hardware muito ruim → SEM animação
             if (!SupportsAnimations)
-                return null; // Sem animação
+                return null; // BYPASS total - sem animação para poupar recursos
 
             try
             {
                 var displayInfo = DeviceDisplay.MainDisplayInfo;
 
-                // Hardware top: usa configuração solicitada
-                if (displayInfo.Density >= 3.0 && displayInfo.Width >= 1080)
-                    return requestedConfig;
+                // 🔥 DEFINIÇÃO CORRETA: Hardware muito ruim precisa de BYPASS
+                bool isVeryLowEndHardware =
+                    displayInfo.Width < 480 ||           // Resolução muito antiga
+                    displayInfo.Density < 1.5 ||         // Densidade muito baixa (telas antigas)
+                    (displayInfo.Width < 720 && displayInfo.Density < 2.0); // Combinação ruim
 
-                // Hardware médio: reduz intensidade
-                if (displayInfo.Density >= 2.0 && displayInfo.Width >= 720)
+                if (isVeryLowEndHardware)
                 {
-                    return new AnimationConfig
-                    {
-                        FromScale = requestedConfig.FromScale,
-                        ToScale = Math.Min(requestedConfig.ToScale, 1.03), // Limita escala
-                        PulseDuration = Math.Max(requestedConfig.PulseDuration, 500), // Mais lento
-                        PulsePause = Math.Max(requestedConfig.PulsePause, 1000), // Mais pausa
-                        PulseCount = Math.Min(requestedConfig.PulseCount, 2), // Menos pulses
-                        InitialDelay = requestedConfig.InitialDelay,
-                        CycleInterval = Math.Max(requestedConfig.CycleInterval, 15000), // Menos frequente
-                        ExpandEasing = Easing.SinOut, // Easing mais simples
-                        ContractEasing = Easing.SinIn,
-                        AutoRepeat = requestedConfig.AutoRepeat
-                    };
+                    System.Diagnostics.Debug.WriteLine("🚫 Hardware MUITO ruim detectado - BYPASS ativado (sem animação)");
+                    return null; // BYPASS = sem animação para economizar recursos
                 }
 
-                // Hardware básico: configuração muito sutil
-                return AnimationConfig.Subtle;
+                // ✅ TODOS OS OUTROS HARDWARES: Usa configuração original
+                // Isso inclui:
+                // - Hardware TOP (iPhone Pro, Galaxy S, etc.)
+                // - Hardware BOM (Pixel 5, maioria dos smartphones modernos)  
+                // - Hardware MÉDIO (smartphones de 2-3 anos atrás)
+
+                System.Diagnostics.Debug.WriteLine("✅ Hardware adequado detectado - usando configuração ORIGINAL");
+                System.Diagnostics.Debug.WriteLine($"   Resolução: {displayInfo.Width}x{displayInfo.Height}");
+                System.Diagnostics.Debug.WriteLine($"   Densidade: {displayInfo.Density}");
+                System.Diagnostics.Debug.WriteLine($"   Classificação: {GetHardwareClass()}");
+
+                return requestedConfig; // 🎯 Usa EXATAMENTE sua configuração!
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro na detecção de hardware: {ex.Message}");
+                // Em caso de erro, assume hardware limitado e ativa BYPASS
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Classificação do hardware para debug
+        /// </summary>
+        public static string GetHardwareClass()
+        {
+            try
+            {
+                if (!SupportsAnimations)
+                    return "Muito Ruim (BYPASS - sem animações)";
+
+                var displayInfo = DeviceDisplay.MainDisplayInfo;
+
+                // ✅ LÓGICA CORRETA: Só hardware muito ruim precisa de bypass
+                bool isVeryLowEndHardware =
+                    displayInfo.Width < 480 ||
+                    displayInfo.Density < 1.5 ||
+                    (displayInfo.Width < 720 && displayInfo.Density < 2.0);
+
+                if (isVeryLowEndHardware)
+                    return "Muito Ruim (BYPASS - sem animações)";
+
+                // TODOS os outros hardwares são considerados adequados
+                if (displayInfo.Density >= 3.0 && displayInfo.Width >= 1080)
+                    return "TOP (configuração original)";
+
+                if (displayInfo.Density >= 2.0 && displayInfo.Width >= 720)
+                    return "BOM (configuração original)"; // Pixel 5 fica aqui!
+
+                return "MÉDIO (configuração original)";
             }
             catch
             {
-                // Em caso de erro, usa configuração sutil
-                return AnimationConfig.Subtle;
+                return "Desconhecido (assume BYPASS)";
             }
         }
 
@@ -125,6 +165,7 @@
                 System.Diagnostics.Debug.WriteLine($"Width: {displayInfo.Width}px");
                 System.Diagnostics.Debug.WriteLine($"Height: {displayInfo.Height}px");
                 System.Diagnostics.Debug.WriteLine($"Animations Supported: {SupportsAnimations}");
+                System.Diagnostics.Debug.WriteLine($"Hardware Class: {GetHardwareClass()}");
                 System.Diagnostics.Debug.WriteLine($"===================");
             }
             catch (Exception ex)

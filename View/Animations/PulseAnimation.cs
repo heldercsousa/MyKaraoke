@@ -42,25 +42,30 @@
         }
 
         /// <summary>
-        /// Inicia a animação (com verificação de hardware)
+        /// Inicia a animação (com verificação de hardware automática)
         /// </summary>
         public async Task StartAsync()
         {
             if (_disposed || _isRunning)
                 return;
 
-            // Verifica capacidade do hardware
+            // ✅ Sistema corrigido: só faz BYPASS se hardware for MUITO ruim
             var optimizedConfig = HardwareDetector.GetOptimalConfig(_config);
             if (optimizedConfig == null)
             {
-                System.Diagnostics.Debug.WriteLine("Animação desabilitada: hardware limitado");
+                System.Diagnostics.Debug.WriteLine("🚫 BYPASS ativado - hardware muito limitado, animação desabilitada para economia de recursos");
                 return;
             }
+
+            // ✅ Para hardware adequado (Pixel 5, etc.), usa configuração ORIGINAL
+            System.Diagnostics.Debug.WriteLine($"✅ Hardware adequado - usando configuração original: ToScale={optimizedConfig.ToScale}");
 
             _cancellationTokenSource = new CancellationTokenSource();
             _isRunning = true;
 
             System.Diagnostics.Debug.WriteLine($"Iniciando PulseAnimation no elemento: {_target.GetType().Name}");
+            System.Diagnostics.Debug.WriteLine($"🎯 Configuração: FromScale={optimizedConfig.FromScale}, ToScale={optimizedConfig.ToScale}, Duration={optimizedConfig.PulseDuration}ms");
+
             AnimationStarted?.Invoke(this, EventArgs.Empty);
 
             try
@@ -122,17 +127,22 @@
                     if (!_shouldContinue())
                         break;
 
+                    // 🎯 LOG detalhado do pulse
+                    System.Diagnostics.Debug.WriteLine($"🔥 Pulse {i + 1}/{config.PulseCount}: {config.FromScale} → {config.ToScale} em {config.PulseDuration}ms");
+
                     // Pulse: expand → contract
                     await MainThread.InvokeOnMainThreadAsync(async () =>
                     {
                         if (_target != null && _isRunning)
                         {
                             // Expansão
+                            System.Diagnostics.Debug.WriteLine($"⬆️ Expandindo para {config.ToScale}");
                             await _target.ScaleTo(config.ToScale, config.PulseDuration, config.ExpandEasing);
 
                             // Contração
                             if (_isRunning) // Verifica novamente após await
                             {
+                                System.Diagnostics.Debug.WriteLine($"⬇️ Contraindo para {config.FromScale}");
                                 await _target.ScaleTo(config.FromScale, config.PulseDuration, config.ContractEasing);
                             }
                         }

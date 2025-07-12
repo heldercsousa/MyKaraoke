@@ -42,6 +42,16 @@ namespace MyKaraoke.View
                 _serviceProvider = ServiceProvider.FromPage(this);
                 _queueService = _serviceProvider.GetService<IQueueService>();
 
+                // 🎯 Conecta os eventos do bottomNav com os handlers locais
+                if (bottomNav != null)
+                {
+                    bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
+                    bottomNav.BandokeClicked += OnBottomNavBandokeClicked;
+                    bottomNav.NovaFilaClicked += OnBottomNavNovaFilaClicked;
+                    bottomNav.HistoricoClicked += OnBottomNavHistoricoClicked;
+                    bottomNav.AdministrarClicked += OnBottomNavAdministrarClicked;
+                }
+
                 // Debug: Log component availability after handler changed
                 System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - bottomNav: {bottomNav != null}");
                 System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - emptyQueueMessage: {emptyQueueMessage != null}");
@@ -356,7 +366,7 @@ namespace MyKaraoke.View
             }
         }
 
-        // NEW: Bottom Navigation Event Handlers
+        // NEW: Bottom Navigation Event Handlers (atualizados para nova estrutura)
         private void OnBottomNavLocaisClicked(object sender, EventArgs e)
         {
             try
@@ -370,34 +380,16 @@ namespace MyKaraoke.View
             }
         }
 
-        private async void OnBottomNavCantoresClicked(object sender, EventArgs e)
+        private void OnBottomNavBandokeClicked(object sender, EventArgs e)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("Cantores clicked - navigating to PersonPage");
-
-                if (_serviceProvider != null)
-                {
-                    await Navigation.PushAsync(new PersonPage());
-                }
-                else
-                {
-                    // Fallback: criar PersonPage diretamente
-                    await Navigation.PushAsync(new PersonPage());
-                }
+                System.Diagnostics.Debug.WriteLine("Bandokê clicked");
+                // TODO: Navigate to Bandokê page
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"OnBottomNavCantoresClicked - Error: {ex.Message}");
-                // Fallback final
-                try
-                {
-                    await Navigation.PushAsync(new PersonPage());
-                }
-                catch
-                {
-                    System.Diagnostics.Debug.WriteLine("Failed to navigate to PersonPage");
-                }
+                System.Diagnostics.Debug.WriteLine($"OnBottomNavBandokeClicked - Error: {ex.Message}");
             }
         }
 
@@ -414,19 +406,6 @@ namespace MyKaraoke.View
             }
         }
 
-        private void OnBottomNavBandasMusicosClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Bandas/Músicos clicked");
-                // TODO: Navigate to Bandas/Músicos page
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBottomNavBandasMusicosClicked - Error: {ex.Message}");
-            }
-        }
-
         private void OnBottomNavHistoricoClicked(object sender, EventArgs e)
         {
             try
@@ -437,6 +416,19 @@ namespace MyKaraoke.View
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"OnBottomNavHistoricoClicked - Error: {ex.Message}");
+            }
+        }
+
+        private void OnBottomNavAdministrarClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("Administrar clicked");
+                // TODO: Navigate to Administrar page
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OnBottomNavAdministrarClicked - Error: {ex.Message}");
             }
         }
 
@@ -480,6 +472,13 @@ namespace MyKaraoke.View
                     {
                         await bottomNav.StopNovaFilaAnimationAsync();
                         System.Diagnostics.Debug.WriteLine("OnDisappearing - Animação Nova Fila parada");
+
+                        // Desconecta os eventos para evitar memory leaks
+                        bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
+                        bottomNav.BandokeClicked -= OnBottomNavBandokeClicked;
+                        bottomNav.NovaFilaClicked -= OnBottomNavNovaFilaClicked;
+                        bottomNav.HistoricoClicked -= OnBottomNavHistoricoClicked;
+                        bottomNav.AdministrarClicked -= OnBottomNavAdministrarClicked;
                     }
                     catch (Exception animEx)
                     {

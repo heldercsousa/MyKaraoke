@@ -14,7 +14,7 @@
             <StackLayout.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnBackButtonClicked" />
             </StackLayout.GestureRecognizers>
-            <Image Source="setaesquerda.png" Style="{StaticResource CompactUpperNavIconStyle}" />
+            <Image Source="setaesquerda.png" Style="{StaticResource CompactBottomNavIconStyle}" />
         </StackLayout>
 
         <!-- Sombra externa (glow maior) -->
@@ -42,7 +42,7 @@
                 <TapGestureRecognizer Tapped="OnAddButtonClicked" />
             </StackLayout.GestureRecognizers>
             <Image Source="add.png" 
-                   Style="{StaticResource CompactUpperNavIconStyle}"
+                   Style="{StaticResource CompactBottomNavIconStyle}"
                    Opacity="0.9" />
         </StackLayout>
 

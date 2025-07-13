@@ -1,109 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:MyKaraoke.View.Components"
              x:Class="MyKaraoke.View.Components.InactiveQueueBottomNav">
 
-    <!-- Frame principal com estilos da StackPage -->
-    <Frame Style="{StaticResource CompactBottomNavBarStyle}">
-
-        <!-- Grid wrapper que contém tanto a linha separadora quanto o grid principal -->
-        <Grid RowDefinitions="1,*">
-
-            <!-- Linha separadora superior -->
-            <BoxView Grid.Row="0"
-                     BackgroundColor="#533682"
-                     HeightRequest="1"
-                     HorizontalOptions="Fill"
-                     VerticalOptions="Start" />
-
-            <!-- Grid principal com 5 colunas -->
-            <Grid Grid.Row="1"
-                  ColumnDefinitions="*,*,*,*,*" 
-                  Padding="5,2,5,2"
-                  HorizontalOptions="Fill"
-                  VerticalOptions="Fill">
-
-                <!-- Locais Button -->
-                <StackLayout Grid.Column="0" 
-                             HorizontalOptions="Center" 
-                             VerticalOptions="Center" 
-                             Spacing="1">
-                    <StackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnLocaisClicked" />
-                    </StackLayout.GestureRecognizers>
-                    <Image Source="spot.png" 
-                           Style="{StaticResource CompactBottomNavIconStyle}" />
-                    <Label Text="Locais" 
-                           Style="{StaticResource CompactBottomNavLabelStyle}" />
-                </StackLayout>
-
-                <!-- Bandokê Button -->
-                <StackLayout Grid.Column="1" 
-                             HorizontalOptions="Center" 
-                             VerticalOptions="Center" 
-                             Spacing="1">
-                    <StackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnBandokeClicked" />
-                    </StackLayout.GestureRecognizers>
-                    <Image Source="musicos.png" 
-                           Style="{StaticResource CompactBottomNavIconStyle}" />
-                    <Label Text="Bandokê" 
-                           Style="{StaticResource CompactBottomNavLabelStyle}" />
-                </StackLayout>
-
-                <!-- Nova Fila Button - Versão Amarela da StackPage -->
-                <StackLayout Grid.Column="2" 
-                             HorizontalOptions="Center" 
-                             VerticalOptions="Center" 
-                             Spacing="2">
-
-                    <!-- Frame com gradiente amarelo (mesmo da StackPage) -->
-                    <Frame Style="{StaticResource YellowGradientFrameStyle}">
-                        <Frame.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnNovaFilaClicked" />
-                        </Frame.GestureRecognizers>
-
-                        <!-- Label com "+" perfeitamente centralizado -->
-                        <Label Style="{StaticResource PlusLabelStyle}" />
-                    </Frame>
-
-                    <!-- Label abaixo do botão -->
-                    <Label Text="Nova Fila" 
-                           Style="{StaticResource CompactBottomNavLabelStyle}" />
-                </StackLayout>
-
-                <!-- Histórico Button -->
-                <StackLayout Grid.Column="3" 
-                             HorizontalOptions="Center" 
-                             VerticalOptions="Center" 
-                             Spacing="1">
-                    <StackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnHistoricoClicked" />
-                    </StackLayout.GestureRecognizers>
-                    <Image Source="historico.png" 
-                           Style="{StaticResource CompactBottomNavIconStyle}" />
-                    <Label Text="Histórico" 
-                           Style="{StaticResource CompactBottomNavLabelStyle}" />
-                </StackLayout>
-
-                <!-- Administrar Button - CORRIGIDO -->
-                <StackLayout Grid.Column="4" 
-                    HorizontalOptions="Center" 
-                    VerticalOptions="Center" 
-                    Spacing="1">
-                    <StackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnAdministrarClicked" />
-                    </StackLayout.GestureRecognizers>
-                    <Image Source="manage.png" 
-                        Style="{StaticResource CompactBottomNavIconStyle}" />
-                    <Label Text="Administrar" 
-                        Style="{StaticResource CompactBottomNavLabelStyle}" />
-                </StackLayout>
-                
-                
-                
-            </Grid>
-        </Grid>
-    </Frame>
+    <!-- Usa o componente base com configuração específica -->
+    <components:BaseNavBarComponent x:Name="baseNavBar" 
+                                   IsAnimated="True"
+                                   ShowAnimationDelay="100" />
 
 </ContentView>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ============================================================================ -->
+    <!-- 🔥 BOTTOM NAVIGATION BAR STYLES -->
+    <!-- ============================================================================ -->
+
+    <!-- Base Bottom Navigation Bar Frame -->
+    <Style x:Key="BaseBottomNavBarStyle" TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="Black" />
+        <Setter Property="BorderColor" Value="#533682" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HasShadow" Value="False" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="HeightRequest" Value="65" />
+        <Setter Property="VerticalOptions" Value="End" />
+    </Style>
+
+    <!-- Compact version (same as base but explicit) -->
+    <Style x:Key="CompactBottomNavBarStyle" TargetType="Frame" BasedOn="{StaticResource BaseBottomNavBarStyle}">
+        <!-- Inherits all properties from base -->
+    </Style>
+
+    <!-- Legacy style for compatibility -->
+    <Style x:Key="BottomNavigationBarStyle" TargetType="Frame" BasedOn="{StaticResource BaseBottomNavBarStyle}">
+        <!-- Inherits all properties from base -->
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- 🔥 BOTTOM NAVIGATION BUTTON STYLES -->
+    <!-- ============================================================================ -->
+
+    <!-- Base Button Style for all navbar buttons -->
+    <Style x:Key="BaseNavButtonStyle" TargetType="StackLayout">
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Spacing" Value="1" />
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <!-- Regular Icon Button Style -->
+    <Style x:Key="NavButtonIconStyle" TargetType="Image">
+        <Setter Property="WidthRequest" Value="24" />
+        <Setter Property="HeightRequest" Value="24" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Start" />
+        <Setter Property="Margin" Value="0,8,0,2" />
+    </Style>
+
+    <!-- Label Style for navbar buttons -->
+    <Style x:Key="NavButtonLabelStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#D1D5DB" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="End" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <!-- Compact versions (aliases for compatibility) -->
+    <Style x:Key="CompactBottomNavIconStyle" TargetType="Image" BasedOn="{StaticResource NavButtonIconStyle}">
+        <!-- Inherits all properties -->
+    </Style>
+
+    <Style x:Key="CompactBottomNavLabelStyle" TargetType="Label" BasedOn="{StaticResource NavButtonLabelStyle}">
+        <!-- Inherits all properties -->
+    </Style>
+
+    <!-- Legacy styles for compatibility -->
+    <Style x:Key="BottomNavIconStyle" TargetType="Image" BasedOn="{StaticResource NavButtonIconStyle}">
+        <Setter Property="Margin" Value="0,12,0,4" />
+    </Style>
+
+    <Style x:Key="BottomNavButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="#D1D5DB" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
+        <Setter Property="VerticalOptions" Value="Fill" />
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- 🔥 SPECIAL BUTTON STYLES (Nova Fila, etc.) -->
+    <!-- ============================================================================ -->
+
+    <!-- Special Button Container (for buttons like Nova Fila) -->
+    <Style x:Key="SpecialNavButtonStyle" TargetType="StackLayout" BasedOn="{StaticResource BaseNavButtonStyle}">
+        <Setter Property="Spacing" Value="2" />
+    </Style>
+
+    <!-- Yellow Gradient Frame Style (for Nova Fila button) -->
+    <Style x:Key="YellowGradientFrameStyle" TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0,4,0,0" />
+        <Setter Property="WidthRequest" Value="60" />
+        <Setter Property="HeightRequest" Value="32" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HasShadow" Value="False" />
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFD700" Offset="0" />
+                    <GradientStop Color="#FFA500" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#FFD700" Offset="0,2" Radius="8" Opacity="0.3" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Orange Gradient Frame Style (alternative special button) -->
+    <Style x:Key="OrangeGradientFrameStyle" TargetType="Frame" BasedOn="{StaticResource YellowGradientFrameStyle}">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FF9800" Offset="0" />
+                    <GradientStop Color="#FF5722" Offset="1" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#FF9800" Offset="0,2" Radius="8" Opacity="0.3" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Plus Label Style (for + symbol in special buttons) -->
+    <Style x:Key="PlusLabelStyle" TargetType="Label">
+        <Setter Property="Text" Value="+" />
+        <Setter Property="TextColor" Value="#1A1024" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+
+    <!-- Custom Icon Label Style (for custom symbols in special buttons) -->
+    <Style x:Key="SpecialButtonIconLabelStyle" TargetType="Label" BasedOn="{StaticResource PlusLabelStyle}">
+        <Setter Property="Text" Value="" />
+        <Setter Property="FontSize" Value="18" />
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- 🔥 ANIMATION STATE STYLES -->
+    <!-- ============================================================================ -->
+
+    <!-- Hidden state for show/hide animations -->
+    <Style x:Key="NavButtonHiddenStyle" TargetType="StackLayout" BasedOn="{StaticResource BaseNavButtonStyle}">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="TranslationY" Value="20" />
+    </Style>
+
+    <!-- Visible state for show/hide animations -->
+    <Style x:Key="NavButtonVisibleStyle" TargetType="StackLayout" BasedOn="{StaticResource BaseNavButtonStyle}">
+        <Setter Property="Opacity" Value="1" />
+        <Setter Property="TranslationY" Value="0" />
+    </Style>
+
+    <!-- Pressed state for tap animations -->
+    <Style x:Key="NavButtonPressedStyle" TargetType="StackLayout" BasedOn="{StaticResource BaseNavButtonStyle}">
+        <Setter Property="Scale" Value="0.95" />
+        <Setter Property="Opacity" Value="0.8" />
+    </Style>
+
+</ResourceDictionary>

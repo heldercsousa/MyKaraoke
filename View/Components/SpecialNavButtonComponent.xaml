@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyKaraoke.View.Components.SpecialNavButtonComponent">
+
+    <StackLayout x:Name="buttonContainer" Style="{StaticResource SpecialNavButtonStyle}">
+
+        <!-- Frame com gradiente customiz�vel -->
+        <Frame x:Name="gradientFrame" Style="{StaticResource YellowGradientFrameStyle}">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnButtonTapped" />
+            </Frame.GestureRecognizers>
+
+            <!-- Content din�mico: pode ser Label ou Image -->
+            <Grid x:Name="contentContainer">
+                <!-- Label para texto/s�mbolos -->
+                <Label x:Name="contentLabel" 
+                       Style="{StaticResource PlusLabelStyle}"
+                       IsVisible="True" />
+
+                <!-- Image para �cones -->
+                <Image x:Name="contentImage" 
+                       IsVisible="False"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Aspect="AspectFit" />
+            </Grid>
+        </Frame>
+
+        <!-- Label abaixo do bot�o -->
+        <Label x:Name="buttonLabel" 
+               Style="{StaticResource NavButtonLabelStyle}" />
+
+    </StackLayout>
+
+</ContentView>

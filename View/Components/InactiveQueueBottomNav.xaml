@@ -31,7 +31,7 @@
                     <StackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnLocaisClicked" />
                     </StackLayout.GestureRecognizers>
-                    <Image Source="locais.png" 
+                    <Image Source="spot.png" 
                            Style="{StaticResource CompactBottomNavIconStyle}" />
                     <Label Text="Locais" 
                            Style="{StaticResource CompactBottomNavLabelStyle}" />

@@ -5,5 +5,6 @@ namespace MyKaraoke.Domain.Repositories
     {
         Task<Evento> GetActiveEventAsync();
         Task SetActiveEventAsync(int eventId);
+        Task<bool> HasEventsByEstabelecimentoAsync(int estabelecimentoId);
     }
 }

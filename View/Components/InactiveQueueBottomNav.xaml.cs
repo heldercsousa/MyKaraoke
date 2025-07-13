@@ -53,33 +53,28 @@ namespace MyKaraoke.View.Components
                     return;
                 }
 
-                // 🔥 CONFIGURAÇÃO INTENSA PARA NOVA FILA - 100% MAIOR
-                var intensiveConfig = new AnimationConfig
+                // 🎯 Configuração de animação mais rápida e intensa para Nova Fila
+                var fastConfig = new AnimationConfig
                 {
                     FromScale = 1.0,
-                    ToScale = 1.25, 
-                    PulseDuration = 150, // Muito rápido
-                    PulsePause = 100,    // Pausa curta
-                    PulseCount = 5,      // 5 pulses por ciclo
-                    InitialDelay = 1000, // Inicia rápido
-                    CycleInterval = 6000, // Repete a cada 6 segundos
-                    ExpandEasing = Easing.BounceOut, // 🎯 Easing mais dramático
-                    ContractEasing = Easing.CubicIn,
+                    ToScale = 1.25, // 25% maior conforme solicitado
+                    PulseDuration = 150, // Mais rápido (era 400ms)
+                    PulsePause = 100,    // Pausa menor (era 800ms)
+                    PulseCount = 5,      // Mais pulses (era 3)
+                    InitialDelay = 1000, // Delay menor (era 2000ms)
+                    CycleInterval = 6000, // Ciclos mais frequentes (era 10000ms)
+                    ExpandEasing = Easing.BounceOut,
+                    ContractEasing = Easing.BounceIn,
                     AutoRepeat = true
                 };
 
-                System.Diagnostics.Debug.WriteLine($"🎯 Iniciando animação INTENSA: ToScale={intensiveConfig.ToScale}, Duration={intensiveConfig.PulseDuration}ms");
-
-                // ✅ Sistema corrigido: HardwareDetector agora preserva sua configuração
-                // Para Pixel 5 e hardware similar, usará EXATAMENTE sua configuração
+                // Usa o AnimationManager com configuração customizada
                 await _animationManager.StartPulseAsync(
                     animationKey: "NovaFilaButton",
                     target: novaFilaStack,
-                    config: intensiveConfig,
-                    shouldContinue: () => this.IsVisible
+                    config: fastConfig,
+                    shouldContinue: () => this.IsVisible // Para quando o componente fica invisível
                 );
-
-                System.Diagnostics.Debug.WriteLine("🚀 Animação Nova Fila iniciada - sistema automaticamente detectará se hardware suporta");
             }
             catch (Exception ex)
             {
@@ -148,10 +143,85 @@ namespace MyKaraoke.View.Components
         public bool IsNovaFilaAnimationRunning => _animationManager.IsAnimationRunning("NovaFilaButton");
 
         // Event handlers para os botões
-        private void OnLocaisClicked(object sender, EventArgs e)
+        private async void OnLocaisClicked(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Botão Locais clicado no BottomNav");
-            LocaisClicked?.Invoke(sender, e);
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("Botão Locais clicado no BottomNav - navegando para SpotPage");
+
+                // Estratégia 1: Usar ServiceProvider através da página pai
+                var parentPage = FindParentPage();
+                if (parentPage != null)
+                {
+                    try
+                    {
+                        var serviceProvider = new View.ServiceProvider(
+                            parentPage.Handler?.MauiContext?.Services ??
+                            throw new InvalidOperationException("MauiContext não disponível")
+                        );
+
+                        var spotPage = serviceProvider.GetService<SpotPage>();
+
+                        if (Application.Current?.MainPage is NavigationPage navPage)
+                        {
+                            await navPage.PushAsync(spotPage);
+                            LocaisClicked?.Invoke(sender, e);
+                            return;
+                        }
+                        else if (parentPage.Navigation != null)
+                        {
+                            await parentPage.Navigation.PushAsync(spotPage);
+                            LocaisClicked?.Invoke(sender, e);
+                            return;
+                        }
+                    }
+                    catch (Exception serviceEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Erro ao usar ServiceProvider: {serviceEx.Message}");
+                        // Continua para o fallback abaixo
+                    }
+                }
+
+                // Estratégia 2: Criação direta de SpotPage
+                System.Diagnostics.Debug.WriteLine("Usando fallback - criação direta de SpotPage");
+                var fallbackSpotPage = new SpotPage();
+
+                if (Application.Current?.MainPage?.Navigation != null)
+                {
+                    await Application.Current.MainPage.Navigation.PushAsync(fallbackSpotPage);
+                    LocaisClicked?.Invoke(sender, e);
+                }
+                else if (parentPage?.Navigation != null)
+                {
+                    await parentPage.Navigation.PushAsync(fallbackSpotPage);
+                    LocaisClicked?.Invoke(sender, e);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Nenhuma forma de navegação disponível");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro crítico na navegação Locais: {ex.Message}");
+
+                // Estratégia 3: Feedback ao usuário sobre o erro
+                try
+                {
+                    var parentPage = FindParentPage();
+                    if (parentPage != null)
+                    {
+                        await parentPage.DisplayAlert("Erro", "Não foi possível navegar para a página de locais. Tente novamente.", "OK");
+                    }
+                }
+                catch (Exception alertEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Falha ao exibir alerta: {alertEx.Message}");
+                }
+
+                // Ainda assim invoca o evento para permitir tratamento customizado
+                LocaisClicked?.Invoke(sender, e);
+            }
         }
 
         private void OnBandokeClicked(object sender, EventArgs e)

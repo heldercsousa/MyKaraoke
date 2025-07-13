@@ -3,7 +3,7 @@ using MyKaraoke.Infra.Data;
 using MyKaraoke.Domain.Repositories;
 using MyKaraoke.Infra.Data.Repositories;
 using MyKaraoke.Services;
-using MyKaraoke.Infra.Utils; // 🔄 NOVO: TextNormalizer
+using MyKaraoke.Infra.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyKaraoke.View;
@@ -46,6 +46,7 @@ public static class MauiProgram
 
         // === SERVIÇOS DE NEGÓCIO (SCOPED - com estado) ===
         builder.Services.AddScoped<IPessoaService, PessoaService>();
+        builder.Services.AddScoped<IEstabelecimentoService, EstabelecimentoService>();
         builder.Services.AddScoped<IQueueService, QueueService>();
         builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 
@@ -54,6 +55,8 @@ public static class MauiProgram
         builder.Services.AddTransient<TonguePage>();
         builder.Services.AddTransient<StackPage>();
         builder.Services.AddTransient<PersonPage>();
+        builder.Services.AddTransient<SpotPage>();
+        builder.Services.AddTransient<SpotFormPage>();
 
         return builder.Build();
     }

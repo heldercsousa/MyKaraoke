@@ -10,6 +10,12 @@ namespace MyKaraoke.View.Components
         public static readonly BindableProperty BackCommandProperty =
             BindableProperty.Create(nameof(BackCommand), typeof(ICommand), typeof(HeaderComponent), null);
 
+        public static readonly BindableProperty ShowAddButtonProperty =
+            BindableProperty.Create(nameof(ShowAddButton), typeof(bool), typeof(HeaderComponent), false);
+
+        public static readonly BindableProperty AddCommandProperty =
+            BindableProperty.Create(nameof(AddCommand), typeof(ICommand), typeof(HeaderComponent), null);
+
         public string Title
         {
             get => (string)GetValue(TitleProperty);
@@ -22,11 +28,27 @@ namespace MyKaraoke.View.Components
             set => SetValue(BackCommandProperty, value);
         }
 
+        public bool ShowAddButton
+        {
+            get => (bool)GetValue(ShowAddButtonProperty);
+            set => SetValue(ShowAddButtonProperty, value);
+        }
+
+        public ICommand AddCommand
+        {
+            get => (ICommand)GetValue(AddCommandProperty);
+            set => SetValue(AddCommandProperty, value);
+        }
+
         /// <summary>
         /// Evento disparado quando o botão voltar é clicado
-        /// Permite que a view pai personalize o comportamento
         /// </summary>
         public event EventHandler BackButtonClicked;
+
+        /// <summary>
+        /// Evento disparado quando o botão adicionar é clicado
+        /// </summary>
+        public event EventHandler AddButtonClicked;
 
         public HeaderComponent()
         {
@@ -74,6 +96,37 @@ namespace MyKaraoke.View.Components
         }
 
         /// <summary>
+        /// Handler do botão adicionar
+        /// </summary>
+        private void OnAddButtonClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("Add button clicked");
+
+                // 1. Primeiro, verifica se há comando customizado
+                if (AddCommand != null && AddCommand.CanExecute(null))
+                {
+                    AddCommand.Execute(null);
+                    return;
+                }
+
+                // 2. Depois, verifica se há event handler customizado
+                if (AddButtonClicked != null)
+                {
+                    AddButtonClicked.Invoke(this, EventArgs.Empty);
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine("No add command or event handler configured");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OnAddButtonClicked - Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Lógica de navegação automática baseada no contexto da página atual
         /// </summary>
         private async Task HandleAutomaticNavigationAsync()
@@ -97,10 +150,10 @@ namespace MyKaraoke.View.Components
                     // StackPage = página principal → sair do app
                     await ExitApplicationAsync();
                 }
-                else if (pageType.Name == "PersonPage")
+                else if (pageType.Name == "PersonPage" || pageType.Name == "SpotPage" || pageType.Name == "SpotFormPage")
                 {
-                    // PersonPage → voltar para StackPage
-                    await NavigateToStackPageAsync();
+                    // PersonPage/SpotPage/SpotFormPage → voltar para página anterior
+                    await UseDefaultNavigationAsync();
                 }
                 else if (IsMainPage(currentPage))
                 {

@@ -13,10 +13,9 @@ namespace MyKaraoke.Infra.Data.Config
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
             builder.Property(e => e.Nome)
-                   .HasColumnType("nvarchar(30)")
+                   .HasColumnType("TEXT")
                    .IsRequired()
-                   .HasMaxLength(30);
+                   .HasMaxLength(30); // Suporte multilíngue: EN, PT, ES, FR, JA, KO
         }
     }
-
 }

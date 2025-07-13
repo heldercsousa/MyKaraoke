@@ -52,33 +52,41 @@
 
 	<ItemGroup>
 	  <None Remove="Platforms\Android\Resources\xml\locales_config.xml" />
+	  <None Remove="Resources\AppIcon\add.png" />
 	  <None Remove="Resources\AppIcon\cake.png" />
 	  <None Remove="Resources\AppIcon\cantores.png" />
+	  <None Remove="Resources\AppIcon\delete.png" />
+	  <None Remove="Resources\AppIcon\edit.png" />
 	  <None Remove="Resources\AppIcon\email.png" />
 	  <None Remove="Resources\AppIcon\email_purple.png" />
 	  <None Remove="Resources\AppIcon\historico.png" />
-	  <None Remove="Resources\AppIcon\locais.png" />
 	  <None Remove="Resources\AppIcon\manage.png" />
 	  <None Remove="Resources\AppIcon\manage_purple.png" />
 	  <None Remove="Resources\AppIcon\musicos.png" />
 	  <None Remove="Resources\AppIcon\novo.png" />
 	  <None Remove="Resources\AppIcon\setaesquerda.png" />
+	  <None Remove="Resources\AppIcon\spot.png" />
+	  <None Remove="Resources\AppIcon\spot_purple.png" />
 	  <None Remove="Resources\AppIcon\stack.png" />
 	  <None Remove="Resources\AppIcon\stack_purple.png" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Include="Resources\AppIcon\add.png" />
 	  <MauiImage Include="Resources\AppIcon\cake.png" />
 	  <MauiImage Include="Resources\AppIcon\cantores.png" />
+	  <MauiImage Include="Resources\AppIcon\delete.png" />
+	  <MauiImage Include="Resources\AppIcon\edit.png" />
 	  <MauiImage Include="Resources\AppIcon\email.png" />
 	  <MauiImage Include="Resources\AppIcon\email_purple.png" />
 	  <MauiImage Include="Resources\AppIcon\historico.png" />
-	  <MauiImage Include="Resources\AppIcon\locais.png" />
 	  <MauiImage Include="Resources\AppIcon\manage.png" />
 	  <MauiImage Include="Resources\AppIcon\manage_purple.png" />
 	  <MauiImage Include="Resources\AppIcon\musicos.png" />
 	  <MauiImage Include="Resources\AppIcon\novo.png" />
 	  <MauiImage Include="Resources\AppIcon\setaesquerda.png" />
+	  <MauiImage Include="Resources\AppIcon\spot.png" />
+	  <MauiImage Include="Resources\AppIcon\spot_purple.png" />
 	  <MauiImage Include="Resources\AppIcon\stack.png" />
 	  <MauiImage Include="Resources\AppIcon\stack_purple.png" />
 	</ItemGroup>
@@ -234,6 +242,12 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="SplashLoadingPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="SpotFormPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="SpotPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="StackPage.xaml">

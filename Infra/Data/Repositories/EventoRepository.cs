@@ -31,5 +31,15 @@ namespace MyKaraoke.Infra.Data.Repositories
             }
             await _context.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Verifica se há eventos associados a um estabelecimento
+        /// Adicionar esta método à interface IEventoRepository e implementação EventoRepository
+        /// </summary>
+        public async Task<bool> HasEventsByEstabelecimentoAsync(int estabelecimentoId)
+        {
+            return await _context.Eventos
+                .AnyAsync(e => e.EstabelecimentoId == estabelecimentoId);
+        }
     }
 }

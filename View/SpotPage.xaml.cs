@@ -21,6 +21,9 @@ namespace MyKaraoke.View
             // Inicializa coleções
             _locais = new ObservableCollection<Estabelecimento>();
             locaisCollectionView.ItemsSource = _locais;
+
+            // Debug: Log component initialization
+            System.Diagnostics.Debug.WriteLine($"SpotPage Constructor - CrudNavBarComponent: {CrudNavBarComponent != null}");
         }
 
         protected override void OnHandlerChanged()
@@ -33,6 +36,10 @@ namespace MyKaraoke.View
                 {
                     _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
                     _estabelecimentoService = _serviceProvider?.GetService<IEstabelecimentoService>();
+
+                    // Debug: Log component availability after handler changed
+                    System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - CrudNavBarComponent: {CrudNavBarComponent != null}");
+                    System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - EstabelecimentoService: {_estabelecimentoService != null}");
                 }
                 catch (Exception ex)
                 {
@@ -44,7 +51,19 @@ namespace MyKaraoke.View
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            // Debug: Log component availability on appearing
+            System.Diagnostics.Debug.WriteLine($"OnAppearing - CrudNavBarComponent: {CrudNavBarComponent != null}");
+            System.Diagnostics.Debug.WriteLine($"OnAppearing - EstabelecimentoService: {_estabelecimentoService != null}");
+
+            // ✅ CORREÇÃO CRÍTICA: Sempre recarrega dados ao aparecer na tela
             await LoadLocaisAsync();
+
+            // Wait a bit to ensure XAML elements are fully loaded
+            await Task.Delay(100);
+
+            // Inicia animações do CrudNavBarComponent se necessário
+            await StartCrudNavBarComponentAnimationsIfNeeded();
         }
 
         #region Carregamento de Dados
@@ -53,42 +72,158 @@ namespace MyKaraoke.View
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("LoadLocaisAsync - Iniciando carregamento");
+
                 if (_estabelecimentoService == null)
                 {
+                    System.Diagnostics.Debug.WriteLine("LoadLocaisAsync - EstabelecimentoService é null, mostrando estado vazio");
                     ShowEmptyState();
                     return;
                 }
 
                 var locais = await _estabelecimentoService.GetAllEstabelecimentosAsync();
+                System.Diagnostics.Debug.WriteLine($"LoadLocaisAsync - Encontrados {locais?.Count() ?? 0} locais");
 
-                _locais.Clear();
-                foreach (var local in locais)
+                // ✅ CORREÇÃO: Aguarda thread principal para atualizar UI
+                await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    _locais.Add(local);
-                }
+                    _locais.Clear();
 
-                UpdateUIState();
+                    if (locais != null)
+                    {
+                        foreach (var local in locais)
+                        {
+                            _locais.Add(local);
+                            System.Diagnostics.Debug.WriteLine($"LoadLocaisAsync - Adicionado local: {local.Nome}");
+                        }
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"LoadLocaisAsync - ObservableCollection agora tem {_locais.Count} itens");
+
+                    // ✅ CORREÇÃO: Força atualização da UI após modificar dados
+                    UpdateUIState();
+                });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao carregar locais: {ex.Message}");
-                ShowEmptyState();
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    ShowEmptyState();
+                });
             }
         }
 
         private void UpdateUIState()
         {
-            bool hasLocais = _locais.Count > 0;
+            try
+            {
+                bool hasLocais = _locais.Count > 0;
+                System.Diagnostics.Debug.WriteLine($"UpdateUIState - hasLocais: {hasLocais}, count: {_locais.Count}");
 
-            // Mostra/esconde lista vs estado vazio
-            locaisCollectionView.IsVisible = hasLocais;
-            emptyStateFrame.IsVisible = !hasLocais;
+                // ✅ CORREÇÃO: Força atualização no MainThread
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    // Mostra/esconde lista vs estado vazio
+                    locaisCollectionView.IsVisible = hasLocais;
+                    emptyStateFrame.IsVisible = !hasLocais;
+
+                    System.Diagnostics.Debug.WriteLine($"UpdateUIState - locaisCollectionView.IsVisible: {locaisCollectionView.IsVisible}");
+                    System.Diagnostics.Debug.WriteLine($"UpdateUIState - emptyStateFrame.IsVisible: {emptyStateFrame.IsVisible}");
+
+                    // ✅ NOVO: Força refresh da CollectionView para garantir renderização
+                    if (hasLocais && locaisCollectionView.ItemsSource != null)
+                    {
+                        // Força atualização da CollectionView
+                        var currentSource = locaisCollectionView.ItemsSource;
+                        locaisCollectionView.ItemsSource = null;
+                        locaisCollectionView.ItemsSource = currentSource;
+                        System.Diagnostics.Debug.WriteLine("UpdateUIState - CollectionView ItemsSource refreshed");
+                    }
+
+                    // Atualiza visibilidade da navbar baseado no estado
+                    UpdateCrudNavBarComponentVisibility();
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro em UpdateUIState: {ex.Message}");
+            }
         }
 
         private void ShowEmptyState()
         {
-            locaisCollectionView.IsVisible = false;
-            emptyStateFrame.IsVisible = true;
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("ShowEmptyState - Configurando estado vazio");
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    locaisCollectionView.IsVisible = false;
+                    emptyStateFrame.IsVisible = true;
+
+                    System.Diagnostics.Debug.WriteLine($"ShowEmptyState - locaisCollectionView.IsVisible: {locaisCollectionView.IsVisible}");
+                    System.Diagnostics.Debug.WriteLine($"ShowEmptyState - emptyStateFrame.IsVisible: {emptyStateFrame.IsVisible}");
+
+                    // Sempre mostra o CrudNavBarComponent no estado vazio
+                    UpdateCrudNavBarComponentVisibility();
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro em ShowEmptyState: {ex.Message}");
+            }
+        }
+
+        private void UpdateCrudNavBarComponentVisibility()
+        {
+            try
+            {
+                if (CrudNavBarComponent != null)
+                {
+                    // Sempre visível na SpotPage para permitir adicionar novos locais
+                    CrudNavBarComponent.IsVisible = true;
+                    System.Diagnostics.Debug.WriteLine("CrudNavBarComponent visibilidade atualizada: sempre visível");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar visibilidade CrudNavBarComponent: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Animation Methods
+
+        /// <summary>
+        /// Inicia animações do CrudNavBarComponent se necessário
+        /// Similar ao padrão usado na StackPage
+        /// </summary>
+        private async Task StartCrudNavBarComponentAnimationsIfNeeded()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("StartCrudNavBarComponentAnimationsIfNeeded - Starting");
+
+                if (CrudNavBarComponent != null)
+                {
+                    try
+                    {
+                        await Task.Delay(500); // Aguarda UI renderizar
+                        await CrudNavBarComponent.StartNovoLocalAnimationAsync();
+                        System.Diagnostics.Debug.WriteLine("StartCrudNavBarComponentAnimationsIfNeeded - Animação Novo Local iniciada com sucesso");
+                    }
+                    catch (Exception animEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"StartCrudNavBarComponentAnimationsIfNeeded - Erro ao iniciar animação: {animEx.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"StartCrudNavBarComponentAnimationsIfNeeded - Exception: {ex.Message}");
+            }
         }
 
         #endregion
@@ -126,6 +261,36 @@ namespace MyKaraoke.View
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao mostrar ações do local: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region CrudNavBarComponent Event Handlers
+
+        /// <summary>
+        /// Handler para o evento NovoLocalClicked do CrudNavBarComponent
+        /// ✅ CORRIGIDO: Threading e navegação otimizados
+        /// </summary>
+        private async void OnCrudNavBarComponentNovoLocalClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("Botão 'Novo Local' clicado via CrudNavBarComponent - navegando para SpotFormPage");
+
+                // ✅ CORREÇÃO: Navegação deve ser no MainThread para evitar threading issues
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    // ✅ CORREÇÃO: Pequeno delay para evitar "Pending Navigations still processing"
+                    await Task.Delay(100);
+
+                    await NavigateToSpotFormPageAsync(isEditing: false);
+                    System.Diagnostics.Debug.WriteLine("Navegação para SpotFormPage concluída - threading correto");
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao navegar para SpotFormPage via CrudNavBarComponent: {ex.Message}");
             }
         }
 
@@ -169,46 +334,56 @@ namespace MyKaraoke.View
         {
             try
             {
-                // Usa ServiceProvider para criar SpotFormPage
-                if (_serviceProvider != null)
+                // ✅ CORREÇÃO: Usa ServiceProvider no MainThread para evitar threading issues
+                await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
+                    if (_serviceProvider != null)
+                    {
+                        try
+                        {
+                            var spotFormPage = _serviceProvider.GetService<SpotFormPage>();
+
+                            // Configura página para edição ou criação
+                            if (isEditing && editingLocal != null)
+                            {
+                                spotFormPage.ConfigureForEditing(editingLocal);
+                            }
+                            else
+                            {
+                                spotFormPage.ConfigureForAdding();
+                            }
+
+                            await Navigation.PushAsync(spotFormPage);
+                            System.Diagnostics.Debug.WriteLine($"Navegação para SpotFormPage bem-sucedida (isEditing: {isEditing}) - via ServiceProvider");
+                            return;
+                        }
+                        catch (Exception serviceEx)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Erro ao usar ServiceProvider (MainThread): {serviceEx.Message}");
+                        }
+                    }
+
+                    // Fallback: criação direta (também no MainThread)
                     try
                     {
-                        var spotFormPage = _serviceProvider.GetService<SpotFormPage>();
-
-                        // Configura página para edição ou criação
+                        var fallbackSpotFormPage = new SpotFormPage();
                         if (isEditing && editingLocal != null)
                         {
-                            spotFormPage.ConfigureForEditing(editingLocal);
+                            fallbackSpotFormPage.ConfigureForEditing(editingLocal);
                         }
                         else
                         {
-                            spotFormPage.ConfigureForAdding();
+                            fallbackSpotFormPage.ConfigureForAdding();
                         }
 
-                        await Navigation.PushAsync(spotFormPage);
-                        System.Diagnostics.Debug.WriteLine($"Navegação para SpotFormPage bem-sucedida (isEditing: {isEditing})");
-                        return;
+                        await Navigation.PushAsync(fallbackSpotFormPage);
+                        System.Diagnostics.Debug.WriteLine("Navegação para SpotFormPage via fallback (MainThread)");
                     }
-                    catch (Exception serviceEx)
+                    catch (Exception fallbackEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Erro ao usar ServiceProvider: {serviceEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Erro no fallback de navegação: {fallbackEx.Message}");
                     }
-                }
-
-                // Fallback: criação direta
-                var fallbackSpotFormPage = new SpotFormPage();
-                if (isEditing && editingLocal != null)
-                {
-                    fallbackSpotFormPage.ConfigureForEditing(editingLocal);
-                }
-                else
-                {
-                    fallbackSpotFormPage.ConfigureForAdding();
-                }
-
-                await Navigation.PushAsync(fallbackSpotFormPage);
-                System.Diagnostics.Debug.WriteLine("Navegação para SpotFormPage via fallback");
+                });
             }
             catch (Exception ex)
             {
@@ -257,7 +432,8 @@ namespace MyKaraoke.View
                 if (result.success)
                 {
                     await DisplayAlert("Sucesso", result.message, "OK");
-                    await LoadLocaisAsync(); // Recarrega a lista
+                    // ✅ CORREÇÃO: Recarrega dados após exclusão
+                    await LoadLocaisAsync();
                 }
                 else
                 {
@@ -268,6 +444,38 @@ namespace MyKaraoke.View
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao excluir local: {ex.Message}");
                 await DisplayAlert("Erro", "Erro interno ao excluir local", "OK");
+            }
+        }
+
+        #endregion
+
+        #region Lifecycle Methods
+
+        protected override async void OnDisappearing()
+        {
+            base.OnDisappearing();
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("SpotPage: OnDisappearing - parando animações pois página está saindo");
+
+                // ✅ CORREÇÃO: Para animações quando a página REALMENTE desaparece
+                // Isso é correto - a animação deve parar quando o botão não está mais visível
+                if (CrudNavBarComponent != null)
+                {
+                    try
+                    {
+                        await CrudNavBarComponent.StopNovoLocalAnimationAsync();
+                        System.Diagnostics.Debug.WriteLine("OnDisappearing - Animação Novo Local parada (página saindo)");
+                    }
+                    catch (Exception animEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"OnDisappearing - Erro ao parar animação: {animEx.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OnDisappearing - Error: {ex.Message}");
             }
         }
 

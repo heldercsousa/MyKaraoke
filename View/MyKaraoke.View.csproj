@@ -223,6 +223,9 @@
 	  <MauiXaml Update="Components\CardWrapperComponent.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Components\CrudNavBarComponent.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Components\HeaderComponent.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

@@ -6,48 +6,48 @@
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
-	<Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*,Auto">
 
-		<!-- Header Component -->
-		<components:HeaderComponent Grid.Row="0"
+        <!-- Header Component -->
+        <components:HeaderComponent Grid.Row="0"
                                    x:Name="headerComponent"
                                    Title="Local"
-                                   ShowAddButton="True"
+                                   ShowAddButton="False"
                                    AddButtonClicked="OnHeaderAddButtonClicked"/>
 
-		<!-- Card Wrapper Component -->
-		<components:CardWrapperComponent Grid.Row="1"
+        <!-- Card Wrapper Component -->
+        <components:CardWrapperComponent Grid.Row="1"
             TitleText="Cadastrados"
             IconPath="spot_purple.png"
             BadgeIsVisible="False">
 
-			<components:CardWrapperComponent.CardContent>
-				<!-- Conteúdo do Card -->
-				<Grid RowDefinitions="Auto,Auto,*">
+            <components:CardWrapperComponent.CardContent>
+                <!-- Conteúdo do Card -->
+                <Grid RowDefinitions="Auto,Auto,*">
 
-					<!-- Estado 1: LISTA DE LOCAIS EXISTENTES -->
-					<!-- Lista de locais usando estilos CardListItem -->
-					<CollectionView x:Name="locaisCollectionView"
+                    <!-- Estado 1: LISTA DE LOCAIS EXISTENTES -->
+                    <!-- Lista de locais usando estilos CardListItem -->
+                    <CollectionView x:Name="locaisCollectionView"
                                     Grid.Row="0"
                                     SelectionMode="None"
                                     IsVisible="True">
-						<CollectionView.ItemTemplate>
-							<DataTemplate>
-								<!-- Frame otimizado para lista de locais -->
-								<Frame Style="{StaticResource CardListItemBackgroundStyle}"
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Frame otimizado para lista de locais -->
+                                <Frame Style="{StaticResource CardListItemBackgroundStyle}"
                                        Padding="15,12,15,12"
                                        Margin="0,5,0,5">
 
-									<Frame.GestureRecognizers>
-										<TapGestureRecognizer Tapped="OnLocalItemTapped" />
-									</Frame.GestureRecognizers>
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnLocalItemTapped" />
+                                    </Frame.GestureRecognizers>
 
-									<!-- Layout simples: Nome + Botão Ações -->
-									<Grid ColumnDefinitions="*,Auto"
+                                    <!-- Layout simples: Nome + Botão Ações -->
+                                    <Grid ColumnDefinitions="*,Auto"
                                           ColumnSpacing="15">
 
-										<!-- Nome do Local -->
-										<Label Grid.Column="0"
+                                        <!-- Nome do Local -->
+                                        <Label Grid.Column="0"
                                                Text="{Binding Nome}"
                                                FontSize="16"
                                                FontAttributes="Bold"
@@ -57,8 +57,8 @@
                                                VerticalOptions="Center"
                                                HorizontalOptions="Fill" />
 
-										<!-- Botão de Ações (⚙) -->
-										<Button Grid.Column="1"
+                                        <!-- Botão de Ações (⚙) -->
+                                        <Button Grid.Column="1"
                                                 Text="⚙"
                                                 FontSize="18"
                                                 TextColor="White"
@@ -72,42 +72,47 @@
                                                 CommandParameter="{Binding .}"
                                                 HorizontalOptions="End"
                                                 VerticalOptions="Center" />
-									</Grid>
-								</Frame>
-							</DataTemplate>
-						</CollectionView.ItemTemplate>
-					</CollectionView>
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
 
-					<!-- Estado vazio -->
-					<Frame x:Name="emptyStateFrame"
+                    <!-- Estado vazio -->
+                    <Frame x:Name="emptyStateFrame"
                            Grid.Row="0"
                            IsVisible="False"
                            Style="{StaticResource EmptyQueueFrameStyle}">
-						<StackLayout Spacing="15" VerticalOptions="Start">
-							<!-- Título principal -->
-							<Label Text="Nenhum local cadastrado"
+                        <StackLayout Spacing="15" VerticalOptions="Start">
+                            <!-- Título principal -->
+                            <Label Text="Nenhum local cadastrado"
                                    Style="{StaticResource EmptyQueueTitleStyle}" />
 
-							<!-- Instruções CORRIGIDAS -->
-							<Label Style="{StaticResource EmptyQueueTextStyle}">
-								<Label.FormattedText>
-									<FormattedString>
-										<Span Text="• Toque no botão " />
-										<Span Text="adicionar local" TextColor="White" FontAttributes="Bold" />
-										<Span Text=" " />
-										<Span Text="+" TextColor="#FFB000" FontAttributes="Bold" />
-										<Span Text=" acima para cadastrar seu primeiro local" />
-									</FormattedString>
-								</Label.FormattedText>
-							</Label>
-						</StackLayout>
-					</Frame>
+                            <!-- Instruções CORRIGIDAS -->
+                            <Label Style="{StaticResource EmptyQueueTextStyle}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="• Toque no botão " />
+                                        <Span Text="Novo Local" TextColor="White" FontAttributes="Bold" />
+                                        <Span Text=" abaixo para cadastrar seu primeiro local" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </StackLayout>
+                    </Frame>
 
-					<!-- Espaço flexível -->
-					<Grid Grid.Row="2" HeightRequest="40" />
-				</Grid>
-			</components:CardWrapperComponent.CardContent>
-		</components:CardWrapperComponent>
-	</Grid>
+                    <!-- Espaço flexível -->
+                    <Grid Grid.Row="2" HeightRequest="40" />
+                </Grid>
+            </components:CardWrapperComponent.CardContent>
+        </components:CardWrapperComponent>
+
+        <!-- CrudNavBarComponent Component -->
+        <components:CrudNavBarComponent Grid.Row="2" 
+                              x:Name="CrudNavBarComponent" 
+                              IsVisible="True"
+                              NovoLocalClicked="OnCrudNavBarComponentNovoLocalClicked" />
+
+    </Grid>
 
 </ContentPage>

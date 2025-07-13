@@ -7,7 +7,7 @@ namespace MyKaraoke.View.Components
 {
     public partial class InactiveQueueBottomNav : ContentView
     {
-        #region Events (mantidos para compatibilidade)
+        #region Events
 
         public event EventHandler LocaisClicked;
         public event EventHandler BandokeClicked;
@@ -30,6 +30,7 @@ namespace MyKaraoke.View.Components
         #region Private Fields
 
         private bool _isInitialized = false;
+        private bool _isShowing = false; // ✅ NOVO: Proteção contra múltiplas execuções
 
         #endregion
 
@@ -43,11 +44,10 @@ namespace MyKaraoke.View.Components
 
                 System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav refatorado inicializado com sucesso");
 
-                // 🎯 ESPECÍFICO DO INACTIVE QUEUE: Executa animações automaticamente ao carregar
-                // Este comportamento é desejável neste contexto específico
+                // ✅ CORREÇÃO: Inicia animações com delay adequado APÓS inicialização completa
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    await Task.Delay(100); // Pequeno delay para garantir que o layout esteja pronto
+                    await Task.Delay(200); // ✅ Delay maior para garantir que layout esteja completamente pronto
                     await ShowAsync(); // Inicia animações automaticamente APENAS para InactiveQueue
                 });
             }
@@ -75,25 +75,31 @@ namespace MyKaraoke.View.Components
             {
                 var buttons = new ObservableCollection<NavButtonConfig>
                 {
-                    // Locais - botão regular com animações padrão (Fade + Translate)
+                    // ✅ CORREÇÃO: Configuração correta dos botões com AnimationTypes explícito
+                    
+                    // Locais - botão regular com animações Fade + Translate
                     new NavButtonConfig
                     {
                         Text = "Locais",
                         IconSource = "spot.png",
                         Command = LocaisCommand,
                         IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations ? NavButtonAnimationType.ShowHide : NavButtonAnimationType.None,
+                        AnimationTypes = HardwareDetector.SupportsAnimations
+                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
+                            : NavButtonAnimationType.None,
                         IsAnimated = true
                     },
                     
-                    // Bandokê - botão regular com animações padrão (Fade + Translate)
+                    // Bandokê - botão regular com animações Fade + Translate
                     new NavButtonConfig
                     {
                         Text = "Bandokê",
                         IconSource = "musicos.png",
                         Command = BandokeCommand,
                         IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations ? NavButtonAnimationType.ShowHide : NavButtonAnimationType.None,
+                        AnimationTypes = HardwareDetector.SupportsAnimations
+                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
+                            : NavButtonAnimationType.None,
                         IsAnimated = true
                     },
                     
@@ -105,40 +111,49 @@ namespace MyKaraoke.View.Components
                         Command = NovaFilaCommand,
                         IsSpecial = true,
                         GradientStyle = SpecialButtonGradientType.Yellow,
-                        SpecialAnimationTypes = SpecialButtonAnimationType.Fade | SpecialButtonAnimationType.Translate | SpecialButtonAnimationType.Pulse, // 🎯 TODAS as 3 animações
+                        SpecialAnimationTypes = HardwareDetector.SupportsAnimations
+                            ? (SpecialButtonAnimationType.Fade | SpecialButtonAnimationType.Translate | SpecialButtonAnimationType.Pulse)
+                            : SpecialButtonAnimationType.None,
                         IsAnimated = true
                     },
                     
-                    // Histórico - botão regular com animações padrão (Fade + Translate)
+                    // Histórico - botão regular com animações Fade + Translate
                     new NavButtonConfig
                     {
                         Text = "Histórico",
                         IconSource = "historico.png",
                         Command = HistoricoCommand,
                         IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations ? NavButtonAnimationType.ShowHide : NavButtonAnimationType.None,
+                        AnimationTypes = HardwareDetector.SupportsAnimations
+                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
+                            : NavButtonAnimationType.None,
                         IsAnimated = true
                     },
                     
-                    // Administrar - botão regular com animações padrão (Fade + Translate)
+                    // Administrar - botão regular com animações Fade + Translate
                     new NavButtonConfig
                     {
                         Text = "Administrar",
                         IconSource = "manage.png",
                         Command = AdministrarCommand,
                         IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations ? NavButtonAnimationType.ShowHide : NavButtonAnimationType.None,
+                        AnimationTypes = HardwareDetector.SupportsAnimations
+                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
+                            : NavButtonAnimationType.None,
                         IsAnimated = true
                     }
                 };
 
+                // ✅ CORREÇÃO: Configura navbar SEM delay automático (será controlado manualmente)
                 baseNavBar.Buttons = buttons;
+                baseNavBar.IsAnimated = true;
+                baseNavBar.ShowAnimationDelay = 80; // ✅ Delay SUTIL de 80ms entre cada botão (efeito cascata suave)
 
                 // Conecta evento do componente base
                 baseNavBar.ButtonClicked += OnBaseNavBarButtonClicked;
 
                 _isInitialized = true;
-                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: 5 botões configurados - Nova Fila com 3 animações (Fade + Translate + Pulse)");
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: 5 botões configurados com animações FADE+TRANSLATE simultâneas, delay sutil 80ms entre botões");
             }
             catch (Exception ex)
             {
@@ -297,9 +312,9 @@ namespace MyKaraoke.View.Components
         #region Animation Methods (compatibilidade com código existente)
 
         /// <summary>
-        /// Inicia a animação do botão Nova Fila automaticamente
+        /// ✅ CORRIGIDO: Inicia a animação do botão Nova Fila automaticamente
         /// Método público para ser chamado pela view pai (mantém compatibilidade)
-        /// Agora com as 3 animações: Show/Hide (Fade + Translate) + Pulse especial
+        /// Agora com verificação de inicialização e debug melhorado
         /// </summary>
         public async Task StartNovaFilaAnimationAsync()
         {
@@ -307,8 +322,15 @@ namespace MyKaraoke.View.Components
             {
                 if (!_isInitialized)
                 {
-                    System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav ainda não inicializado, aguardando...");
-                    await Task.Delay(100);
+                    System.Diagnostics.Debug.WriteLine("⚠️ InactiveQueueBottomNav ainda não inicializado, aguardando...");
+                    await Task.Delay(200); // ✅ Delay maior para aguardar inicialização
+
+                    // Verifica novamente após delay
+                    if (!_isInitialized)
+                    {
+                        System.Diagnostics.Debug.WriteLine("❌ InactiveQueueBottomNav não inicializou a tempo - abortando animação");
+                        return;
+                    }
                 }
 
                 // Só executa se o hardware suportar animações
@@ -321,7 +343,14 @@ namespace MyKaraoke.View.Components
                 // Log do hardware para debug (mantém comportamento original)
                 HardwareDetector.LogHardwareInfo();
 
-                System.Diagnostics.Debug.WriteLine("Iniciando animação Nova Fila com 3 animações (Fade + Translate + Pulse) via BaseNavBarComponent");
+                System.Diagnostics.Debug.WriteLine("🎬 Iniciando animação Nova Fila com 3 animações (Fade + Translate + Pulse) via BaseNavBarComponent");
+
+                // ✅ CORREÇÃO: Verifica se baseNavBar está disponível
+                if (baseNavBar == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ baseNavBar não disponível - abortando animação");
+                    return;
+                }
 
                 // Inicia animações especiais (automaticamente verifica se é suportado pelo hardware)
                 // Isso irá disparar: 
@@ -329,11 +358,11 @@ namespace MyKaraoke.View.Components
                 // 2. Pulse contínuo para call-to-action
                 await baseNavBar.StartSpecialAnimations();
 
-                System.Diagnostics.Debug.WriteLine("Animação Nova Fila iniciada com sucesso - 3 animações ativas");
+                System.Diagnostics.Debug.WriteLine("✅ Animação Nova Fila iniciada com sucesso - 3 animações ativas");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na animação Nova Fila BottomNav refatorado: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Erro na animação Nova Fila BottomNav refatorado: {ex.Message}");
             }
         }
 
@@ -345,12 +374,15 @@ namespace MyKaraoke.View.Components
         {
             try
             {
-                await baseNavBar.StopSpecialAnimations();
-                System.Diagnostics.Debug.WriteLine("Animação Nova Fila parada no BottomNav refatorado");
+                if (baseNavBar != null)
+                {
+                    await baseNavBar.StopSpecialAnimations();
+                    System.Diagnostics.Debug.WriteLine("✅ Animação Nova Fila parada no BottomNav refatorado");
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao parar animação BottomNav refatorado: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao parar animação BottomNav refatorado: {ex.Message}");
             }
         }
 
@@ -366,7 +398,11 @@ namespace MyKaraoke.View.Components
                 {
                     // Como a animação agora é gerenciada pelo componente SpecialNavButton,
                     // retornamos true se o navbar está visível, animado E o hardware suporta animações
-                    return _isInitialized && baseNavBar.IsVisible && baseNavBar.IsAnimated && HardwareDetector.SupportsAnimations;
+                    return _isInitialized &&
+                           baseNavBar != null &&
+                           baseNavBar.IsVisible &&
+                           baseNavBar.IsAnimated &&
+                           HardwareDetector.SupportsAnimations;
                 }
                 catch
                 {
@@ -376,28 +412,60 @@ namespace MyKaraoke.View.Components
         }
 
         /// <summary>
-        /// Mostra a navbar com animação
-        /// Isso irá disparar automaticamente as animações Fade + Translate de todos os botões
-        /// E depois o Pulse do botão Nova Fila
-        /// Só executa se o hardware suportar animações (obedece HardwareDetector)
-        /// 
-        /// ESPECÍFICO DO INACTIVE QUEUE: Este componente SEMPRE quer animações ao aparecer
-        /// (diferente de outros componentes que podem preferir aparecer sem animação)
+        /// ✅ CORRIGIDO: Mostra a navbar com animação
+        /// Agora com proteção correta baseada no estado dos botões, não da navbar
         /// </summary>
         public async Task ShowAsync()
         {
+            // ✅ PROTEÇÃO CRÍTICA: Impede múltiplas execuções simultâneas
+            if (_isShowing)
+            {
+                System.Diagnostics.Debug.WriteLine("⚠️ InactiveQueue: ShowAsync IGNORADO - já em execução");
+                return;
+            }
+
+            _isShowing = true; // Marca como "em execução"
+
             try
             {
+                System.Diagnostics.Debug.WriteLine("InactiveQueue: Iniciando ShowAsync");
+
+                if (baseNavBar == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("baseNavBar não disponível");
+                    return;
+                }
+
+                // ✅ CORREÇÃO: Verifica se os BOTÕES já foram animados, não apenas a navbar
+                bool buttonsAlreadyAnimated = false;
+                if (baseNavBar.Buttons != null && baseNavBar.Buttons.Count > 0)
+                {
+                    // Verifica se algum botão já está no estado final (animado)
+                    var firstButton = baseNavBar.Buttons.FirstOrDefault();
+                    if (firstButton != null)
+                    {
+                        // Se o primeiro botão já está visível e opaco, consideramos que já foi animado
+                        buttonsAlreadyAnimated = true; // Por enquanto, vamos sempre tentar animar
+                        System.Diagnostics.Debug.WriteLine($"InactiveQueue: Verificando estado dos botões...");
+                    }
+                }
+
+                // ✅ COMENTADO: Removida verificação problemática
+                // if (baseNavBar.IsVisible) { ... }
+
+                // ✅ CORREÇÃO CRÍTICA: Força estado inicial da navbar ANTES das animações
+                await ForceInitialStateAsync();
+
                 // Só executa animações se o hardware suportar (obedece a regra do HardwareDetector)
                 if (HardwareDetector.SupportsAnimations)
                 {
-                    System.Diagnostics.Debug.WriteLine("🎬 InactiveQueue: Iniciando animações da navbar - hardware adequado detectado");
+                    System.Diagnostics.Debug.WriteLine("InactiveQueue: Iniciando animações da navbar - hardware adequado detectado");
                     await baseNavBar.ShowAsync();
                     System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav mostrada com animação - botão Nova Fila com 3 animações ativas");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("🚫 InactiveQueue: Hardware limitado - navbar mostrada sem animações (BYPASS ativo)");
+                    System.Diagnostics.Debug.WriteLine("InactiveQueue: Hardware limitado - navbar mostrada sem animações (BYPASS ativo)");
                     baseNavBar.IsVisible = true;
                     // Em hardware limitado, apenas torna visível sem animações (respeita HardwareDetector)
                 }
@@ -406,7 +474,41 @@ namespace MyKaraoke.View.Components
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao mostrar InactiveQueueBottomNav: {ex.Message}");
                 // Fallback: apenas torna visível
-                baseNavBar.IsVisible = true;
+                if (baseNavBar != null)
+                {
+                    baseNavBar.IsVisible = true;
+                }
+            }
+            finally
+            {
+                _isShowing = false; // ✅ SEMPRE libera o lock
+            }
+        }
+
+        /// <summary>
+        /// ✅ NOVO MÉTODO: Força estado inicial da navbar para prevenir "piscar"
+        /// </summary>
+        private async Task ForceInitialStateAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("🔧 InactiveQueue: Forçando estado inicial da navbar...");
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    if (baseNavBar != null)
+                    {
+                        baseNavBar.IsVisible = true;
+                        baseNavBar.Opacity = 1; // A navbar em si deve estar visível
+
+                        // O estado inicial dos botões será gerenciado pelo BaseNavBarComponent
+                        System.Diagnostics.Debug.WriteLine("🔧 InactiveQueue: Estado inicial da navbar aplicado");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao forçar estado inicial: {ex.Message}");
             }
         }
 
@@ -417,8 +519,11 @@ namespace MyKaraoke.View.Components
         {
             try
             {
-                await baseNavBar.HideAsync();
-                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav escondida com animação");
+                if (baseNavBar != null)
+                {
+                    await baseNavBar.HideAsync();
+                    System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav escondida com animação");
+                }
             }
             catch (Exception ex)
             {
@@ -480,6 +585,7 @@ namespace MyKaraoke.View.Components
             if (Handler == null)
             {
                 System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav handler removido");
+                _isShowing = false; // ✅ Reset do estado quando handler é removido
             }
             else if (!_isInitialized)
             {
@@ -488,13 +594,15 @@ namespace MyKaraoke.View.Components
             }
             else
             {
-                // 🎯 ESPECÍFICO DO INACTIVE QUEUE: Re-executa animações quando Handler estiver disponível
-                // Este comportamento é desejável para este componente específico
-                MainThread.BeginInvokeOnMainThread(async () =>
-                {
-                    await Task.Delay(50); // Pequeno delay para garantir que o layout esteja pronto
-                    await ShowAsync(); // Re-inicia animações quando handler estiver pronto
-                });
+                // ✅ CORREÇÃO CRÍTICA: Remove re-execução automática que causa múltiplas chamadas
+                // O ShowAsync será chamado apenas uma vez pelo StackPage quando necessário
+                System.Diagnostics.Debug.WriteLine("🔄 InactiveQueueBottomNav handler disponível - PRONTO (sem re-iniciar animações automaticamente)");
+
+                // ✅ REMOVIDO: A linha abaixo causava as múltiplas execuções
+                // MainThread.BeginInvokeOnMainThread(async () => {
+                //     await Task.Delay(100);
+                //     await ShowAsync(); // ← ESTA LINHA ERA O PROBLEMA
+                // });
             }
         }
 

@@ -68,6 +68,14 @@
         <!-- Inherits all properties -->
     </Style>
 
+    <Style x:Key="CompactNavIconStyle" TargetType="Image" BasedOn="{StaticResource NavButtonIconStyle}">
+        <!-- Inherits all properties -->
+    </Style>
+
+    <Style x:Key="CompactNavLabelStyle" TargetType="Label" BasedOn="{StaticResource NavButtonLabelStyle}">
+        <!-- Inherits all properties -->
+    </Style>
+
     <!-- Legacy styles for compatibility -->
     <Style x:Key="BottomNavIconStyle" TargetType="Image" BasedOn="{StaticResource NavButtonIconStyle}">
         <Setter Property="Margin" Value="0,12,0,4" />

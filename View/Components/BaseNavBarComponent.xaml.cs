@@ -54,6 +54,7 @@ namespace MyKaraoke.View.Components
         private AnimationManager _animationManager;
         private readonly List<MauiView> _buttonViews = new();
         private bool _isShown = false;
+        private bool _isAnimating = false; // ✅ NOVO: Proteção contra múltiplas animações simultâneas
 
         #endregion
 
@@ -66,6 +67,28 @@ namespace MyKaraoke.View.Components
             if (Buttons == null)
             {
                 Buttons = new ObservableCollection<NavButtonConfig>();
+            }
+
+            // ✅ CORREÇÃO: Aplica estado inicial imediatamente
+            ApplyInitialState();
+        }
+
+        /// <summary>
+        /// ✅ NOVO MÉTODO: Aplica estado inicial para toda a navbar (escondida)
+        /// </summary>
+        private void ApplyInitialState()
+        {
+            try
+            {
+                // Estado inicial: navbar visível mas todos os botões começam escondidos
+                this.IsVisible = true;
+                _isShown = false; // ✅ RESET: Permite que ShowAsync() seja executado
+                _isAnimating = false; // ✅ RESET: Permite animações
+                System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: Estado inicial aplicado (navbar visível, botões serão configurados individualmente)");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar estado inicial da navbar: {ex.Message}");
             }
         }
 
@@ -182,7 +205,7 @@ namespace MyKaraoke.View.Components
                 CommandParameter = config.CommandParameter,
                 IsAnimated = IsAnimated && config.IsAnimated,
                 AnimationTypes = config.AnimationTypes,
-                ShowDelay = ShowAnimationDelay * index // Delay escalonado
+                ShowDelay = 0 // ✅ CORREÇÃO: Delay será controlado manualmente para ser mais sutil
             };
 
             // Conecta evento
@@ -203,7 +226,7 @@ namespace MyKaraoke.View.Components
                 GradientStyle = config.GradientStyle,
                 IsAnimated = IsAnimated && config.IsAnimated,
                 AnimationTypes = config.SpecialAnimationTypes,
-                ShowDelay = ShowAnimationDelay * index // Delay escalonado
+                ShowDelay = 0 // ✅ CORREÇÃO: Delay será controlado manualmente para ser mais sutil
             };
 
             // Conecta evento
@@ -232,49 +255,236 @@ namespace MyKaraoke.View.Components
         #region Animation Methods
 
         /// <summary>
-        /// Mostra toda a navbar com animação escalonada dos botões
-        /// Só executa se o hardware suportar animações
+        /// ✅ CORRIGIDO: Mostra toda a navbar com animação escalonada dos botões
+        /// Agora com proteção contra múltiplas execuções simultâneas
         /// </summary>
         public async Task ShowAsync()
         {
-            if (_isShown)
+            // ✅ PROTEÇÃO CRÍTICA: Impede múltiplas execuções simultâneas
+            if (_isShown || _isAnimating)
+            {
+                System.Diagnostics.Debug.WriteLine("⚠️ BaseNavBarComponent: ShowAsync IGNORADO - já mostrado ou animando");
                 return;
+            }
+
+            _isAnimating = true; // Marca como "animando"
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"BaseNavBarComponent: Iniciando ShowAsync com {_buttonViews.Count} botões");
+
                 this.IsVisible = true;
 
-                if (IsAnimated && HardwareDetector.SupportsAnimations)
-                {
-                    // Mostra botões com delay escalonado
-                    var showTasks = new List<Task>();
+                // ✅ CORREÇÃO CRÍTICA: Força estado inicial em TODOS os botões ANTES das animações
+                // Mas APENAS uma vez, não múltiplas vezes
+                await EnsureInitialStateForAllButtons();
 
-                    foreach (var buttonView in _buttonViews)
+                if (IsAnimated && HardwareDetector.SupportsAnimations && _buttonViews.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: Condições atendidas - executando animações escalonadas SUTIS");
+
+                    // ✅ CORREÇÃO: Executa animações sequenciais com delay SUTIL (poucos milissegundos)
+                    var showTasks = new List<Task>();
+                    const int SUBTLE_DELAY = 250; // ✅ 250ms entre cada botão
+
+                    // ✅ PROTEÇÃO: Marca todos os botões como "em processo" para evitar múltiplas execuções
+                    await MainThread.InvokeOnMainThreadAsync(() =>
                     {
+                        foreach (var buttonView in _buttonViews)
+                        {
+                            // Força estado inicial UMA ÚLTIMA VEZ antes das animações
+                            if (buttonView.Opacity > 0.1) // Se não está no estado inicial
+                            {
+                                buttonView.Opacity = 0.0;
+                                buttonView.TranslationY = 60;
+
+                                string buttonText = buttonView is NavButtonComponent nav ? nav.Text ?? "nav"
+                                                  : buttonView is SpecialNavButtonComponent special ? special.Text ?? "especial"
+                                                  : "desconhecido";
+                                System.Diagnostics.Debug.WriteLine($"🔧 RESET estado inicial para '{buttonText}': Opacity=0, TranslationY=60");
+                            }
+                        }
+                    });
+
+                    for (int i = 0; i < _buttonViews.Count; i++)
+                    {
+                        var buttonView = _buttonViews[i];
+                        var subtleDelay = (i+1) * SUBTLE_DELAY; // ✅ Delay incremental SUTIL
+
+                        // ✅ CORREÇÃO: Cast seguro para obter o texto do botão
+                        string buttonText = "desconhecido";
+                        if (buttonView is NavButtonComponent nav)
+                            buttonText = nav.Text ?? "nav";
+                        else if (buttonView is SpecialNavButtonComponent special)
+                            buttonText = special.Text ?? "especial";
+
+                        System.Diagnostics.Debug.WriteLine($"BaseNavBarComponent: Programando animação SUTIL do botão {i} ({buttonText}) com delay {subtleDelay}ms");
+
                         if (buttonView is NavButtonComponent regularButton)
                         {
-                            showTasks.Add(regularButton.ShowAsync());
+                            showTasks.Add(DelayedShowButton(regularButton, subtleDelay));
                         }
                         else if (buttonView is SpecialNavButtonComponent specialButton)
                         {
-                            showTasks.Add(specialButton.ShowAsync());
+                            showTasks.Add(DelayedShowSpecialButton(specialButton, subtleDelay));
                         }
                     }
 
+                    // ✅ EXECUÇÃO: Todas as animações em paralelo (cada uma com seu próprio delay sutil)
                     await Task.WhenAll(showTasks);
 
-                    // Inicia animações especiais após todos os botões aparecerem
+                    System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: Todas as animações de show SUTIS concluídas");
+
+                    // ✅ CORREÇÃO: Inicia animações especiais APÓS todos os botões aparecerem
+                    await Task.Delay(100); // Pequeno delay antes das animações especiais
                     await StartSpecialAnimations();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: Hardware limitado ou animações desabilitadas - mostrando botões diretamente");
+                    // Hardware limitado: apenas torna todos os botões visíveis
+                    foreach (var buttonView in _buttonViews)
+                    {
+                        buttonView.IsVisible = true;
+                        buttonView.Opacity = 1;
+                    }
                 }
 
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine("BaseNavBarComponent mostrada com animação");
+                System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: ShowAsync concluído com sucesso");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao mostrar BaseNavBarComponent: {ex.Message}");
                 this.IsVisible = true;
                 _isShown = true;
+            }
+            finally
+            {
+                _isAnimating = false; // ✅ SEMPRE libera o lock de animação
+            }
+        }
+
+        /// <summary>
+        /// ✅ CORRIGIDO: Garante que todos os botões tenham estado inicial correto ANTES das animações
+        /// Isso previne o "piscar" onde o botão aparece na posição final e depois anima
+        /// Removida aplicação em lote para evitar múltiplas execuções
+        /// </summary>
+        private async Task EnsureInitialStateForAllButtons()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: Verificando estado inicial de todos os botões...");
+
+                // ✅ CORREÇÃO: APENAS verifica, não força mais o estado
+                // O estado inicial já é aplicado no construtor de cada botão
+                // Esta verificação é apenas para debug
+
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var buttonView in _buttonViews)
+                    {
+                        string buttonText = "desconhecido";
+                        if (buttonView is NavButtonComponent nav)
+                            buttonText = nav.Text ?? "nav";
+                        else if (buttonView is SpecialNavButtonComponent special)
+                            buttonText = special.Text ?? "especial";
+
+                        System.Diagnostics.Debug.WriteLine($"Estado atual do botão: {buttonText} (Opacity={buttonView.Opacity}, TranslationY={buttonView.TranslationY})");
+                    }
+                });
+
+                System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: Verificação de estado concluída");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro na verificação de estado: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ✅ CORRIGIDO: Executa animação de um botão regular com delay SUTIL específico
+        /// Agora com proteção contra múltiplas execuções
+        /// </summary>
+        private async Task DelayedShowButton(NavButtonComponent button, int subtleDelay)
+        {
+            try
+            {
+                //// ✅ PROTEÇÃO: Verifica se o botão já foi animado
+                //if (button.Opacity > 0.5) // Se já está visível, não anima novamente
+                //{
+                //    System.Diagnostics.Debug.WriteLine($"⚠️ Botão '{button.Text ?? "sem nome"}' JÁ ANIMADO - ignorando nova execução");
+                //    return;
+                //}
+
+                if (subtleDelay > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⏰ Aguardando delay SUTIL de {subtleDelay}ms para botão '{button.Text ?? "sem nome"}'");
+                    await Task.Delay(subtleDelay);
+                }
+
+                // ✅ VERIFICAÇÃO: Confirma estado inicial antes da animação
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔍 Estado PRÉ-animação '{button.Text ?? "sem nome"}': Opacity={button.Opacity}, TranslationY={button.TranslationY}");
+                });
+
+                System.Diagnostics.Debug.WriteLine($"🎯 Iniciando animação FADE+TRANSLATE do botão '{button.Text ?? "sem nome"}' (delay sutil: {subtleDelay}ms)");
+                await button.ShowAsync();
+                System.Diagnostics.Debug.WriteLine($"✅ Animação FADE+TRANSLATE do botão '{button.Text ?? "sem nome"}' concluída");
+
+                // ✅ VERIFICAÇÃO: Confirma estado final após a animação
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔍 Estado PÓS-animação '{button.Text ?? "sem nome"}': Opacity={button.Opacity}, TranslationY={button.TranslationY}");
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro na animação do botão regular: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ✅ CORRIGIDO: Executa animação de um botão especial com delay SUTIL específico
+        /// Agora com proteção contra múltiplas execuções
+        /// </summary>
+        private async Task DelayedShowSpecialButton(SpecialNavButtonComponent button, int subtleDelay)
+        {
+            try
+            {
+                // ✅ PROTEÇÃO: Verifica se o botão já foi animado
+                //if (button.Opacity > 0.5) // Se já está visível, não anima novamente
+                //{
+                //    System.Diagnostics.Debug.WriteLine($"⚠️ Botão especial '{button.Text ?? "sem nome"}' JÁ ANIMADO - ignorando nova execução");
+                //    return;
+                //}
+
+                if (subtleDelay > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⏰ Aguardando delay SUTIL de {subtleDelay}ms para botão especial '{button.Text ?? "sem nome"}'");
+                    await Task.Delay(subtleDelay);
+                }
+
+                // ✅ VERIFICAÇÃO: Confirma estado inicial antes da animação
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔍 Estado PRÉ-animação especial '{button.Text ?? "sem nome"}': Opacity={button.Opacity}, TranslationY={button.TranslationY}");
+                });
+
+                System.Diagnostics.Debug.WriteLine($"🎯 Iniciando animação FADE+TRANSLATE+PULSE do botão especial '{button.Text ?? "sem nome"}' (delay sutil: {subtleDelay}ms)");
+                await button.ShowAsync();
+                System.Diagnostics.Debug.WriteLine($"✅ Animação FADE+TRANSLATE+PULSE do botão especial '{button.Text ?? "sem nome"}' concluída");
+
+                // ✅ VERIFICAÇÃO: Confirma estado final após a animação
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔍 Estado PÓS-animação especial '{button.Text ?? "sem nome"}': Opacity={button.Opacity}, TranslationY={button.TranslationY}");
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro na animação do botão especial: {ex.Message}");
             }
         }
 
@@ -331,25 +541,38 @@ namespace MyKaraoke.View.Components
         public async Task StartSpecialAnimations()
         {
             if (!HardwareDetector.SupportsAnimations)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 BaseNavBarComponent: Hardware não suporta animações especiais - BYPASS ativo");
                 return;
+            }
 
             try
             {
+                System.Diagnostics.Debug.WriteLine("🌟 BaseNavBarComponent: Iniciando animações especiais...");
+
                 foreach (var buttonView in _buttonViews)
                 {
                     if (buttonView is SpecialNavButtonComponent specialButton)
                     {
+                        System.Diagnostics.Debug.WriteLine($"🎵 Iniciando animação especial para botão '{specialButton.Text ?? "sem nome"}'");
                         await specialButton.StartSpecialAnimationAsync();
                     }
                     else if (buttonView is NavButtonComponent regularButton)
                     {
-                        await regularButton.StartSpecialAnimationAsync();
+                        // Verifica se o botão regular tem animação de pulse configurada
+                        if (regularButton.AnimationTypes.HasFlag(NavButtonAnimationType.Pulse))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"🎵 Iniciando animação especial para botão regular '{regularButton.Text ?? "sem nome"}'");
+                            await regularButton.StartSpecialAnimationAsync();
+                        }
                     }
                 }
+
+                System.Diagnostics.Debug.WriteLine("✅ BaseNavBarComponent: Animações especiais iniciadas");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao iniciar animações especiais: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao iniciar animações especiais: {ex.Message}");
             }
         }
 
@@ -409,8 +632,17 @@ namespace MyKaraoke.View.Components
             }
             else
             {
+                // ✅ CORREÇÃO: Re-aplica estado inicial quando handler estiver disponível
+                ApplyInitialState();
+
+                // ✅ RESET: Permite que ShowAsync seja executado novamente
+                _isShown = false;
+                _isAnimating = false;
+
                 // Reconstrói botões quando o handler estiver disponível
                 RebuildButtons();
+
+                System.Diagnostics.Debug.WriteLine("BaseNavBarComponent: Handler disponível - estado resetado para permitir animações");
             }
         }
 

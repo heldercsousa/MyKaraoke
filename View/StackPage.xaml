@@ -95,7 +95,7 @@
                             <Frame Style="{StaticResource EmptyQueueFrameStyle}">
                                 <StackLayout Spacing="0" VerticalOptions="Start">
                                     <!-- Título principal -->
-                                    <Label Text="Não há fila ativa neste momento" 
+                                    <Label Text="Não há fila ativa" 
                                            Style="{StaticResource EmptyQueueTitleStyle}" />
 
                                     <!-- Instruções com espaçamento uniforme -->

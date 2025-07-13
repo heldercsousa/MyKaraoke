@@ -9,7 +9,7 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
                 <ResourceDictionary Source="Resources/Styles/CardStyles.xaml" />
-                <ResourceDictionary Source="Resources/Styles/BottomNavBarStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/NavBarStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -244,7 +244,7 @@
 	  <MauiXaml Update="App.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Resources\Styles\BottomNavBarStyles.xaml">
+	  <MauiXaml Update="Resources\Styles\NavBarStyles.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Resources\Styles\CardStyles.xaml">

@@ -17,7 +17,7 @@
 
 		<!-- Card Wrapper Component -->
 		<components:CardWrapperComponent Grid.Row="1"
-            TitleText="Lista de locais cadastrados"
+            TitleText="Cadastrados"
             IconPath="spot_purple.png"
             BadgeIsVisible="False">
 

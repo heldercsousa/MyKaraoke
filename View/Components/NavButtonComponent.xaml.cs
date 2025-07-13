@@ -94,8 +94,16 @@ namespace MyKaraoke.View.Components
         {
             try
             {
+                // ✅ CORREÇÃO CRÍTICA: Aplica estado inicial ANTES do InitializeComponent para evitar "piscar"
+                this.IsVisible = true;
+                this.Opacity = 0.0;
+                this.TranslationY = 60;
+
                 InitializeComponent();
                 _animationManager = new AnimationManager($"NavButton_{GetHashCode()}");
+
+                // ✅ CORREÇÃO: Aplica estado inicial novamente APÓS InitializeComponent
+                ApplyInitialState();
 
                 // Aplica propriedades iniciais após a inicialização
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -106,6 +114,26 @@ namespace MyKaraoke.View.Components
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao inicializar NavButtonComponent: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// ✅ CORRIGIDO: Aplica estado inicial para animação (escondido na parte inferior e transparente)
+        /// </summary>
+        private void ApplyInitialState()
+        {
+            try
+            {
+                // ✅ ESTADO INICIAL PERFEITO: elemento começa invisível (opacity=0) e embaixo (TranslationY=60)
+                this.IsVisible = true;      // Deve estar visível para poder animar
+                this.Opacity = 0.0;        // ✅ CORREÇÃO: Começa COMPLETAMENTE transparente (fade in)
+                this.TranslationY = 60;     // ✅ CORREÇÃO: Começa 60px abaixo (translate up)
+
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Estado inicial aplicado (Opacity=0.0, TranslationY=60px) - PRONTO PARA FADE+TRANSLATE");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar estado inicial: {ex.Message}");
             }
         }
 
@@ -198,11 +226,11 @@ namespace MyKaraoke.View.Components
                 // Dispara evento personalizado
                 ButtonClicked?.Invoke(this, new NavButtonEventArgs(Text, IconSource, CommandParameter));
 
-                System.Diagnostics.Debug.WriteLine($"NavButtonComponent '{Text}' clicado");
+                System.Diagnostics.Debug.WriteLine($"NavButtonComponent '{Text ?? "sem nome"}' clicado");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no tap do NavButtonComponent '{Text}': {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Erro no tap do NavButtonComponent '{Text ?? "sem nome"}': {ex.Message}");
             }
         }
 
@@ -211,92 +239,92 @@ namespace MyKaraoke.View.Components
         #region Animation Methods
 
         /// <summary>
-        /// Mostra o botão com múltiplas animações simultâneas baseadas no AnimationTypes
-        /// Só executa se o hardware suportar animações
+        /// ✅ CORRIGIDO: Mostra o botão com múltiplas animações simultâneas
+        /// Agora com estado inicial forçado e animações síncronas corretas
         /// </summary>
         public async Task ShowAsync()
         {
             if (_isShown)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ NavButton '{Text}': ShowAsync ignorado - já mostrado");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': ShowAsync ignorado - já mostrado");
                 return;
             }
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎬 NavButton '{Text}': Iniciando ShowAsync - AnimationTypes: {AnimationTypes}, Hardware: {HardwareDetector.SupportsAnimations}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Iniciando ShowAsync - AnimationTypes: {AnimationTypes}, Hardware: {HardwareDetector.SupportsAnimations}");
 
-                // Aplica delay se configurado
+                // ✅ CORREÇÃO 1: Força estado inicial no MainThread ANTES de qualquer delay
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    this.IsVisible = true;
+                    this.Opacity = 0.0;        // ✅ GARANTIA: Completamente transparente para fade in
+                    this.TranslationY = 60;     // ✅ GARANTIA: 60px abaixo da posição final para translate up
+                    System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Estado inicial FORÇADO (Opacity={this.Opacity}, TranslationY={this.TranslationY})");
+                });
+
+                // Aplica delay se configurado (APÓS definir estado inicial)
                 if (ShowDelay > 0)
                 {
                     System.Diagnostics.Debug.WriteLine($"⏰ NavButton '{Text}': Aguardando delay de {ShowDelay}ms");
                     await Task.Delay(ShowDelay);
                 }
 
-                // Estado inicial (escondido) - FORÇA aplicação imediata
-                System.Diagnostics.Debug.WriteLine($"📍 NavButton '{Text}': Aplicando estado inicial...");
-                this.IsVisible = true;
-                this.Opacity = 0;
-                this.TranslationY = 20;
-
-                // Força aplicação no MainThread para garantir que seja aplicado
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    this.Opacity = 0;
-                    this.TranslationY = 20;
-                });
-
-                System.Diagnostics.Debug.WriteLine($"📍 NavButton '{Text}': Estado inicial confirmado (Opacity={this.Opacity}, TranslationY={this.TranslationY})");
-
                 if (IsAnimated && HardwareDetector.SupportsAnimations && AnimationTypes != NavButtonAnimationType.None)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ NavButton '{Text}': Condições atendidas - executando animações");
+                    System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Condições atendidas - executando animações");
 
-                    // Executa múltiplas animações simultaneamente baseadas nas flags
+                    // ✅ CORREÇÃO 2: Executa múltiplas animações simultaneamente usando Task.WhenAll
                     var animationTasks = new List<Task>();
 
                     if (AnimationTypeHelper.HasFlag(AnimationTypes, NavButtonAnimationType.Fade))
                     {
-                        System.Diagnostics.Debug.WriteLine($"🌟 NavButton '{Text}': Adicionando Fade à lista de animações");
+                        System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Adicionando Fade à lista de animações");
                         animationTasks.Add(StartFadeInAsync());
                     }
 
                     if (AnimationTypeHelper.HasFlag(AnimationTypes, NavButtonAnimationType.Translate))
                     {
-                        System.Diagnostics.Debug.WriteLine($"🚀 NavButton '{Text}': Adicionando Translate à lista de animações");
+                        System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Adicionando Translate à lista de animações");
                         animationTasks.Add(StartSlideUpAsync());
                     }
 
-                    // Executa todas as animações simultaneamente
+                    // ✅ CORREÇÃO 3: Executa todas as animações SIMULTANEAMENTE
                     if (animationTasks.Any())
                     {
-                        System.Diagnostics.Debug.WriteLine($"🎯 NavButton '{Text}': Executando {animationTasks.Count} animações simultaneamente");
+                        System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Executando {animationTasks.Count} animações simultaneamente");
                         await Task.WhenAll(animationTasks);
-                        System.Diagnostics.Debug.WriteLine($"🎉 NavButton '{Text}': Todas as {animationTasks.Count} animações concluídas");
+                        System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Todas as {animationTasks.Count} animações concluídas");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ NavButton '{Text}': Nenhuma animação configurada para execução");
+                        System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Nenhuma animação configurada para execução");
                     }
                 }
                 else
                 {
                     // Hardware limitado ou animações desabilitadas: apenas aplicar estado final
-                    this.Opacity = 1;
-                    this.TranslationY = 0;
-                    System.Diagnostics.Debug.WriteLine($"🚫 NavButton '{Text}': Hardware limitado ou animações desabilitadas - aplicando estado final direto");
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        this.Opacity = 1;
+                        this.TranslationY = 0;
+                    });
+                    System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Hardware limitado ou animações desabilitadas - aplicando estado final direto");
                 }
 
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine($"✅ NavButton '{Text}': ShowAsync concluído com sucesso");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': ShowAsync concluído com sucesso");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavButton '{Text}': Erro em ShowAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Erro em ShowAsync: {ex.Message}");
                 // Fallback: mostrar sem animação
-                this.Opacity = 1;
-                this.TranslationY = 0;
-                this.IsVisible = true;
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    this.Opacity = 1;
+                    this.TranslationY = 0;
+                    this.IsVisible = true;
+                });
                 _isShown = true;
             }
         }
@@ -335,17 +363,20 @@ namespace MyKaraoke.View.Components
                 }
                 else
                 {
-                    this.Opacity = 0;
-                    this.TranslationY = 20;
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        this.Opacity = 0;
+                        this.TranslationY = 60;
+                    });
                 }
 
                 this.IsVisible = false;
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine($"NavButtonComponent '{Text}' escondido com animações: {AnimationTypes}");
+                System.Diagnostics.Debug.WriteLine($"NavButtonComponent '{Text ?? "sem nome"}' escondido com animações: {AnimationTypes}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao esconder NavButtonComponent '{Text}': {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Erro ao esconder NavButtonComponent '{Text ?? "sem nome"}': {ex.Message}");
                 this.Opacity = 0;
                 this.IsVisible = false;
                 _isShown = false;
@@ -389,19 +420,26 @@ namespace MyKaraoke.View.Components
             }
         }
 
+        /// <summary>
+        /// ✅ CORRIGIDO: Fade In usando API nativa do MAUI com duração sincronizada com Translate
+        /// EXECUTA EM PARALELO com StartSlideUpAsync() para efeito perfeito
+        /// </summary>
         private async Task StartFadeInAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🌟 NavButton '{Text}': Iniciando Fade In DIRETO - Estado atual: Opacity={this.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Iniciando Fade In PARALELO - Estado atual: Opacity={this.Opacity}");
 
-                // Executa fade direto usando APIs nativas do MAUI no MainThread
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    await this.FadeTo(1.0, 500, Easing.CubicOut); // Aumentei para 500ms para ser mais visível
+                    // ✅ GARANTIA: Estado inicial para animação fade
+                    this.Opacity = 0.0; // Garante que começa completamente transparente
+
+                    // ✅ FADE IN: 0.0 → 1.0 em 500ms (sincronizado com translate)
+                    await this.FadeTo(1.0, 500, Easing.CubicOut);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavButton '{Text}': Fade In concluído - Estado final: Opacity={this.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Fade In PARALELO concluído - Estado final: Opacity={this.Opacity}");
             }
             catch (Exception ex)
             {
@@ -413,15 +451,15 @@ namespace MyKaraoke.View.Components
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🌟 NavButton '{Text}': Iniciando Fade Out DIRETO - Estado atual: Opacity={this.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Iniciando Fade Out PARALELO - Estado atual: Opacity={this.Opacity}");
 
-                // Executa fade direto usando APIs nativas do MAUI no MainThread
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    await this.FadeTo(0.0, 500, Easing.CubicIn); // Aumentei para 500ms para ser mais visível
+                    // ✅ FADE OUT: current → 0.0 em 500ms (sincronizado com translate)
+                    await this.FadeTo(0.0, 500, Easing.CubicIn);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavButton '{Text}': Fade Out concluído - Estado final: Opacity={this.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Fade Out PARALELO concluído - Estado final: Opacity={this.Opacity}");
             }
             catch (Exception ex)
             {
@@ -429,19 +467,27 @@ namespace MyKaraoke.View.Components
             }
         }
 
+        /// <summary>
+        /// ✅ CORRIGIDO: Slide Up usando API nativa do MAUI sincronizado com Fade
+        /// EXECUTA EM PARALELO com StartFadeInAsync() para efeito perfeito
+        /// Anima de 60px abaixo (estado inicial) para posição final (0)
+        /// </summary>
         private async Task StartSlideUpAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🚀 NavButton '{Text}': Iniciando Slide Up DIRETO - Estado atual: TranslationY={this.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Iniciando Slide Up PARALELO - Estado atual: TranslationY={this.TranslationY}");
 
-                // Executa translate direto usando APIs nativas do MAUI no MainThread
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    await this.TranslateTo(0, 0, 500, Easing.CubicOut); // Aumentei para 500ms para ser mais visível
+                    // ✅ GARANTIA: Estado inicial para animação translate
+                    this.TranslationY = 60; // Garante que começa 60px abaixo
+
+                    // ✅ TRANSLATE UP: 60px → 0px em 500ms (sincronizado com fade)
+                    await this.TranslateTo(0, 0, 500, Easing.CubicOut);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavButton '{Text}': Slide Up concluído - Estado final: TranslationY={this.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Slide Up PARALELO concluído - Estado final: TranslationY={this.TranslationY}");
             }
             catch (Exception ex)
             {
@@ -449,19 +495,22 @@ namespace MyKaraoke.View.Components
             }
         }
 
+        /// <summary>
+        /// ✅ CORRIGIDO: Slide Down para esconder o botão (sincronizado com fade out)
+        /// </summary>
         private async Task StartSlideDownAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🚀 NavButton '{Text}': Iniciando Slide Down DIRETO - Estado atual: TranslationY={this.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Iniciando Slide Down PARALELO - Estado atual: TranslationY={this.TranslationY}");
 
-                // Executa translate direto usando APIs nativas do MAUI no MainThread
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    await this.TranslateTo(0, 20, 500, Easing.CubicIn); // Aumentei para 500ms para ser mais visível
+                    // ✅ TRANSLATE DOWN: current → 60px em 500ms (sincronizado com fade out)
+                    await this.TranslateTo(0, 60, 500, Easing.CubicIn); // Move para 60px abaixo
                 });
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavButton '{Text}': Slide Down concluído - Estado final: TranslationY={this.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"NavButton '{Text ?? "sem nome"}': Slide Down PARALELO concluído - Estado final: TranslationY={this.TranslationY}");
             }
             catch (Exception ex)
             {
@@ -501,6 +550,9 @@ namespace MyKaraoke.View.Components
             }
             else
             {
+                // ✅ CORREÇÃO: Re-aplica estado inicial quando handler estiver disponível
+                ApplyInitialState();
+
                 // Atualiza propriedades quando o handler estiver disponível
                 try
                 {

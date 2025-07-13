@@ -4,7 +4,7 @@
              x:Class="MyKaraoke.View.Components.HeaderComponent"
              x:Name="HeaderRoot">
 
-    <Grid ColumnDefinitions="Auto,*,Auto" Margin="15,0,0,5" Padding="0,0,0,5">
+    <Grid ColumnDefinitions="Auto,*,Auto" Margin="15,0,15,5" Padding="0,0,0,5">
 
         <!-- Botão voltar compacto -->
         <StackLayout Grid.Column="0" 
@@ -14,7 +14,7 @@
             <StackLayout.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnBackButtonClicked" />
             </StackLayout.GestureRecognizers>
-            <Image Source="setaesquerda.png" Style="{StaticResource CompactBottomNavIconStyle}" />
+            <Image Source="setaesquerda.png" Style="{StaticResource CompactNavIconStyle}" />
         </StackLayout>
 
         <!-- Sombra externa (glow maior) -->
@@ -32,7 +32,7 @@
             Style="{StaticResource HeaderTitleStyle}"/>
 
         <!-- Botão Adicionar (+ no canto direito) - CONTROLE CONDICIONAL -->
-        <StackLayout Grid.Column="2" 
+        <!--<StackLayout Grid.Column="2" 
                      x:Name="addButtonStack"
                      HorizontalOptions="End" 
                      VerticalOptions="Start" 
@@ -42,9 +42,11 @@
                 <TapGestureRecognizer Tapped="OnAddButtonClicked" />
             </StackLayout.GestureRecognizers>
             <Image Source="add.png" 
-                   Style="{StaticResource CompactBottomNavIconStyle}"
+                   Style="{StaticResource CompactNavIconStyle}"
                    Opacity="0.9" />
-        </StackLayout>
+        </StackLayout>-->
+
+        <ContentView Grid.Column="2" WidthRequest="14" />
 
     </Grid>
 </ContentView>

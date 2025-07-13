@@ -43,19 +43,19 @@ namespace MyKaraoke.View
                 _queueService = _serviceProvider.GetService<IQueueService>();
 
                 // 🎯 Conecta os eventos do bottomNav com os handlers locais
-                if (bottomNav != null)
-                {
-                    bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
-                    bottomNav.BandokeClicked += OnBottomNavBandokeClicked;
-                    bottomNav.NovaFilaClicked += OnBottomNavNovaFilaClicked;
-                    bottomNav.HistoricoClicked += OnBottomNavHistoricoClicked;
-                    bottomNav.AdministrarClicked += OnBottomNavAdministrarClicked;
-                }
+                //if (bottomNav != null)
+                //{
+                //    bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
+                //    bottomNav.BandokeClicked += OnBottomNavBandokeClicked;
+                //    bottomNav.NovaFilaClicked += OnBottomNavNovaFilaClicked;
+                //    bottomNav.HistoricoClicked += OnBottomNavHistoricoClicked;
+                //    bottomNav.AdministrarClicked += OnBottomNavAdministrarClicked;
+                //}
 
                 // Debug: Log component availability after handler changed
-                System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - bottomNav: {bottomNav != null}");
-                System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - emptyQueueMessage: {emptyQueueMessage != null}");
-                System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - queueStatusLabel: {queueStatusLabel != null}");
+                //System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - bottomNav: {bottomNav != null}");
+                //System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - emptyQueueMessage: {emptyQueueMessage != null}");
+                //System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - queueStatusLabel: {queueStatusLabel != null}");
             }
         }
 
@@ -164,11 +164,10 @@ namespace MyKaraoke.View
                         bottomNav.IsVisible = true;
                         System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav set to VISIBLE");
 
-                        // 🎯 CORREÇÃO: Inicia a animação Nova Fila após um pequeno delay
                         try
                         {
-                            await Task.Delay(500); // Aguarda UI renderizar
-                            await bottomNav.StartNovaFilaAnimationAsync();
+                            //await Task.Delay(500); // Aguarda UI renderizar
+                            //await bottomNav.StartNovaFilaAnimationAsync();
                             System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - Animação Nova Fila iniciada com sucesso");
                         }
                         catch (Exception animEx)
@@ -248,7 +247,7 @@ namespace MyKaraoke.View
         }
 
         // DEBUG METHOD: Force empty queue state for testing
-        public void ForceEmptyQueueState()
+     /*   public void ForceEmptyQueueState()
         {
             System.Diagnostics.Debug.WriteLine("ForceEmptyQueueState - MANUAL TRIGGER");
             MainThread.BeginInvokeOnMainThread(() =>
@@ -264,7 +263,7 @@ namespace MyKaraoke.View
                 }
             });
         }
-
+     */
         private async void OnParticipouClicked(object sender, EventArgs e)
         {
             try
@@ -325,113 +324,6 @@ namespace MyKaraoke.View
             }
         }
 
-        // Método para o botão voltar
-        private void OnBackButtonClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                ExitApplication();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBackButtonClicked - Error: {ex.Message}");
-            }
-        }
-
-        // Captura o botão voltar do Android
-        protected override bool OnBackButtonPressed()
-        {
-            try
-            {
-                ExitApplication();
-                return true; // Impede o comportamento padrão
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBackButtonPressed - Error: {ex.Message}");
-                return true;
-            }
-        }
-
-        // Método para fechar a aplicação
-        private void ExitApplication()
-        {
-            try
-            {
-                Application.Current?.Quit();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"ExitApplication - Error: {ex.Message}");
-            }
-        }
-
-        // NEW: Bottom Navigation Event Handlers (atualizados para nova estrutura)
-        private void OnBottomNavLocaisClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Locais clicked");
-                // TODO: Navigate to Locais page
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBottomNavLocaisClicked - Error: {ex.Message}");
-            }
-        }
-
-        private void OnBottomNavBandokeClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Bandokê clicked");
-                // TODO: Navigate to Bandokê page
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBottomNavBandokeClicked - Error: {ex.Message}");
-            }
-        }
-
-        private void OnBottomNavNovaFilaClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Nova Fila clicked");
-                // TODO: Create new queue functionality
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBottomNavNovaFilaClicked - Error: {ex.Message}");
-            }
-        }
-
-        private void OnBottomNavHistoricoClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Histórico clicked");
-                // TODO: Navigate to Histórico page
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBottomNavHistoricoClicked - Error: {ex.Message}");
-            }
-        }
-
-        private void OnBottomNavAdministrarClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("Administrar clicked");
-                // TODO: Navigate to Administrar page
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnBottomNavAdministrarClicked - Error: {ex.Message}");
-            }
-        }
-
         private string GetString(string key, params object[] args)
         {
             string value = "";
@@ -474,11 +366,11 @@ namespace MyKaraoke.View
                         System.Diagnostics.Debug.WriteLine("OnDisappearing - Animação Nova Fila parada");
 
                         // Desconecta os eventos para evitar memory leaks
-                        bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
-                        bottomNav.BandokeClicked -= OnBottomNavBandokeClicked;
-                        bottomNav.NovaFilaClicked -= OnBottomNavNovaFilaClicked;
-                        bottomNav.HistoricoClicked -= OnBottomNavHistoricoClicked;
-                        bottomNav.AdministrarClicked -= OnBottomNavAdministrarClicked;
+                        //bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
+                        //bottomNav.BandokeClicked -= OnBottomNavBandokeClicked;
+                        //bottomNav.NovaFilaClicked -= OnBottomNavNovaFilaClicked;
+                        //bottomNav.HistoricoClicked -= OnBottomNavHistoricoClicked;
+                        //bottomNav.AdministrarClicked -= OnBottomNavAdministrarClicked;
                     }
                     catch (Exception animEx)
                     {

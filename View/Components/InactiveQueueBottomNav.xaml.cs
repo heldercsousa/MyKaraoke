@@ -1,7 +1,10 @@
+// InactiveQueueBottomNav.xaml.cs
+
 using Microsoft.Maui.Controls;
 using MyKaraoke.View.Animations;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.Linq; // Added for .Any() in baseNavBar's methods if needed elsewhere
 
 namespace MyKaraoke.View.Components
 {
@@ -30,9 +33,10 @@ namespace MyKaraoke.View.Components
         #region Private Fields
 
         private bool _isInitialized = false;
-        private bool _isShowing = false; // ✅ NOVO: Proteção contra múltiplas execuções
+        // private bool _isShowing = false; // Removed this flag as it's no longer needed with the new strategy
 
         #endregion
+
 
         public InactiveQueueBottomNav()
         {
@@ -40,22 +44,60 @@ namespace MyKaraoke.View.Components
             {
                 InitializeComponent();
                 InitializeCommands();
-                SetupButtons();
+                // SetupButtons() will now be called by OnHandlerChanged on initial setup.
+                // This ensures baseNavBar is configured at the right lifecycle point.
+                // SetupButtons(); // Removed from constructor to avoid premature setup.
 
                 System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav refatorado inicializado com sucesso");
 
-                // ✅ CORREÇÃO: Inicia animações com delay adequado APÓS inicialização completa
-                MainThread.BeginInvokeOnMainThread(async () =>
-                {
-                    await Task.Delay(200); // ✅ Delay maior para garantir que layout esteja completamente pronto
-                    await ShowAsync(); // Inicia animações automaticamente APENAS para InactiveQueue
-                });
+                // Set initial state for the *entire* component to be hidden by default
+                // This prevents flicker before BaseNavBarComponent animates its children.
+                this.Opacity = 0;
+                this.IsVisible = false;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro na inicialização do InactiveQueueBottomNav refatorado: {ex.Message}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Public entry point to trigger the navbar display animation.
+        /// This will be called by the parent page (StackPage) OnAppearing.
+        /// </summary>
+        public async Task StartShowAnimations()
+        {
+            System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: StartShowAnimations chamado pela página pai.");
+
+            // Torna o container visível para que as animações internas possam ocorrer
+            this.IsVisible = true;
+            this.Opacity = 1;
+
+            if (baseNavBar == null)
+            {
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: baseNavBar é nula. Não é possível iniciar animações.");
+                return;
+            }
+
+            // CORREÇÃO: Não há mais necessidade de reconstruir os botões aqui.
+            // O método HideAsync chamado no OnDisappearing da StackPage já reiniciou o estado.
+            // Apenas chamamos ShowAsync, que agora irá funcionar corretamente.
+            if (HardwareDetector.SupportsAnimations)
+            {
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: Acionando baseNavBar.ShowAsync()");
+                await baseNavBar.ShowAsync();
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: Hardware limitado, mostrando baseNavBar sem animações.");
+                baseNavBar.IsVisible = true;
+            }
+
+            // O pulse especial ainda é iniciado separadamente, o que está correto.
+            await StartNovaFilaAnimationAsync();
+
+            System.Diagnostics.Debug.WriteLine("Animações da InactiveQueueBottomNav acionadas com sucesso.");
         }
 
         #region Initialization
@@ -69,110 +111,96 @@ namespace MyKaraoke.View.Components
             AdministrarCommand = new Command(async () => await OnAdministrarClickedAsync());
         }
 
-        private void SetupButtons()
+        private void SetupButtons() // Original SetupButtons, just preparing the config
+        {
+            if (_isInitialized)
+            {
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: SetupButtons ignored, already initialized.");
+                return;
+            }
+            // This method will only define the 'buttons' collection.
+            // The actual assignment to baseNavBar.Buttons will happen in ConfigureBaseNavBar().
+            // This separates button definition from their application to the UI.
+            _isInitialized = true; // Mark as initialized after defining the button configs.
+            System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: Buttons configuration defined.");
+        }
+
+        /// <summary>
+        /// Configures the BaseNavBarComponent with its buttons.
+        /// Calling this method will trigger BaseNavBarComponent's OnButtonsChanged
+        /// which then calls RebuildButtons, effectively resetting the animation state
+        /// of the internal NavButtonComponents.
+        /// </summary>
+        private void ConfigureBaseNavBar()
         {
             try
             {
                 var buttons = new ObservableCollection<NavButtonConfig>
                 {
-                    // ✅ CORREÇÃO: Configuração correta dos botões com AnimationTypes explícito
-                    
                     // Locais - botão regular com animações Fade + Translate
                     new NavButtonConfig
                     {
-                        Text = "Locais",
-                        IconSource = "spot.png",
-                        Command = LocaisCommand,
-                        IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations
-                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
-                            : NavButtonAnimationType.None,
+                        Text = "Locais", IconSource = "spot.png", Command = LocaisCommand, IsSpecial = false,
+                        AnimationTypes = HardwareDetector.SupportsAnimations ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate) : NavButtonAnimationType.None,
                         IsAnimated = true
                     },
-                    
                     // Bandokê - botão regular com animações Fade + Translate
                     new NavButtonConfig
                     {
-                        Text = "Bandokê",
-                        IconSource = "musicos.png",
-                        Command = BandokeCommand,
-                        IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations
-                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
-                            : NavButtonAnimationType.None,
+                        Text = "Bandokê", IconSource = "musicos.png", Command = BandokeCommand, IsSpecial = false,
+                        AnimationTypes = HardwareDetector.SupportsAnimations ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate) : NavButtonAnimationType.None,
                         IsAnimated = true
                     },
-                    
-                    // Nova Fila - botão especial com TODAS as 3 animações (Fade + Translate + Pulse)
+                    // Nova Fila - botão especial with all 3 animations (Fade + Translate + Pulse)
                     new NavButtonConfig
                     {
-                        Text = "Nova Fila",
-                        CenterContent = "+",
-                        Command = NovaFilaCommand,
-                        IsSpecial = true,
-                        GradientStyle = SpecialButtonGradientType.Yellow,
-                        SpecialAnimationTypes = HardwareDetector.SupportsAnimations
-                            ? (SpecialButtonAnimationType.Fade | SpecialButtonAnimationType.Translate | SpecialButtonAnimationType.Pulse)
-                            : SpecialButtonAnimationType.None,
+                        Text = "Nova Fila", CenterContent = "+", Command = NovaFilaCommand, IsSpecial = true, GradientStyle = SpecialButtonGradientType.Yellow,
+                        SpecialAnimationTypes = HardwareDetector.SupportsAnimations ? (SpecialButtonAnimationType.Fade | SpecialButtonAnimationType.Translate | SpecialButtonAnimationType.Pulse) : SpecialButtonAnimationType.None,
                         IsAnimated = true
                     },
-                    
-                    // Histórico - botão regular com animações Fade + Translate
+                    // Histórico - botão regular with animations Fade + Translate
                     new NavButtonConfig
                     {
-                        Text = "Histórico",
-                        IconSource = "historico.png",
-                        Command = HistoricoCommand,
-                        IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations
-                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
-                            : NavButtonAnimationType.None,
+                        Text = "Histórico", IconSource = "historico.png", Command = HistoricoCommand, IsSpecial = false,
+                        AnimationTypes = HardwareDetector.SupportsAnimations ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate) : NavButtonAnimationType.None,
                         IsAnimated = true
                     },
-                    
-                    // Administrar - botão regular com animações Fade + Translate
+                    // Administrar - botão regular with animations Fade + Translate
                     new NavButtonConfig
                     {
-                        Text = "Administrar",
-                        IconSource = "manage.png",
-                        Command = AdministrarCommand,
-                        IsSpecial = false,
-                        AnimationTypes = HardwareDetector.SupportsAnimations
-                            ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate)
-                            : NavButtonAnimationType.None,
+                        Text = "Administrar", IconSource = "manage.png", Command = AdministrarCommand, IsSpecial = false,
+                        AnimationTypes = HardwareDetector.SupportsAnimations ? (NavButtonAnimationType.Fade | NavButtonAnimationType.Translate) : NavButtonAnimationType.None,
                         IsAnimated = true
                     }
                 };
 
-                // ✅ CORREÇÃO: Configura navbar SEM delay automático (será controlado manualmente)
+                // Assigning this will trigger BaseNavBarComponent.OnButtonsChanged -> RebuildButtons()
+                // which will clear and re-add button views, effectively resetting their animation state.
                 baseNavBar.Buttons = buttons;
                 baseNavBar.IsAnimated = true;
-                baseNavBar.ShowAnimationDelay = 80; // ✅ Delay SUTIL de 80ms entre cada botão (efeito cascata suave)
+                baseNavBar.ShowAnimationDelay = 80;
 
-                // Conecta evento do componente base
-                baseNavBar.ButtonClicked += OnBaseNavBarButtonClicked;
+                // Ensure event handler is subscribed only once
+                baseNavBar.ButtonClicked -= OnBaseNavBarButtonClicked; // Unsubscribe to be safe
+                baseNavBar.ButtonClicked += OnBaseNavBarButtonClicked; // Then subscribe
 
-                _isInitialized = true;
-                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: 5 botões configurados com animações FADE+TRANSLATE simultâneas, delay sutil 80ms entre botões");
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav: BaseNavBarComponent configured. Rebuild should be triggered.");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao configurar botões: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Erro ao configurar BaseNavBarComponent: {ex.Message}");
             }
         }
 
         #endregion
 
-        #region Event Handlers
+        #region Event Handlers (remain unchanged)
 
         private void OnBaseNavBarButtonClicked(object sender, NavBarButtonClickedEventArgs e)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"BaseNavBar: Botão '{e.ButtonConfig.Text}' clicado");
-
-                // Os commands já foram executados automaticamente pelo BaseNavBarComponent
-                // Este evento é apenas para logging adicional se necessário
             }
             catch (Exception ex)
             {
@@ -186,7 +214,6 @@ namespace MyKaraoke.View.Components
             {
                 System.Diagnostics.Debug.WriteLine("Botão Locais clicado no BottomNav refatorado - navegando para SpotPage");
 
-                // Estratégia 1: Usar ServiceProvider através da página pai
                 var parentPage = FindParentPage();
                 if (parentPage != null)
                 {
@@ -215,11 +242,9 @@ namespace MyKaraoke.View.Components
                     catch (Exception serviceEx)
                     {
                         System.Diagnostics.Debug.WriteLine($"Erro ao usar ServiceProvider: {serviceEx.Message}");
-                        // Continua para o fallback abaixo
                     }
                 }
 
-                // Estratégia 2: Criação direta de SpotPage
                 System.Diagnostics.Debug.WriteLine("Usando fallback - criação direta de SpotPage");
                 var fallbackSpotPage = new SpotPage();
 
@@ -242,7 +267,6 @@ namespace MyKaraoke.View.Components
             {
                 System.Diagnostics.Debug.WriteLine($"Erro crítico na navegação Locais: {ex.Message}");
 
-                // Estratégia 3: Feedback ao usuário sobre o erro
                 try
                 {
                     var parentPage = FindParentPage();
@@ -256,7 +280,6 @@ namespace MyKaraoke.View.Components
                     System.Diagnostics.Debug.WriteLine($"Falha ao exibir alerta: {alertEx.Message}");
                 }
 
-                // Ainda assim invoca o evento para permitir tratamento customizado
                 LocaisClicked?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -274,7 +297,6 @@ namespace MyKaraoke.View.Components
         {
             try
             {
-                // Para a animação quando o usuário clica (mantém comportamento original)
                 await StopNovaFilaAnimationAsync();
 
                 await Task.Run(() =>
@@ -309,211 +331,38 @@ namespace MyKaraoke.View.Components
 
         #endregion
 
-        #region Animation Methods (compatibilidade com código existente)
+        #region Animation Methods
 
-        /// <summary>
-        /// ✅ CORRIGIDO: Inicia a animação do botão Nova Fila automaticamente
-        /// Método público para ser chamado pela view pai (mantém compatibilidade)
-        /// Agora com verificação de inicialização e debug melhorado
-        /// </summary>
         public async Task StartNovaFilaAnimationAsync()
         {
             try
             {
-                if (!_isInitialized)
-                {
-                    System.Diagnostics.Debug.WriteLine("⚠️ InactiveQueueBottomNav ainda não inicializado, aguardando...");
-                    await Task.Delay(200); // ✅ Delay maior para aguardar inicialização
-
-                    // Verifica novamente após delay
-                    if (!_isInitialized)
-                    {
-                        System.Diagnostics.Debug.WriteLine("❌ InactiveQueueBottomNav não inicializou a tempo - abortando animação");
-                        return;
-                    }
-                }
-
-                // Só executa se o hardware suportar animações
-                if (!HardwareDetector.SupportsAnimations)
-                {
-                    System.Diagnostics.Debug.WriteLine("🚫 Hardware não suporta animações - Nova Fila animation BYPASS ativado");
-                    return;
-                }
-
-                // Log do hardware para debug (mantém comportamento original)
+                if (!_isInitialized) { System.Diagnostics.Debug.WriteLine("⚠️ InactiveQueueBottomNav ainda não inicializado, aguardando..."); await Task.Delay(200); if (!_isInitialized) { System.Diagnostics.Debug.WriteLine("❌ InactiveQueueBottomNav não inicializou a tempo - abortando animação"); return; } }
+                if (!HardwareDetector.SupportsAnimations) { System.Diagnostics.Debug.WriteLine("🚫 Hardware não suporta animações - Nova Fila animation BYPASS ativado"); return; }
                 HardwareDetector.LogHardwareInfo();
-
                 System.Diagnostics.Debug.WriteLine("🎬 Iniciando animação Nova Fila com 3 animações (Fade + Translate + Pulse) via BaseNavBarComponent");
-
-                // ✅ CORREÇÃO: Verifica se baseNavBar está disponível
-                if (baseNavBar == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("❌ baseNavBar não disponível - abortando animação");
-                    return;
-                }
-
-                // Inicia animações especiais (automaticamente verifica se é suportado pelo hardware)
-                // Isso irá disparar: 
-                // 1. Show (Fade + Translate) quando a navbar aparecer
-                // 2. Pulse contínuo para call-to-action
+                if (baseNavBar == null) { System.Diagnostics.Debug.WriteLine("❌ baseNavBar not available - aborting animation"); return; }
+                await baseNavBar.StopSpecialAnimations();
                 await baseNavBar.StartSpecialAnimations();
-
-                System.Diagnostics.Debug.WriteLine("✅ Animação Nova Fila iniciada com sucesso - 3 animações ativas");
+                System.Diagnostics.Debug.WriteLine("✅ Nova Fila pulse animation initiated successfully.");
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro na animação Nova Fila BottomNav refatorado: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"❌ Error in Nova Fila pulse animation: {ex.Message}"); }
         }
 
-        /// <summary>
-        /// Para a animação do botão Nova Fila
-        /// Método público para ser chamado pela view pai (mantém compatibilidade)
-        /// </summary>
         public async Task StopNovaFilaAnimationAsync()
         {
-            try
-            {
-                if (baseNavBar != null)
-                {
-                    await baseNavBar.StopSpecialAnimations();
-                    System.Diagnostics.Debug.WriteLine("✅ Animação Nova Fila parada no BottomNav refatorado");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao parar animação BottomNav refatorado: {ex.Message}");
-            }
+            try { if (baseNavBar != null) { await baseNavBar.StopSpecialAnimations(); System.Diagnostics.Debug.WriteLine("✅ Animação Nova Fila parada no BottomNav refatorado"); } }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"❌ Erro ao parar animação BottomNav refatorado: {ex.Message}"); }
         }
 
-        /// <summary>
-        /// Verifica se a animação está rodando
-        /// Propriedade para compatibilidade com código existente
-        /// </summary>
         public bool IsNovaFilaAnimationRunning
         {
-            get
-            {
-                try
-                {
-                    // Como a animação agora é gerenciada pelo componente SpecialNavButton,
-                    // retornamos true se o navbar está visível, animado E o hardware suporta animações
-                    return _isInitialized &&
-                           baseNavBar != null &&
-                           baseNavBar.IsVisible &&
-                           baseNavBar.IsAnimated &&
-                           HardwareDetector.SupportsAnimations;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
+            get { try { return _isInitialized && baseNavBar != null && baseNavBar.IsVisible && baseNavBar.IsAnimated && HardwareDetector.SupportsAnimations; } catch { return false; } }
         }
 
         /// <summary>
-        /// ✅ CORRIGIDO: Mostra a navbar com animação
-        /// Agora com proteção correta baseada no estado dos botões, não da navbar
-        /// </summary>
-        public async Task ShowAsync()
-        {
-            // ✅ PROTEÇÃO CRÍTICA: Impede múltiplas execuções simultâneas
-            if (_isShowing)
-            {
-                System.Diagnostics.Debug.WriteLine("⚠️ InactiveQueue: ShowAsync IGNORADO - já em execução");
-                return;
-            }
-
-            _isShowing = true; // Marca como "em execução"
-
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("InactiveQueue: Iniciando ShowAsync");
-
-                if (baseNavBar == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("baseNavBar não disponível");
-                    return;
-                }
-
-                // ✅ CORREÇÃO: Verifica se os BOTÕES já foram animados, não apenas a navbar
-                bool buttonsAlreadyAnimated = false;
-                if (baseNavBar.Buttons != null && baseNavBar.Buttons.Count > 0)
-                {
-                    // Verifica se algum botão já está no estado final (animado)
-                    var firstButton = baseNavBar.Buttons.FirstOrDefault();
-                    if (firstButton != null)
-                    {
-                        // Se o primeiro botão já está visível e opaco, consideramos que já foi animado
-                        buttonsAlreadyAnimated = true; // Por enquanto, vamos sempre tentar animar
-                        System.Diagnostics.Debug.WriteLine($"InactiveQueue: Verificando estado dos botões...");
-                    }
-                }
-
-                // ✅ COMENTADO: Removida verificação problemática
-                // if (baseNavBar.IsVisible) { ... }
-
-                // ✅ CORREÇÃO CRÍTICA: Força estado inicial da navbar ANTES das animações
-                await ForceInitialStateAsync();
-
-                // Só executa animações se o hardware suportar (obedece a regra do HardwareDetector)
-                if (HardwareDetector.SupportsAnimations)
-                {
-                    System.Diagnostics.Debug.WriteLine("InactiveQueue: Iniciando animações da navbar - hardware adequado detectado");
-                    await baseNavBar.ShowAsync();
-                    System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav mostrada com animação - botão Nova Fila com 3 animações ativas");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("InactiveQueue: Hardware limitado - navbar mostrada sem animações (BYPASS ativo)");
-                    baseNavBar.IsVisible = true;
-                    // Em hardware limitado, apenas torna visível sem animações (respeita HardwareDetector)
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao mostrar InactiveQueueBottomNav: {ex.Message}");
-                // Fallback: apenas torna visível
-                if (baseNavBar != null)
-                {
-                    baseNavBar.IsVisible = true;
-                }
-            }
-            finally
-            {
-                _isShowing = false; // ✅ SEMPRE libera o lock
-            }
-        }
-
-        /// <summary>
-        /// ✅ NOVO MÉTODO: Força estado inicial da navbar para prevenir "piscar"
-        /// </summary>
-        private async Task ForceInitialStateAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("🔧 InactiveQueue: Forçando estado inicial da navbar...");
-
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    if (baseNavBar != null)
-                    {
-                        baseNavBar.IsVisible = true;
-                        baseNavBar.Opacity = 1; // A navbar em si deve estar visível
-
-                        // O estado inicial dos botões será gerenciado pelo BaseNavBarComponent
-                        System.Diagnostics.Debug.WriteLine("🔧 InactiveQueue: Estado inicial da navbar aplicado");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao forçar estado inicial: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Esconde a navbar com animação
+        /// Hides the entire InactiveQueueBottomNav component and its internal BaseNavBarComponent.
+        /// This should be called when the StackPage is disappearing.
         /// </summary>
         public async Task HideAsync()
         {
@@ -521,29 +370,27 @@ namespace MyKaraoke.View.Components
             {
                 if (baseNavBar != null)
                 {
+                    // Calling HideAsync on baseNavBar ensures its internal _isShown flag is reset.
+                    // This is crucial for re-animation upon next ShowAsync.
                     await baseNavBar.HideAsync();
-                    System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav escondida com animação");
+                    System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav - baseNavBar hidden and state reset.");
                 }
+                // Also hide the entire InactiveQueueBottomNav component itself
+                this.IsVisible = false;
+                this.Opacity = 0;
+                System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav escondida completamente");
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao esconder InactiveQueueBottomNav: {ex.Message}");
-            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Erro ao esconder InactiveQueueBottomNav: {ex.Message}"); this.IsVisible = false; this.Opacity = 0; }
         }
 
         #endregion
 
         #region Helper Methods
 
-        /// <summary>
-        /// Encontra a página pai que contém este ContentView
-        /// Necessário porque ServiceProvider.FromPage() espera uma Page
-        /// </summary>
         private Page FindParentPage()
         {
             try
             {
-                // Navega pela hierarquia visual para encontrar a Page pai
                 Element current = this.Parent;
 
                 while (current != null)
@@ -556,7 +403,6 @@ namespace MyKaraoke.View.Components
                     current = current.Parent;
                 }
 
-                // Se não encontrou pela hierarquia, tenta pela MainPage atual
                 var mainPage = Application.Current?.MainPage;
                 if (mainPage != null)
                 {
@@ -581,41 +427,26 @@ namespace MyKaraoke.View.Components
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
-
             if (Handler == null)
             {
                 System.Diagnostics.Debug.WriteLine("InactiveQueueBottomNav handler removido");
-                _isShowing = false; // ✅ Reset do estado quando handler é removido
-            }
-            else if (!_isInitialized)
-            {
-                // Tenta configurar botões novamente se não foi inicializado
-                SetupButtons();
+                _isInitialized = false; // Reset if handler is removed for proper re-init
             }
             else
             {
-                // ✅ CORREÇÃO CRÍTICA: Remove re-execução automática que causa múltiplas chamadas
-                // O ShowAsync será chamado apenas uma vez pelo StackPage quando necessário
-                System.Diagnostics.Debug.WriteLine("🔄 InactiveQueueBottomNav handler disponível - PRONTO (sem re-iniciar animações automaticamente)");
-
-                // ✅ REMOVIDO: A linha abaixo causava as múltiplas execuções
-                // MainThread.BeginInvokeOnMainThread(async () => {
-                //     await Task.Delay(100);
-                //     await ShowAsync(); // ← ESTA LINHA ERA O PROBLEMA
-                // });
+                System.Diagnostics.Debug.WriteLine("🔄 InactiveQueueBottomNav handler disponível.");
+                if (!_isInitialized)
+                {
+                    SetupButtons(); // Defines the configs (sets _isInitialized = true)
+                    ConfigureBaseNavBar(); // Applies configs to baseNavBar and triggers its rebuild
+                }
             }
         }
 
         protected override void OnBindingContextChanged()
         {
             base.OnBindingContextChanged();
-
-            if (BindingContext == null)
-            {
-                // Para animações quando o contexto muda
-                _ = Task.Run(StopNovaFilaAnimationAsync);
-                System.Diagnostics.Debug.WriteLine("Animação parada devido a mudança de BindingContext");
-            }
+            if (BindingContext == null) { _ = Task.Run(StopNovaFilaAnimationAsync); System.Diagnostics.Debug.WriteLine("Animação parada devido a mudança de BindingContext"); }
         }
 
         #endregion

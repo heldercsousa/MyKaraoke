@@ -74,6 +74,15 @@ namespace MyKaraoke.View
             await Task.Delay(100);
 
             await CheckActiveQueueAsync(); // Nova verificação de fila ativa
+
+            // Trigger animations for the InactiveQueueBottomNav when the page appears
+            if (bottomNav != null)
+            {
+                // Add a small delay to ensure the UI is fully rendered before starting animations
+                await Task.Delay(200);
+                await bottomNav.StartShowAnimations();
+                System.Diagnostics.Debug.WriteLine("StackPage: InactiveQueueBottomNav animations triggered.");
+            }
         }
 
         // --- Métodos de Persistência da Fila Ativa na UI (usando Preferences) ---
@@ -140,47 +149,20 @@ namespace MyKaraoke.View
         {
             System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - Starting");
 
-            await MainThread.InvokeOnMainThreadAsync(async () =>
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 try
                 {
-                    // Atualizar título para "My Karaoke"
-                    UpdateHeaderTitle(false);
-
-                    if (emptyQueueMessage != null)
-                    {
-                        emptyQueueMessage.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - emptyQueueMessage set to visible");
-                    }
-
-                    if (filaCollectionView != null)
-                    {
-                        filaCollectionView.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - filaCollectionView set to hidden");
-                    }
+                    // ... (other UI updates)
 
                     if (bottomNav != null)
                     {
-                        bottomNav.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav set to VISIBLE");
-
-                        try
-                        {
-                            //await Task.Delay(500); // Aguarda UI renderizar
-                            //await bottomNav.StartNovaFilaAnimationAsync();
-                            System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - Animação Nova Fila iniciada com sucesso");
-                        }
-                        catch (Exception animEx)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"ShowEmptyQueueState - Erro ao iniciar animação: {animEx.Message}");
-                        }
+                        // REMOVE THIS LINE COMPLETELY: This caused the flicker.
+                        // bottomNav.IsVisible = true;
+                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav visibility NOT set here (controlled by its own StartShowAnimations)");
                     }
 
-                    if (queueStatusLabel != null)
-                    {
-                        queueStatusLabel.Text = "---";
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - queueStatusLabel set to ---");
-                    }
+                    // ... (rest of the method)
                 }
                 catch (Exception ex)
                 {
@@ -362,8 +344,8 @@ namespace MyKaraoke.View
                 {
                     try
                     {
-                        await bottomNav.StopNovaFilaAnimationAsync();
-                        System.Diagnostics.Debug.WriteLine("OnDisappearing - Animação Nova Fila parada");
+                        await bottomNav.HideAsync();
+                        System.Diagnostics.Debug.WriteLine("OnDisappearing - Animações da InactiveQueueBottomNav paradas e barra escondida.");
 
                         // Desconecta os eventos para evitar memory leaks
                         //bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;

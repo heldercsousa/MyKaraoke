@@ -34,7 +34,7 @@ namespace MyKaraoke.View
             {
                 try
                 {
-                    _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
+                    _serviceProvider = ServiceProvider.FromPage(this);
                     _estabelecimentoService = _serviceProvider?.GetService<IEstabelecimentoService>();
 
                     // Debug: Log component availability after handler changed
@@ -88,7 +88,7 @@ namespace MyKaraoke.View
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     _locais.Clear();
-
+                    
                     if (locais != null)
                     {
                         foreach (var local in locais)
@@ -99,7 +99,7 @@ namespace MyKaraoke.View
                     }
 
                     System.Diagnostics.Debug.WriteLine($"LoadLocaisAsync - ObservableCollection agora tem {_locais.Count} itens");
-
+                    
                     // ✅ CORREÇÃO: Força atualização da UI após modificar dados
                     UpdateUIState();
                 });
@@ -127,7 +127,7 @@ namespace MyKaraoke.View
                     // Mostra/esconde lista vs estado vazio
                     locaisCollectionView.IsVisible = hasLocais;
                     emptyStateFrame.IsVisible = !hasLocais;
-
+                    
                     System.Diagnostics.Debug.WriteLine($"UpdateUIState - locaisCollectionView.IsVisible: {locaisCollectionView.IsVisible}");
                     System.Diagnostics.Debug.WriteLine($"UpdateUIState - emptyStateFrame.IsVisible: {emptyStateFrame.IsVisible}");
 
@@ -156,12 +156,12 @@ namespace MyKaraoke.View
             try
             {
                 System.Diagnostics.Debug.WriteLine("ShowEmptyState - Configurando estado vazio");
-
+                
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     locaisCollectionView.IsVisible = false;
                     emptyStateFrame.IsVisible = true;
-
+                    
                     System.Diagnostics.Debug.WriteLine($"ShowEmptyState - locaisCollectionView.IsVisible: {locaisCollectionView.IsVisible}");
                     System.Diagnostics.Debug.WriteLine($"ShowEmptyState - emptyStateFrame.IsVisible: {emptyStateFrame.IsVisible}");
 
@@ -283,7 +283,7 @@ namespace MyKaraoke.View
                 {
                     // ✅ CORREÇÃO: Pequeno delay para evitar "Pending Navigations still processing"
                     await Task.Delay(100);
-
+                    
                     await NavigateToSpotFormPageAsync(isEditing: false);
                     System.Diagnostics.Debug.WriteLine("Navegação para SpotFormPage concluída - threading correto");
                 });
@@ -456,20 +456,20 @@ namespace MyKaraoke.View
             base.OnDisappearing();
             try
             {
-                System.Diagnostics.Debug.WriteLine("SpotPage: OnDisappearing - parando animações pois página está saindo");
+                System.Diagnostics.Debug.WriteLine("SpotPage: OnDisappearing - escondendo CrudNavBarComponent pois página está saindo.");
 
-                // ✅ CORREÇÃO: Para animações quando a página REALMENTE desaparece
-                // Isso é correto - a animação deve parar quando o botão não está mais visível
                 if (CrudNavBarComponent != null)
                 {
                     try
                     {
-                        await CrudNavBarComponent.StopNovoLocalAnimationAsync();
-                        System.Diagnostics.Debug.WriteLine("OnDisappearing - Animação Novo Local parada (página saindo)");
+                        // CORREÇÃO: Chama o método HideAsync para executar o fade out + slide down
+                        // e reiniciar o estado interno dos botões para a próxima vez.
+                        await CrudNavBarComponent.HideAsync();
+                        System.Diagnostics.Debug.WriteLine("OnDisappearing - CrudNavBarComponent escondido com animação.");
                     }
                     catch (Exception animEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"OnDisappearing - Erro ao parar animação: {animEx.Message}");
+                        System.Diagnostics.Debug.WriteLine($"OnDisappearing - Erro ao esconder CrudNavBarComponent: {animEx.Message}");
                     }
                 }
             }

@@ -11,7 +11,7 @@
         <!-- Header Component -->
         <components:HeaderComponent Grid.Row="0"
                                    x:Name="headerComponent"
-                                   Title="Local"
+                                   Title="Locais"
                                    ShowAddButton="False"
                                    AddButtonClicked="OnHeaderAddButtonClicked"/>
 
@@ -79,7 +79,7 @@
                     </CollectionView>
 
                     <!-- Estado vazio -->
-                    <Frame x:Name="emptyStateFrame"
+                    <Frame x:Name="emptyStateFrame      "
                            Grid.Row="0"
                            IsVisible="False"
                            Style="{StaticResource EmptyQueueFrameStyle}">

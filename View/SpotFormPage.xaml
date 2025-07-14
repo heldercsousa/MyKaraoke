@@ -11,7 +11,7 @@
         <!-- Header Component - Título dinâmico -->
         <components:HeaderComponent Grid.Row="0" 
                                    x:Name="headerComponent"
-                                   Title="Adicionar Local"/>
+                                   Title="Novo Local"/>
 
         <!-- Card Wrapper Component -->
         <components:CardWrapperComponent Grid.Row="1" 

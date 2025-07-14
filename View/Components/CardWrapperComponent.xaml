@@ -70,8 +70,6 @@
                     </Frame>
                 </Grid>
 
-                <!-- CORREÇÃO 1: Removido ContentPresenter problemático -->
-                <!-- CORREÇÃO 2: Adicionado container nomeado para conteúdo -->
                 <Grid Grid.Row="1" 
                       x:Name="contentContainer"
                       VerticalOptions="Start"

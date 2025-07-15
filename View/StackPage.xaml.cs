@@ -76,12 +76,18 @@ namespace MyKaraoke.View
             await CheckActiveQueueAsync(); // Nova verificação de fila ativa
 
             // Trigger animations for the InactiveQueueBottomNav when the page appears
+            //if (bottomNav != null)
+            //{
+            //    // Add a small delay to ensure the UI is fully rendered before starting animations
+            //    await Task.Delay(200);
+            //    await bottomNav.StartShowAnimations();
+            //    System.Diagnostics.Debug.WriteLine("StackPage: InactiveQueueBottomNav animations triggered.");
+            //}
+
             if (bottomNav != null)
             {
-                // Add a small delay to ensure the UI is fully rendered before starting animations
-                await Task.Delay(200);
-                await bottomNav.StartShowAnimations();
-                System.Diagnostics.Debug.WriteLine("StackPage: InactiveQueueBottomNav animations triggered.");
+                // Chama o método padronizado da interface
+                await bottomNav.ShowAsync();
             }
         }
 
@@ -184,7 +190,7 @@ namespace MyKaraoke.View
                     {
                         try
                         {
-                            await bottomNav.StopNovaFilaAnimationAsync();
+                            //await bottomNav.StopNovaFilaAnimationAsync();
                             System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - Animação Nova Fila parada");
                         }
                         catch (Exception animEx)
@@ -389,3 +395,34 @@ namespace MyKaraoke.View
         }
     }
 }
+
+
+//public partial class StackPage : ContentPage
+//{
+//    // ... ICommands para LocaisCommand, BandokeCommand, etc. ...
+
+//    public StackPage()
+//    {
+//        InitializeComponent();
+//        // Vincule os commands aqui. Exemplo:
+//        // LocaisCommand = new Command(async () => await NavigateToSpotPage());
+//        // this.BindingContext = this; // Para os commands funcionarem
+//    }
+
+//    // Um único handler para todos os cliques
+//    private void OnBottomNavButtonClicked(object sender, NavBarButtonClickedEventArgs e)
+//    {
+//        System.Diagnostics.Debug.WriteLine($"Botão clicado: {e.ButtonConfig.Text}");
+
+//        // A lógica de navegação já está nos ICommands vinculados no XAML.
+//        // Você poderia ter um switch aqui se preferisse usar o evento em vez de commands.
+//        // switch(e.ButtonConfig.Text)
+//        // {
+//        //     case "Locais": //...
+//        //     break;
+//        // }
+//    }
+
+//    // ... O resto do seu código ...
+//    // O Behavior 'NavBarLifecycleBehavior' cuidará de chamar ShowAsync/HideAsync.
+//}

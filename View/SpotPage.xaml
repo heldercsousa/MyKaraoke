@@ -1,99 +1,61 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MyKaraoke.View"
              xmlns:components="clr-namespace:MyKaraoke.View.Components"
+             xmlns:domain="clr-namespace:MyKaraoke.Domain"               
+             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"     
              x:Class="MyKaraoke.View.SpotPage"
+             x:DataType="local:SpotPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
+    <ContentPage.Behaviors>
+        <components:NavBarLifecycleBehavior NavBar="{x:Reference CrudNavBar}" />
+    </ContentPage.Behaviors>
+
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Header Component -->
-        <components:HeaderComponent Grid.Row="0"
-                                   x:Name="headerComponent"
-                                   Title="Locais"
-                                   ShowAddButton="False"
-                                   AddButtonClicked="OnHeaderAddButtonClicked"/>
+        <components:HeaderComponent Grid.Row="0" Title="Locais" />
 
-        <!-- Card Wrapper Component -->
-        <components:CardWrapperComponent Grid.Row="1"
-            TitleText="Cadastrados"
-            IconPath="spot_purple.png"
-            BadgeIsVisible="False">
-
+        <components:CardWrapperComponent Grid.Row="1" TitleText="Cadastrados" IconPath="spot_purple.png" BadgeIsVisible="False">
             <components:CardWrapperComponent.CardContent>
-                <!-- Conteúdo do Card -->
-                <Grid RowDefinitions="Auto,Auto,*">
+                <Grid RowDefinitions="*">
 
-                    <!-- Estado 1: LISTA DE LOCAIS EXISTENTES -->
-                    <!-- Lista de locais usando estilos CardListItem -->
                     <CollectionView x:Name="locaisCollectionView"
-                                    Grid.Row="0"
-                                    SelectionMode="None"
-                                    IsVisible="True">
+                                  Grid.Row="0"
+                                  ItemsSource="{Binding Locais}"
+                                  SelectionMode="Multiple"
+                                  SelectionChanged="OnLocalSelectionChanged">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <!-- Frame otimizado para lista de locais -->
-                                <Frame Style="{StaticResource CardListItemBackgroundStyle}"
-                                       Padding="15,12,15,12"
-                                       Margin="0,5,0,5">
+                            <DataTemplate x:DataType="domain:Estabelecimento">
+                                <Frame Style="{StaticResource CardListItemBackgroundStyle}" Padding="15,12" Margin="0,5">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup Name="CommonStates">
+                                            <VisualState Name="Normal" />
+                                            <VisualState Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#1A4A1D" />
+                                                    <Setter Property="BorderColor" Value="#2E7D32" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
 
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnLocalItemTapped" />
-                                    </Frame.GestureRecognizers>
-
-                                    <!-- Layout simples: Nome + Botão Ações -->
-                                    <Grid ColumnDefinitions="*,Auto"
-                                          ColumnSpacing="15">
-
-                                        <!-- Nome do Local -->
-                                        <Label Grid.Column="0"
-                                               Text="{Binding Nome}"
-                                               FontSize="16"
-                                               FontAttributes="Bold"
-                                               TextColor="White"
-                                               LineBreakMode="TailTruncation"
-                                               MaxLines="1"
-                                               VerticalOptions="Center"
-                                               HorizontalOptions="Fill" />
-
-                                        <!-- Botão de Ações (⚙) -->
-                                        <Button Grid.Column="1"
-                                                Text="⚙"
-                                                FontSize="18"
-                                                TextColor="White"
-                                                BackgroundColor="Transparent"
-                                                WidthRequest="44"
-                                                HeightRequest="44"
-                                                CornerRadius="22"
-                                                BorderWidth="1"
-                                                BorderColor="#533682"
-                                                Clicked="OnLocalActionsClicked"
-                                                CommandParameter="{Binding .}"
-                                                HorizontalOptions="End"
-                                                VerticalOptions="Center" />
-                                    </Grid>
+                                    <Label Text="{Binding Nome}" FontSize="16" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
                                 </Frame>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
-                    <!-- Estado vazio -->
-                    <Frame x:Name="emptyStateFrame      "
-                           Grid.Row="0"
-                           IsVisible="False"
-                           Style="{StaticResource EmptyQueueFrameStyle}">
+                    <Frame x:Name="emptyStateFrame" IsVisible="False" Grid.Row="0" Style="{StaticResource EmptyQueueFrameStyle}">
                         <StackLayout Spacing="15" VerticalOptions="Start">
-                            <!-- Título principal -->
-                            <Label Text="Nenhum local cadastrado"
-                                   Style="{StaticResource EmptyQueueTitleStyle}" />
-
-                            <!-- Instruções CORRIGIDAS -->
+                            <Label Text="Nenhum local cadastrado" Style="{StaticResource EmptyQueueTitleStyle}" />
                             <Label Style="{StaticResource EmptyQueueTextStyle}">
                                 <Label.FormattedText>
                                     <FormattedString>
                                         <Span Text="• Toque no botão " />
-                                        <Span Text="Novo Local" TextColor="White" FontAttributes="Bold" />
+                                        <Span Text="Adicionar" TextColor="White" FontAttributes="Bold" />
                                         <Span Text=" abaixo para cadastrar seu primeiro local" />
                                     </FormattedString>
                                 </Label.FormattedText>
@@ -101,18 +63,15 @@
                         </StackLayout>
                     </Frame>
 
-                    <!-- Espaço flexível -->
-                    <Grid Grid.Row="2" HeightRequest="40" />
                 </Grid>
             </components:CardWrapperComponent.CardContent>
         </components:CardWrapperComponent>
 
-        <!-- CrudNavBarComponent Component -->
-        <components:CrudNavBarComponent Grid.Row="2" 
-                              x:Name="CrudNavBarComponent" 
-                              IsVisible="True"
-                              NovoLocalClicked="OnCrudNavBarComponentNovoLocalClicked" />
+        <components:LoadingOverlayComponent Grid.Row="1" x:Name="loadingOverlay"/>
 
+        <components:CrudNavBarComponent Grid.Row="2"
+                                      x:Name="CrudNavBar"
+                                      SelectionCount="{Binding SelectionCount}"
+                                      ButtonClicked="OnCrudNavBarButtonClicked"/>
     </Grid>
-
 </ContentPage>

@@ -1,0 +1,12 @@
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyKaraoke.View.Components.LoadingOverlayComponent">
+
+    <Grid BackgroundColor="#80000000">
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
+            <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
+            <Label Text="Carregando..." TextColor="White" FontAttributes="Bold"/>
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentView>

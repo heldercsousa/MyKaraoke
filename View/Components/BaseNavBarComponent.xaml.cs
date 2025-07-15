@@ -18,7 +18,12 @@ namespace MyKaraoke.View.Components
 
         public static readonly BindableProperty ShowAnimationDelayProperty =
             BindableProperty.Create(nameof(ShowAnimationDelay), typeof(int), typeof(BaseNavBarComponent), 100);
+        
+        // NOVA PROPRIEDADE para aceitar definições de coluna customizadas
+        public static readonly BindableProperty CustomColumnDefinitionsProperty =
+            BindableProperty.Create(nameof(CustomColumnDefinitions), typeof(ColumnDefinitionCollection), typeof(BaseNavBarComponent), null);
 
+        
         #endregion
 
         #region Properties
@@ -41,6 +46,12 @@ namespace MyKaraoke.View.Components
             set => SetValue(ShowAnimationDelayProperty, value);
         }
 
+        public ColumnDefinitionCollection CustomColumnDefinitions
+        {
+            get => (ColumnDefinitionCollection)GetValue(CustomColumnDefinitionsProperty);
+            set => SetValue(CustomColumnDefinitionsProperty, value);
+
+        }
         #endregion
 
         #region Events
@@ -190,15 +201,30 @@ namespace MyKaraoke.View.Components
             }
         }
 
+        // MÉTODO MODIFICADO para usar as colunas customizadas se elas existirem
         private void SetupGridColumns(int buttonCount)
         {
             try
             {
                 buttonsGrid.ColumnDefinitions.Clear();
 
-                for (int i = 0; i < buttonCount; i++)
+                // SE foram passadas colunas customizadas, usa elas.
+                if (CustomColumnDefinitions != null && CustomColumnDefinitions.Any())
                 {
-                    buttonsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+                    foreach (var columnDef in CustomColumnDefinitions)
+                    {
+                        buttonsGrid.ColumnDefinitions.Add(columnDef);
+                    }
+                    System.Diagnostics.Debug.WriteLine($"BaseNavBar: Grid configurado com {CustomColumnDefinitions.Count} colunas customizadas.");
+                }
+                // SENÃO, mantém o comportamento padrão (fallback para outras navbars)
+                else
+                {
+                    for (int i = 0; i < buttonCount; i++)
+                    {
+                        buttonsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+                    }
+                    System.Diagnostics.Debug.WriteLine($"BaseNavBar: Grid configurado com {buttonCount} colunas padrão (*).");
                 }
             }
             catch (Exception ex)

@@ -2,10 +2,15 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:components="clr-namespace:MyKaraoke.View.Components"
+             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
              x:Class="MyKaraoke.View.StackPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
-
+    
+    <ContentPage.Behaviors>
+        <components:NavBarLifecycleBehavior NavBar="{x:Reference CrudNavBar}" />
+    </ContentPage.Behaviors>
+    
     <Grid Padding="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -247,6 +252,27 @@
         <components:InactiveQueueBottomNav Grid.Row="2" 
                                          x:Name="bottomNav" 
                                          IsVisible="True" />
+
+        <components:LoadingOverlayComponent x:Name="loadingOverlay" />
+        
+        
+        <!-- 
+        
+        <components:CustomNavBarComponent x:Name="bottomNav"
+                                  VerticalOptions="End"
+                                  ButtonClicked="OnBottomNavButtonClicked">
+    <components:CustomNavBarComponent.Buttons>
+        <ObservableCollection x:TypeArguments="components:NavButtonConfig">
+            <components:NavButtonConfig Text="Locais" IconSource="spot.png" Command="{Binding LocaisCommand}" />
+            <components:NavButtonConfig Text="Bandokê" IconSource="musicos.png" Command="{Binding BandokeCommand}" />
+            <components:NavButtonConfig Text="Nova Fila" CenterContent="+" Command="{Binding NovaFilaCommand}" IsSpecial="True" GradientStyle="Yellow"
+                                        SpecialAnimationTypes="Fade,Translate,Pulse" />
+            <components:NavButtonConfig Text="Histórico" IconSource="historico.png" Command="{Binding HistoricoCommand}" />
+            <components:NavButtonConfig Text="Administrar" IconSource="manage.png" Command="{Binding AdministrarCommand}" />
+        </ObservableCollection>
+    </components:CustomNavBarComponent.Buttons>
+</components:CustomNavBarComponent>
+        -->
 
     </Grid>
 

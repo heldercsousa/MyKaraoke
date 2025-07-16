@@ -40,7 +40,7 @@ namespace MyKaraoke.View.Components
                     Text = "Nova Fila",
                     IsSpecial = true,
                     CenterContent = "+",
-                    Command = NovaFilaCommand,
+                    Command = new Command(() => NovaFilaClicked?.Invoke(this, EventArgs.Empty)), // Aponta para o evento
                     GradientStyle = SpecialButtonGradientType.Yellow,
                     SpecialAnimationTypes = SpecialButtonAnimationType.ShowHide | SpecialButtonAnimationType.Pulse
                 },
@@ -52,6 +52,7 @@ namespace MyKaraoke.View.Components
 
             // Delega a configuração para o BaseNavBarComponent
             baseNavBar.Buttons = buttons;
+            baseNavBar.ButtonClicked += OnBaseNavBarButtonClicked; // Garanta que esta linha exista.
         }
 
         // 3. Padrão de inicialização robusto no OnHandlerChanged
@@ -97,9 +98,14 @@ namespace MyKaraoke.View.Components
 
         private void OnBaseNavBarButtonClicked(object sender, NavBarButtonClickedEventArgs e)
         {
-            // O comando já é executado pelo NavButtonConfig.
-            // Este handler pode ser usado para logging ou lógica adicional se necessário.
-            System.Diagnostics.Debug.WriteLine($"InactiveQueueBottomNav: Botão '{e.ButtonConfig.Text}' clicado.");
+            switch (e.ButtonConfig.Text)
+            {
+                case "Locais": LocaisClicked?.Invoke(this, EventArgs.Empty); break;
+                case "Bandokê": BandokeClicked?.Invoke(this, EventArgs.Empty); break;
+                case "Nova Fila": NovaFilaClicked?.Invoke(this, EventArgs.Empty); break;
+                case "Histórico": HistoricoClicked?.Invoke(this, EventArgs.Empty); break;
+                case "Administrar": AdministrarClicked?.Invoke(this, EventArgs.Empty); break;
+            }
         }
 
         private async Task OnLocaisClickedAsync()

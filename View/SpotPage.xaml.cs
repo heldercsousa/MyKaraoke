@@ -5,15 +5,16 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+    using System.Windows.Input;
 
 namespace MyKaraoke.View
 {
     public partial class SpotPage : ContentPage, INotifyPropertyChanged
     {
         private IEstabelecimentoService _estabelecimentoService;
-
         public ObservableCollection<Estabelecimento> Locais { get; }
 
+        // Propriedade que o CrudNavBarComponent observa
         private int _selectionCount;
         public int SelectionCount
         {
@@ -28,25 +29,30 @@ namespace MyKaraoke.View
             }
         }
 
+        // Comando que o PageLifecycleBehavior irá executar quando a página aparecer
+        public ICommand LoadDataCommand { get; }
+
+
         public SpotPage()
         {
-            // A primeira linha DEVE ser InitializeComponent() para carregar os elementos do XAML.
             InitializeComponent();
 
             Locais = new ObservableCollection<Estabelecimento>();
-            locaisCollectionView.ItemsSource = Locais; // Associa a coleção à UI
+            locaisCollectionView.ItemsSource = Locais;
+
+            // Define o comando que encapsula nossa lógica de inicialização e carregamento
+            LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
+
             this.BindingContext = this;
         }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            _ = InitializeAndLoadDataAsync();
-        }
+        // O OnAppearing foi REMOVIDO, pois o Behavior agora cuida de acionar a lógica.
 
+        // Este método privado é a AÇÃO que o Behavior executa.
         private async Task InitializeAndLoadDataAsync()
         {
-            SetLoading(true);
+            // A lógica de SetLoading(true/false) foi movida para o Behavior.
+            // Este método agora foca apenas no que é específico da página.
             try
             {
                 if (_estabelecimentoService == null)
@@ -56,9 +62,10 @@ namespace MyKaraoke.View
                 }
                 await LoadLocaisAsync();
             }
-            finally
+            catch (Exception ex)
             {
-                SetLoading(false);
+                System.Diagnostics.Debug.WriteLine($"Falha ao inicializar ou carregar dados: {ex.Message}");
+                // O Behavior pode opcionalmente tratar exceções de forma genérica
             }
         }
 
@@ -155,10 +162,12 @@ namespace MyKaraoke.View
             emptyStateFrame.IsVisible = !isLoading && !Locais.Any();
         }
 
+        #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+        #endregion
     }
 }

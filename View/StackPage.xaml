@@ -2,14 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:components="clr-namespace:MyKaraoke.View.Components"
-             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
              x:Class="MyKaraoke.View.StackPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
-    
-    <ContentPage.Behaviors>
-        <components:NavBarLifecycleBehavior NavBar="{x:Reference CrudNavBar}" />
-    </ContentPage.Behaviors>
     
     <Grid Padding="0,0,0,0">
         <Grid.RowDefinitions>
@@ -19,9 +14,8 @@
         </Grid.RowDefinitions>
 
         <!-- Header Component -->
-        <components:HeaderComponent Grid.Row="0" 
-            x:Name="headerComponent"/>
-
+        <components:HeaderComponent Grid.Row="0" x:Name="headerComponent"/>
+        
         <!-- Card principal com altura automática -->
         <Frame Grid.Row="1" 
                BorderColor="#533682"

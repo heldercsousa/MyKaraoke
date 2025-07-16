@@ -38,24 +38,16 @@ namespace MyKaraoke.View
 
             if (Handler != null)
             {
-                // Inicializa o ServiceProvider quando o Handler estiver disponível
                 _serviceProvider = ServiceProvider.FromPage(this);
                 _queueService = _serviceProvider.GetService<IQueueService>();
 
-                // 🎯 Conecta os eventos do bottomNav com os handlers locais
-                //if (bottomNav != null)
-                //{
-                //    bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
-                //    bottomNav.BandokeClicked += OnBottomNavBandokeClicked;
-                //    bottomNav.NovaFilaClicked += OnBottomNavNovaFilaClicked;
-                //    bottomNav.HistoricoClicked += OnBottomNavHistoricoClicked;
-                //    bottomNav.AdministrarClicked += OnBottomNavAdministrarClicked;
-                //}
-
-                // Debug: Log component availability after handler changed
-                //System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - bottomNav: {bottomNav != null}");
-                //System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - emptyQueueMessage: {emptyQueueMessage != null}");
-                //System.Diagnostics.Debug.WriteLine($"OnHandlerChanged - queueStatusLabel: {queueStatusLabel != null}");
+                // ✅ CORREÇÃO: Inscreve-se nos eventos da navbar aqui.
+                if (bottomNav != null)
+                {
+                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked; // Garante que não haja duplicatas
+                    bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
+                    // (faça o mesmo para outros botões)
+                }
             }
         }
 
@@ -63,26 +55,15 @@ namespace MyKaraoke.View
         {
             base.OnAppearing();
 
-            // Debug: Log component availability on appearing
             System.Diagnostics.Debug.WriteLine($"OnAppearing - bottomNav: {bottomNav != null}");
             System.Diagnostics.Debug.WriteLine($"OnAppearing - emptyQueueMessage: {emptyQueueMessage != null}");
             System.Diagnostics.Debug.WriteLine($"OnAppearing - queueStatusLabel: {queueStatusLabel != null}");
 
             LoadActiveQueueState(); // Chama o método local
 
-            // Wait a bit to ensure XAML elements are fully loaded
             await Task.Delay(100);
 
             await CheckActiveQueueAsync(); // Nova verificação de fila ativa
-
-            // Trigger animations for the InactiveQueueBottomNav when the page appears
-            //if (bottomNav != null)
-            //{
-            //    // Add a small delay to ensure the UI is fully rendered before starting animations
-            //    await Task.Delay(200);
-            //    await bottomNav.StartShowAnimations();
-            //    System.Diagnostics.Debug.WriteLine("StackPage: InactiveQueueBottomNav animations triggered.");
-            //}
 
             if (bottomNav != null)
             {
@@ -163,8 +144,6 @@ namespace MyKaraoke.View
 
                     if (bottomNav != null)
                     {
-                        // REMOVE THIS LINE COMPLETELY: This caused the flicker.
-                        // bottomNav.IsVisible = true;
                         System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav visibility NOT set here (controlled by its own StartShowAnimations)");
                     }
 
@@ -234,24 +213,6 @@ namespace MyKaraoke.View
             });
         }
 
-        // DEBUG METHOD: Force empty queue state for testing
-     /*   public void ForceEmptyQueueState()
-        {
-            System.Diagnostics.Debug.WriteLine("ForceEmptyQueueState - MANUAL TRIGGER");
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                try
-                {
-                    ShowEmptyQueueState();
-                    System.Diagnostics.Debug.WriteLine("ForceEmptyQueueState - ShowEmptyQueueState called successfully");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"ForceEmptyQueueState - Exception: {ex.Message}");
-                }
-            });
-        }
-     */
         private async void OnParticipouClicked(object sender, EventArgs e)
         {
             try
@@ -352,13 +313,6 @@ namespace MyKaraoke.View
                     {
                         await bottomNav.HideAsync();
                         System.Diagnostics.Debug.WriteLine("OnDisappearing - Animações da InactiveQueueBottomNav paradas e barra escondida.");
-
-                        // Desconecta os eventos para evitar memory leaks
-                        //bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
-                        //bottomNav.BandokeClicked -= OnBottomNavBandokeClicked;
-                        //bottomNav.NovaFilaClicked -= OnBottomNavNovaFilaClicked;
-                        //bottomNav.HistoricoClicked -= OnBottomNavHistoricoClicked;
-                        //bottomNav.AdministrarClicked -= OnBottomNavAdministrarClicked;
                     }
                     catch (Exception animEx)
                     {
@@ -368,6 +322,11 @@ namespace MyKaraoke.View
 
                 if (filaCollectionView != null)
                     filaCollectionView.ReorderCompleted -= OnFilaReorderCompleted;
+
+                if (bottomNav != null)
+                {
+                    await bottomNav.HideAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -393,7 +352,21 @@ namespace MyKaraoke.View
                 }
             });
         }
+
+        private async void OnBottomNavLocaisClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                await Navigation.PushAsync(new SpotPage());
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Falha ao navegar para SpotPage: {ex.Message}");
+            }
+        }
+
     }
+
 }
 
 

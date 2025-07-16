@@ -3,71 +3,73 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:MyKaraoke.View"
              xmlns:components="clr-namespace:MyKaraoke.View.Components"
-             xmlns:domain="clr-namespace:MyKaraoke.Domain"               
-             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"     
+             xmlns:domain="clr-namespace:MyKaraoke.Domain;assembly=MyKaraoke.Domain"
+             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
              x:Class="MyKaraoke.View.SpotPage"
              x:DataType="local:SpotPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
     <ContentPage.Behaviors>
-        <components:NavBarLifecycleBehavior NavBar="{x:Reference CrudNavBar}" />
+        <behaviors:PageLifecycleBehavior 
+            NavBar="{x:Reference CrudNavBar}"
+            LoadingIndicator="{x:Reference loadingOverlay}"
+            MainContent="{x:Reference mainContentGrid}"
+            LoadDataCommand="{Binding LoadDataCommand}" />
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">
-
         <components:HeaderComponent Grid.Row="0" Title="Locais" />
 
-        <components:CardWrapperComponent Grid.Row="1" TitleText="Cadastrados" IconPath="spot_purple.png" BadgeIsVisible="False">
-            <components:CardWrapperComponent.CardContent>
-                <Grid RowDefinitions="*">
+        <Grid Grid.Row="1" x:Name="mainContentGrid">
 
-                    <CollectionView x:Name="locaisCollectionView"
-                                  Grid.Row="0"
-                                  ItemsSource="{Binding Locais}"
-                                  SelectionMode="Multiple"
-                                  SelectionChanged="OnLocalSelectionChanged">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="domain:Estabelecimento">
-                                <Frame Style="{StaticResource CardListItemBackgroundStyle}" Padding="15,12" Margin="0,5">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup Name="CommonStates">
-                                            <VisualState Name="Normal" />
-                                            <VisualState Name="Selected">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="#1A4A1D" />
-                                                    <Setter Property="BorderColor" Value="#2E7D32" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
+            <components:CardWrapperComponent TitleText="Cadastrados" IconPath="spot_purple.png" BadgeIsVisible="False">
+                <components:CardWrapperComponent.CardContent>
+                    <Grid RowDefinitions="*">
+                        <CollectionView x:Name="locaisCollectionView"
+                                      ItemsSource="{Binding Locais}"
+                                      SelectionMode="Multiple"
+                                      SelectionChanged="OnLocalSelectionChanged">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="domain:Estabelecimento">
+                                    <Frame Style="{StaticResource CardListItemBackgroundStyle}" Padding="15,12" Margin="0,5">
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup Name="CommonStates">
+                                                <VisualState Name="Normal" />
+                                                <VisualState Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="#1A4A1D" />
+                                                        <Setter Property="BorderColor" Value="#2E7D32" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                        <Label Text="{Binding Nome}" FontSize="16" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
 
-                                    <Label Text="{Binding Nome}" FontSize="16" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                        <Frame x:Name="emptyStateFrame" IsVisible="False" Grid.Row="0" Style="{StaticResource EmptyQueueFrameStyle}">
+                            <StackLayout Spacing="15" VerticalOptions="Start">
+                                <Label Text="Nenhum local cadastrado" Style="{StaticResource EmptyQueueTitleStyle}" />
+                                <Label Style="{StaticResource EmptyQueueTextStyle}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="• Toque no botão " />
+                                            <Span Text="Adicionar" TextColor="White" FontAttributes="Bold" />
+                                            <Span Text=" abaixo para cadastrar seu primeiro local" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </StackLayout>
+                        </Frame>
+                    </Grid>
+                </components:CardWrapperComponent.CardContent>
+            </components:CardWrapperComponent>
 
-                    <Frame x:Name="emptyStateFrame" IsVisible="False" Grid.Row="0" Style="{StaticResource EmptyQueueFrameStyle}">
-                        <StackLayout Spacing="15" VerticalOptions="Start">
-                            <Label Text="Nenhum local cadastrado" Style="{StaticResource EmptyQueueTitleStyle}" />
-                            <Label Style="{StaticResource EmptyQueueTextStyle}">
-                                <Label.FormattedText>
-                                    <FormattedString>
-                                        <Span Text="• Toque no botão " />
-                                        <Span Text="Adicionar" TextColor="White" FontAttributes="Bold" />
-                                        <Span Text=" abaixo para cadastrar seu primeiro local" />
-                                    </FormattedString>
-                                </Label.FormattedText>
-                            </Label>
-                        </StackLayout>
-                    </Frame>
-
-                </Grid>
-            </components:CardWrapperComponent.CardContent>
-        </components:CardWrapperComponent>
-
-        <components:LoadingOverlayComponent Grid.Row="1" x:Name="loadingOverlay"/>
+            <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
+        </Grid>
 
         <components:CrudNavBarComponent Grid.Row="2"
                                       x:Name="CrudNavBar"

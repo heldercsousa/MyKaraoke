@@ -129,34 +129,75 @@ namespace MyKaraoke.Services
             }
         }
 
-        public async Task<(bool success, string message)> DeleteEstabelecimentoAsync(int id)
+        public async Task<(bool success, string message)> DeleteEstabelecimentosAsync(IEnumerable<int> ids)
         {
+            if (ids == null || !ids.Any())
+            {
+                return (false, "Nenhum local selecionado para exclusão.");
+            }
+
             try
             {
-                // Busca estabelecimento
-                var estabelecimento = await _estabelecimentoRepository.GetByIdAsync(id);
-                if (estabelecimento == null)
+                var deletableIds = new List<int>();
+                var nonDeletableCount = 0;
+
+                foreach (var id in ids)
                 {
-                    return (false, "Local não encontrado");
+                    var hasEvents = await _eventoRepository.HasEventsByEstabelecimentoAsync(id);
+                    if (hasEvents)
+                    {
+                        nonDeletableCount++;
+                    }
+                    else
+                    {
+                        deletableIds.Add(id);
+                    }
                 }
 
-                // Verifica se há eventos associados
-                var hasEvents = await _eventoRepository.HasEventsByEstabelecimentoAsync(id);
-                if (hasEvents)
+                if (deletableIds.Any())
                 {
-                    return (false, "Não é possível excluir este local pois há eventos associados a ele");
+                    // A busca das entidades para deletar precisa ser corrigida também,
+                    // usando a sobrecarga que criamos anteriormente.
+                    var entitiesToDelete = await _estabelecimentoRepository.GetAllAsync(e => deletableIds.Contains(e.Id));
+
+                    if (entitiesToDelete.Any())
+                    {
+                        await _estabelecimentoRepository.DeleteRangeAsync(entitiesToDelete);
+                        await _estabelecimentoRepository.SaveChangesAsync();
+                    }
                 }
 
-                // Exclui
-                await _estabelecimentoRepository.DeleteAsync(estabelecimento);
-                await _estabelecimentoRepository.SaveChangesAsync();
+                // CORREÇÃO: Declarar a variável 'message' aqui fora.
+                string message;
+                if (nonDeletableCount == 0 && deletableIds.Any())
+                {
+                    message = "Estabelecimento(s) excluído(s) com sucesso.";
+                }
+                else if (nonDeletableCount > 0 && deletableIds.Any())
+                {
+                    message = "Excluído(s) com sucesso. Alguns não puderam ser excluídos por terem outros dados associados.";
+                }
+                else // Apenas itens não deletáveis foram selecionados.
+                {
+                    message = "Não foi possível excluir o(s) registro(s) pois há outros dados associados.";
+                }
 
-                return (true, $"Local '{estabelecimento.Nome}' excluído com sucesso!");
+                return (true, message);
             }
             catch (Exception ex)
             {
-                return (false, $"Erro ao excluir local: {ex.Message}");
+                return (false, $"Erro ao excluir locais: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// REATORADO: O método de exclusão única agora reutiliza a lógica de exclusão em lote.
+        /// Isso garante que a regra de negócio seja a mesma e evita duplicação de código.
+        /// </summary>
+        public async Task<(bool success, string message)> DeleteEstabelecimentoAsync(int id)
+        {
+            // Simplesmente chama o novo método com uma coleção contendo um único ID.
+            return await DeleteEstabelecimentosAsync(new[] { id });
         }
 
         public async Task<IEnumerable<Estabelecimento>> GetAllEstabelecimentosAsync()

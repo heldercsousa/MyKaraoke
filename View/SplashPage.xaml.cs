@@ -5,12 +5,13 @@ namespace MyKaraoke.View
     public partial class SplashPage : ContentPage
     {
         private ServiceProvider _serviceProvider;
-
+        private IDatabaseService _databaseService;
+        private ILanguageService _languageService;
+        
         public SplashPage()
         {
             InitializeComponent();
             System.Diagnostics.Debug.WriteLine("[DEBUG] SplashPage: Iniciado");
-            _ = StartLoadingProcess();
         }
 
         protected override void OnHandlerChanged()
@@ -22,7 +23,19 @@ namespace MyKaraoke.View
                 // Inicializa o ServiceProvider quando o Handler estiver disponível
                 _serviceProvider = ServiceProvider.FromPage(this);
                 System.Diagnostics.Debug.WriteLine("[DEBUG] SplashPage: ServiceProvider inicializado");
+                _databaseService = _serviceProvider.GetService<IDatabaseService>();
+                _languageService = _serviceProvider.GetService<ILanguageService>();
             }
+        }
+
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            System.Diagnostics.Debug.WriteLine("[DEBUG] SplashPage: OnAppearing chamado");
+
+            // Inicia o processo de carregamento
+            await StartLoadingProcess();
         }
 
         private async Task StartLoadingProcess()
@@ -31,8 +44,8 @@ namespace MyKaraoke.View
             {
                 System.Diagnostics.Debug.WriteLine("[DEBUG] SplashPage: Iniciando processo de loading");
 
-                // Aguarda um pouco para garantir que a página foi carregada
-                await Task.Delay(500);
+                // 1. Executa a inicialização do banco de dados e AGUARDA sua conclusão.
+                await InitializeDatabaseAsync();
 
                 // Mostra a imagem por um tempo (experiência visual)
                 await Task.Delay(2000);
@@ -59,20 +72,10 @@ namespace MyKaraoke.View
 
                 try
                 {
-                    // Certifica-se que o ServiceProvider está inicializado
-                    if (_serviceProvider == null && Handler?.MauiContext?.Services != null)
+                    if (_languageService != null)
                     {
-                        _serviceProvider = ServiceProvider.FromPage(this);
-                    }
-
-                    if (_serviceProvider != null)
-                    {
-                        var languageService = _serviceProvider.GetService<ILanguageService>();
-                        if (languageService != null)
-                        {
-                            languageSelected = languageService.IsLanguageSelected();
-                            System.Diagnostics.Debug.WriteLine($"[DEBUG] Idioma selecionado via service: {languageSelected}");
-                        }
+                        languageSelected = _languageService.IsLanguageSelected();
+                        System.Diagnostics.Debug.WriteLine($"[DEBUG] Idioma selecionado via service: {languageSelected}");
                     }
                 }
                 catch (Exception ex)
@@ -114,6 +117,24 @@ namespace MyKaraoke.View
         protected override bool OnBackButtonPressed()
         {
             return true; // Bloqueia o botão voltar
+        }
+
+        private async Task InitializeDatabaseAsync()
+        {
+            try
+            {
+                if (_databaseService != null)
+                {
+                    // A execução em uma thread de fundo previne o congelamento da UI da SplashPage.
+                    await Task.Run(_databaseService.InitializeDatabaseAsync);
+                    System.Diagnostics.Debug.WriteLine("[SUCCESS] Banco de dados inicializado a partir da SplashPage.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Propaga o erro para ser tratado pelo método chamador.
+                throw new Exception("Falha ao inicializar o banco de dados.", ex);
+            }
         }
     }
 }

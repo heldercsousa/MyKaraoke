@@ -1,5 +1,6 @@
-﻿using MyKaraoke.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using MyKaraoke.Domain.Repositories;
+using System.Linq.Expressions;
 
 namespace MyKaraoke.Infra.Data.Repositories
 {
@@ -17,6 +18,11 @@ namespace MyKaraoke.Infra.Data.Repositories
         public virtual async Task<T> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
+        }
+
+        public virtual async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
         }
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
@@ -38,6 +44,15 @@ namespace MyKaraoke.Infra.Data.Repositories
         {
             _dbSet.Remove(entity);
         }
+
+        public virtual Task DeleteRangeAsync(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+            // RemoveRange é uma operação síncrona na memória do DbContext.
+            // O SaveChangesAsync posterior persistirá todas as exclusões no banco.
+            return Task.CompletedTask;
+        }
+
 
         public async Task SaveChangesAsync()
         {

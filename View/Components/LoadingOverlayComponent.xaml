@@ -4,7 +4,7 @@
 
     <Grid BackgroundColor="#80000000">
         <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
-            <ActivityIndicator IsRunning="True" Color="{StaticResource Primary}" />
+            <ActivityIndicator IsRunning="True" Color="{StaticResource PrimaryPink}" />
             <Label Text="Carregando..." TextColor="White" FontAttributes="Bold"/>
         </VerticalStackLayout>
     </Grid>

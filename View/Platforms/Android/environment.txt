@@ -1,0 +1,25 @@
+# Android Environment Configuration
+# Otimizações para reduzir problemas de carregamento de assemblies
+
+# Configurações de Garbage Collection
+MONO_GC_PARAMS=major=marksweep-conc,nursery-size=8m,bridge-implementation=new
+
+# Threading e Performance
+MONO_THREADS_PER_CPU=4
+
+# Assembly Loading e Debug
+MONO_LOG_LEVEL=info
+MONO_LOG_MASK=asm
+
+# Memory Management
+MONO_ENV_OPTIONS=--gc=sgen
+
+# HTTP Client Configuration
+XA_HTTP_CLIENT_HANDLER_TYPE=Xamarin.Android.Net.AndroidClientHandler
+
+# Reduce JNI reference issues
+MONO_DEBUG=disable_omit_fp
+
+# Performance optimizations
+XAMARIN_BUILD_DOWNLOAD_PROGRESS=false
+MONO_XMLSERIALIZER_THS=no

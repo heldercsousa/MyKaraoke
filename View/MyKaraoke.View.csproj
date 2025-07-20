@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-android;net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
-	
+
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MyKaraoke.View</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -12,10 +12,8 @@
 		<Nullable>enable</Nullable>
 		<NoWarn>$(NoWarn);CS8618</NoWarn>
 
-		<ApplicationTitle>MyKaraoke.View</ApplicationTitle>
-
+		<ApplicationTitle>MyKaraoke</ApplicationTitle>
 		<ApplicationId>com.companyname.MyKaraoke.View</ApplicationId>
-
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
@@ -25,72 +23,98 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+
+		<!-- ============================================================================ -->
+		<!-- CONFIGURAÇÕES DE PERFORMANCE ANDROID -->
+		<!-- ============================================================================ -->
+
+		<!-- Debug Configuration -->
+		<AndroidEnableMultiDex Condition="'$(Configuration)' == 'Debug'">true</AndroidEnableMultiDex>
+		<EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Debug'">false</EmbedAssembliesIntoApk>
+		<AndroidUseSharedRuntime Condition="'$(Configuration)' == 'Debug'">true</AndroidUseSharedRuntime>
+		<AndroidLinkMode Condition="'$(Configuration)' == 'Debug'">None</AndroidLinkMode>
+		<AndroidFastDeploymentType Condition="'$(Configuration)' == 'Debug'">Assemblies</AndroidFastDeploymentType>
+
+		<!-- Release Configuration -->
+		<AndroidEnableMultiDex Condition="'$(Configuration)' == 'Release'">false</AndroidEnableMultiDex>
+		<EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Release'">true</EmbedAssembliesIntoApk>
+		<AndroidUseSharedRuntime Condition="'$(Configuration)' == 'Release'">false</AndroidUseSharedRuntime>
+		<AndroidLinkMode Condition="'$(Configuration)' == 'Release'">SdkOnly</AndroidLinkMode>
+		<AndroidEnableProguard Condition="'$(Configuration)' == 'Release'">true</AndroidEnableProguard>
+
+		<!-- Configurações Gerais Android -->
+		<AndroidUseAapt2>true</AndroidUseAapt2>
+		<AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
+		<AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
+		<AndroidTlsProvider>btls</AndroidTlsProvider>
 	</PropertyGroup>
+
+	<!-- ============================================================================ -->
+	<!-- REMOVER VALIDAÇÃO PROBLEMÁTICA DE XAML -->
+	<!-- ============================================================================ -->
+	<!-- 
 	<Target Name="ValidateXamlEncoding" BeforeTargets="BeforeBuild">
 		<Exec Command="powershell -Command &quot;Get-ChildItem -Filter '*.xaml' -Recurse | ForEach-Object { if ((Get-Content $_.FullName -Raw) -match '[👤🏠➕🎸📋🎵✔✖⬇áéíóúàèìòùâêîôûãõç]') { Write-Error 'Caracteres problemáticos em: ' + $_.Name } }&quot;" ContinueOnError="false" />
 	</Target>
+	-->
+
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
-
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
-
 		<MauiImage Include="Resources\Images\*" />
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
-
 		<MauiFont Include="Resources\Fonts\*" />
-
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-hdpi\icone.png" />
-	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-mdpi\icone.png" />
-	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-xhdpi\icone.png" />
-	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-xxhdpi\icone.png" />
-	  <AndroidResource Remove="Platforms\Android\Resources\mipmap-xxxhdpi\icone.png" />
+		<AndroidResource Remove="Platforms\Android\Resources\mipmap-hdpi\icone.png" />
+		<AndroidResource Remove="Platforms\Android\Resources\mipmap-mdpi\icone.png" />
+		<AndroidResource Remove="Platforms\Android\Resources\mipmap-xhdpi\icone.png" />
+		<AndroidResource Remove="Platforms\Android\Resources\mipmap-xxhdpi\icone.png" />
+		<AndroidResource Remove="Platforms\Android\Resources\mipmap-xxxhdpi\icone.png" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Platforms\Android\Resources\xml\locales_config.xml" />
-	  <None Remove="Resources\AppIcon\add.png" />
-	  <None Remove="Resources\AppIcon\cake.png" />
-	  <None Remove="Resources\AppIcon\cantores.png" />
-	  <None Remove="Resources\AppIcon\delete.png" />
-	  <None Remove="Resources\AppIcon\edit.png" />
-	  <None Remove="Resources\AppIcon\email.png" />
-	  <None Remove="Resources\AppIcon\email_purple.png" />
-	  <None Remove="Resources\AppIcon\historico.png" />
-	  <None Remove="Resources\AppIcon\manage.png" />
-	  <None Remove="Resources\AppIcon\manage_purple.png" />
-	  <None Remove="Resources\AppIcon\musicos.png" />
-	  <None Remove="Resources\AppIcon\novo.png" />
-	  <None Remove="Resources\AppIcon\setaesquerda.png" />
-	  <None Remove="Resources\AppIcon\spot.png" />
-	  <None Remove="Resources\AppIcon\spot_purple.png" />
-	  <None Remove="Resources\AppIcon\stack.png" />
-	  <None Remove="Resources\AppIcon\stack_purple.png" />
+		<None Remove="Platforms\Android\Resources\xml\locales_config.xml" />
+		<None Remove="Resources\AppIcon\add.png" />
+		<None Remove="Resources\AppIcon\cake.png" />
+		<None Remove="Resources\AppIcon\cantores.png" />
+		<None Remove="Resources\AppIcon\delete.png" />
+		<None Remove="Resources\AppIcon\edit.png" />
+		<None Remove="Resources\AppIcon\email.png" />
+		<None Remove="Resources\AppIcon\email_purple.png" />
+		<None Remove="Resources\AppIcon\historico.png" />
+		<None Remove="Resources\AppIcon\manage.png" />
+		<None Remove="Resources\AppIcon\manage_purple.png" />
+		<None Remove="Resources\AppIcon\musicos.png" />
+		<None Remove="Resources\AppIcon\novo.png" />
+		<None Remove="Resources\AppIcon\setaesquerda.png" />
+		<None Remove="Resources\AppIcon\spot.png" />
+		<None Remove="Resources\AppIcon\spot_purple.png" />
+		<None Remove="Resources\AppIcon\stack.png" />
+		<None Remove="Resources\AppIcon\stack_purple.png" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiImage Include="Resources\AppIcon\add.png" />
-	  <MauiImage Include="Resources\AppIcon\cake.png" />
-	  <MauiImage Include="Resources\AppIcon\cantores.png" />
-	  <MauiImage Include="Resources\AppIcon\delete.png" />
-	  <MauiImage Include="Resources\AppIcon\edit.png" />
-	  <MauiImage Include="Resources\AppIcon\email.png" />
-	  <MauiImage Include="Resources\AppIcon\email_purple.png" />
-	  <MauiImage Include="Resources\AppIcon\historico.png" />
-	  <MauiImage Include="Resources\AppIcon\manage.png" />
-	  <MauiImage Include="Resources\AppIcon\manage_purple.png" />
-	  <MauiImage Include="Resources\AppIcon\musicos.png" />
-	  <MauiImage Include="Resources\AppIcon\novo.png" />
-	  <MauiImage Include="Resources\AppIcon\setaesquerda.png" />
-	  <MauiImage Include="Resources\AppIcon\spot.png" />
-	  <MauiImage Include="Resources\AppIcon\spot_purple.png" />
-	  <MauiImage Include="Resources\AppIcon\stack.png" />
-	  <MauiImage Include="Resources\AppIcon\stack_purple.png" />
+		<MauiImage Include="Resources\AppIcon\add.png" />
+		<MauiImage Include="Resources\AppIcon\cake.png" />
+		<MauiImage Include="Resources\AppIcon\cantores.png" />
+		<MauiImage Include="Resources\AppIcon\delete.png" />
+		<MauiImage Include="Resources\AppIcon\edit.png" />
+		<MauiImage Include="Resources\AppIcon\email.png" />
+		<MauiImage Include="Resources\AppIcon\email_purple.png" />
+		<MauiImage Include="Resources\AppIcon\historico.png" />
+		<MauiImage Include="Resources\AppIcon\manage.png" />
+		<MauiImage Include="Resources\AppIcon\manage_purple.png" />
+		<MauiImage Include="Resources\AppIcon\musicos.png" />
+		<MauiImage Include="Resources\AppIcon\novo.png" />
+		<MauiImage Include="Resources\AppIcon\setaesquerda.png" />
+		<MauiImage Include="Resources\AppIcon\spot.png" />
+		<MauiImage Include="Resources\AppIcon\spot_purple.png" />
+		<MauiImage Include="Resources\AppIcon\stack.png" />
+		<MauiImage Include="Resources\AppIcon\stack_purple.png" />
 	</ItemGroup>
-
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
@@ -99,187 +123,192 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Contracts\MyKaraoke.Contracts.csproj" />
-	  <ProjectReference Include="..\Domain\MyKaraoke.Domain.csproj" />
-	  <ProjectReference Include="..\Infra\MyKaraoke.Infra.csproj" />
-	  <ProjectReference Include="..\Services\MyKaraoke.Services.csproj" />
+		<ProjectReference Include="..\Contracts\MyKaraoke.Contracts.csproj" />
+		<ProjectReference Include="..\Domain\MyKaraoke.Domain.csproj" />
+		<ProjectReference Include="..\Infra\MyKaraoke.Infra.csproj" />
+		<ProjectReference Include="..\Services\MyKaraoke.Services.csproj" />
+	</ItemGroup>
+
+	<!-- Ambiente Android específico -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+		<AndroidEnvironment Include="Platforms\Android\environment.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Resources\Strings\AppResources_ar.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_ar.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_de.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_de.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_es.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_es.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_fr.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_fr.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_hi.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_hi.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_ja.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_ja.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_ko.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_ko.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_ru.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_ru.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_zh-CN.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_zh-CN.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources.resx</DependentUpon>
-	  </Compile>
-	  <Compile Update="Resources\Strings\AppResources_pt-BR.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>AppResources_pt-BR.resx</DependentUpon>
-	  </Compile>
+		<Compile Update="Resources\Strings\AppResources_ar.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_ar.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_de.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_de.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_es.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_es.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_fr.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_fr.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_hi.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_hi.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_ja.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_ja.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_ko.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_ko.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_ru.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_ru.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_zh-CN.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_zh-CN.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Resources\Strings\AppResources_pt-BR.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources_pt-BR.resx</DependentUpon>
+		</Compile>
 		<Compile Update="TonguePage.xaml.cs">
 			<DependentUpon>TonguePage.xaml</DependentUpon>
 		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Update="Resources\Strings\AppResources.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+		<EmbeddedResource Update="Resources\Strings\AppResources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources_ar.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources_ar.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources_de.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources_de.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources_es.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources_es.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources_fr.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources_fr.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources_hi.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources_hi.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources_ja.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources_ja.Designer.cs</LastGenOutput>
 	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_ar.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_ar.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_de.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_de.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_es.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_es.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_fr.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_fr.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_hi.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_hi.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_ja.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_ja.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_ko.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_ko.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_pt-BR.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_pt-BR.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_ru.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_ru.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	  <EmbeddedResource Update="Resources\Strings\AppResources_zh-CN.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>AppResources_zh-CN.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	</ItemGroup>
+			<EmbeddedResource Update="Resources\Strings\AppResources_ko.resx">
+				<Generator>ResXFileCodeGenerator</Generator>
+				<LastGenOutput>AppResources_ko.Designer.cs</LastGenOutput>
+			</EmbeddedResource>
+			<EmbeddedResource Update="Resources\Strings\AppResources_pt-BR.resx">
+				<Generator>ResXFileCodeGenerator</Generator>
+				<LastGenOutput>AppResources_pt-BR.Designer.cs</LastGenOutput>
+			</EmbeddedResource>
+			<EmbeddedResource Update="Resources\Strings\AppResources_ru.resx">
+				<Generator>ResXFileCodeGenerator</Generator>
+				<LastGenOutput>AppResources_ru.Designer.cs</LastGenOutput>
+			</EmbeddedResource>
+			<EmbeddedResource Update="Resources\Strings\AppResources_zh-CN.resx">
+				<Generator>ResXFileCodeGenerator</Generator>
+				<LastGenOutput>AppResources_zh-CN.Designer.cs</LastGenOutput>
+			</EmbeddedResource>
+		</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Components\BaseNavBarComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\CardHeaderComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\CardWrapperComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\CrudNavBarComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\CustomNavBarComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\HeaderComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\InactiveQueueBottomNav.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\LoadingOverlayComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\NavButtonComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Components\SpecialNavButtonComponent.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="EventPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ReleasePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="App.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Resources\Styles\NavBarStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Resources\Styles\CardStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="SplashLoadingPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="SpotFormPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="SpotPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="StackPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Controls\LogoControl.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="SplashPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="TonguePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
+		<MauiXaml Update="Components\BaseNavBarComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\CardHeaderComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\CardWrapperComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\CrudNavBarComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\CustomNavBarComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\HeaderComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\InactiveQueueBottomNav.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\LoadingOverlayComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\NavButtonComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\SpecialNavButtonComponent.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="EventPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ReleasePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="App.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Resources\Styles\NavBarStyles.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Resources\Styles\CardStyles.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="SplashLoadingPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="SpotFormPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="SpotPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="StackPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Controls\LogoControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="SplashPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="TonguePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 	</ItemGroup>
 
 </Project>

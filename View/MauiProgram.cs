@@ -10,11 +10,12 @@ namespace MyKaraoke.View;
 
 public static class MauiProgram
 {
-    public static IServiceProvider Services { get; private set; }
+    public static IServiceProvider Services { get; private set; } = null!;
 
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
+
         builder
             .UseMauiApp<App>()
             .ConfigureFonts(fonts =>
@@ -22,10 +23,12 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
+        // === CONFIGURAÇÕES DE DEBUG ===
 #if DEBUG
         builder.Services.AddLogging(logging =>
         {
             logging.AddDebug();
+            logging.SetMinimumLevel(LogLevel.Information);
         });
 #endif
 
@@ -34,6 +37,10 @@ public static class MauiProgram
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSqlite($"Data Source={dbPath}");
+#if DEBUG
+            options.EnableSensitiveDataLogging();
+            options.LogTo(message => System.Diagnostics.Debug.WriteLine(message), LogLevel.Information);
+#endif
         });
 
         // === UTILITÁRIOS (SINGLETON - sem estado) ===
@@ -60,11 +67,19 @@ public static class MauiProgram
         builder.Services.AddTransient<SpotPage>();
         builder.Services.AddTransient<SpotFormPage>();
 
-        var app = builder.Build();
+        try
+        {
+            var app = builder.Build();
+            Services = app.Services;
 
-        Services = app.Services;
-
-        return app;
-
+            System.Diagnostics.Debug.WriteLine("[MauiProgram] Aplicação construída com sucesso");
+            return app;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MauiProgram] ERRO ao construir aplicação: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[MauiProgram] Stack trace: {ex.StackTrace}");
+            throw;
+        }
     }
 }

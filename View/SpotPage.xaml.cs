@@ -44,6 +44,9 @@ namespace MyKaraoke.View
             LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
 
             this.BindingContext = this;
+
+            // Ensure UI state is correct on initial load
+            UpdateUIState();
         }
 
         // O OnAppearing foi REMOVIDO, pois o Behavior agora cuida de acionar a lógica.

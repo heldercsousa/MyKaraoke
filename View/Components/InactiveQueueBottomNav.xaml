@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:components="clr-namespace:MyKaraoke.View.Components"
+             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
              x:Class="MyKaraoke.View.Components.InactiveQueueBottomNav">
 
-    <!-- Usa o componente base com configuração específica -->
-    <components:BaseNavBarComponent x:Name="baseNavBar" 
-                                   IsAnimated="True"
-                                   ShowAnimationDelay="100" />
+    <!-- Grid simples com NavBarBehavior -->
+    <Grid x:Name="navGrid">
+        <Grid.Behaviors>
+            <behaviors:NavBarBehavior 
+                x:Name="navBarBehavior"
+                IsAnimated="True"
+                ShowAnimationDelay="100"
+                StyleKey="BaseBottomNavBarStyle" />
+        </Grid.Behaviors>
+    </Grid>
 
 </ContentView>

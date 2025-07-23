@@ -243,9 +243,6 @@
 		</ItemGroup>
 
 	<ItemGroup>
-		<MauiXaml Update="Components\BaseNavBarComponent.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
 		<MauiXaml Update="Components\CardHeaderComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
@@ -253,9 +250,6 @@
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Components\CrudNavBarComponent.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
-		<MauiXaml Update="Components\CustomNavBarComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Components\HeaderComponent.xaml">

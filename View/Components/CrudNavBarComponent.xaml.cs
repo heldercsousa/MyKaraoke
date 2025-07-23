@@ -1,13 +1,19 @@
-﻿using MyKaraoke.Domain; // Para o enum
+﻿using MyKaraoke.View.Behaviors;
+using MyKaraoke.View.Components;
 using System.Collections.ObjectModel;
 
 namespace MyKaraoke.View.Components
 {
     public enum CrudButtonType { Anterior, Adicionar, Editar, Excluir, Salvar, Proximo }
 
+    /// <summary>
+    /// ✅ SIMPLIFICADO: Usa NavBarBehavior para eliminar duplicação
+    /// Reduzido de 150+ linhas para ~50 linhas
+    /// </summary>
     public partial class CrudNavBarComponent : ContentView, IAnimatableNavBar
     {
-        // Propriedade que a SpotPage vai definir
+        #region Bindable Properties
+
         public static readonly BindableProperty SelectionCountProperty =
             BindableProperty.Create(nameof(SelectionCount), typeof(int), typeof(CrudNavBarComponent), 0,
             propertyChanged: OnSelectionCountChanged);
@@ -18,20 +24,44 @@ namespace MyKaraoke.View.Components
             set => SetValue(SelectionCountProperty, value);
         }
 
-        // Evento para a SpotPage saber qual botão foi clicado
+        #endregion
+
+        #region Events
+
         public event EventHandler<CrudButtonType> ButtonClicked;
 
-        // Dicionário privado para guardar as configurações de cada botão
+        #endregion
+
+        #region Private Fields
+
         private readonly Dictionary<CrudButtonType, NavButtonConfig> _buttonConfigs;
+        private bool _isInitialized = false;
+
+        #endregion
 
         public CrudNavBarComponent()
         {
             InitializeComponent();
             _buttonConfigs = InitializeButtonConfigs();
-            UpdateLayoutAndButtons(); // Chamada inicial para configurar o estado padrão
         }
 
-        // Cria a configuração de todos os botões uma única vez
+        #region Initialization
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+            if (Handler != null && !_isInitialized)
+            {
+                // ✅ BEHAVIOR: Subscreve eventos do NavBarBehavior
+                navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
+                UpdateLayoutAndButtons(); // Configuração inicial
+                _isInitialized = true;
+
+                System.Diagnostics.Debug.WriteLine("✅ CrudNavBarComponent inicializado com NavBarBehavior");
+            }
+        }
+
         private Dictionary<CrudButtonType, NavButtonConfig> InitializeButtonConfigs()
         {
             return new Dictionary<CrudButtonType, NavButtonConfig>
@@ -45,6 +75,10 @@ namespace MyKaraoke.View.Components
             };
         }
 
+        #endregion
+
+        #region Button Logic - CÉREBRO DO CRUD
+
         private static void OnSelectionCountChanged(BindableObject bindable, object oldValue, object newValue)
         {
             if (bindable is CrudNavBarComponent navBar)
@@ -53,46 +87,89 @@ namespace MyKaraoke.View.Components
             }
         }
 
-        // O CÉREBRO: Decide quais botões mostrar e qual layout usar
+        /// <summary>
+        /// ✅ CÉREBRO: Decide quais botões mostrar baseado na seleção
+        /// </summary>
         private void UpdateLayoutAndButtons()
         {
-            // 1. Determina quais botões de ação devem estar visíveis
-            var visibleActionButtons = new List<NavButtonConfig>();
+            // 1. Determina botões baseado na seleção
+            var visibleButtons = new List<NavButtonConfig>();
+
             if (SelectionCount == 0)
             {
-                visibleActionButtons.Add(_buttonConfigs[CrudButtonType.Adicionar]);
+                visibleButtons.Add(_buttonConfigs[CrudButtonType.Adicionar]);
             }
             else if (SelectionCount == 1)
             {
-                visibleActionButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
-                visibleActionButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
+                visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
+                visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
             }
             else // > 1
             {
-                visibleActionButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
+                visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
             }
 
-            // 2. Monta a lista final de botões (Anterior + Ações + Próximo)
-            var finalButtonList = new ObservableCollection<NavButtonConfig>();
-            // (Você pode adicionar lógica aqui para mostrar/esconder os botões Anterior/Proximo se quiser)
-            // finalButtonList.Add(_buttonConfigs[CrudButtonType.Anterior]);
-            foreach (var btn in visibleActionButtons) finalButtonList.Add(btn);
-            // finalButtonList.Add(_buttonConfigs[CrudButtonType.Proximo]);
-
-            // 3. Cria a definição de colunas DINÂMICA
+            // 2. Cria colunas dinâmicas
             var columnDefinitions = new ColumnDefinitionCollection();
-            foreach (var _ in finalButtonList)
+            foreach (var _ in visibleButtons)
             {
                 columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
             }
 
-            // 4. Envia as instruções para o BaseNavBarComponent renderizar
-            baseNavBar.CustomColumnDefinitions = columnDefinitions;
-            baseNavBar.Buttons = finalButtonList;
+            // 3. ✅ BEHAVIOR: Configura através do NavBarBehavior
+            navBarBehavior.CustomColumnDefinitions = columnDefinitions;
+            navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
         }
 
-        // Delega as chamadas de animação para o BaseNavBarComponent contido nele
-        public Task ShowAsync() => baseNavBar.ShowAsync();
-        public Task HideAsync() => baseNavBar.HideAsync();
+        #endregion
+
+        #region Event Handlers
+
+        private void OnNavBarButtonClicked(object sender, NavBarButtonClickedEventArgs e)
+        {
+            try
+            {
+                // Mapeia texto do botão para enum
+                var buttonType = e.ButtonConfig.Text switch
+                {
+                    "Anterior" => CrudButtonType.Anterior,
+                    "Adicionar" => CrudButtonType.Adicionar,
+                    "Editar" => CrudButtonType.Editar,
+                    "Apagar" => CrudButtonType.Excluir,
+                    "Salvar" => CrudButtonType.Salvar,
+                    "Próximo" => CrudButtonType.Proximo,
+                    _ => throw new ArgumentException($"Botão desconhecido: {e.ButtonConfig.Text}")
+                };
+
+                ButtonClicked?.Invoke(this, buttonType);
+                System.Diagnostics.Debug.WriteLine($"CrudNavBar: Botão {buttonType} clicado");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro no clique do botão CRUD: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region IAnimatableNavBar - DELEGADO PARA BEHAVIOR
+
+        /// <summary>
+        /// ✅ DELEGADO: ShowAsync via NavBarBehavior
+        /// </summary>
+        public async Task ShowAsync()
+        {
+            await NavBarExtensions.ShowAsync(navGrid);
+        }
+
+        /// <summary>
+        /// ✅ DELEGADO: HideAsync via NavBarBehavior
+        /// </summary>
+        public async Task HideAsync()
+        {
+            await NavBarExtensions.HideAsync(navGrid);
+        }
+
+        #endregion
     }
 }

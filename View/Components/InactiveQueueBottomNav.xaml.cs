@@ -1,120 +1,137 @@
-using MyKaraoke.View.Components; // Adicionado para IAnimatableNavBar
+using MyKaraoke.View.Behaviors;
+using MyKaraoke.View.Components;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using MyKaraoke.View.Animations;
 
 namespace MyKaraoke.View.Components
 {
-    // 1. Implementa a interface IAnimatableNavBar para consistência arquitetural
+    /// <summary>
+    /// ✅ SIMPLIFICADO: Usa NavBarBehavior para eliminar duplicação
+    /// Reduzido de 200+ linhas para ~60 linhas
+    /// </summary>
     public partial class InactiveQueueBottomNav : ContentView, IAnimatableNavBar
     {
-        // Eventos e Comandos permanecem os mesmos
+        #region Events
+
         public event EventHandler LocaisClicked, BandokeClicked, NovaFilaClicked, HistoricoClicked, AdministrarClicked;
-        public ICommand LocaisCommand { get; private set; }
-        public ICommand BandokeCommand { get; private set; }
-        public ICommand NovaFilaCommand { get; private set; }
-        public ICommand HistoricoCommand { get; private set; }
-        public ICommand AdministrarCommand { get; private set; }
+
+        #endregion
+
+        #region Private Fields
 
         private bool _isInitialized = false;
+
+        #endregion
 
         public InactiveQueueBottomNav()
         {
             InitializeComponent();
-            InitializeCommands();
-            // A inicialização dos botões agora é feita de forma segura no OnHandlerChanged.
         }
 
-        // Método único que configura todos os botões e os passa para a base
+        #region Initialization
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+            if (Handler != null && !_isInitialized)
+            {
+                InitializeNavBar();
+                _isInitialized = true;
+                System.Diagnostics.Debug.WriteLine("✅ InactiveQueueBottomNav inicializado com NavBarBehavior");
+            }
+        }
+
+        /// <summary>
+        /// ✅ CONFIGURAÇÃO: Define todos os botões através do NavBarBehavior
+        /// </summary>
         private void InitializeNavBar()
         {
             var buttons = new ObservableCollection<NavButtonConfig>
             {
                 // Botões Regulares
-                NavButtonConfig.Regular("Locais", "spot.png", LocaisCommand),
-                NavButtonConfig.Regular("Bandokê", "musicos.png", BandokeCommand),
+                NavButtonConfig.Regular("Locais", "spot.png", new Command(() => LocaisClicked?.Invoke(this, EventArgs.Empty))),
+                NavButtonConfig.Regular("Bandokê", "musicos.png", new Command(() => BandokeClicked?.Invoke(this, EventArgs.Empty))),
 
-                // Botão ESPECIAL com configuração própria
+                // ✅ BOTÃO ESPECIAL: Nova Fila com animação pulse
                 new NavButtonConfig
                 {
                     Text = "Nova Fila",
                     IsSpecial = true,
                     CenterContent = "+",
-                    Command = new Command(() => NovaFilaClicked?.Invoke(this, EventArgs.Empty)), // Aponta para o evento
+                    Command = new Command(() => NovaFilaClicked?.Invoke(this, EventArgs.Empty)),
                     GradientStyle = SpecialButtonGradientType.Yellow,
-                    SpecialAnimationTypes = SpecialButtonAnimationType.ShowHide | SpecialButtonAnimationType.Pulse
+                    SpecialAnimationTypes = SpecialButtonAnimationType.ShowHide | SpecialButtonAnimationType.Pulse,
+                    IsAnimated = true
                 },
 
                 // Botões Regulares
-                NavButtonConfig.Regular("Histórico", "historico.png", HistoricoCommand),
-                NavButtonConfig.Regular("Administrar", "manage.png", AdministrarCommand)
+                NavButtonConfig.Regular("Histórico", "historico.png", new Command(() => HistoricoClicked?.Invoke(this, EventArgs.Empty))),
+                NavButtonConfig.Regular("Administrar", "manage.png", new Command(() => AdministrarClicked?.Invoke(this, EventArgs.Empty)))
             };
 
-            // Delega a configuração para o BaseNavBarComponent
-            baseNavBar.Buttons = buttons;
-            baseNavBar.ButtonClicked += OnBaseNavBarButtonClicked; // Garanta que esta linha exista.
+            // ✅ BEHAVIOR: Configura botões e eventos
+            navBarBehavior.Buttons = buttons;
+            navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
         }
 
-        // 3. Padrão de inicialização robusto no OnHandlerChanged
-        protected override void OnHandlerChanged()
+        #endregion
+
+        #region Event Handlers
+
+        private void OnNavBarButtonClicked(object sender, NavBarButtonClickedEventArgs e)
         {
-            base.OnHandlerChanged();
-            if (Handler != null && !_isInitialized)
+            try
             {
-                InitializeNavBar();
-                _isInitialized = true;
-                System.Diagnostics.Debug.WriteLine("✅ InactiveQueueBottomNav inicializado e configurado com sucesso.");
+                // ✅ DISPATCH: Mapeia cliques para eventos específicos
+                switch (e.ButtonConfig.Text)
+                {
+                    case "Locais":
+                        LocaisClicked?.Invoke(this, EventArgs.Empty);
+                        break;
+                    case "Bandokê":
+                        BandokeClicked?.Invoke(this, EventArgs.Empty);
+                        break;
+                    case "Nova Fila":
+                        NovaFilaClicked?.Invoke(this, EventArgs.Empty);
+                        break;
+                    case "Histórico":
+                        HistoricoClicked?.Invoke(this, EventArgs.Empty);
+                        break;
+                    case "Administrar":
+                        AdministrarClicked?.Invoke(this, EventArgs.Empty);
+                        break;
+                    default:
+                        System.Diagnostics.Debug.WriteLine($"Botão desconhecido: {e.ButtonConfig.Text}");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro no clique da navbar: {ex.Message}");
             }
         }
 
-        // --- Implementação da Interface IAnimatableNavBar ---
+        #endregion
 
-        // A implementação da interface simplesmente delega para o BaseNavBarComponent
-        public Task ShowAsync()
+        #region IAnimatableNavBar - DELEGADO PARA BEHAVIOR
+
+        /// <summary>
+        /// ✅ DELEGADO: ShowAsync via NavBarBehavior
+        /// </summary>
+        public async Task ShowAsync()
         {
             this.IsVisible = true;
-            return baseNavBar.ShowAsync();
+            await NavBarExtensions.ShowAsync(navGrid);
         }
 
-
+        /// <summary>
+        /// ✅ DELEGADO: HideAsync via NavBarBehavior
+        /// </summary>
         public async Task HideAsync()
         {
-            await baseNavBar.HideAsync();
+            await NavBarExtensions.HideAsync(navGrid);
             this.IsVisible = false;
-        }
-
-
-        // O resto do código (InitializeCommands, handlers de clique, etc.) permanece o mesmo.
-        #region Initialization and Event Handlers
-
-        private void InitializeCommands()
-        {
-            LocaisCommand = new Command(() => LocaisClicked?.Invoke(this, EventArgs.Empty));
-            BandokeCommand = new Command(() => BandokeClicked?.Invoke(this, EventArgs.Empty));
-            NovaFilaCommand = new Command(() => NovaFilaClicked?.Invoke(this, EventArgs.Empty));
-            HistoricoCommand = new Command(() => HistoricoClicked?.Invoke(this, EventArgs.Empty));
-            AdministrarCommand = new Command(() => AdministrarClicked?.Invoke(this, EventArgs.Empty));
-        }
-
-        private void OnBaseNavBarButtonClicked(object sender, NavBarButtonClickedEventArgs e)
-        {
-            switch (e.ButtonConfig.Text)
-            {
-                case "Locais": LocaisClicked?.Invoke(this, EventArgs.Empty); break;
-                case "Bandokê": BandokeClicked?.Invoke(this, EventArgs.Empty); break;
-                case "Nova Fila": NovaFilaClicked?.Invoke(this, EventArgs.Empty); break;
-                case "Histórico": HistoricoClicked?.Invoke(this, EventArgs.Empty); break;
-                case "Administrar": AdministrarClicked?.Invoke(this, EventArgs.Empty); break;
-            }
-        }
-
-        private async Task OnLocaisClickedAsync()
-        {
-            if (this.Parent is Page parentPage)
-            {
-                await parentPage.Navigation.PushAsync(new SpotPage());
-                LocaisClicked?.Invoke(this, EventArgs.Empty);
-            }
         }
 
         #endregion

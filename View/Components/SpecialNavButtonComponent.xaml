@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
              x:Class="MyKaraoke.View.Components.SpecialNavButtonComponent">
-
+    
+    <!-- ✅ BEHAVIOR: Com pulse especial -->
+    <ContentView.Behaviors>
+        <behaviors:AnimatedButtonBehavior 
+            IsAnimated="True"
+            HasFadeAnimation="True" 
+            HasTranslateAnimation="True"
+            HasPulseAnimation="True"
+            PulseType="Special"
+            AnimationContainer="{x:Reference buttonContainer}" />
+    </ContentView.Behaviors>
+    
     <StackLayout x:Name="buttonContainer" Style="{StaticResource SpecialNavButtonStyle}">
 
         <!-- Frame com gradiente customiz�vel -->

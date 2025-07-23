@@ -1,12 +1,18 @@
 ﻿using Microsoft.Maui.Controls;
 using MyKaraoke.View.Animations;
+using MyKaraoke.View.Behaviors;
 using System.Windows.Input;
+using System.Linq;
 
 namespace MyKaraoke.View.Components
 {
+    /// <summary>
+    /// ✅ LIMPO: Behavior substitui todas as funcionalidades repetitivas
+    /// Mantém apenas funcionalidades específicas do SpecialNavButton
+    /// </summary>
     public partial class SpecialNavButtonComponent : ContentView
     {
-        #region Bindable Properties
+        #region Bindable Properties - ESPECÍFICAS DO SPECIALNAVBUTTON
 
         public static readonly BindableProperty TextProperty =
             BindableProperty.Create(nameof(Text), typeof(string), typeof(SpecialNavButtonComponent), string.Empty, propertyChanged: OnTextChanged);
@@ -37,7 +43,7 @@ namespace MyKaraoke.View.Components
 
         #endregion
 
-        #region Properties
+        #region Properties - ESPECÍFICAS DO SPECIALNAVBUTTON
 
         public string Text
         {
@@ -95,65 +101,25 @@ namespace MyKaraoke.View.Components
 
         #endregion
 
-        #region Events
+        #region Events - ESPECÍFICOS DO SPECIALNAVBUTTON
 
         public event EventHandler<SpecialNavButtonEventArgs> ButtonClicked;
 
         #endregion
 
-        #region Private Fields
-
-        private AnimationManager _animationManager;
-        private bool _isShown = false;
-
-        #endregion
-
         public SpecialNavButtonComponent()
         {
-            try
+            // ✅ O BEHAVIOR já aplica o estado inicial e cria o AnimationManager
+            InitializeComponent();
+
+            // ✅ Aplica apenas propriedades específicas do SpecialNavButton
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                // ✅ CORREÇÃO CRÍTICA: Aplica estado inicial ANTES do InitializeComponent para evitar "piscar"
-                this.IsVisible = true;
-                this.Opacity = 0.0;
-                this.TranslationY = 60;
-
-                InitializeComponent();
-                _animationManager = new AnimationManager($"SpecialNavButton_{GetHashCode()}");
-
-                // ✅ CORREÇÃO: Aplica estado inicial novamente APÓS InitializeComponent
-                ApplyInitialState();
-
-                // Aplica propriedades iniciais após a inicialização
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    ApplyInitialProperties();
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao inicializar SpecialNavButtonComponent: {ex.Message}");
-            }
+                ApplyInitialProperties();
+            });
         }
 
-        /// <summary>
-        /// ✅ NOVO MÉTODO: Aplica estado inicial para animação (escondido na parte inferior e transparente)
-        /// </summary>
-        private void ApplyInitialState()
-        {
-            try
-            {
-                // ✅ ESTADO INICIAL PERFEITO: elemento começa invisível (opacity=0) e embaixo (TranslationY=60)
-                this.IsVisible = true;      // Deve estar visível para poder animar
-                this.Opacity = 0.0;        // ✅ CORREÇÃO: Começa COMPLETAMENTE transparente (fade in)
-                this.TranslationY = 60;     // ✅ CORREÇÃO: Começa 60px abaixo (translate up)
-
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Estado inicial aplicado (Opacity=0.0, TranslationY=60px) - PRONTO PARA FADE+TRANSLATE");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar estado inicial: {ex.Message}");
-            }
-        }
+        #region Private Methods - ESPECÍFICOS DO SPECIALNAVBUTTON
 
         private void ApplyInitialProperties()
         {
@@ -171,97 +137,6 @@ namespace MyKaraoke.View.Components
                 System.Diagnostics.Debug.WriteLine($"Erro ao aplicar propriedades iniciais: {ex.Message}");
             }
         }
-
-        #region Property Changed Handlers
-
-        private static void OnTextChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable is SpecialNavButtonComponent button && newValue is string text)
-            {
-                try
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        if (button.buttonLabel != null)
-                        {
-                            button.buttonLabel.Text = text;
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao definir Text: {ex.Message}");
-                }
-            }
-        }
-
-        private static void OnCenterContentChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable is SpecialNavButtonComponent button && newValue is string content)
-            {
-                button.UpdateCenterContent();
-            }
-        }
-
-        private static void OnCenterIconSourceChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable is SpecialNavButtonComponent button)
-            {
-                button.UpdateCenterContent();
-            }
-        }
-
-        private static void OnGradientStyleChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable is SpecialNavButtonComponent button && newValue is SpecialButtonGradientType gradientType)
-            {
-                button.UpdateGradientStyle(gradientType);
-            }
-        }
-
-        #endregion
-
-        #region Event Handlers
-
-        private async void OnButtonTapped(object sender, EventArgs e)
-        {
-            try
-            {
-                // Para a animação especial quando clicado
-                if (IsAnimated)
-                {
-                    await StopSpecialAnimationAsync();
-                }
-
-                // Animação de tap (press effect)
-                if (IsAnimated && gradientFrame != null && HardwareDetector.SupportsAnimations)
-                {
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        await AnimateTapEffect();
-                    });
-                }
-
-                // Executa comando se disponível
-                if (Command?.CanExecute(CommandParameter) == true)
-                {
-                    Command.Execute(CommandParameter);
-                }
-
-                // Dispara evento personalizado
-                ButtonClicked?.Invoke(this, new SpecialNavButtonEventArgs(Text, CenterContent, CenterIconSource, CommandParameter));
-
-                System.Diagnostics.Debug.WriteLine($"SpecialNavButtonComponent '{Text ?? "sem nome"}' clicado");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro no tap do SpecialNavButtonComponent '{Text ?? "sem nome"}': {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Private Methods
 
         private void UpdateCenterContent()
         {
@@ -326,157 +201,115 @@ namespace MyKaraoke.View.Components
 
         #endregion
 
-        #region Animation Methods
+        #region Property Changed Handlers - ESPECÍFICOS DO SPECIALNAVBUTTON
+
+        private static void OnTextChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is SpecialNavButtonComponent button && newValue is string text)
+            {
+                try
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        if (button.buttonLabel != null)
+                        {
+                            button.buttonLabel.Text = text;
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Erro ao definir Text: {ex.Message}");
+                }
+            }
+        }
+
+        private static void OnCenterContentChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is SpecialNavButtonComponent button && newValue is string content)
+            {
+                button.UpdateCenterContent();
+            }
+        }
+
+        private static void OnCenterIconSourceChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is SpecialNavButtonComponent button)
+            {
+                button.UpdateCenterContent();
+            }
+        }
+
+        private static void OnGradientStyleChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is SpecialNavButtonComponent button && newValue is SpecialButtonGradientType gradientType)
+            {
+                button.UpdateGradientStyle(gradientType);
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers - ESPECÍFICOS DO SPECIALNAVBUTTON
+
+        private async void OnButtonTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                // ✅ ESPECÍFICO: Para a animação especial quando clicado
+                if (IsAnimated)
+                {
+                    await StopSpecialAnimationAsync();
+                }
+
+                // ✅ USA BEHAVIOR: Tap effect via Extension (usando gradientFrame como container)
+                if (IsAnimated && gradientFrame != null && HardwareDetector.SupportsAnimations)
+                {
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        await this.AnimateTapEffect(); // Extension do Behavior
+                    });
+                }
+
+                // ✅ ESPECÍFICO: Comando do SpecialNavButton
+                if (Command?.CanExecute(CommandParameter) == true)
+                {
+                    Command.Execute(CommandParameter);
+                }
+
+                // ✅ ESPECÍFICO: Evento do SpecialNavButton
+                ButtonClicked?.Invoke(this, new SpecialNavButtonEventArgs(Text, CenterContent, CenterIconSource, CommandParameter));
+
+                System.Diagnostics.Debug.WriteLine($"SpecialNavButtonComponent '{Text ?? "sem nome"}' clicado");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro no tap do SpecialNavButtonComponent '{Text ?? "sem nome"}': {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Métodos de Animação - DELEGADOS PARA O BEHAVIOR + ESPECÍFICOS
 
         /// <summary>
-        /// ✅ CORRIGIDO: Mostra o botão com múltiplas animações simultâneas
-        /// Agora com estado inicial forçado e animações síncronas corretas
+        /// ✅ DELEGADO: ShowAsync via Behavior
         /// </summary>
         public async Task ShowAsync()
         {
-            if (_isShown)
-            {
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': ShowAsync ignorado - já mostrado");
-                return;
-            }
-
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Iniciando ShowAsync - AnimationTypes: {AnimationTypes}, Hardware: {HardwareDetector.SupportsAnimations}");
-
-                // ✅ CORREÇÃO 1: Força estado inicial no MainThread ANTES de qualquer delay
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    this.IsVisible = true;
-                    this.Opacity = 0.0;        // ✅ GARANTIA: Completamente transparente para fade in
-                    this.TranslationY = 60;     // ✅ GARANTIA: 60px abaixo da posição final para translate up
-                    System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Estado inicial FORÇADO (Opacity={this.Opacity}, TranslationY={this.TranslationY})");
-                });
-
-                // Aplica delay se configurado (APÓS definir estado inicial)
-                if (ShowDelay > 0)
-                {
-                    System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Aguardando delay de {ShowDelay}ms");
-                    await Task.Delay(ShowDelay);
-                }
-
-                if (IsAnimated && HardwareDetector.SupportsAnimations && AnimationTypes != SpecialButtonAnimationType.None)
-                {
-                    System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Condições atendidas - executando animações");
-
-                    // ✅ CORREÇÃO 2: Executa múltiplas animações simultaneamente usando Task.WhenAll
-                    var animationTasks = new List<Task>();
-
-                    if (AnimationTypeHelper.HasFlag(AnimationTypes, SpecialButtonAnimationType.Fade))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Adicionando Fade à lista de animações");
-                        animationTasks.Add(StartFadeInAsync());
-                    }
-
-                    if (AnimationTypeHelper.HasFlag(AnimationTypes, SpecialButtonAnimationType.Translate))
-                    {
-                        System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Adicionando Translate à lista de animações");
-                        animationTasks.Add(StartSlideUpAsync());
-                    }
-
-                    // ✅ CORREÇÃO 3: Executa todas as animações SIMULTANEAMENTE
-                    if (animationTasks.Any())
-                    {
-                        System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Executando {animationTasks.Count} animações simultaneamente");
-                        await Task.WhenAll(animationTasks);
-                        System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Todas as {animationTasks.Count} animações concluídas");
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Nenhuma animação configurada para execução");
-                    }
-                }
-                else
-                {
-                    // Hardware limitado ou animações desabilitadas: apenas aplicar estado final
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        this.Opacity = 1;
-                        this.TranslationY = 0;
-                    });
-                    System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Hardware limitado ou animações desabilitadas - aplicando estado final direto");
-                }
-
-                _isShown = true;
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': ShowAsync concluído com sucesso");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Erro em ShowAsync: {ex.Message}");
-                // Fallback: mostrar sem animação
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    this.Opacity = 1;
-                    this.TranslationY = 0;
-                    this.IsVisible = true;
-                });
-                _isShown = true;
-            }
+            await AnimatedButtonExtensions.ShowAsync(this);
         }
 
         /// <summary>
-        /// Esconde o botão com múltiplas animações simultâneas baseadas no AnimationTypes
-        /// Só executa se o hardware suportar animações
+        /// ✅ DELEGADO: HideAsync via Behavior
         /// </summary>
         public async Task HideAsync()
         {
-            if (!_isShown)
-                return;
-
-            try
-            {
-                if (IsAnimated && HardwareDetector.SupportsAnimations && AnimationTypes != SpecialButtonAnimationType.None)
-                {
-                    // Executa múltiplas animações simultaneamente baseadas nas flags
-                    var animationTasks = new List<Task>();
-
-                    if (AnimationTypeHelper.HasFlag(AnimationTypes, SpecialButtonAnimationType.Fade))
-                    {
-                        animationTasks.Add(StartFadeOutAsync());
-                    }
-
-                    if (AnimationTypeHelper.HasFlag(AnimationTypes, SpecialButtonAnimationType.Translate))
-                    {
-                        animationTasks.Add(StartSlideDownAsync());
-                    }
-
-                    // Executa todas as animações simultaneamente
-                    if (animationTasks.Any())
-                    {
-                        await Task.WhenAll(animationTasks);
-                    }
-                }
-                else
-                {
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        this.Opacity = 0;
-                        this.TranslationY = 60;
-                    });
-                }
-
-                this.IsVisible = false;
-                _isShown = false;
-                System.Diagnostics.Debug.WriteLine($"SpecialNavButtonComponent '{Text ?? "sem nome"}' escondido com animações: {AnimationTypes}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao esconder SpecialNavButtonComponent '{Text ?? "sem nome"}': {ex.Message}");
-                this.Opacity = 0;
-                this.IsVisible = false;
-                _isShown = false;
-            }
+            await AnimatedButtonExtensions.HideAsync(this);
         }
 
         /// <summary>
-        /// Inicia animação de Pulse se configurada no AnimationTypes
-        /// Usa configuração específica para botão especial (mesmo do Nova Fila original)
-        /// Só executa se o hardware suportar animações
+        /// ✅ ESPECÍFICO: StartSpecialAnimationAsync para SpecialNavButton (pulse especial)
         /// </summary>
         public async Task StartSpecialAnimationAsync()
         {
@@ -487,22 +320,8 @@ namespace MyKaraoke.View.Components
             {
                 if (AnimationTypeHelper.HasFlag(AnimationTypes, SpecialButtonAnimationType.Pulse))
                 {
-                    // 🎯 Configuração específica para botão especial (mesmo do Nova Fila original)
-                    var pulseConfig = new AnimationConfig
-                    {
-                        FromScale = 1.0,
-                        ToScale = 1.25, // 25% maior
-                        PulseDuration = 150,
-                        PulsePause = 100,
-                        PulseCount = 5,
-                        InitialDelay = 1000,
-                        CycleInterval = 6000,
-                        ExpandEasing = Easing.BounceOut,
-                        ContractEasing = Easing.BounceIn,
-                        AutoRepeat = true
-                    };
-
-                    await _animationManager.StartPulseAsync("special_pulse", buttonContainer, pulseConfig, () => this.IsVisible);
+                    // ✅ ESPECÍFICO: SpecialNavButton usa pulse especial via Behavior
+                    await AnimatedButtonExtensions.StartSpecialAnimationAsync(this);
                 }
             }
             catch (Exception ex)
@@ -512,13 +331,14 @@ namespace MyKaraoke.View.Components
         }
 
         /// <summary>
-        /// Para a animação especial
+        /// ✅ ESPECÍFICO: Para apenas a animação especial
         /// </summary>
         public async Task StopSpecialAnimationAsync()
         {
             try
             {
-                await _animationManager.StopAnimationAsync("special_pulse");
+                // ✅ USA BEHAVIOR: StopAllAnimationsAsync já para todas as animações
+                await AnimatedButtonExtensions.StopAllAnimationsAsync(this);
             }
             catch (Exception ex)
             {
@@ -527,138 +347,16 @@ namespace MyKaraoke.View.Components
         }
 
         /// <summary>
-        /// Para todas as animações do botão
+        /// ✅ DELEGADO: StopAllAnimationsAsync via Behavior
         /// </summary>
         public async Task StopAllAnimationsAsync()
         {
-            try
-            {
-                await _animationManager.StopAllAnimationsAsync();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao parar animações: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// ✅ CORRIGIDO: Fade In usando API nativa do MAUI com duração sincronizada com Translate
-        /// EXECUTA EM PARALELO com StartSlideUpAsync() para efeito perfeito
-        /// </summary>
-        private async Task StartFadeInAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Iniciando Fade In PARALELO - Estado atual: Opacity={this.Opacity}");
-
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    // ✅ GARANTIA: Estado inicial para animação fade
-                    this.Opacity = 0.0; // Garante que começa completamente transparente
-
-                    // ✅ FADE IN: 0.0 → 1.0 em 500ms (sincronizado com translate)
-                    await this.FadeTo(1.0, 500, Easing.CubicOut);
-                });
-
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Fade In PARALELO concluído - Estado final: Opacity={this.Opacity}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro no Special Fade In: {ex.Message}");
-            }
-        }
-
-        private async Task StartFadeOutAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Iniciando Fade Out PARALELO - Estado atual: Opacity={this.Opacity}");
-
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    // ✅ FADE OUT: current → 0.0 em 500ms (sincronizado com translate)
-                    await this.FadeTo(0.0, 500, Easing.CubicIn);
-                });
-
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Fade Out PARALELO concluído - Estado final: Opacity={this.Opacity}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro no Special Fade Out: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// ✅ CORRIGIDO: Slide Up usando API nativa do MAUI sincronizado com Fade
-        /// EXECUTA EM PARALELO com StartFadeInAsync() para efeito perfeito
-        /// Anima de 60px abaixo (estado inicial) para posição final (0)
-        /// </summary>
-        private async Task StartSlideUpAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Iniciando Slide Up PARALELO - Estado atual: TranslationY={this.TranslationY}");
-
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    // ✅ GARANTIA: Estado inicial para animação translate
-                    this.TranslationY = 60; // Garante que começa 60px abaixo
-
-                    // ✅ TRANSLATE UP: 60px → 0px em 500ms (sincronizado com fade)
-                    await this.TranslateTo(0, 0, 500, Easing.CubicOut);
-                });
-
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Slide Up PARALELO concluído - Estado final: TranslationY={this.TranslationY}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro no Special Slide Up: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// ✅ CORRIGIDO: Slide Down para esconder o botão (sincronizado com fade out)
-        /// </summary>
-        private async Task StartSlideDownAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Iniciando Slide Down PARALELO - Estado atual: TranslationY={this.TranslationY}");
-
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    // ✅ TRANSLATE DOWN: current → 60px em 500ms (sincronizado com fade out)
-                    await this.TranslateTo(0, 60, 500, Easing.CubicIn); // Move para 60px abaixo
-                });
-
-                System.Diagnostics.Debug.WriteLine($"SpecialButton '{Text ?? "sem nome"}': Slide Down PARALELO concluído - Estado final: TranslationY={this.TranslationY}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro no Special Slide Down: {ex.Message}");
-            }
-        }
-
-        private async Task AnimateTapEffect()
-        {
-            try
-            {
-                if (gradientFrame != null)
-                {
-                    // Efeito de "press" simples
-                    await gradientFrame.ScaleTo(0.95, 100);
-                    await gradientFrame.ScaleTo(1.0, 100);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro no efeito de tap: {ex.Message}");
-            }
+            await AnimatedButtonExtensions.StopAllAnimationsAsync(this);
         }
 
         #endregion
 
-        #region Lifecycle Methods
+        #region Lifecycle Methods - DELEGADOS PARA O BEHAVIOR
 
         protected override void OnHandlerChanged()
         {
@@ -666,15 +364,14 @@ namespace MyKaraoke.View.Components
 
             if (Handler == null)
             {
-                // Limpa animações quando o handler é removido
-                _animationManager?.Dispose();
+                // ✅ O BEHAVIOR já limpa os recursos
             }
             else
             {
-                // ✅ CORREÇÃO: Re-aplica estado inicial quando handler estiver disponível
-                ApplyInitialState();
+                // ✅ USA BEHAVIOR: Handler changed via Extension
+                this.HandleHandlerChanged();
 
-                // Atualiza o conteúdo quando o handler estiver disponível
+                // ✅ ESPECÍFICO: Atualiza propriedades do SpecialNavButton
                 try
                 {
                     UpdateCenterContent();
@@ -691,33 +388,11 @@ namespace MyKaraoke.View.Components
         {
             base.OnBindingContextChanged();
 
-            if (BindingContext == null)
-            {
-                // Para animações quando o contexto muda
-                _ = Task.Run(StopAllAnimationsAsync);
-            }
+            // ✅ USA BEHAVIOR: Binding context changed via Extension
+            this.HandleBindingContextChanged();
         }
 
         #endregion
     }
 
-    #region Event Args
-
-    public class SpecialNavButtonEventArgs : EventArgs
-    {
-        public string ButtonText { get; }
-        public string CenterContent { get; }
-        public string IconSource { get; }
-        public object Parameter { get; }
-
-        public SpecialNavButtonEventArgs(string buttonText, string centerContent, string iconSource, object parameter)
-        {
-            ButtonText = buttonText;
-            CenterContent = centerContent;
-            IconSource = iconSource;
-            Parameter = parameter;
-        }
-    }
-
-    #endregion
 }

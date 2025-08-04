@@ -159,7 +159,16 @@ namespace MyKaraoke.View.Components
         /// </summary>
         public async Task ShowAsync()
         {
-            await NavBarExtensions.ShowAsync(navGrid);
+            this.IsVisible = true;
+            if (navBarBehavior != null)
+            {
+                await navBarBehavior.ShowAsync();
+            }
+            else
+            {
+                // ✅ FALLBACK: Usa extensão no navGrid se behavior não disponível
+                await NavBarExtensions.ShowAsync(navGrid);
+            }
         }
 
         /// <summary>
@@ -167,7 +176,18 @@ namespace MyKaraoke.View.Components
         /// </summary>
         public async Task HideAsync()
         {
-            await NavBarExtensions.HideAsync(navGrid);
+            // ✅ CORREÇÃO: Usa o behavior diretamente em vez do navGrid
+            if (navBarBehavior != null)
+            {
+                await navBarBehavior.HideAsync();
+            }
+            else
+            {
+                // ✅ FALLBACK: Usa extensão no navGrid se behavior não disponível
+                await NavBarExtensions.HideAsync(navGrid);
+            }
+
+            this.IsVisible = false;
         }
 
         #endregion

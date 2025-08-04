@@ -85,9 +85,8 @@
         }
 
         /// <summary>
-        /// Para uma animação de pulse específica
+        /// 🎯 CORREÇÃO: StopPulseAnimationAsync otimizado
         /// </summary>
-        /// <param name="animationKey">Chave da animação</param>
         public async Task StopPulseAnimationAsync(string animationKey)
         {
             if (string.IsNullOrEmpty(animationKey) || !_pulseAnimations.ContainsKey(animationKey))
@@ -95,16 +94,28 @@
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Parando pulse '{animationKey}'");
+
                 var animation = _pulseAnimations[animationKey];
+
+                // ✅ FORÇA parada imediata
                 await animation.StopAsync();
+
+                // ✅ Dispose e remove
                 animation.Dispose();
                 _pulseAnimations.Remove(animationKey);
 
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Pulse '{animationKey}' removida");
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Pulse '{animationKey}' COMPLETAMENTE removida");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao parar pulse '{animationKey}': {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Erro ao parar pulse '{animationKey}': {ex.Message}");
+
+                // ✅ Remove mesmo com erro
+                if (_pulseAnimations.ContainsKey(animationKey))
+                {
+                    _pulseAnimations.Remove(animationKey);
+                }
             }
         }
 
@@ -471,30 +482,56 @@
                 await Task.WhenAll(tasks);
         }
 
+
         /// <summary>
-        /// Para todas as animações
+        /// 🎯 CORREÇÃO: Para todas as animações IMEDIATAMENTE
         /// </summary>
         public async Task StopAllAnimationsAsync()
         {
-            var tasks = new List<Task>();
+            if (_disposed)
+                return;
 
-            // Para todas as animações de pulse
-            foreach (var key in _pulseAnimations.Keys.ToList())
-                tasks.Add(StopPulseAnimationAsync(key));
+            System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] StopAllAnimationsAsync - PARANDO TODAS AS ANIMAÇÕES");
 
-            // Para todas as animações de fade
-            foreach (var key in _fadeAnimations.Keys.ToList())
-                tasks.Add(StopFadeAnimationAsync(key));
+            var stopTasks = new List<Task>();
 
-            // Para todas as animações de translate
-            foreach (var key in _translateAnimations.Keys.ToList())
-                tasks.Add(StopTranslateAnimationAsync(key));
+            try
+            {
+                // ✅ CORREÇÃO: Para TODAS as animações de pulse primeiro
+                var pulseKeys = _pulseAnimations.Keys.ToList();
+                foreach (var key in pulseKeys)
+                {
+                    stopTasks.Add(StopPulseAnimationAsync(key));
+                }
 
-            if (tasks.Any())
-                await Task.WhenAll(tasks);
+                // ✅ Para TODAS as animações de fade
+                var fadeKeys = _fadeAnimations.Keys.ToList();
+                foreach (var key in fadeKeys)
+                {
+                    stopTasks.Add(StopFadeAnimationAsync(key));
+                }
 
-            System.Diagnostics.Debug.WriteLine($"[{_viewName}] Todas as animações paradas");
+                // ✅ Para TODAS as animações de translate
+                var translateKeys = _translateAnimations.Keys.ToList();
+                foreach (var key in translateKeys)
+                {
+                    stopTasks.Add(StopTranslateAnimationAsync(key));
+                }
+
+                // ✅ AGUARDA todas as paradas simultaneamente
+                if (stopTasks.Any())
+                {
+                    await Task.WhenAll(stopTasks);
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] TODAS as {stopTasks.Count} animações paradas");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Erro ao parar animações: {ex.Message}");
+            }
         }
+
 
         /// <summary>
         /// Verifica se uma animação está rodando
@@ -591,56 +628,108 @@
         #region Disposal
 
         /// <summary>
-        /// Libera todos os recursos
+        /// 🎯 CORREÇÃO: Dispose que AGUARDA StopAsync
         /// </summary>
         public void Dispose()
         {
             if (_disposed)
                 return;
 
+            System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] AnimationManager.Dispose() iniciado");
+
             _disposed = true;
 
-            // Para todas as animações de forma síncrona
-            foreach (var animation in _pulseAnimations.Values)
+            try
             {
-                try { animation.Dispose(); }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Erro no dispose da pulse animation: {ex.Message}"); }
+                // ✅ CORREÇÃO: Para animações de forma SÍNCRONA mas eficiente
+                var stopAllTask = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await StopAllAnimationsAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animações no dispose: {ex.Message}");
+                    }
+                });
+
+                // ✅ Aguarda até 500ms para parar graciosamente
+                if (!stopAllTask.Wait(500))
+                {
+                    System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Timeout no StopAllAnimationsAsync - forçando dispose");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Erro no dispose gracioso: {ex.Message}");
             }
 
-            foreach (var animation in _fadeAnimations.Values)
+            // ✅ FORÇA dispose de todas as animações diretamente
+            try
             {
-                try { animation.Dispose(); }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Erro no dispose da fade animation: {ex.Message}"); }
-            }
+                foreach (var animation in _pulseAnimations.Values.ToList())
+                {
+                    try
+                    {
+                        animation.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🛑 Erro no dispose da pulse animation: {ex.Message}");
+                    }
+                }
 
-            foreach (var animation in _translateAnimations.Values)
+                foreach (var animation in _fadeAnimations.Values.ToList())
+                {
+                    try
+                    {
+                        animation.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🛑 Erro no dispose da fade animation: {ex.Message}");
+                    }
+                }
+
+                foreach (var animation in _translateAnimations.Values.ToList())
+                {
+                    try
+                    {
+                        animation.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🛑 Erro no dispose da translate animation: {ex.Message}");
+                    }
+                }
+
+                _pulseAnimations.Clear();
+                _fadeAnimations.Clear();
+                _translateAnimations.Clear();
+
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] AnimationManager disposed completamente");
+            }
+            catch (Exception ex)
             {
-                try { animation.Dispose(); }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Erro no dispose da translate animation: {ex.Message}"); }
+                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] ERRO CRÍTICO no dispose: {ex.Message}");
             }
-
-            _pulseAnimations.Clear();
-            _fadeAnimations.Clear();
-            _translateAnimations.Clear();
-
-            System.Diagnostics.Debug.WriteLine($"[{_viewName}] AnimationManager disposed");
         }
-
         #endregion
-    }
 
-    /// <summary>
-    /// Argumentos para eventos de animação
-    /// </summary>
-    public class AnimationEventArgs : EventArgs
-    {
-        public string AnimationKey { get; }
-        public VisualElement Target { get; }
-
-        public AnimationEventArgs(string animationKey, VisualElement target)
+        /// <summary>
+        /// Argumentos para eventos de animação
+        /// </summary>
+        public class AnimationEventArgs : EventArgs
         {
-            AnimationKey = animationKey;
-            Target = target;
+            public string AnimationKey { get; }
+            public VisualElement Target { get; }
+
+            public AnimationEventArgs(string animationKey, VisualElement target)
+            {
+                AnimationKey = animationKey;
+                Target = target;
+            }
         }
     }
 }

@@ -2,22 +2,47 @@
 using MyKaraoke.Domain;
 using MyKaraoke.Services;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Text.Json;
+using System.Windows.Input;
 
 namespace MyKaraoke.View
 {
-    public partial class StackPage : ContentPage
+    public partial class StackPage : ContentPage, INotifyPropertyChanged
     {
         private IQueueService _queueService;
         private ServiceProvider _serviceProvider;
         private ObservableCollection<PessoaListItemDto> _fila;
         private const string ActiveQueueKey = "ActiveFilaDeCQueue"; // Chave para a fila ativa nas Preferences
 
+        // Propriedade para o badge do card
+        private string _queueStatusText = "---";
+        public string QueueStatusText
+        {
+            get => _queueStatusText;
+            set
+            {
+                if (_queueStatusText != value)
+                {
+                    _queueStatusText = value;
+                    OnPropertyChanged(nameof(QueueStatusText));
+                }
+            }
+        }
+
+        // Comando que o PageLifecycleBehavior irá executar
+        public ICommand LoadDataCommand { get; }
+
         public StackPage()
         {
             InitializeComponent();
 
             _fila = new ObservableCollection<PessoaListItemDto>();
+
+            // Define o comando que encapsula nossa lógica de inicialização e carregamento
+            LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
+
+            this.BindingContext = this;
 
             // Verify filaCollectionView exists before setting ItemsSource
             if (filaCollectionView != null)
@@ -29,7 +54,6 @@ namespace MyKaraoke.View
             // Debug: Log component initialization
             System.Diagnostics.Debug.WriteLine($"StackPage Constructor - bottomNav: {bottomNav != null}");
             System.Diagnostics.Debug.WriteLine($"StackPage Constructor - emptyQueueMessage: {emptyQueueMessage != null}");
-            System.Diagnostics.Debug.WriteLine($"StackPage Constructor - queueStatusLabel: {queueStatusLabel != null}");
         }
 
         protected override void OnHandlerChanged()
@@ -51,24 +75,27 @@ namespace MyKaraoke.View
             }
         }
 
-        protected override async void OnAppearing()
+        // O     foi REMOVIDO - PageLifecycleBehavior gerencia tudo
+
+        // Este método privado é a AÇÃO que o Behavior executa.
+        private async Task InitializeAndLoadDataAsync()
         {
-            base.OnAppearing();
-
-            System.Diagnostics.Debug.WriteLine($"OnAppearing - bottomNav: {bottomNav != null}");
-            System.Diagnostics.Debug.WriteLine($"OnAppearing - emptyQueueMessage: {emptyQueueMessage != null}");
-            System.Diagnostics.Debug.WriteLine($"OnAppearing - queueStatusLabel: {queueStatusLabel != null}");
-
-            LoadActiveQueueState(); // Chama o método local
-
-            await Task.Delay(100);
-
-            await CheckActiveQueueAsync(); // Nova verificação de fila ativa
-
-            if (bottomNav != null)
+            // A lógica de SetLoading(true/false) foi movida para o Behavior.
+            // Este método agora foca apenas no que é específico da página.
+            try
             {
-                // Chama o método padronizado da interface
-                await bottomNav.ShowAsync();
+                System.Diagnostics.Debug.WriteLine("InitializeAndLoadDataAsync - Starting");
+
+                LoadActiveQueueState(); // Chama o método local
+
+                await Task.Delay(100);
+
+                await CheckActiveQueueAsync(); // Nova verificação de fila ativa
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"InitializeAndLoadDataAsync - Error: {ex.Message}");
+                ShowEmptyQueueState();
             }
         }
 
@@ -140,14 +167,28 @@ namespace MyKaraoke.View
             {
                 try
                 {
-                    // ... (other UI updates)
+                    // Atualizar título para "My Karaoke"
+                    UpdateHeaderTitle(false);
+
+                    if (emptyQueueMessage != null)
+                    {
+                        emptyQueueMessage.IsVisible = true;
+                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - emptyQueueMessage set to visible");
+                    }
+
+                    if (filaCollectionView != null)
+                    {
+                        filaCollectionView.IsVisible = false;
+                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - filaCollectionView set to hidden");
+                    }
 
                     if (bottomNav != null)
                     {
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav visibility NOT set here (controlled by its own StartShowAnimations)");
+                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav visibility controlled by behavior");
                     }
 
-                    // ... (rest of the method)
+                    QueueStatusText = "---";
+                    System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - QueueStatusText set to ---");
                 }
                 catch (Exception ex)
                 {
@@ -200,11 +241,8 @@ namespace MyKaraoke.View
                     }
 
                     int participantCount = _fila?.Count ?? 0;
-                    if (queueStatusLabel != null)
-                    {
-                        queueStatusLabel.Text = participantCount.ToString();
-                        System.Diagnostics.Debug.WriteLine($"ShowActiveQueueState - queueStatusLabel set to {participantCount}");
-                    }
+                    QueueStatusText = participantCount.ToString();
+                    System.Diagnostics.Debug.WriteLine($"ShowActiveQueueState - QueueStatusText set to {participantCount}");
                 }
                 catch (Exception ex)
                 {
@@ -306,26 +344,13 @@ namespace MyKaraoke.View
             base.OnDisappearing();
             try
             {
-                // 🎯 CORREÇÃO: Para animações ao sair da página
-                if (bottomNav != null)
-                {
-                    try
-                    {
-                        await bottomNav.HideAsync();
-                        System.Diagnostics.Debug.WriteLine("OnDisappearing - Animações da InactiveQueueBottomNav paradas e barra escondida.");
-                    }
-                    catch (Exception animEx)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"OnDisappearing - Erro ao parar animação: {animEx.Message}");
-                    }
-                }
-
                 if (filaCollectionView != null)
                     filaCollectionView.ReorderCompleted -= OnFilaReorderCompleted;
 
                 if (bottomNav != null)
                 {
-                    await bottomNav.HideAsync();
+                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
+                    System.Diagnostics.Debug.WriteLine("[StackPage] Eventos da navbar removidos");
                 }
             }
             catch (Exception ex)
@@ -365,37 +390,12 @@ namespace MyKaraoke.View
             }
         }
 
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        #endregion
     }
-
 }
-
-
-//public partial class StackPage : ContentPage
-//{
-//    // ... ICommands para LocaisCommand, BandokeCommand, etc. ...
-
-//    public StackPage()
-//    {
-//        InitializeComponent();
-//        // Vincule os commands aqui. Exemplo:
-//        // LocaisCommand = new Command(async () => await NavigateToSpotPage());
-//        // this.BindingContext = this; // Para os commands funcionarem
-//    }
-
-//    // Um único handler para todos os cliques
-//    private void OnBottomNavButtonClicked(object sender, NavBarButtonClickedEventArgs e)
-//    {
-//        System.Diagnostics.Debug.WriteLine($"Botão clicado: {e.ButtonConfig.Text}");
-
-//        // A lógica de navegação já está nos ICommands vinculados no XAML.
-//        // Você poderia ter um switch aqui se preferisse usar o evento em vez de commands.
-//        // switch(e.ButtonConfig.Text)
-//        // {
-//        //     case "Locais": //...
-//        //     break;
-//        // }
-//    }
-
-//    // ... O resto do seu código ...
-//    // O Behavior 'NavBarLifecycleBehavior' cuidará de chamar ShowAsync/HideAsync.
-//}

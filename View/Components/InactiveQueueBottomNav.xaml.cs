@@ -117,22 +117,57 @@ namespace MyKaraoke.View.Components
         #region IAnimatableNavBar - DELEGADO PARA BEHAVIOR
 
         /// <summary>
-        /// ✅ DELEGADO: ShowAsync via NavBarBehavior
+        /// ✅ CORREÇÃO: ShowAsync via NavBarBehavior usando navBarBehavior
         /// </summary>
         public async Task ShowAsync()
         {
-            this.IsVisible = true;
-            await NavBarExtensions.ShowAsync(navGrid);
+            try
+            {
+                this.IsVisible = true;
+
+                // ✅ CORREÇÃO: Usa o behavior diretamente em vez do navGrid
+                if (navBarBehavior != null)
+                {
+                    await navBarBehavior.ShowAsync();
+                }
+                else
+                {
+                    // ✅ FALLBACK: Usa extensão no navGrid se behavior não disponível
+                    await NavBarExtensions.ShowAsync(navGrid);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro no ShowAsync: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// ✅ DELEGADO: HideAsync via NavBarBehavior
+        /// ✅ CORREÇÃO: HideAsync via NavBarBehavior usando navBarBehavior
         /// </summary>
         public async Task HideAsync()
         {
-            await NavBarExtensions.HideAsync(navGrid);
-            this.IsVisible = false;
+            try
+            {
+                // ✅ CORREÇÃO: Usa o behavior diretamente em vez do navGrid
+                if (navBarBehavior != null)
+                {
+                    await navBarBehavior.HideAsync();
+                }
+                else
+                {
+                    // ✅ FALLBACK: Usa extensão no navGrid se behavior não disponível
+                    await NavBarExtensions.HideAsync(navGrid);
+                }
+
+                this.IsVisible = false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro no HideAsync: {ex.Message}");
+            }
         }
+
 
         #endregion
     }

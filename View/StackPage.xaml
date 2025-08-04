@@ -2,10 +2,21 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:components="clr-namespace:MyKaraoke.View.Components"
+             xmlns:local="clr-namespace:MyKaraoke.View"
+             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
              x:Class="MyKaraoke.View.StackPage"
+             x:DataType="local:StackPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
-    
+
+    <ContentPage.Behaviors>
+        <behaviors:PageLifecycleBehavior 
+            NavBar="{x:Reference bottomNav}"
+            LoadingIndicator="{x:Reference loadingOverlay}"
+            MainContent="{x:Reference mainContentGrid}"
+            LoadDataCommand="{Binding LoadDataCommand}" />
+    </ContentPage.Behaviors>
+
     <Grid Padding="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -15,73 +26,16 @@
 
         <!-- Header Component -->
         <components:HeaderComponent Grid.Row="0" x:Name="headerComponent"/>
-        
-        <!-- Card principal com altura automática -->
-        <Frame Grid.Row="1" 
-               BorderColor="#533682"
-               Background="Transparent"
-               Padding="0"
-               CornerRadius="27"
-               Margin="15,5,15,5"
-               HasShadow="False"
-               VerticalOptions="Start">
 
-            <Frame Background="{StaticResource CardBackgroundGradient}"
-                   CornerRadius="27"
-                   HasShadow="False"
-                   Padding="20,10,20,20"
-                   BorderColor="Transparent"
-                   VerticalOptions="Start">
-
-                <!-- Conteudo do card -->
-                <Grid RowDefinitions="Auto,Auto" VerticalOptions="Start">
-
-                    <!-- Header do Card com icone, titulo e badge -->
-                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,25">
-                        <!-- Icone -->
-                        <Frame
-                               HeightRequest="40"
-                               WidthRequest="40"
-                               Padding="8"
-                               HorizontalOptions="Start"
-                               VerticalOptions="Center"
-                               Grid.Column="0"
-                               BackgroundColor="Transparent">
-                            <Image Source="stack_purple.png"
-                                   Aspect="AspectFit"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" 
-                                   BackgroundColor="Transparent"/>
-                        </Frame>
-
-                        <!-- Titulo -->
-                        <Label Grid.Column="1" 
-                               Text="Fila" 
-                               Style="{StaticResource CardTitleStyle}"
-                               VerticalOptions="Center" />
-
-                        <!-- Badge de status -->
-                        <Frame Grid.Column="2"
-                               x:Name="queueStatusBadge"
-                               Background="{StaticResource SelectedButtonGradient}"
-                               CornerRadius="15"
-                               Padding="12,6"
-                               HasShadow="False"
-                               VerticalOptions="Center"
-                               HorizontalOptions="End">
-                            <Label x:Name="queueStatusLabel"
-                                   Text="---"
-                                   TextColor="White"
-                                   FontSize="14"
-                                   FontAttributes="Bold"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" />
-                        </Frame>
-                    </Grid>
-
-                    <!-- Content area -->
-                    <Grid Grid.Row="1" x:Name="contentGrid" VerticalOptions="Start">
-                        <!-- Empty queue message com estilos reutilizáveis -->
+        <!-- Card usando CardWrapperComponent -->
+        <Grid Grid.Row="1" x:Name="mainContentGrid">
+            <components:CardWrapperComponent TitleText="Fila" 
+                                           IconPath="stack_purple.png" 
+                                           BadgeIsVisible="True"
+                                           BadgeText="{Binding QueueStatusText}">
+                <components:CardWrapperComponent.CardContent>
+                    <Grid RowDefinitions="*">
+                        <!-- Empty queue message -->
                         <Frame x:Name="emptyQueueMessage" 
                                IsVisible="True"
                                VerticalOptions="Start"
@@ -178,7 +132,7 @@
                                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="{x:Null}">
                                     <Grid Padding="10" 
                                           ColumnDefinitions="*, Auto, Auto, Auto" 
                                           RowDefinitions="Auto"
@@ -232,42 +186,21 @@
                                                 TextColor="Black"
                                                 VerticalOptions="Center" 
                                                 HorizontalOptions="Center" 
-
                                                 Margin="5,0"/>
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
                     </Grid>
-                </Grid>
-            </Frame>
-        </Frame>
+                </components:CardWrapperComponent.CardContent>
+            </components:CardWrapperComponent>
+
+            <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
+        </Grid>
 
         <components:InactiveQueueBottomNav Grid.Row="2" 
                                          x:Name="bottomNav" 
                                          IsVisible="True" />
-
-        <components:LoadingOverlayComponent x:Name="loadingOverlay" />
-        
-        
-        <!-- 
-        
-        <components:CustomNavBarComponent x:Name="bottomNav"
-                                  VerticalOptions="End"
-                                  ButtonClicked="OnBottomNavButtonClicked">
-    <components:CustomNavBarComponent.Buttons>
-        <ObservableCollection x:TypeArguments="components:NavButtonConfig">
-            <components:NavButtonConfig Text="Locais" IconSource="spot.png" Command="{Binding LocaisCommand}" />
-            <components:NavButtonConfig Text="Bandokê" IconSource="musicos.png" Command="{Binding BandokeCommand}" />
-            <components:NavButtonConfig Text="Nova Fila" CenterContent="+" Command="{Binding NovaFilaCommand}" IsSpecial="True" GradientStyle="Yellow"
-                                        SpecialAnimationTypes="Fade,Translate,Pulse" />
-            <components:NavButtonConfig Text="Histórico" IconSource="historico.png" Command="{Binding HistoricoCommand}" />
-            <components:NavButtonConfig Text="Administrar" IconSource="manage.png" Command="{Binding AdministrarCommand}" />
-        </ObservableCollection>
-    </components:CustomNavBarComponent.Buttons>
-</components:CustomNavBarComponent>
-        -->
-
     </Grid>
 
-</ContentPage>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+</ContentPage>

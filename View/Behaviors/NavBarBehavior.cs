@@ -431,8 +431,17 @@ namespace MyKaraoke.View.Behaviors
             try
             {
                 _associatedGrid.IsVisible = true;
+
+                // 🎯 CORREÇÃO: Garante que os botões existem antes de animar
+                if (_buttonViews.Count == 0 && Buttons != null && Buttons.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: Criando botões antes de mostrar");
+                    RebuildButtonsForced(); // Força criação mesmo se já inicializado
+                }
+
                 if (_buttonViews.Count == 0)
                 {
+                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: Nenhum botão para mostrar");
                     _isShown = true;
                     return;
                 }
@@ -470,7 +479,7 @@ namespace MyKaraoke.View.Behaviors
                 }
 
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine("NavBarBehavior: ShowAsync concluído");
+                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync concluído com {_buttonViews.Count} botões");
             }
             finally
             {
@@ -478,15 +487,25 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
+        /// <summary>
+        /// 🎯 CORREÇÃO: HideAsync com parada forçada
+        /// </summary>
         public async Task HideAsync()
         {
             if (!_isShown || _associatedGrid == null)
                 return;
 
+            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync - parando animações primeiro");
+
             try
             {
-                await StopSpecialAnimations();
+                // ✅ CORREÇÃO: Para TODAS as animações ANTES de esconder
+                await StopAllAnimationsAsync();
 
+                // ✅ Pequeno delay para garantir que parou
+                await Task.Delay(50);
+
+                // ✅ ENTÃO esconde sem animações
                 if (IsAnimated && HardwareDetector.SupportsAnimations)
                 {
                     var hideTasks = new List<Task>();
@@ -503,31 +522,153 @@ namespace MyKaraoke.View.Behaviors
                         }
                     }
 
-                    await Task.WhenAll(hideTasks);
+                    if (hideTasks.Any())
+                    {
+                        await Task.WhenAll(hideTasks);
+                    }
                 }
 
                 _associatedGrid.IsVisible = false;
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine("NavBarBehavior: HideAsync concluído");
+                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync concluído COMPLETAMENTE");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao esconder: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao esconder: {ex.Message}");
                 _associatedGrid.IsVisible = false;
                 _isShown = false;
             }
         }
-
-        public async Task StopAllAnimationsAsync()
+        /// <summary>
+        /// 🎯 CORREÇÃO: Para TODAS as animações de forma mais robusta
+        /// </summary>
+        private async Task StopAllAnimationsAsync()
         {
+            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: StopAllAnimationsAsync - PARANDO TODAS AS ANIMAÇÕES");
+
             try
             {
-                await _animationManager.StopAllAnimationsAsync();
+                // ✅ CORREÇÃO 1: Para AnimationManager primeiro
+                if (_animationManager != null)
+                {
+                    await _animationManager.StopAllAnimationsAsync();
+                }
+
+                // ✅ CORREÇÃO 2: Para animações especiais dos botões
                 await StopSpecialAnimations();
+
+                // ✅ CORREÇÃO 3: Para animações individuais dos botões
+                await StopButtonAnimations();
+
+                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: TODAS as animações paradas");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao parar animações: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛑 NavBarBehavior: Erro ao parar animações: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Para animações especiais de forma mais robusta
+        /// </summary>
+        private async Task StopSpecialAnimations()
+        {
+            try
+            {
+                var stopTasks = new List<Task>();
+
+                foreach (var buttonView in _buttonViews.ToList())
+                {
+                    if (buttonView is SpecialNavButtonComponent specialButton)
+                    {
+                        stopTasks.Add(Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await specialButton.StopSpecialAnimationAsync();
+                                System.Diagnostics.Debug.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar SpecialButton: {ex.Message}");
+                            }
+                        }));
+                    }
+                    else if (buttonView is NavButtonComponent regularButton)
+                    {
+                        stopTasks.Add(Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await regularButton.StopAllAnimationsAsync();
+                                System.Diagnostics.Debug.WriteLine($"🛑 NavButton '{regularButton.Text}' parado");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar NavButton: {ex.Message}");
+                            }
+                        }));
+                    }
+                }
+
+                if (stopTasks.Any())
+                {
+                    // ✅ Aguarda até 1 segundo para parar todas
+                    var timeoutTask = Task.Delay(1000);
+                    var stopAllTask = Task.WhenAll(stopTasks);
+
+                    var completedTask = await Task.WhenAny(stopAllTask, timeoutTask);
+
+                    if (completedTask == timeoutTask)
+                    {
+                        System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: Timeout ao parar animações especiais - continuando");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🛑 NavBarBehavior: {stopTasks.Count} animações especiais paradas");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animações especiais: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Para animações individuais dos botões
+        /// </summary>
+        private async Task StopButtonAnimations()
+        {
+            try
+            {
+                var stopTasks = new List<Task>();
+
+                foreach (var buttonView in _buttonViews.ToList())
+                {
+                    stopTasks.Add(Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // ✅ Para animações via Behavior Extension
+                            await AnimatedButtonExtensions.StopAllAnimationsAsync(buttonView as ContentView);
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animação individual: {ex.Message}");
+                        }
+                    }));
+                }
+
+                if (stopTasks.Any())
+                {
+                    await Task.WhenAll(stopTasks);
+                    System.Diagnostics.Debug.WriteLine($"🛑 NavBarBehavior: {stopTasks.Count} animações individuais paradas");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animações individuais: {ex.Message}");
             }
         }
 
@@ -557,29 +698,61 @@ namespace MyKaraoke.View.Behaviors
             await button.StartSpecialAnimationAsync();
         }
 
-        private async Task StopSpecialAnimations()
+
+        #endregion
+
+        // <summary>
+        /// 🎯 NOVO: Força reconstrução de botões mesmo se já inicializado
+        /// </summary>
+        private void RebuildButtonsForced()
         {
             try
             {
-                foreach (var buttonView in _buttonViews)
+                System.Diagnostics.Debug.WriteLine("NavBarBehavior: RebuildButtonsForced - forçando criação");
+
+                ClearButtons();
+
+                if (Buttons == null || Buttons.Count == 0)
                 {
-                    if (buttonView is SpecialNavButtonComponent specialButton)
+                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: Nenhum botão configurado para forçar");
+                    return;
+                }
+
+                var buttonsGrid = GetButtonsGrid();
+                if (buttonsGrid == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: ButtonsGrid não encontrado");
+                    return;
+                }
+
+                SetupGridColumns(buttonsGrid, Buttons.Count);
+
+                for (int i = 0; i < Buttons.Count; i++)
+                {
+                    var buttonConfig = Buttons[i];
+                    var buttonView = CreateButtonView(buttonConfig, i);
+
+                    if (buttonView != null)
                     {
-                        await specialButton.StopSpecialAnimationAsync();
-                    }
-                    else if (buttonView is NavButtonComponent regularButton)
-                    {
-                        await regularButton.StopAllAnimationsAsync();
+                        Grid.SetColumn(buttonView, i);
+                        buttonsGrid.Children.Add(buttonView);
+                        _buttonViews.Add(buttonView);
+
+                        // ✅ ESTADO INICIAL para animação
+                        buttonView.Opacity = 0.0;
+                        buttonView.TranslationY = 60;
+                        buttonView.IsVisible = true;
                     }
                 }
+
+                _hasBeenInitialized = true;
+                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: {_buttonViews.Count} botões criados forçadamente");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao parar animações especiais: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Erro ao forçar reconstrução de botões: {ex.Message}");
             }
         }
-
-        #endregion
     }
 
     #region Extension Methods

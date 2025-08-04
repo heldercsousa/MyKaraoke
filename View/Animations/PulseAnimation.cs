@@ -104,15 +104,29 @@
         }
 
         /// <summary>
-        /// Para a animação
+        /// 🎯 CORREÇÃO: Para a animação IMEDIATAMENTE
         /// </summary>
         public async Task StopAsync()
         {
+            if (!_isRunning)
+                return;
+
+            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation.StopAsync() chamado - PARANDO IMEDIATAMENTE");
+
+            // ✅ FORÇA parada imediata
+            _isRunning = false;
+            _cancellationTokenSource?.Cancel();
+
+            // ✅ Aguarda um momento para threads pararem
+            await Task.Delay(50);
+
             await StopInternal();
         }
 
-        /// <summary>
-        /// Executa um ciclo completo de pulses
+
+
+        // <summary>
+        /// 🎯 CORREÇÃO: Loop principal com verificação dupla
         /// </summary>
         private async Task PerformPulseCycle(AnimationConfig config)
         {
@@ -120,14 +134,13 @@
             {
                 for (int i = 0; i < config.PulseCount && _isRunning; i++)
                 {
-                    if (_cancellationTokenSource.Token.IsCancellationRequested)
+                    // ✅ VERIFICAÇÃO TRIPLA para parar imediatamente
+                    if (_cancellationTokenSource.Token.IsCancellationRequested || !_isRunning || !_shouldContinue())
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🛑 Pulse interrompido no ciclo {i + 1}");
                         break;
+                    }
 
-                    // Verifica se ainda deve continuar
-                    if (!_shouldContinue())
-                        break;
-
-                    // 🎯 LOG detalhado do pulse
                     System.Diagnostics.Debug.WriteLine($"🔥 Pulse {i + 1}/{config.PulseCount}: {config.FromScale} → {config.ToScale} em {config.PulseDuration}ms");
 
                     // Pulse: expand → contract
@@ -135,21 +148,32 @@
                     {
                         if (_target != null && _isRunning)
                         {
-                            // Expansão
-                            System.Diagnostics.Debug.WriteLine($"⬆️ Expandindo para {config.ToScale}");
-                            await _target.ScaleTo(config.ToScale, config.PulseDuration, config.ExpandEasing);
-
-                            // Contração
-                            if (_isRunning) // Verifica novamente após await
+                            try
                             {
-                                System.Diagnostics.Debug.WriteLine($"⬇️ Contraindo para {config.FromScale}");
-                                await _target.ScaleTo(config.FromScale, config.PulseDuration, config.ContractEasing);
+                                // Expansão
+                                System.Diagnostics.Debug.WriteLine($"⬆️ Expandindo para {config.ToScale}");
+                                await _target.ScaleTo(config.ToScale, config.PulseDuration, config.ExpandEasing);
+
+                                // ✅ VERIFICAÇÃO antes da contração
+                                if (_isRunning && !_cancellationTokenSource.Token.IsCancellationRequested)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"⬇️ Contraindo para {config.FromScale}");
+                                    await _target.ScaleTo(config.FromScale, config.PulseDuration, config.ContractEasing);
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.WriteLine("🛑 Pulse interrompido antes da contração");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Erro durante pulse: {ex.Message}");
                             }
                         }
                     });
 
-                    // Pausa entre pulses (exceto no último)
-                    if (i < config.PulseCount - 1 && _isRunning)
+                    // ✅ Pausa entre pulses com verificação
+                    if (i < config.PulseCount - 1 && _isRunning && !_cancellationTokenSource.Token.IsCancellationRequested)
                     {
                         await Task.Delay(config.PulsePause, _cancellationTokenSource.Token);
                     }
@@ -157,7 +181,7 @@
             }
             catch (OperationCanceledException)
             {
-                // Normal quando para a animação
+                System.Diagnostics.Debug.WriteLine("🛑 PerformPulseCycle cancelado");
             }
             catch (Exception ex)
             {
@@ -166,43 +190,69 @@
         }
 
         /// <summary>
-        /// Para a animação internamente
+        /// 🎯 CORREÇÃO: StopInternal melhorado
         /// </summary>
         private async Task StopInternal()
         {
-            if (!_isRunning)
+            if (!_isRunning && _cancellationTokenSource?.IsCancellationRequested == true)
+            {
+                // Já foi parada
                 return;
+            }
+
+            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation.StopInternal() - parando e restaurando escala");
 
             _isRunning = false;
             _cancellationTokenSource?.Cancel();
 
-            // Restaura escala original
+            // ✅ CORREÇÃO: Restaura escala original IMEDIATAMENTE
             try
             {
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
                     if (_target != null)
                     {
-                        await _target.ScaleTo(_config.FromScale, 200, Easing.CubicOut);
+                        // ✅ Para qualquer animação em andamento
+                        _target.AbortAnimation("ScaleTo");
+
+                        // ✅ Restaura escala rapidamente
+                        await _target.ScaleTo(_config.FromScale, 100, Easing.Linear);
+
+                        System.Diagnostics.Debug.WriteLine($"🛑 Escala restaurada para {_config.FromScale}");
                     }
                 });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao restaurar escala: {ex.Message}");
+
+                // ✅ FALLBACK: Força escala diretamente
+                try
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        if (_target != null)
+                        {
+                            _target.Scale = _config.FromScale;
+                        }
+                    });
+                }
+                catch { }
             }
 
-            System.Diagnostics.Debug.WriteLine("PulseAnimation parada");
+            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation COMPLETAMENTE parada");
             AnimationStopped?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Libera recursos
+        // <summary>
+        /// Libera recursos - MANTIDO ORIGINAL + melhorias
         /// </summary>
         public void Dispose()
         {
             if (_disposed)
                 return;
+
+            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation.Dispose() iniciado");
 
             _disposed = true;
             _isRunning = false;
@@ -210,13 +260,14 @@
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
 
-            // Restaura escala original de forma síncrona
+            // ✅ CORREÇÃO: Restaura escala original de forma síncrona
             try
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     if (_target != null)
                     {
+                        _target.AbortAnimation("ScaleTo");
                         _target.Scale = _config.FromScale;
                     }
                 });
@@ -225,6 +276,8 @@
             {
                 System.Diagnostics.Debug.WriteLine($"Erro no dispose: {ex.Message}");
             }
+
+            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation disposed");
         }
 
         /// <summary>

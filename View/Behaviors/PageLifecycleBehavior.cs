@@ -70,17 +70,102 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// Orquestra as ações quando a página aparece.
+        /// 🎯 CORREÇÃO: Orquestra as ações aguardando navbar estar pronta
         /// </summary>
         private async void OnPageAppearing(object sender, EventArgs e)
         {
-            // 1. Carrega os dados primeiro, mostrando o indicador de loading.
+            System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] OnPageAppearing iniciado");
+
+            // 🎯 CORREÇÃO 1: Aguarda navbar estar pronta PRIMEIRO
+            await EnsureNavBarIsReady();
+
+            // 2. Carrega os dados, mostrando o indicador de loading.
             await ExecuteLoadDataAsync();
 
-            // 2. Após os dados carregarem e o conteúdo ser exibido, anima a entrada da navbar.
+            // 3. Após os dados carregarem e o conteúdo ser exibido, anima a entrada da navbar.
             if (NavBar != null)
             {
+                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Chamando NavBar.ShowAsync()");
                 await NavBar.ShowAsync();
+                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] NavBar.ShowAsync() concluído");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Aguarda navbar ter botões configurados antes de prosseguir
+        /// </summary>
+        private async Task EnsureNavBarIsReady()
+        {
+            if (NavBar == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Nenhuma navbar configurada");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Aguardando navbar estar pronta...");
+
+            // Aguarda até 3 segundos para navbar se configurar
+            int attempts = 0;
+            const int maxAttempts = 30; // 30 x 100ms = 3 segundos
+
+            while (attempts < maxAttempts)
+            {
+                await Task.Delay(100);
+                attempts++;
+
+                // 🎯 VERIFICAÇÃO: Tenta verificar se navbar tem botões
+                if (await IsNavBarReady())
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] ✅ Navbar pronta após {attempts} tentativas");
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] Tentativa {attempts}/{maxAttempts} aguardando navbar");
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] ⚠️ Timeout aguardando navbar - continuando mesmo assim");
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Verifica se navbar está pronta para mostrar botões
+        /// </summary>
+        private async Task<bool> IsNavBarReady()
+        {
+            try
+            {
+                // 🎯 ESTRATÉGIA: Tenta chamar ShowAsync e ver se funciona sem erro
+                // Se NavBar tiver botões, ShowAsync não falhará
+
+                // Para componentes que implementam IAnimatableNavBar via NavBarBehavior,
+                // podemos verificar se tem conteúdo verificando propriedades do ContentView
+                if (NavBar is ContentView navContentView)
+                {
+                    // Verifica se tem filhos (indica que botões foram criados)
+                    return await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        try
+                        {
+                            // Se é um ContentView com conteúdo, verifica se tem elementos
+                            if (navContentView.Content is Grid grid)
+                            {
+                                return grid.Children.Count > 0;
+                            }
+                            return navContentView.Content != null;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    });
+                }
+
+                // Para outros tipos de navbar, assume que está pronto após um delay
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] Erro verificando navbar: {ex.Message}");
+                return false;
             }
         }
 
@@ -105,8 +190,10 @@ namespace MyKaraoke.View.Behaviors
             SetLoadingState(true);
             try
             {
+                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Executando LoadDataCommand");
                 // Executa o comando fornecido pela página.
                 await Task.Run(() => LoadDataCommand.Execute(null));
+                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand concluído");
             }
             catch (Exception ex)
             {

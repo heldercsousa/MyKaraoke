@@ -418,7 +418,7 @@ namespace MyKaraoke.View.Behaviors
                             ContractEasing = Easing.BounceIn,
                             AutoRepeat = true
                         };
-                        await _animationManager.StartPulseAsync("special_pulse", target, pulseConfig, () => _associatedObject.IsVisible);
+                        await _animationManager.StartPulseAsync("special_pulse", target, pulseConfig, () => _associatedObject?.IsVisible == true && _associatedObject?.Handler != null);
                         break;
                 }
             }

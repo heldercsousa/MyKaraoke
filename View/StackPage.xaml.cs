@@ -62,20 +62,36 @@ namespace MyKaraoke.View
 
             if (Handler != null)
             {
+                // Inscrever eventos
                 _serviceProvider = ServiceProvider.FromPage(this);
                 _queueService = _serviceProvider.GetService<IQueueService>();
 
-                // ✅ CORREÇÃO: Inscreve-se nos eventos da navbar aqui.
                 if (bottomNav != null)
                 {
-                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked; // Garante que não haja duplicatas
+                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
                     bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
-                    // (faça o mesmo para outros botões)
+                }
+
+                if (filaCollectionView != null)
+                {
+                    filaCollectionView.ReorderCompleted -= OnFilaReorderCompleted;
+                    filaCollectionView.ReorderCompleted += OnFilaReorderCompleted;
+                }
+            }
+            else
+            {
+                // 🎯 CLEANUP quando Handler é removido
+                if (bottomNav != null)
+                {
+                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
+                }
+
+                if (filaCollectionView != null)
+                {
+                    filaCollectionView.ReorderCompleted -= OnFilaReorderCompleted;
                 }
             }
         }
-
-        // O     foi REMOVIDO - PageLifecycleBehavior gerencia tudo
 
         // Este método privado é a AÇÃO que o Behavior executa.
         private async Task InitializeAndLoadDataAsync()
@@ -339,25 +355,6 @@ namespace MyKaraoke.View
             return value;
         }
 
-        protected override async void OnDisappearing()
-        {
-            base.OnDisappearing();
-            try
-            {
-                if (filaCollectionView != null)
-                    filaCollectionView.ReorderCompleted -= OnFilaReorderCompleted;
-
-                if (bottomNav != null)
-                {
-                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
-                    System.Diagnostics.Debug.WriteLine("[StackPage] Eventos da navbar removidos");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnDisappearing - Error: {ex.Message}");
-            }
-        }
 
         private void UpdateHeaderTitle(bool hasActiveQueue)
         {

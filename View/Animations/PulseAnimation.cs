@@ -74,7 +74,7 @@
                 await Task.Delay(optimizedConfig.InitialDelay, _cancellationTokenSource.Token);
 
                 // Loop principal de animação
-                while (_isRunning && _shouldContinue() && !_cancellationTokenSource.Token.IsCancellationRequested)
+                while (_isRunning && !_disposed && _shouldContinue() && !_cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     await PerformPulseCycle(optimizedConfig);
 
@@ -135,7 +135,7 @@
                 for (int i = 0; i < config.PulseCount && _isRunning; i++)
                 {
                     // ✅ VERIFICAÇÃO TRIPLA para parar imediatamente
-                    if (_cancellationTokenSource.Token.IsCancellationRequested || !_isRunning || !_shouldContinue())
+                    if (_disposed || _cancellationTokenSource.Token.IsCancellationRequested || !_isRunning || !_shouldContinue())
                     {
                         System.Diagnostics.Debug.WriteLine($"🛑 Pulse interrompido no ciclo {i + 1}");
                         break;

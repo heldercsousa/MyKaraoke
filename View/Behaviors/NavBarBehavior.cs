@@ -569,7 +569,7 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// 🎯 NOVO: Para animações especiais de forma mais robusta
+        /// 🎯 CORREÇÃO: Para animações especiais de forma mais robusta
         /// </summary>
         private async Task StopSpecialAnimations()
         {
@@ -585,8 +585,20 @@ namespace MyKaraoke.View.Behaviors
                         {
                             try
                             {
-                                await specialButton.StopSpecialAnimationAsync();
-                                System.Diagnostics.Debug.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado");
+                                // 🎯 CORREÇÃO: Chama diretamente o AnimationManager do behavior
+                                var behavior = specialButton.Behaviors?.OfType<AnimatedButtonBehavior>().FirstOrDefault();
+                                if (behavior != null)
+                                {
+                                    // Para via behavior diretamente - acesso direto ao AnimationManager
+                                    await behavior.StopAllAnimationsAsync();
+                                    System.Diagnostics.Debug.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado via behavior direto");
+                                }
+                                else
+                                {
+                                    // Fallback: tenta parar via métodos tradicionais
+                                    await specialButton.StopAllAnimationsAsync();
+                                    System.Diagnostics.Debug.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado via fallback");
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -600,6 +612,7 @@ namespace MyKaraoke.View.Behaviors
                         {
                             try
                             {
+                                // Para botões regulares, usa método padrão
                                 await regularButton.StopAllAnimationsAsync();
                                 System.Diagnostics.Debug.WriteLine($"🛑 NavButton '{regularButton.Text}' parado");
                             }

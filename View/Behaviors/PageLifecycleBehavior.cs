@@ -174,9 +174,24 @@ namespace MyKaraoke.View.Behaviors
         /// </summary>
         private async void OnPageDisappearing(object sender, EventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] OnPageDisappearing iniciado");
+
             if (NavBar != null)
             {
-                await NavBar.HideAsync();
+                try
+                {
+                    // 🎯 CORREÇÃO: Aguarda completamente a animação parar
+                    await NavBar.HideAsync();
+
+                    // 🎯 AGUARDA mais tempo para garantir que parou
+                    await Task.Delay(100);
+
+                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] NavBar.HideAsync() concluído completamente");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] Erro ao esconder navbar: {ex.Message}");
+                }
             }
         }
 

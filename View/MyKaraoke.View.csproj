@@ -17,6 +17,10 @@
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
+		<!-- Desabilitar trimming em release para evitar crashes -->
+		<PublishTrimmed>false</PublishTrimmed>
+		<TrimMode>none</TrimMode>
+		
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
@@ -39,7 +43,7 @@
 		<AndroidEnableMultiDex Condition="'$(Configuration)' == 'Release'">false</AndroidEnableMultiDex>
 		<EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Release'">true</EmbedAssembliesIntoApk>
 		<AndroidUseSharedRuntime Condition="'$(Configuration)' == 'Release'">false</AndroidUseSharedRuntime>
-		<AndroidLinkMode Condition="'$(Configuration)' == 'Release'">SdkOnly</AndroidLinkMode>
+		<AndroidLinkMode Condition="'$(Configuration)' == 'Release'">None</AndroidLinkMode>
 		<AndroidEnableProguard Condition="'$(Configuration)' == 'Release'">true</AndroidEnableProguard>
 
 		<!-- Configurações Gerais Android -->
@@ -47,6 +51,9 @@
 		<AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
 		<AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
 		<AndroidTlsProvider>btls</AndroidTlsProvider>
+
+		<!-- Habilitar debugging de threading -->
+		<AndroidEnableDesugar>true</AndroidEnableDesugar>
 	</PropertyGroup>
 
 	<!-- ============================================================================ -->

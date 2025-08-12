@@ -8,7 +8,7 @@ namespace MyKaraoke.View.Behaviors
 {
     /// <summary>
     /// ✅ BEHAVIOR: Substitui BaseNavBarComponent centralizando toda lógica de navbar
-    /// Elimina duplicação entre CrudNavBar, InactiveQueueBottomNav e outros
+    /// 🛡️ PROTEÇÃO: Anti-dupla inicialização centralizada
     /// </summary>
     public class NavBarBehavior : Behavior<Grid>
     {
@@ -80,6 +80,11 @@ namespace MyKaraoke.View.Behaviors
         private bool _isAnimating = false;
         private bool _hasBeenInitialized = false;
         private Frame _mainFrame;
+
+        // 🛡️ PROTEÇÃO: Cache para detectar mudanças
+        private string _lastButtonsSignature = string.Empty;
+        private int _lastColumnCount = 0;
+        private bool _isProcessingButtonsChange = false;
 
         #endregion
 
@@ -240,26 +245,96 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Button Management - MIGRADO DO BASENAVBARCOMPONENT
+        #region 🛡️ PROTEÇÃO CENTRALIZADA - Button Management
 
         private static void OnButtonsChanged(BindableObject bindable, object oldValue, object newValue)
         {
             if (bindable is NavBarBehavior behavior)
             {
-                behavior.RebuildButtons();
-            }
-        }
-
-        private void RebuildButtons()
-        {
-            try
-            {
-                if (_hasBeenInitialized && _buttonViews.Count > 0)
+                // 🛡️ PROTEÇÃO: Evita processamento simultâneo
+                if (behavior._isProcessingButtonsChange)
                 {
-                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: RebuildButtons IGNORADO - já inicializado");
+                    System.Diagnostics.Debug.WriteLine("🛡️ NavBarBehavior: OnButtonsChanged IGNORADO - já processando");
                     return;
                 }
 
+                behavior.SmartRebuildButtons();
+            }
+        }
+
+        /// <summary>
+        /// 🛡️ PROTEÇÃO INTELIGENTE: Só reconstrói se realmente mudou
+        /// </summary>
+        private void SmartRebuildButtons()
+        {
+            try
+            {
+                _isProcessingButtonsChange = true;
+
+                // 🛡️ PROTEÇÃO 1: Calcula assinatura dos botões atuais
+                var currentSignature = CalculateButtonsSignature();
+                var currentColumnCount = CustomColumnDefinitions?.Count ?? (Buttons?.Count ?? 0);
+
+                // 🛡️ PROTEÇÃO 2: Compara com cache
+                if (_hasBeenInitialized &&
+                    _lastButtonsSignature == currentSignature &&
+                    _lastColumnCount == currentColumnCount &&
+                    _buttonViews.Count > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons IGNORADO - assinatura inalterada ({currentSignature})");
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons EXECUTANDO - nova assinatura ({currentSignature})");
+
+                // 🛡️ PROTEÇÃO 3: Atualiza cache ANTES de reconstruir
+                _lastButtonsSignature = currentSignature;
+                _lastColumnCount = currentColumnCount;
+
+                // ✅ EXECUTA: Reconstrução real
+                RebuildButtonsInternal();
+            }
+            finally
+            {
+                _isProcessingButtonsChange = false;
+            }
+        }
+
+        /// <summary>
+        /// 🛡️ ASSINATURA: Cria hash único baseado no conteúdo dos botões
+        /// </summary>
+        private string CalculateButtonsSignature()
+        {
+            if (Buttons == null || Buttons.Count == 0)
+                return "EMPTY";
+
+            var signature = new System.Text.StringBuilder();
+
+            foreach (var button in Buttons)
+            {
+                signature.Append($"{button.Text}|{button.IconSource}|{button.IsSpecial}|{button.IsAnimated};");
+            }
+
+            // Inclui configuração de colunas na assinatura
+            if (CustomColumnDefinitions != null)
+            {
+                signature.Append($"COLS:{CustomColumnDefinitions.Count}:");
+                foreach (var col in CustomColumnDefinitions)
+                {
+                    signature.Append($"{col.Width.Value}{col.Width.GridUnitType};");
+                }
+            }
+
+            return signature.ToString();
+        }
+
+        /// <summary>
+        /// ✅ RECONSTRUÇÃO REAL: Lógica original sem proteções
+        /// </summary>
+        private void RebuildButtonsInternal()
+        {
+            try
+            {
                 ClearButtons();
 
                 if (Buttons == null || Buttons.Count == 0)
@@ -539,6 +614,7 @@ namespace MyKaraoke.View.Behaviors
                 _isShown = false;
             }
         }
+
         /// <summary>
         /// 🎯 CORREÇÃO: Para TODAS as animações de forma mais robusta
         /// </summary>
@@ -711,10 +787,7 @@ namespace MyKaraoke.View.Behaviors
             await button.StartSpecialAnimationAsync();
         }
 
-
-        #endregion
-
-        // <summary>
+        /// <summary>
         /// 🎯 NOVO: Força reconstrução de botões mesmo se já inicializado
         /// </summary>
         private void RebuildButtonsForced()
@@ -723,49 +796,18 @@ namespace MyKaraoke.View.Behaviors
             {
                 System.Diagnostics.Debug.WriteLine("NavBarBehavior: RebuildButtonsForced - forçando criação");
 
-                ClearButtons();
+                // 🛡️ PROTEÇÃO: Atualiza assinatura para forçar reconstrução
+                _lastButtonsSignature = string.Empty;
 
-                if (Buttons == null || Buttons.Count == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: Nenhum botão configurado para forçar");
-                    return;
-                }
-
-                var buttonsGrid = GetButtonsGrid();
-                if (buttonsGrid == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: ButtonsGrid não encontrado");
-                    return;
-                }
-
-                SetupGridColumns(buttonsGrid, Buttons.Count);
-
-                for (int i = 0; i < Buttons.Count; i++)
-                {
-                    var buttonConfig = Buttons[i];
-                    var buttonView = CreateButtonView(buttonConfig, i);
-
-                    if (buttonView != null)
-                    {
-                        Grid.SetColumn(buttonView, i);
-                        buttonsGrid.Children.Add(buttonView);
-                        _buttonViews.Add(buttonView);
-
-                        // ✅ ESTADO INICIAL para animação
-                        buttonView.Opacity = 0.0;
-                        buttonView.TranslationY = 60;
-                        buttonView.IsVisible = true;
-                    }
-                }
-
-                _hasBeenInitialized = true;
-                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: {_buttonViews.Count} botões criados forçadamente");
+                RebuildButtonsInternal();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro ao forçar reconstrução de botões: {ex.Message}");
             }
         }
+
+        #endregion
     }
 
     #region Extension Methods

@@ -88,6 +88,18 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
+        // ADIÇÃO: Campo de proteção no AnimatedButtonBehavior
+        // Adicione estas linhas ao AnimatedButtonBehavior existente:
+
+        #region 🛡️ PROTEÇÃO: Campos Adicionais Anti-Múltiplas Animações
+
+        private bool _isShowInProgress = false;
+        private bool _isHideInProgress = false;
+        private bool _isSpecialAnimationInProgress = false;
+        private readonly object _animationLock = new object();
+
+        #endregion
+
         #region Behavior Lifecycle
 
         protected override void OnAttachedTo(ContentView bindable)
@@ -240,17 +252,22 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Métodos de Animação
+        #region 🛡️ PROTEÇÃO: Métodos de Animação Protegidos
 
         /// <summary>
-        /// ✅ MIGRADO: ShowAsync completo dos componentes originais
+        /// 🛡️ PROTEÇÃO: ShowAsync com controle de múltiplas execuções
         /// </summary>
         public async Task ShowAsync()
         {
-            if (_isShown || _associatedObject == null)
+            // 🛡️ PROTEÇÃO: Evita múltiplas execuções simultâneas
+            lock (_animationLock)
             {
-                System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: ShowAsync ignorado - já mostrado");
-                return;
+                if (_isShowInProgress || _isShown || _associatedObject == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: ShowAsync IGNORADO - já em progresso ou mostrado");
+                    return;
+                }
+                _isShowInProgress = true;
             }
 
             try
@@ -296,8 +313,26 @@ namespace MyKaraoke.View.Behaviors
                     if (animationTasks.Any())
                     {
                         System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Executando {animationTasks.Count} animações simultaneamente");
-                        await Task.WhenAll(animationTasks);
-                        System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Todas as {animationTasks.Count} animações concluídas");
+
+                        // 🛡️ PROTEÇÃO: Timeout para animações (evita travamento)
+                        var allAnimationsTask = Task.WhenAll(animationTasks);
+                        var timeoutTask = Task.Delay(3000); // 3 segundos máximo
+
+                        var completedTask = await Task.WhenAny(allAnimationsTask, timeoutTask);
+
+                        if (completedTask == timeoutTask)
+                        {
+                            System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT nas animações - aplicando estado final");
+                            await MainThread.InvokeOnMainThreadAsync(() =>
+                            {
+                                _associatedObject.Opacity = 1;
+                                _associatedObject.TranslationY = 0;
+                            });
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Todas as {animationTasks.Count} animações concluídas");
+                        }
                     }
                     else
                     {
@@ -320,7 +355,7 @@ namespace MyKaraoke.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Erro em ShowAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro em ShowAsync: {ex.Message}");
                 // ✅ MIGRADO: Fallback
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
@@ -330,15 +365,30 @@ namespace MyKaraoke.View.Behaviors
                 });
                 _isShown = true;
             }
+            finally
+            {
+                lock (_animationLock)
+                {
+                    _isShowInProgress = false;
+                }
+            }
         }
 
         /// <summary>
-        /// ✅ MIGRADO: HideAsync completo dos componentes originais
+        /// 🛡️ PROTEÇÃO: HideAsync com controle de múltiplas execuções
         /// </summary>
         public async Task HideAsync()
         {
-            if (!_isShown || _associatedObject == null)
-                return;
+            // 🛡️ PROTEÇÃO: Evita múltiplas execuções simultâneas
+            lock (_animationLock)
+            {
+                if (_isHideInProgress || !_isShown || _associatedObject == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: HideAsync IGNORADO - já em progresso ou escondido");
+                    return;
+                }
+                _isHideInProgress = true;
+            }
 
             try
             {
@@ -360,7 +410,16 @@ namespace MyKaraoke.View.Behaviors
                     // ✅ MIGRADO: Executa todas as animações simultaneamente
                     if (animationTasks.Any())
                     {
-                        await Task.WhenAll(animationTasks);
+                        // 🛡️ PROTEÇÃO: Timeout para animações de saída
+                        var allAnimationsTask = Task.WhenAll(animationTasks);
+                        var timeoutTask = Task.Delay(2000); // 2 segundos máximo
+
+                        var completedTask = await Task.WhenAny(allAnimationsTask, timeoutTask);
+
+                        if (completedTask == timeoutTask)
+                        {
+                            System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT nas animações de saída - aplicando estado final");
+                        }
                     }
                 }
                 else
@@ -378,20 +437,35 @@ namespace MyKaraoke.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao esconder: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro ao esconder: {ex.Message}");
                 _associatedObject.Opacity = 0;
                 _associatedObject.IsVisible = false;
                 _isShown = false;
             }
+            finally
+            {
+                lock (_animationLock)
+                {
+                    _isHideInProgress = false;
+                }
+            }
         }
 
         /// <summary>
-        /// ✅ PULSE: Baseado no PulseType
+        /// 🛡️ PROTEÇÃO: StartSpecialAnimationAsync com controle
         /// </summary>
         public async Task StartSpecialAnimationAsync()
         {
-            if (!IsAnimated || !HardwareDetector.SupportsAnimations || !HasPulseAnimation)
-                return;
+            // 🛡️ PROTEÇÃO: Evita múltiplas animações especiais simultâneas
+            lock (_animationLock)
+            {
+                if (_isSpecialAnimationInProgress || !IsAnimated || !HardwareDetector.SupportsAnimations || !HasPulseAnimation)
+                {
+                    System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: StartSpecialAnimationAsync IGNORADO");
+                    return;
+                }
+                _isSpecialAnimationInProgress = true;
+            }
 
             try
             {
@@ -424,22 +498,47 @@ namespace MyKaraoke.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na animação especial: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro na animação especial: {ex.Message}");
+            }
+            finally
+            {
+                lock (_animationLock)
+                {
+                    _isSpecialAnimationInProgress = false;
+                }
             }
         }
 
         /// <summary>
-        /// ✅ STOP ALL: Para todas as animações
+        /// 🛡️ PROTEÇÃO: StopAllAnimationsAsync robusto
         /// </summary>
         public async Task StopAllAnimationsAsync()
         {
             try
             {
-                await _animationManager.StopAllAnimationsAsync();
+                // 🛡️ RESET: Para flags de controle primeiro
+                lock (_animationLock)
+                {
+                    _isSpecialAnimationInProgress = false;
+                }
+
+                // Para AnimationManager
+                if (_animationManager != null)
+                {
+                    var stopTask = _animationManager.StopAllAnimationsAsync();
+                    var timeoutTask = Task.Delay(1000); // 1 segundo máximo
+
+                    var completedTask = await Task.WhenAny(stopTask, timeoutTask);
+
+                    if (completedTask == timeoutTask)
+                    {
+                        System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT ao parar AnimationManager");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao parar animações: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro ao parar animações: {ex.Message}");
             }
         }
 

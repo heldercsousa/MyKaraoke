@@ -45,11 +45,12 @@ namespace MyKaraoke.View
                 InitializePreventiveCrashProtection();
 
                 System.Diagnostics.Debug.WriteLine("[MainActivity] OnCreate concluído com sucesso");
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnCreate: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"[MainActivity] Stack trace: {ex.StackTrace}");
-            } 
+            }
         }
 
         private void InitializePreventiveCrashProtection()
@@ -175,6 +176,19 @@ namespace MyKaraoke.View
             {
                 System.Diagnostics.Debug.WriteLine("[MainActivity] OnPause iniciado - pausando operações");
 
+                // 🛡️ ATUALIZADO: Cleanup preventivo com SafeAppLifecycleManager
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await SafeAppLifecycleManager.CleanupAnimationsBeforeExit();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro no cleanup preventivo: {ex.Message}");
+                    }
+                });
+
                 // CRÍTICO: Para animações ANTES de qualquer outra operação
                 StopAllAnimationsAndOperationsImmediate();
 
@@ -249,6 +263,19 @@ namespace MyKaraoke.View
                 {
                     System.Diagnostics.Debug.WriteLine("[MainActivity] OnDestroy iniciado");
                     _isDestroying = true;
+
+                    // 🛡️ NOVO: Shutdown controlado com SafeAppLifecycleManager
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await SafeAppLifecycleManager.ShutdownSafely();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro no shutdown seguro: {ex.Message}");
+                        }
+                    });
 
                     // CRÍTICO: Para TUDO imediatamente
                     StopAllAnimationsAndOperationsImmediate();
@@ -552,8 +579,8 @@ namespace MyKaraoke.View
 
                 // Força limpeza agressiva de memória
                 System.GC.Collect();
-                System.GC.WaitForPendingFinalizers();
-                System.GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
 
                 base.OnLowMemory();
             }

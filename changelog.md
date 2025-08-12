@@ -10,7 +10,7 @@ dd/MM/yyyy é a data de hoje no formato pt-br; Tipo é Evolutiva ou Correção.
 
 ## Objetivo do App
 
-O MyKaraoke é um aplicativo .NET MAUI para gerenciar filas de participantes em rodadas de karaokê. Permite gerenciar 1 fila por vez, 
+O MyKaraoke é um aplicativo .NET MAUI 8.0 para gerenciar filas de participantes em rodadas de karaokê. Permite gerenciar 1 fila por vez, 
 podendo o usuário registrar participação/ausência de cada cantor conforme cada um alcança a posição 1 da fila! Quando todos os cantores 
 que entraram na fila participarem ou se ausentarem, a rodada é incrementada (rodada 1, rodada 2, etc). Permite o usuário encerrar rodada 
 mesmo que haja cantor na fila que não participou da rodada! Permite também abilitar a última fila encerrada, como solução de contorno quando
@@ -147,3 +147,4 @@ tenha sido previamente cadastrado pela banda/músico
 - **23/07/2025** - Evolutiva - Refatorou sistema de navegação bottom com NavBarBehavior: substituiu BaseNavBarComponent por behavior reutilizável, simplificou CrudNavBarComponent (-67% código) e InactiveQueueBottomNav (-70% código), eliminando 640 linhas duplicadas (-91%) mantendo 100% funcionalidades e compatibilidade
 - **04/08/2025** - Correção - Resolvido problema de botões da navbar não exibirem: corrigido PageLifecycleBehavior para aguardar navbar estar pronta antes de ShowAsync(), refatorada StackPage para usar padrão PageLifecycleBehavior completo (removido OnAppearing customizado), implementada verificação inteligente IsNavBarReady() que verifica se Grid tem botões criados, adicionado timeout de 3 segundos com logs detalhados para debug. InactiveQueueBottomNav e CrudNavBarComponent agora exibem botões corretamente em StackPage e SpotPage respectivamente.
 - **05/08/2025** - Correção - Resolvido crash pthread_mutex e falha de navegação: centralizado lifecycle de páginas no PageLifecycleBehavior, removido OnDisappearing() conflitante da StackPage, implementado delay no PageLifecycleBehavior.OnPageDisappearing() para aguardar animações pararem completamente, movido cleanup de eventos para OnHandlerChanged(). PulseAnimation do botão "Nova Fila" agora para corretamente durante navegação, eliminando interferência com cliques subsequentes e crash pthread_mutex_lock.
+- **12/08/2025** - Evolutiva - Sistema anti-crash pthread_mutex completamente implementado: SafeAppLifecycleManager para dispositivos problemáticos, GlobalAnimationCoordinator singleton thread-safe, RobustAnimationManager com parada de threads nativas, BaseAnimatedPage com cleanup automático e MainActivity otimizada com sistema preventivo. Elimina definitivamente crashes durante navegação e finalização da aplicação.

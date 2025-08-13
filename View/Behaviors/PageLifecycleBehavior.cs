@@ -7,9 +7,20 @@ namespace MyKaraoke.View.Behaviors
     /// Gerencia o ciclo de vida de uma ContentPage, orquestrando o carregamento
     /// de dados, a exibição de um indicador de loading e as animações de uma NavBar.
     /// 🛡️ PROTEÇÃO: Anti-múltiplas execuções centralizada
+    /// 🔧 CORRIGIDO: Eliminado recarregamento desnecessário de navbar
+    /// 🎯 REFINADO: Detecta mudança real de configuração da navbar
+    /// 🚫 BLOQUEIO: Previne instâncias duplicadas de páginas
+    /// ✅ RESTAURADO: Funcionalidades críticas da versão anterior
     /// </summary>
     public class PageLifecycleBehavior : Behavior<ContentPage>
     {
+        #region 🚫 PROTEÇÃO GLOBAL: Controle de Instâncias Duplicadas (SIMPLIFICADO)
+
+        private static readonly Dictionary<string, DateTime> _globalPageInstances = new Dictionary<string, DateTime>();
+        private static readonly object _globalLock = new object();
+
+        #endregion
+
         #region Bindable Properties
 
         /// <summary>
@@ -57,6 +68,11 @@ namespace MyKaraoke.View.Behaviors
         private bool _isNavBarReadyCheckInProgress = false;
         private DateTime _lastNavBarCheck = DateTime.MinValue;
 
+        // 🎯 RESTAURADO: Controle anti-recarregamento inteligente da versão anterior
+        private bool _navBarAlreadyShown = false;
+        private string _lastPageId = string.Empty;
+        private string _lastNavBarSignature = string.Empty; // RESTAURADO: Detecta mudança de configuração
+
         // 🛡️ PROTEÇÃO: Logs de debug
         private readonly object _lockObject = new object();
 
@@ -64,19 +80,56 @@ namespace MyKaraoke.View.Behaviors
 
         /// <summary>
         /// Anexa o behavior à página e se inscreve nos eventos de ciclo de vida.
+        /// 🚫 PROTEÇÃO SIMPLIFICADA: Previne instâncias duplicadas
         /// </summary>
         protected override void OnAttachedTo(ContentPage page)
         {
             base.OnAttachedTo(page);
+
+            // 🚫 PROTEÇÃO SIMPLIFICADA: Verifica apenas se há instância muito recente
+            var pageType = page.GetType().Name;
+            var currentTime = DateTime.Now;
+
+            lock (_globalLock)
+            {
+                if (_globalPageInstances.ContainsKey(pageType))
+                {
+                    var lastInstanceTime = _globalPageInstances[pageType];
+                    var timeSinceLastInstance = currentTime - lastInstanceTime;
+
+                    // 🎯 REDUZIDO: Cooldown menor (1 segundo) e só bloqueia se muito próximo
+                    if (timeSinceLastInstance < TimeSpan.FromMilliseconds(800))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🚫 [PageLifecycleBehavior] INSTÂNCIA DUPLICADA: {pageType} - IGNORANDO (gap: {timeSinceLastInstance.TotalMilliseconds}ms)");
+                        return; // NÃO anexa events para duplicatas muito próximas
+                    }
+                }
+
+                // Sempre atualiza o timestamp da última instância
+                _globalPageInstances[pageType] = currentTime;
+                System.Diagnostics.Debug.WriteLine($"🚫 [PageLifecycleBehavior] Instância REGISTRADA: {pageType} em {currentTime:HH:mm:ss.fff}");
+            }
+
             _associatedPage = page;
             _associatedPage.Appearing += OnPageAppearing;
             _associatedPage.Disappearing += OnPageDisappearing;
+
+            // 🔧 Reset do controle anti-recarregamento para nova página
+            var currentPageId = $"{page.GetType().Name}_{page.GetHashCode()}";
+            if (_lastPageId != currentPageId)
+            {
+                _navBarAlreadyShown = false;
+                _lastPageId = currentPageId;
+                _lastNavBarSignature = string.Empty;
+                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] Nova página: {currentPageId} - resetando controle navbar");
+            }
 
             System.Diagnostics.Debug.WriteLine($"🛡️ PageLifecycleBehavior: Anexado à {page.GetType().Name}");
         }
 
         /// <summary>
         /// Desanexa o behavior e cancela a inscrição nos eventos para evitar memory leaks.
+        /// 🚫 LIMPEZA: Remove registro de instância global
         /// </summary>
         protected override void OnDetachingFrom(ContentPage page)
         {
@@ -94,6 +147,21 @@ namespace MyKaraoke.View.Behaviors
                 _isLoadingDataInProgress = false;
                 _hasInitializedOnce = false;
                 _isNavBarReadyCheckInProgress = false;
+
+                // 🔧 RESTAURADO: Reset controle anti-recarregamento
+                _navBarAlreadyShown = false;
+                _lastNavBarSignature = string.Empty;
+            }
+
+            // 🚫 LIMPEZA GLOBAL: Remove registro da instância
+            var pageType = page.GetType().Name;
+            lock (_globalLock)
+            {
+                if (_globalPageInstances.ContainsKey(pageType))
+                {
+                    _globalPageInstances.Remove(pageType);
+                    System.Diagnostics.Debug.WriteLine($"🚫 [PageLifecycleBehavior] Registro de instância REMOVIDO: {pageType}");
+                }
             }
 
             base.OnDetachingFrom(page);
@@ -128,8 +196,8 @@ namespace MyKaraoke.View.Behaviors
                 // 🛡️ PROTEÇÃO 3: Carrega dados com controle de estado
                 await ExecuteLoadDataWithProtection();
 
-                // 🛡️ PROTEÇÃO 4: Anima navbar com verificação final
-                await ShowNavBarWithProtection();
+                // 🎯 RESTAURADO: Anima navbar com verificação inteligente da versão anterior
+                await ShowNavBarWithIntelligentProtection();
 
                 _hasInitializedOnce = true;
                 System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] OnPageAppearing concluído com sucesso");
@@ -320,9 +388,9 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// 🛡️ PROTEÇÃO: Mostra navbar com verificações extras
+        /// 🎯 RESTAURADO: Sistema inteligente de navbar da versão anterior
         /// </summary>
-        private async Task ShowNavBarWithProtection()
+        private async Task ShowNavBarWithIntelligentProtection()
         {
             if (NavBar == null)
             {
@@ -330,28 +398,89 @@ namespace MyKaraoke.View.Behaviors
                 return;
             }
 
+            // 🎯 RESTAURADO: Lógica principal da versão anterior
+            var currentNavBarSignature = CalculateNavBarSignature();
+
+            // 🎯 RESTAURADO: Verificação de mudança real de configuração
+            bool hasNavBarConfigurationChanged = _lastNavBarSignature != currentNavBarSignature;
+            bool isFirstShowOnThisPage = !_navBarAlreadyShown;
+
+            if (!isFirstShowOnThisPage && !hasNavBarConfigurationChanged)
+            {
+                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] ⏭️ NavBar JÁ MOSTRADA - EVITANDO RECARREGAMENTO");
+                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] Atual: {currentNavBarSignature}");
+                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] Anterior: {_lastNavBarSignature}");
+                return;
+            }
+
+            // 🎯 RESTAURADO: Exibição com detecção de mudança
+            if (hasNavBarConfigurationChanged)
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] 🔄 MUDANÇA DETECTADA - ShowAsync()");
+                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] De: {_lastNavBarSignature}");
+                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] Para: {currentNavBarSignature}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] 🎬 PRIMEIRA EXIBIÇÃO - ShowAsync()");
+            }
+
             try
             {
-                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Chamando NavBar.ShowAsync()");
+                // 🛡️ EXECUÇÃO: ShowAsync com timeout
+                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] ⚡ INICIANDO NavBar.ShowAsync()");
 
-                // 🛡️ PROTEÇÃO: Timeout para ShowAsync (evita travamento)
                 var showTask = NavBar.ShowAsync();
-                var timeoutTask = Task.Delay(5000); // 5 segundos máximo
+                var timeoutTask = Task.Delay(5000);
 
                 var completedTask = await Task.WhenAny(showTask, timeoutTask);
 
                 if (completedTask == timeoutTask)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] TIMEOUT ao mostrar navbar - continuando");
+                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] ⚠️ TIMEOUT ao mostrar navbar");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] NavBar.ShowAsync() concluído");
+                    // 🎯 RESTAURADO: Sucesso - atualiza cache
+                    _navBarAlreadyShown = true;
+                    _lastNavBarSignature = currentNavBarSignature;
+                    System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] ✅ ShowAsync() CONCLUÍDO - cache atualizado");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao mostrar navbar: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] ❌ ERRO ao mostrar navbar: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 RESTAURADO: Calcula assinatura única da navbar baseada na configuração atual
+        /// </summary>
+        private string CalculateNavBarSignature()
+        {
+            try
+            {
+                if (NavBar == null) return "NULL";
+
+                // Para CrudNavBarComponent, verifica a configuração específica
+                if (NavBar is CrudNavBarComponent crudNav)
+                {
+                    return $"CRUD_{crudNav.SelectionCount}_{crudNav.GetType().Name}";
+                }
+
+                // Para InactiveQueueBottomNav, verifica se tem botões visíveis
+                if (NavBar is InactiveQueueBottomNav inactiveNav)
+                {
+                    return $"INACTIVE_{inactiveNav.IsVisible}_{inactiveNav.GetType().Name}";
+                }
+
+                // Para outros tipos, usa tipo + estado básico
+                return $"{NavBar.GetType().Name}_{NavBar.GetHashCode()}";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao calcular signature: {ex.Message}");
+                return $"ERROR_{DateTime.Now.Ticks}";
             }
         }
 
@@ -374,6 +503,11 @@ namespace MyKaraoke.View.Behaviors
             try
             {
                 System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] OnPageDisappearing iniciado");
+
+                // 🔧 RESTAURADO: Reset para próxima página da versão anterior
+                _navBarAlreadyShown = false;
+                _lastNavBarSignature = string.Empty; // Reset signature também
+                System.Diagnostics.Debug.WriteLine("🔧 [PageLifecycleBehavior] Reset navbar state para próxima página");
 
                 if (NavBar != null)
                 {

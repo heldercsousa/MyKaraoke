@@ -9,6 +9,7 @@ namespace MyKaraoke.View.Behaviors
     /// <summary>
     /// ✅ BEHAVIOR: Substitui BaseNavBarComponent centralizando toda lógica de navbar
     /// 🛡️ PROTEÇÃO: Anti-dupla inicialização centralizada
+    /// 🚀 MIGRADO: Usando RobustAnimationManager para eliminar crash pthread_mutex
     /// </summary>
     public class NavBarBehavior : Behavior<Grid>
     {
@@ -74,7 +75,8 @@ namespace MyKaraoke.View.Behaviors
         #region Private Fields
 
         private Grid _associatedGrid;
-        private AnimationManager _animationManager;
+        // 🚀 MIGRAÇÃO: RobustAnimationManager em vez de AnimationManager
+        private RobustAnimationManager _robustAnimationManager;
         private readonly List<MauiView> _buttonViews = new();
         private bool _isShown = false;
         private bool _isAnimating = false;
@@ -86,6 +88,11 @@ namespace MyKaraoke.View.Behaviors
         private int _lastColumnCount = 0;
         private bool _isProcessingButtonsChange = false;
 
+        // 🎯 CORREÇÃO: Adicionadas variáveis ausentes para controle de páginas
+        private readonly object _pageOperationsLock = new object();
+        private string _ownerPageId;
+        private static readonly Dictionary<string, DateTime> _lastPageOperations = new Dictionary<string, DateTime>();
+
         #endregion
 
         #region Behavior Lifecycle
@@ -95,7 +102,11 @@ namespace MyKaraoke.View.Behaviors
             base.OnAttachedTo(bindable);
 
             _associatedGrid = bindable;
-            _animationManager = new AnimationManager($"NavBar_{bindable.GetHashCode()}");
+
+            // 🎯 SIMPLES: Usa sempre a página atual ativa
+            var pageId = GetPageIdentifier(bindable);
+            _ownerPageId = pageId;
+            _robustAnimationManager = GlobalAnimationCoordinator.Instance.GetOrCreateManagerForPage(pageId);
 
             // ✅ APLICA ESTADO INICIAL automaticamente
             ApplyInitialState();
@@ -103,18 +114,78 @@ namespace MyKaraoke.View.Behaviors
             // ✅ ADICIONA MÉTODOS ao objeto
             AddNavBarMethods();
 
-            System.Diagnostics.Debug.WriteLine($"NavBarBehavior anexado a {bindable.GetType().Name}");
+            System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior anexado com ID: {pageId}");
         }
 
         protected override void OnDetachingFrom(Grid bindable)
         {
             base.OnDetachingFrom(bindable);
 
-            // ✅ LIMPA RECURSOS
-            _animationManager?.Dispose();
-            _associatedGrid = null;
+            // 🚀 MIGRAÇÃO: Dispose via GlobalAnimationCoordinator
+            var pageId = GetPageIdentifier(bindable);
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await GlobalAnimationCoordinator.Instance.DisposeManagerForPage(pageId);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🛡️ Erro ao disposed RobustAnimationManager: {ex.Message}");
+                }
+            });
 
-            System.Diagnostics.Debug.WriteLine($"NavBarBehavior removido de {bindable.GetType().Name}");
+            // 🎯 LIMPEZA: Remove página do controle de operações
+            lock (_pageOperationsLock)
+            {
+                if (_lastPageOperations.ContainsKey(pageId))
+                {
+                    _lastPageOperations.Remove(pageId);
+                }
+            }
+
+            _associatedGrid = null;
+            _ownerPageId = null;
+
+            System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior removido de {bindable.GetType().Name}");
+        }
+
+        /// <summary>
+        /// 🎯 SIMPLIFICADO: Sempre usa a página ativa atual do Application.Current
+        /// </summary>
+        private string GetPageIdentifier(VisualElement element)
+        {
+            try
+            {
+                // 🎯 ESTRATÉGIA: Sempre usa a página atual ativa
+                var currentPage = Application.Current?.MainPage;
+
+                if (currentPage is NavigationPage navPage && navPage.CurrentPage != null)
+                {
+                    currentPage = navPage.CurrentPage;
+                }
+                else if (currentPage is Shell shell && shell.CurrentPage != null)
+                {
+                    currentPage = shell.CurrentPage;
+                }
+
+                if (currentPage != null)
+                {
+                    var pageId = $"{currentPage.GetType().Name}_{currentPage.GetHashCode()}";
+                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: GetPageIdentifier (atual) = {pageId}");
+                    return pageId;
+                }
+
+                // 🛡️ FALLBACK: Se não conseguir obter página atual
+                var fallbackId = $"{element.GetType().Name}_{element.GetHashCode()}";
+                System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: GetPageIdentifier FALLBACK = {fallbackId}");
+                return fallbackId;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao obter identificador da página: {ex.Message}");
+                return $"Error_{DateTime.Now.Ticks}";
+            }
         }
 
         #endregion
@@ -258,18 +329,33 @@ namespace MyKaraoke.View.Behaviors
                     return;
                 }
 
+                // 🎯 NOVA PROTEÇÃO: Evita reconstrução durante ShowAsync
+                if (behavior._isAnimating)
+                {
+                    System.Diagnostics.Debug.WriteLine("🎯 NavBarBehavior: OnButtonsChanged IGNORADO - animação em progresso");
+                    return;
+                }
+
                 behavior.SmartRebuildButtons();
             }
         }
 
         /// <summary>
         /// 🛡️ PROTEÇÃO INTELIGENTE: Só reconstrói se realmente mudou
+        /// 🎯 NOVA PROTEÇÃO: Não reconstrói durante animações
         /// </summary>
         private void SmartRebuildButtons()
         {
             try
             {
                 _isProcessingButtonsChange = true;
+
+                // 🎯 PROTEÇÃO ADICIONAL: Não reconstrói durante ShowAsync
+                if (_isAnimating)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: SmartRebuildButtons IGNORADO - animação em progresso");
+                    return;
+                }
 
                 // 🛡️ PROTEÇÃO 1: Calcula assinatura dos botões atuais
                 var currentSignature = CalculateButtonsSignature();
@@ -359,6 +445,12 @@ namespace MyKaraoke.View.Behaviors
                         buttonsGrid.Children.Add(buttonView);
                         _buttonViews.Add(buttonView);
 
+                        // 🚀 MIGRAÇÃO: Registrar elemento no RobustAnimationManager
+                        if (buttonView is VisualElement visualElement)
+                        {
+                            _robustAnimationManager?.RegisterAnimatedElement(visualElement);
+                        }
+
                         // ✅ ESTADO INICIAL para animação
                         buttonView.Opacity = 0.0;
                         buttonView.TranslationY = 60;
@@ -367,7 +459,7 @@ namespace MyKaraoke.View.Behaviors
                 }
 
                 _hasBeenInitialized = true;
-                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: {_buttonViews.Count} botões criados");
+                System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: {_buttonViews.Count} botões criados e registrados no RobustAnimationManager");
             }
             catch (Exception ex)
             {
@@ -491,13 +583,21 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Métodos de Animação - MIGRADOS DO BASENAVBARCOMPONENT
+        #region Métodos de Animação - MIGRADOS PARA ROBUSTANIMATIONMANAGER
 
         public async Task ShowAsync()
         {
+            // 🎯 CORREÇÃO: NavBarBehavior é reutilizável para qualquer página
+            var currentPageId = GetCurrentPageId();
+            System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: ShowAsync para página {currentPageId}");
+
+            // 🎯 SEMPRE: Atualiza owner para a página atual
+            _ownerPageId = currentPageId;
+            System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Owner confirmado como {_ownerPageId}");
+
             if (_isShown || _isAnimating || _associatedGrid == null)
             {
-                System.Diagnostics.Debug.WriteLine("NavBarBehavior: ShowAsync ignorado");
+                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync ignorado - _isShown={_isShown}, _isAnimating={_isAnimating}");
                 return;
             }
 
@@ -505,23 +605,31 @@ namespace MyKaraoke.View.Behaviors
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: ShowAsync INICIADO para {_ownerPageId}");
+
                 _associatedGrid.IsVisible = true;
 
-                // 🎯 CORREÇÃO: Garante que os botões existem antes de animar
+                // 🎯 CORREÇÃO: Garante que os botões existem E estão no estado correto
                 if (_buttonViews.Count == 0 && Buttons != null && Buttons.Any())
                 {
-                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: Criando botões antes de mostrar");
-                    RebuildButtonsForced(); // Força criação mesmo se já inicializado
+                    System.Diagnostics.Debug.WriteLine("🎯 NavBarBehavior: Criando botões antes de mostrar");
+                    RebuildButtonsForced();
                 }
 
                 if (_buttonViews.Count == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: Nenhum botão para mostrar");
+                    System.Diagnostics.Debug.WriteLine("❌ NavBarBehavior: Nenhum botão para mostrar - abortando");
                     _isShown = true;
                     return;
                 }
 
-                await EnsureInitialStateForAllButtons();
+                // 🎯 FORÇA estado inicial correto
+                await ForceCorrectInitialState();
+
+                System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Estado inicial corrigido - iniciando animações");
+                System.Diagnostics.Debug.WriteLine($"🔍 HardwareDetector.SupportsAnimations = {HardwareDetector.SupportsAnimations}");
+                System.Diagnostics.Debug.WriteLine($"🔍 IsAnimated = {IsAnimated}");
+                System.Diagnostics.Debug.WriteLine($"🔍 _buttonViews.Count = {_buttonViews.Count}");
 
                 if (IsAnimated && HardwareDetector.SupportsAnimations && _buttonViews.Any())
                 {
@@ -541,20 +649,38 @@ namespace MyKaraoke.View.Behaviors
                         }
                     }
 
-                    await Task.WhenAll(showTasks);
+                    // 🎯 AGUARDA todas as animações com timeout
+                    var allAnimationsTask = Task.WhenAll(showTasks);
+                    var timeoutTask = Task.Delay(3000);
+
+                    var completedTask = await Task.WhenAny(allAnimationsTask, timeoutTask);
+
+                    if (completedTask == timeoutTask)
+                    {
+                        System.Diagnostics.Debug.WriteLine("⚠️ NavBarBehavior: TIMEOUT nas animações - forçando estado final");
+                        await ForceVisibleState();
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✅ NavBarBehavior: Todas as animações concluídas");
+                    }
                 }
                 else
                 {
-                    foreach (var buttonView in _buttonViews)
-                    {
-                        buttonView.IsVisible = true;
-                        buttonView.Opacity = 1;
-                        buttonView.TranslationY = 0;
-                    }
+                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Sem animações - aplicando estado final direto");
+                    await ForceVisibleState();
                 }
 
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync concluído com {_buttonViews.Count} botões");
+                System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: ShowAsync CONCLUÍDO para {_ownerPageId} com {_buttonViews.Count} botões VISÍVEIS");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ NavBarBehavior: ERRO em ShowAsync: {ex.Message}");
+
+                // Fallback: força estado visível mesmo com erro
+                await ForceVisibleState();
+                _isShown = true;
             }
             finally
             {
@@ -563,19 +689,106 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// 🎯 CORREÇÃO: HideAsync com parada forçada
+        /// 🎯 NOVO: Força estado final visível dos botões - VERSÃO LIMPA
+        /// </summary>
+        private async Task ForceVisibleState()
+        {
+            try
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var buttonView in _buttonViews)
+                    {
+                        buttonView.IsVisible = true;
+                        buttonView.Opacity = 1.0;
+                        buttonView.TranslationY = 0;
+
+                        System.Diagnostics.Debug.WriteLine($"🎯 Button FINAL: {buttonView.GetType().Name}, Visible={buttonView.IsVisible}, Opacity={buttonView.Opacity}, Y={buttonView.TranslationY}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao forçar estado visível: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Força estado inicial correto dos botões
+        /// </summary>
+        private async Task ForceCorrectInitialState()
+        {
+            try
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    foreach (var buttonView in _buttonViews)
+                    {
+                        buttonView.IsVisible = true;
+                        buttonView.Opacity = 0.0;
+                        buttonView.TranslationY = 60;
+                        System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Estado inicial forçado - Opacity=0, TranslationY=60");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao forçar estado inicial: {ex.Message}");
+            }
+        }
+
+       
+
+        private string GetCurrentPageId()
+        {
+            try
+            {
+                // 🎯 CORREÇÃO: Usa mesma lógica do GetPageIdentifier para consistência
+                var currentPage = Application.Current?.MainPage;
+
+                if (currentPage is NavigationPage navPage && navPage.CurrentPage != null)
+                {
+                    currentPage = navPage.CurrentPage;
+                }
+                else if (currentPage is Shell shell && shell.CurrentPage != null)
+                {
+                    currentPage = shell.CurrentPage;
+                }
+
+                if (currentPage != null)
+                {
+                    var pageId = $"{currentPage.GetType().Name}_{currentPage.GetHashCode()}";
+                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: GetCurrentPageId = {pageId}");
+                    return pageId;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: GetCurrentPageId = Unknown");
+                return "Unknown";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao obter página atual: {ex.Message}");
+                return "Error";
+            }
+        }
+
+        /// <summary>
+        /// 🚀 MIGRAÇÃO: HideAsync com RobustAnimationManager
         /// </summary>
         public async Task HideAsync()
         {
             if (!_isShown || _associatedGrid == null)
                 return;
 
-            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync - parando animações primeiro");
+            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync - parando animações com RobustAnimationManager");
 
             try
             {
-                // ✅ CORREÇÃO: Para TODAS as animações ANTES de esconder
-                await StopAllAnimationsAsync();
+                // 🚀 MIGRAÇÃO: Para TODAS as animações via RobustAnimationManager
+                if (_robustAnimationManager != null)
+                {
+                    await _robustAnimationManager.StopAllAnimationsCompletely();
+                }
 
                 // ✅ Pequeno delay para garantir que parou
                 await Task.Delay(50);
@@ -605,7 +818,7 @@ namespace MyKaraoke.View.Behaviors
 
                 _associatedGrid.IsVisible = false;
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync concluído COMPLETAMENTE");
+                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync concluído COMPLETAMENTE com RobustAnimationManager");
             }
             catch (Exception ex)
             {
@@ -616,18 +829,18 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// 🎯 CORREÇÃO: Para TODAS as animações de forma mais robusta
+        /// 🚀 MIGRAÇÃO: StopAllAnimationsAsync via RobustAnimationManager
         /// </summary>
         private async Task StopAllAnimationsAsync()
         {
-            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: StopAllAnimationsAsync - PARANDO TODAS AS ANIMAÇÕES");
+            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: StopAllAnimationsAsync via RobustAnimationManager");
 
             try
             {
-                // ✅ CORREÇÃO 1: Para AnimationManager primeiro
-                if (_animationManager != null)
+                // 🚀 MIGRAÇÃO: Para RobustAnimationManager primeiro
+                if (_robustAnimationManager != null)
                 {
-                    await _animationManager.StopAllAnimationsAsync();
+                    await _robustAnimationManager.StopAllAnimationsCompletely();
                 }
 
                 // ✅ CORREÇÃO 2: Para animações especiais dos botões
@@ -636,7 +849,7 @@ namespace MyKaraoke.View.Behaviors
                 // ✅ CORREÇÃO 3: Para animações individuais dos botões
                 await StopButtonAnimations();
 
-                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: TODAS as animações paradas");
+                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: TODAS as animações paradas via RobustAnimationManager");
             }
             catch (Exception ex)
             {

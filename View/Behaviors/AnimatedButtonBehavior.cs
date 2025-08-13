@@ -6,6 +6,7 @@ namespace MyKaraoke.View.Behaviors
     /// <summary>
     /// ✅ BEHAVIOR: Adiciona funcionalidades de animação a qualquer ContentView
     /// Elimina completamente duplicação de código entre botões
+    /// 🚀 MIGRADO: Usando RobustAnimationManager consistente com NavBarBehavior
     /// </summary>
     public class AnimatedButtonBehavior : Behavior<ContentView>
     {
@@ -83,16 +84,11 @@ namespace MyKaraoke.View.Behaviors
         #region Private Fields
 
         private ContentView _associatedObject;
-        private AnimationManager _animationManager;
+        // 🚀 MIGRAÇÃO CONSISTENTE: RobustAnimationManager igual ao NavBarBehavior
+        private RobustAnimationManager _robustAnimationManager;
         private bool _isShown = false;
 
-        #endregion
-
-        // ADIÇÃO: Campo de proteção no AnimatedButtonBehavior
-        // Adicione estas linhas ao AnimatedButtonBehavior existente:
-
-        #region 🛡️ PROTEÇÃO: Campos Adicionais Anti-Múltiplas Animações
-
+        // 🛡️ PROTEÇÃO: Campos Adicionais Anti-Múltiplas Animações
         private bool _isShowInProgress = false;
         private bool _isHideInProgress = false;
         private bool _isSpecialAnimationInProgress = false;
@@ -107,7 +103,13 @@ namespace MyKaraoke.View.Behaviors
             base.OnAttachedTo(bindable);
 
             _associatedObject = bindable;
-            _animationManager = new AnimationManager($"AnimatedButton_{bindable.GetHashCode()}");
+
+            // 🚀 MIGRAÇÃO CONSISTENTE: Usar GlobalAnimationCoordinator como NavBarBehavior
+            var pageId = GetPageIdentifier(bindable);
+            _robustAnimationManager = GlobalAnimationCoordinator.Instance.GetOrCreateManagerForPage(pageId);
+
+            // 🚀 MIGRAÇÃO CONSISTENTE: Registrar elemento no RobustAnimationManager
+            _robustAnimationManager?.RegisterAnimatedElement(bindable);
 
             // ✅ APLICA ESTADO INICIAL automaticamente
             ApplyInitialState();
@@ -115,18 +117,68 @@ namespace MyKaraoke.View.Behaviors
             // ✅ ADICIONA MÉTODOS ao objeto
             AddAnimationMethods();
 
-            System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior anexado a {bindable.GetType().Name}");
+            System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior anexado a {bindable.GetType().Name} com RobustAnimationManager");
         }
 
         protected override void OnDetachingFrom(ContentView bindable)
         {
             base.OnDetachingFrom(bindable);
 
-            // ✅ LIMPA RECURSOS
-            _animationManager?.Dispose();
+            // 🚀 MIGRAÇÃO CONSISTENTE: Dispose via GlobalAnimationCoordinator como NavBarBehavior
+            var pageId = GetPageIdentifier(bindable);
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await GlobalAnimationCoordinator.Instance.DisposeManagerForPage(pageId);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🛡️ Erro ao disposed RobustAnimationManager: {ex.Message}");
+                }
+            });
+
             _associatedObject = null;
 
-            System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior removido de {bindable.GetType().Name}");
+            System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior removido de {bindable.GetType().Name}");
+        }
+
+        /// <summary>
+        /// 🚀 MIGRAÇÃO CONSISTENTE: Obtém identificador único da página igual ao NavBarBehavior
+        /// </summary>
+        private string GetPageIdentifier(VisualElement element)
+        {
+            try
+            {
+                // 🎯 ESTRATÉGIA CONSISTENTE: Sempre usa a página atual ativa como NavBarBehavior
+                var currentPage = Application.Current?.MainPage;
+
+                if (currentPage is NavigationPage navPage && navPage.CurrentPage != null)
+                {
+                    currentPage = navPage.CurrentPage;
+                }
+                else if (currentPage is Shell shell && shell.CurrentPage != null)
+                {
+                    currentPage = shell.CurrentPage;
+                }
+
+                if (currentPage != null)
+                {
+                    var pageId = $"{currentPage.GetType().Name}_{currentPage.GetHashCode()}";
+                    System.Diagnostics.Debug.WriteLine($"🎯 AnimatedButtonBehavior: GetPageIdentifier (atual) = {pageId}");
+                    return pageId;
+                }
+
+                // 🛡️ FALLBACK: Se não conseguir obter página atual
+                var fallbackId = $"{element.GetType().Name}_{element.GetHashCode()}";
+                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: GetPageIdentifier FALLBACK = {fallbackId}");
+                return fallbackId;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao obter identificador da página: {ex.Message}");
+                return $"Error_{DateTime.Now.Ticks}";
+            }
         }
 
         #endregion
@@ -154,18 +206,14 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Métodos Públicos para Componentes - MIGRADOS DOS COMPONENTES
+        #region Métodos Públicos para Componentes
 
-        /// <summary>
-        /// ✅ MIGRADO: OnHandlerChanged comum dos dois componentes
-        /// </summary>
         public void HandleHandlerChanged()
         {
             try
             {
                 if (_associatedObject?.Handler != null)
                 {
-                    // Re-aplica estado inicial quando handler estiver disponível
                     ApplyInitialState();
                     System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Handler disponível - estado inicial reaplicado");
                 }
@@ -176,16 +224,12 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// ✅ MIGRADO: OnBindingContextChanged comum dos dois componentes
-        /// </summary>
         public void HandleBindingContextChanged()
         {
             try
             {
                 if (_associatedObject?.BindingContext == null)
                 {
-                    // Para animações quando o contexto muda
                     _ = Task.Run(StopAllAnimationsAsync);
                 }
             }
@@ -195,9 +239,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// ✅ MIGRADO: Tap Effect comum dos dois componentes
-        /// </summary>
         public async Task AnimateTapEffect()
         {
             try
@@ -205,7 +246,6 @@ namespace MyKaraoke.View.Behaviors
                 var target = AnimationContainer ?? _associatedObject;
                 if (target != null)
                 {
-                    // Efeito de "press" simples
                     await target.ScaleTo(0.95, 100);
                     await target.ScaleTo(1.0, 100);
                 }
@@ -220,14 +260,10 @@ namespace MyKaraoke.View.Behaviors
 
         #region Adicionar Métodos ao Objeto
 
-        /// <summary>
-        /// ✅ MAGIA: Adiciona métodos dinâmicos ao ContentView
-        /// </summary>
         private void AddAnimationMethods()
         {
             if (_associatedObject == null) return;
 
-            // ✅ Adiciona ShowAsync como extensão
             _associatedObject.SetValue(ShowAsyncMethodProperty, new Func<Task>(ShowAsync));
             _associatedObject.SetValue(HideAsyncMethodProperty, new Func<Task>(HideAsync));
             _associatedObject.SetValue(StartSpecialAnimationAsyncMethodProperty, new Func<Task>(StartSpecialAnimationAsync));
@@ -252,11 +288,8 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region 🛡️ PROTEÇÃO: Métodos de Animação Protegidos
+        #region 🚀 MÉTODOS DE ANIMAÇÃO COM ROBUSTANIMATIONMANAGER CONSISTENTE
 
-        /// <summary>
-        /// 🛡️ PROTEÇÃO: ShowAsync com controle de múltiplas execuções
-        /// </summary>
         public async Task ShowAsync()
         {
             // 🛡️ PROTEÇÃO: Evita múltiplas execuções simultâneas
@@ -272,9 +305,9 @@ namespace MyKaraoke.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: Iniciando ShowAsync");
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Iniciando ShowAsync com RobustAnimationManager");
 
-                // ✅ MIGRADO: Força estado inicial no MainThread ANTES de qualquer delay
+                // ✅ FORÇA estado inicial no MainThread ANTES de qualquer delay
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     _associatedObject.IsVisible = true;
@@ -283,7 +316,7 @@ namespace MyKaraoke.View.Behaviors
                     System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Estado inicial FORÇADO (Opacity={_associatedObject.Opacity}, TranslationY={_associatedObject.TranslationY})");
                 });
 
-                // ✅ MIGRADO: Aplica delay se configurado
+                // ✅ Aplica delay se configurado
                 if (ShowDelay > 0)
                 {
                     System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Aguardando delay de {ShowDelay}ms");
@@ -294,7 +327,7 @@ namespace MyKaraoke.View.Behaviors
                 {
                     System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: Condições atendidas - executando animações");
 
-                    // ✅ MIGRADO: Executa múltiplas animações simultaneamente usando Task.WhenAll
+                    // ✅ Executa múltiplas animações simultaneamente usando Task.WhenAll
                     var animationTasks = new List<Task>();
 
                     if (HasFadeAnimation)
@@ -309,7 +342,7 @@ namespace MyKaraoke.View.Behaviors
                         animationTasks.Add(StartSlideUpAsync());
                     }
 
-                    // ✅ MIGRADO: Executa todas as animações SIMULTANEAMENTE
+                    // ✅ Executa todas as animações SIMULTANEAMENTE
                     if (animationTasks.Any())
                     {
                         System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Executando {animationTasks.Count} animações simultaneamente");
@@ -331,7 +364,7 @@ namespace MyKaraoke.View.Behaviors
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Todas as {animationTasks.Count} animações concluídas");
+                            System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Todas as {animationTasks.Count} animações concluídas com RobustAnimationManager");
                         }
                     }
                     else
@@ -341,7 +374,7 @@ namespace MyKaraoke.View.Behaviors
                 }
                 else
                 {
-                    // ✅ MIGRADO: Hardware limitado ou animações desabilitadas: apenas aplicar estado final
+                    // ✅ Hardware limitado ou animações desabilitadas: apenas aplicar estado final
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         _associatedObject.Opacity = 1;
@@ -351,12 +384,12 @@ namespace MyKaraoke.View.Behaviors
                 }
 
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: ShowAsync concluído com sucesso");
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: ShowAsync concluído com sucesso usando RobustAnimationManager");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro em ShowAsync: {ex.Message}");
-                // ✅ MIGRADO: Fallback
+                // ✅ Fallback
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     _associatedObject.Opacity = 1;
@@ -374,9 +407,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// 🛡️ PROTEÇÃO: HideAsync com controle de múltiplas execuções
-        /// </summary>
         public async Task HideAsync()
         {
             // 🛡️ PROTEÇÃO: Evita múltiplas execuções simultâneas
@@ -392,9 +422,20 @@ namespace MyKaraoke.View.Behaviors
 
             try
             {
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Iniciando HideAsync com RobustAnimationManager");
+
+                // 🚀 MIGRAÇÃO CONSISTENTE: Para TODAS as animações via RobustAnimationManager primeiro
+                if (_robustAnimationManager != null)
+                {
+                    await _robustAnimationManager.StopAllAnimationsCompletely();
+                }
+
+                // ✅ Pequeno delay para garantir que parou
+                await Task.Delay(50);
+
                 if (IsAnimated && HardwareDetector.SupportsAnimations)
                 {
-                    // ✅ MIGRADO: Executa múltiplas animações simultaneamente baseadas nas flags
+                    // ✅ Executa múltiplas animações simultaneamente baseadas nas flags
                     var animationTasks = new List<Task>();
 
                     if (HasFadeAnimation)
@@ -407,7 +448,7 @@ namespace MyKaraoke.View.Behaviors
                         animationTasks.Add(StartSlideDownAsync());
                     }
 
-                    // ✅ MIGRADO: Executa todas as animações simultaneamente
+                    // ✅ Executa todas as animações simultaneamente
                     if (animationTasks.Any())
                     {
                         // 🛡️ PROTEÇÃO: Timeout para animações de saída
@@ -433,7 +474,7 @@ namespace MyKaraoke.View.Behaviors
 
                 _associatedObject.IsVisible = false;
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: HideAsync concluído");
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: HideAsync concluído com RobustAnimationManager");
             }
             catch (Exception ex)
             {
@@ -451,9 +492,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// 🛡️ PROTEÇÃO: StartSpecialAnimationAsync com controle
-        /// </summary>
         public async Task StartSpecialAnimationAsync()
         {
             // 🛡️ PROTEÇÃO: Evita múltiplas animações especiais simultâneas
@@ -472,29 +510,20 @@ namespace MyKaraoke.View.Behaviors
                 var target = AnimationContainer ?? _associatedObject;
                 if (target == null) return;
 
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Iniciando animação especial com RobustAnimationManager");
+
                 switch (PulseType)
                 {
                     case PulseAnimationType.Default:
-                        await _animationManager.StartCallToActionAsync("pulse", target, () => _associatedObject.IsVisible);
+                        await StartDefaultPulseAsync(target);
                         break;
 
                     case PulseAnimationType.Special:
-                        var pulseConfig = new AnimationConfig
-                        {
-                            FromScale = 1.0,
-                            ToScale = 1.25,
-                            PulseDuration = 150,
-                            PulsePause = 100,
-                            PulseCount = 5,
-                            InitialDelay = 1000,
-                            CycleInterval = 6000,
-                            ExpandEasing = Easing.BounceOut,
-                            ContractEasing = Easing.BounceIn,
-                            AutoRepeat = true
-                        };
-                        await _animationManager.StartPulseAsync("special_pulse", target, pulseConfig, () => _associatedObject?.IsVisible == true && _associatedObject?.Handler != null);
+                        await StartSpecialPulseAsync(target);
                         break;
                 }
+
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Animação especial concluída com RobustAnimationManager");
             }
             catch (Exception ex)
             {
@@ -509,9 +538,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// 🛡️ PROTEÇÃO: StopAllAnimationsAsync robusto
-        /// </summary>
         public async Task StopAllAnimationsAsync()
         {
             try
@@ -522,18 +548,33 @@ namespace MyKaraoke.View.Behaviors
                     _isSpecialAnimationInProgress = false;
                 }
 
-                // Para AnimationManager
-                if (_animationManager != null)
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Parando todas as animações via RobustAnimationManager");
+
+                // 🚀 MIGRAÇÃO CONSISTENTE: Para RobustAnimationManager primeiro como NavBarBehavior
+                if (_robustAnimationManager != null)
                 {
-                    var stopTask = _animationManager.StopAllAnimationsAsync();
+                    var stopTask = _robustAnimationManager.StopAllAnimationsCompletely();
                     var timeoutTask = Task.Delay(1000); // 1 segundo máximo
 
                     var completedTask = await Task.WhenAny(stopTask, timeoutTask);
 
                     if (completedTask == timeoutTask)
                     {
-                        System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT ao parar AnimationManager");
+                        System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT ao parar RobustAnimationManager");
                     }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: RobustAnimationManager parado com sucesso");
+                    }
+                }
+
+                // ✅ Para animações MAUI também
+                if (_associatedObject != null)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    {
+                        Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(_associatedObject);
+                    });
                 }
             }
             catch (Exception ex)
@@ -544,27 +585,27 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Animações Específicas - MIGRADAS DOS COMPONENTES
+        #region Animações Específicas - MANTIDAS DA VERSÃO ANTERIOR
 
         /// <summary>
-        /// ✅ MIGRADO: StartFadeInAsync idêntico dos dois componentes
+        /// ✅ StartFadeInAsync idêntico da versão anterior
         /// </summary>
         private async Task StartFadeInAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Iniciando Fade In PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Fade In PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    // ✅ MIGRADO: Garantia do estado inicial para animação fade
+                    // ✅ Garantia do estado inicial para animação fade
                     _associatedObject.Opacity = 0.0; // Garante que começa completamente transparente
 
-                    // ✅ MIGRADO: FADE IN: 0.0 → 1.0 em 500ms (sincronizado com translate)
+                    // ✅ FADE IN: 0.0 → 1.0 em 500ms (sincronizado com translate)
                     await _associatedObject.FadeTo(1.0, 500, Easing.CubicOut);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Fade In PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Fade In PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
             }
             catch (Exception ex)
             {
@@ -573,21 +614,21 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// ✅ MIGRADO: StartFadeOutAsync idêntico dos dois componentes
+        /// ✅ StartFadeOutAsync idêntico da versão anterior
         /// </summary>
         private async Task StartFadeOutAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Iniciando Fade Out PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Fade Out PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    // ✅ MIGRADO: FADE OUT: current → 0.0 em 500ms (sincronizado com translate)
+                    // ✅ FADE OUT: current → 0.0 em 500ms (sincronizado com translate)
                     await _associatedObject.FadeTo(0.0, 500, Easing.CubicIn);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Fade Out PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Fade Out PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
             }
             catch (Exception ex)
             {
@@ -596,24 +637,24 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// ✅ MIGRADO: StartSlideUpAsync idêntico dos dois componentes
+        /// ✅ StartSlideUpAsync idêntico da versão anterior
         /// </summary>
         private async Task StartSlideUpAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Iniciando Slide Up PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Slide Up PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    // ✅ MIGRADO: Garantia do estado inicial para animação translate
+                    // ✅ Garantia do estado inicial para animação translate
                     _associatedObject.TranslationY = 60; // Garante que começa 60px abaixo
 
-                    // ✅ MIGRADO: TRANSLATE UP: 60px → 0px em 500ms (sincronizado com fade)
+                    // ✅ TRANSLATE UP: 60px → 0px em 500ms (sincronizado com fade)
                     await _associatedObject.TranslateTo(0, 0, 500, Easing.CubicOut);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Slide Up PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Slide Up PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
             }
             catch (Exception ex)
             {
@@ -622,25 +663,69 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// ✅ MIGRADO: StartSlideDownAsync idêntico dos dois componentes
+        /// ✅ StartSlideDownAsync idêntico da versão anterior
         /// </summary>
         private async Task StartSlideDownAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Iniciando Slide Down PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Slide Down PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    // ✅ MIGRADO: TRANSLATE DOWN: current → 60px em 500ms (sincronizado com fade out)
+                    // ✅ TRANSLATE DOWN: current → 60px em 500ms (sincronizado com fade out)
                     await _associatedObject.TranslateTo(0, 60, 500, Easing.CubicIn); // Move para 60px abaixo
                 });
 
-                System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Slide Down PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
+                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Slide Down PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erro no Slide Down: {ex.Message}");
+            }
+        }
+
+        private async Task StartDefaultPulseAsync(VisualElement target)
+        {
+            try
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await target.ScaleTo(1.05, 150, Easing.BounceOut);
+                    await target.ScaleTo(1.0, 150, Easing.BounceIn);
+                });
+
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Pulse padrão concluído");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro no pulse padrão: {ex.Message}");
+            }
+        }
+
+        private async Task StartSpecialPulseAsync(VisualElement target)
+        {
+            try
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        await target.ScaleTo(1.25, 150, Easing.BounceOut);
+                        await target.ScaleTo(1.0, 100, Easing.BounceIn);
+
+                        if (i < 2)
+                        {
+                            await Task.Delay(100);
+                        }
+                    }
+                });
+
+                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Pulse especial concluído");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro no pulse especial: {ex.Message}");
             }
         }
 
@@ -649,22 +734,16 @@ namespace MyKaraoke.View.Behaviors
 
     #region Enums
 
-    /// <summary>
-    /// Tipos de pulse disponíveis
-    /// </summary>
     public enum PulseAnimationType
     {
-        Default,  // Pulse padrão (5% maior)
-        Special   // Pulse especial (25% maior, bounce)
+        Default,
+        Special
     }
 
     #endregion
 
     #region Extension Methods
 
-    /// <summary>
-    /// ✅ EXTENSIONS: Para facilitar chamada dos métodos + NOVOS MÉTODOS MIGRADOS
-    /// </summary>
     public static class AnimatedButtonExtensions
     {
         public static async Task ShowAsync(this ContentView view)
@@ -695,9 +774,6 @@ namespace MyKaraoke.View.Behaviors
                 await method();
         }
 
-        /// <summary>
-        /// ✅ NOVO: Tap Effect via Behavior
-        /// </summary>
         public static async Task AnimateTapEffect(this ContentView view)
         {
             var behavior = GetBehavior(view);
@@ -707,9 +783,6 @@ namespace MyKaraoke.View.Behaviors
                 System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior não encontrado para AnimateTapEffect");
         }
 
-        /// <summary>
-        /// ✅ NOVO: Handler Changed via Behavior
-        /// </summary>
         public static void HandleHandlerChanged(this ContentView view)
         {
             var behavior = GetBehavior(view);
@@ -723,9 +796,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// ✅ NOVO: Binding Context Changed via Behavior
-        /// </summary>
         public static void HandleBindingContextChanged(this ContentView view)
         {
             var behavior = GetBehavior(view);
@@ -739,9 +809,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// Helper para obter o Behavior anexado
-        /// </summary>
         private static AnimatedButtonBehavior GetBehavior(ContentView view)
         {
             if (view?.Behaviors == null) return null;

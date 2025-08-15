@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-    using System.Windows.Input;
+using System.Windows.Input;
 
 namespace MyKaraoke.View
 {
@@ -32,79 +32,166 @@ namespace MyKaraoke.View
         // Comando que o PageLifecycleBehavior irá executar quando a página aparecer
         public ICommand LoadDataCommand { get; }
 
-
         public SpotPage()
         {
+            // ✅ CRÍTICO: Inicializa LoadDataCommand PRIMEIRO, antes de qualquer coisa
+            LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
+
+            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: LoadDataCommand criado PRIMEIRO - CanExecute: {LoadDataCommand?.CanExecute(null)}");
+
             InitializeComponent();
 
             Locais = new ObservableCollection<Estabelecimento>();
             locaisCollectionView.ItemsSource = Locais;
 
-            // Define o comando que encapsula nossa lógica de inicialização e carregamento
-            LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
-
+            // ✅ CRÍTICO: Define BindingContext DEPOIS do LoadDataCommand
             this.BindingContext = this;
 
-            // Ensure UI state is correct on initial load
+            // ✅ INICIAL: Define SelectionCount inicial (para garantir que CrudNavBar tenha algo para trabalhar)
+            SelectionCount = 0;
+
+            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Construtor concluído");
+            System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand: {LoadDataCommand != null}");
+            System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand.CanExecute: {LoadDataCommand?.CanExecute(null)}");
+            System.Diagnostics.Debug.WriteLine($"   - BindingContext: {this.BindingContext != null}");
+            System.Diagnostics.Debug.WriteLine($"   - SelectionCount inicial: {SelectionCount}");
+
+            // ✅ GARANTE estado inicial correto
             UpdateUIState();
+
+            // ✅ VERIFICAÇÃO FINAL: Confirma que comando está disponível
+            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Verificação final - LoadDataCommand executável: {LoadDataCommand?.CanExecute(null)}");
         }
 
-        // O OnAppearing foi REMOVIDO, pois o Behavior agora cuida de acionar a lógica.
-
-        // Este método privado é a AÇÃO que o Behavior executa.
+        // ✅ CORRIGIDO: Este método é chamado pelo PageLifecycleBehavior
         private async Task InitializeAndLoadDataAsync()
         {
-            // A lógica de SetLoading(true/false) foi movida para o Behavior.
-            // Este método agora foca apenas no que é específico da página.
+            System.Diagnostics.Debug.WriteLine("✅ SpotPage: InitializeAndLoadDataAsync INICIADO");
+
             try
             {
+                // ✅ FORÇA SelectionCount=0 NO INÍCIO (garante botão Adicionar)
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    SelectionCount = 0;
+                    OnPropertyChanged(nameof(SelectionCount));
+                    System.Diagnostics.Debug.WriteLine("✅ SpotPage: SelectionCount=0 forçado no INÍCIO do InitializeAndLoadDataAsync");
+                });
+
                 if (_estabelecimentoService == null)
                 {
                     var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
                     _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage: EstabelecimentoService obtido: {_estabelecimentoService != null}");
                 }
+
                 await LoadLocaisAsync();
+
+                // ✅ FORÇA SelectionCount=0 NO FINAL (garante que botão permaneça)
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    SelectionCount = 0;
+                    OnPropertyChanged(nameof(SelectionCount));
+                    System.Diagnostics.Debug.WriteLine("✅ SpotPage: SelectionCount=0 forçado no FINAL do InitializeAndLoadDataAsync");
+                });
+
+                System.Diagnostics.Debug.WriteLine("✅ SpotPage: InitializeAndLoadDataAsync CONCLUÍDO");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Falha ao inicializar ou carregar dados: {ex.Message}");
-                // O Behavior pode opcionalmente tratar exceções de forma genérica
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em InitializeAndLoadDataAsync: {ex.Message}");
+
+                // ✅ FALLBACK: Mesmo com erro, garante que CrudNavBar tenha botão Adicionar
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    SelectionCount = 0;
+                    OnPropertyChanged(nameof(SelectionCount));
+                    System.Diagnostics.Debug.WriteLine("✅ SpotPage: Fallback - SelectionCount=0 definido");
+                });
             }
         }
 
         private async Task LoadLocaisAsync()
         {
-            if (_estabelecimentoService == null) return;
+            System.Diagnostics.Debug.WriteLine("✅ SpotPage: LoadLocaisAsync INICIADO");
 
-            var locais = await _estabelecimentoService.GetAllEstabelecimentosAsync();
-
-            Locais.Clear();
-            if (locais != null)
+            if (_estabelecimentoService == null)
             {
-                foreach (var local in locais)
-                {
-                    Locais.Add(local);
-                }
+                System.Diagnostics.Debug.WriteLine("❌ SpotPage: EstabelecimentoService é NULL!");
+                return;
             }
 
-            MainThread.BeginInvokeOnMainThread(UpdateUIState);
+            try
+            {
+                var locais = await _estabelecimentoService.GetAllEstabelecimentosAsync();
+                System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Locais carregados do banco: {locais?.Count() ?? 0}");
+
+                Locais.Clear();
+                if (locais != null)
+                {
+                    foreach (var local in locais)
+                    {
+                        Locais.Add(local);
+                    }
+                }
+
+                // ✅ CRÍTICO: Chama UpdateUIState no MainThread APÓS carregar dados
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    UpdateUIState();
+                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage: UpdateUIState chamado após carregar {Locais.Count} locais");
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao carregar locais: {ex.Message}");
+
+                // ✅ FALLBACK: Mesmo com erro de banco, garante botão Adicionar
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    UpdateUIState();
+                });
+            }
         }
 
         private void UpdateUIState()
         {
-            bool hasLocais = Locais.Any();
-            emptyStateFrame.IsVisible = !hasLocais;
-            locaisCollectionView.IsVisible = hasLocais;
-            SelectionCount = 0;
+            try
+            {
+                bool hasLocais = Locais.Any();
+                emptyStateFrame.IsVisible = !hasLocais;
+                locaisCollectionView.IsVisible = hasLocais;
+
+                // ✅ CRÍTICO: Sempre SelectionCount=0 para mostrar botão "Adicionar"
+                var previousSelection = SelectionCount;
+                SelectionCount = 0;
+
+                System.Diagnostics.Debug.WriteLine($"✅ SpotPage: UpdateUIState concluído");
+                System.Diagnostics.Debug.WriteLine($"   - HasLocais: {hasLocais}");
+                System.Diagnostics.Debug.WriteLine($"   - SelectionCount: {SelectionCount} (era {previousSelection})");
+                System.Diagnostics.Debug.WriteLine($"   - emptyStateFrame.IsVisible: {emptyStateFrame.IsVisible}");
+                System.Diagnostics.Debug.WriteLine($"   - locaisCollectionView.IsVisible: {locaisCollectionView.IsVisible}");
+
+                // ✅ GARANTE: PropertyChanged sempre dispara (mesmo que valor seja igual)
+                OnPropertyChanged(nameof(SelectionCount));
+                System.Diagnostics.Debug.WriteLine($"✅ SpotPage: PropertyChanged(SelectionCount) disparado");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em UpdateUIState: {ex.Message}");
+            }
         }
 
         private void OnLocalSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectionCount = e.CurrentSelection.Count;
+            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Seleção mudou - SelectionCount={SelectionCount}");
         }
 
         private async void OnCrudNavBarButtonClicked(object sender, CrudButtonType buttonType)
         {
+            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Botão CrudNavBar clicado - {buttonType}");
+
             var selectedItems = locaisCollectionView.SelectedItems.Cast<Estabelecimento>().ToList();
 
             switch (buttonType)

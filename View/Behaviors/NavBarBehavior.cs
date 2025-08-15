@@ -92,7 +92,7 @@ namespace MyKaraoke.View.Behaviors
         private readonly object _pageOperationsLock = new object();
         private string _ownerPageId;
         private static readonly Dictionary<string, DateTime> _lastPageOperations = new Dictionary<string, DateTime>();
-
+        private static readonly bool DISABLE_NAVBAR_ANIMATIONS = true;
         #endregion
 
         #region Behavior Lifecycle
@@ -584,7 +584,6 @@ namespace MyKaraoke.View.Behaviors
         #endregion
 
         #region Métodos de Animação - MIGRADOS PARA ROBUSTANIMATIONMANAGER
-
         public async Task ShowAsync()
         {
             // 🎯 CORREÇÃO: NavBarBehavior é reutilizável para qualquer página
@@ -620,6 +619,16 @@ namespace MyKaraoke.View.Behaviors
                 {
                     System.Diagnostics.Debug.WriteLine("❌ NavBarBehavior: Nenhum botão para mostrar - abortando");
                     _isShown = true;
+                    return;
+                }
+
+                // ✅ EARLY RETURN: Se animações desabilitadas, apenas torna visível sem animar
+                if (DISABLE_NAVBAR_ANIMATIONS)
+                {
+                    System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: Animações desabilitadas - aplicando estado final direto");
+                    await ForceVisibleState();
+                    _isShown = true;
+                    System.Diagnostics.Debug.WriteLine($"🚫 NavBarBehavior: ShowAsync CONCLUÍDO SEM ANIMAÇÕES para {_ownerPageId}");
                     return;
                 }
 
@@ -780,6 +789,16 @@ namespace MyKaraoke.View.Behaviors
             if (!_isShown || _associatedGrid == null)
                 return;
 
+            // ✅ EARLY RETURN: Se animações desabilitadas, apenas esconde sem animar
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: HideAsync - animações desabilitadas, escondendo direto");
+                _associatedGrid.IsVisible = false;
+                _isShown = false;
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: HideAsync concluído SEM ANIMAÇÕES");
+                return;
+            }
+
             System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync - parando animações com RobustAnimationManager");
 
             try
@@ -833,6 +852,13 @@ namespace MyKaraoke.View.Behaviors
         /// </summary>
         private async Task StopAllAnimationsAsync()
         {
+            // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: StopAllAnimationsAsync - animações já desabilitadas");
+                return;
+            }
+
             System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: StopAllAnimationsAsync via RobustAnimationManager");
 
             try
@@ -862,6 +888,13 @@ namespace MyKaraoke.View.Behaviors
         /// </summary>
         private async Task StopSpecialAnimations()
         {
+            // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: StopSpecialAnimations - animações já desabilitadas");
+                return;
+            }
+
             try
             {
                 var stopTasks = new List<Task>();
@@ -942,6 +975,13 @@ namespace MyKaraoke.View.Behaviors
         /// </summary>
         private async Task StopButtonAnimations()
         {
+            // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: StopButtonAnimations - animações já desabilitadas");
+                return;
+            }
+
             try
             {
                 var stopTasks = new List<Task>();
@@ -1030,8 +1070,17 @@ namespace MyKaraoke.View.Behaviors
     /// </summary>
     public static class NavBarExtensions
     {
+        private static readonly bool DISABLE_NAVBAR_ANIMATIONS = true;
         public static async Task ShowAsync(this Grid navGrid)
         {
+            // ✅ EARLY RETURN: Se animações desabilitadas, apenas verifica visibilidade
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarExtensions: ShowAsync - animações desabilitadas");
+                navGrid.IsVisible = true;
+                return;
+            }
+
             var method = (Func<Task>)navGrid.GetValue(NavBarBehavior.ShowAsyncMethodProperty);
             if (method != null)
                 await method();
@@ -1039,6 +1088,14 @@ namespace MyKaraoke.View.Behaviors
 
         public static async Task HideAsync(this Grid navGrid)
         {
+            // ✅ EARLY RETURN: Se animações desabilitadas, apenas esconde
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarExtensions: HideAsync - animações desabilitadas");
+                navGrid.IsVisible = false;
+                return;
+            }
+
             var method = (Func<Task>)navGrid.GetValue(NavBarBehavior.HideAsyncMethodProperty);
             if (method != null)
                 await method();
@@ -1046,6 +1103,13 @@ namespace MyKaraoke.View.Behaviors
 
         public static async Task StopAllAnimationsAsync(this Grid navGrid)
         {
+            // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                System.Diagnostics.Debug.WriteLine("🚫 NavBarExtensions: StopAllAnimationsAsync - animações já desabilitadas");
+                return;
+            }
+
             var method = (Func<Task>)navGrid.GetValue(NavBarBehavior.StopAllAnimationsAsyncMethodProperty);
             if (method != null)
                 await method();

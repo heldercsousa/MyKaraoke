@@ -20,16 +20,16 @@
             EnableAutoBypass="True"
             MaxFailuresBeforeBypass="2" />
 
-        <!-- ✅ NAVEGAÇÃO SEGURA: Para SpotFormPage -->
+        <!-- ✅ NAVEGAÇÃO PARA FORMULÁRIO: SpotFormPage -->
         <behaviors:SafeNavigationBehavior 
             x:Name="SpotFormNavigationBehavior"
             TargetPageType="{x:Type local:SpotFormPage}"
             DebounceMilliseconds="800" />
 
-        <!-- ✅ NAVEGAÇÃO SEGURA: Para voltar (StackPage) -->
+        <!-- ✅ NAVEGAÇÃO INTELIGENTE DE VOLTA: Usa stack navigation -->
         <behaviors:SafeNavigationBehavior 
             x:Name="BackNavigationBehavior"
-            TargetPageType="{x:Type local:StackPage}"
+            EnableSmartStackNavigation="True"
             DebounceMilliseconds="500" />
     </ContentPage.Behaviors>
 

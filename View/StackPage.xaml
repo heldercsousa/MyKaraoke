@@ -9,7 +9,8 @@
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
-    <!-- ✅ CORRETO: Apenas SmartPageLifecycleBehavior -->
+    <!-- ✅ APENAS SmartPageLifecycleBehavior - SEM SafeNavigationBehavior -->
+    <!-- StackPage é página principal - HeaderComponent sairá da aplicação -->
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior 
             NavBar="{x:Reference bottomNav}"
@@ -201,11 +202,10 @@
             <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
         </Grid>
 
-        <!-- ✅ CORRIGIDO: InactiveQueueBottomNav SEM SafeNavigationBehavior no XAML -->
-        <!-- A navegação segura é feita via código no InactiveQueueBottomNav.xaml.cs -->
+        <!-- ✅ InactiveQueueBottomNav com navegação interna -->
         <components:InactiveQueueBottomNav Grid.Row="2" 
                                          x:Name="bottomNav" 
                                          IsVisible="True" />
     </Grid>
 
-</ContentPage>  
+</ContentPage>

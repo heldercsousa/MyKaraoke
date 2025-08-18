@@ -12,12 +12,6 @@ namespace MyKaraoke.View.Components
         public static readonly BindableProperty BackCommandProperty =
             BindableProperty.Create(nameof(BackCommand), typeof(ICommand), typeof(HeaderComponent), null);
 
-        public static readonly BindableProperty ShowAddButtonProperty =
-            BindableProperty.Create(nameof(ShowAddButton), typeof(bool), typeof(HeaderComponent), false);
-
-        public static readonly BindableProperty AddCommandProperty =
-            BindableProperty.Create(nameof(AddCommand), typeof(ICommand), typeof(HeaderComponent), null);
-
         public string Title
         {
             get => (string)GetValue(TitleProperty);
@@ -30,27 +24,10 @@ namespace MyKaraoke.View.Components
             set => SetValue(BackCommandProperty, value);
         }
 
-        public bool ShowAddButton
-        {
-            get => (bool)GetValue(ShowAddButtonProperty);
-            set => SetValue(ShowAddButtonProperty, value);
-        }
-
-        public ICommand AddCommand
-        {
-            get => (ICommand)GetValue(AddCommandProperty);
-            set => SetValue(AddCommandProperty, value);
-        }
-
         /// <summary>
         /// Evento disparado quando o botão voltar é clicado
         /// </summary>
         public event EventHandler BackButtonClicked;
-
-        /// <summary>
-        /// Evento disparado quando o botão adicionar é clicado
-        /// </summary>
-        public event EventHandler AddButtonClicked;
 
         public HeaderComponent()
         {
@@ -58,7 +35,7 @@ namespace MyKaraoke.View.Components
         }
 
         /// <summary>
-        /// Handler do botão voltar - usa navegação inteligente automática
+        /// Handler do botão voltar - MINIMALISTA: apenas delega
         /// </summary>
         private async void OnBackButtonClicked(object sender, EventArgs e)
         {
@@ -78,199 +55,155 @@ namespace MyKaraoke.View.Components
                     return;
                 }
 
-                // 3. Navegação automática inteligente
-                await HandleAutomaticNavigationAsync();
+                // 3. ✅ DELEGAÇÃO: Busca SafeNavigationBehavior na página e delega
+                await DelegateToSafeNavigationBehaviorAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"OnBackButtonClicked - Error: {ex.Message}");
-
-                // Fallback: tenta sair da aplicação se estiver na página principal
-                try
-                {
-                    await HandleFallbackNavigationAsync();
-                }
-                catch (Exception fallbackEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Fallback navigation failed: {fallbackEx.Message}");
-                }
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: OnBackButtonClicked - Error: {ex.Message}");
+                await HandleSpecialCaseNavigationAsync();
             }
         }
 
         /// <summary>
-        /// Handler do botão adicionar
+        /// ✅ DELEGAÇÃO: Encontra e usa SafeNavigationBehavior da página
         /// </summary>
-        private void OnAddButtonClicked(object sender, EventArgs e)
+        private async Task DelegateToSafeNavigationBehaviorAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("Add button clicked");
-
-                // 1. Primeiro, verifica se há comando customizado
-                if (AddCommand != null && AddCommand.CanExecute(null))
-                {
-                    AddCommand.Execute(null);
-                    return;
-                }
-
-                // 2. Depois, verifica se há event handler customizado
-                if (AddButtonClicked != null)
-                {
-                    AddButtonClicked.Invoke(this, EventArgs.Empty);
-                    return;
-                }
-
-                System.Diagnostics.Debug.WriteLine("No add command or event handler configured");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"OnAddButtonClicked - Error: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Lógica de navegação automática baseada no contexto da página atual
-        /// </summary>
-        private async Task HandleAutomaticNavigationAsync()
-        {
-            try
-            {
-                // Encontra a página atual
                 var currentPage = GetCurrentPage();
                 if (currentPage == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("Não foi possível encontrar a página atual");
+                    System.Diagnostics.Debug.WriteLine("HeaderComponent: Página atual não encontrada");
+                    await HandleSpecialCaseNavigationAsync();
                     return;
                 }
 
-                var pageType = currentPage.GetType();
-                System.Diagnostics.Debug.WriteLine($"Página atual: {pageType.Name}");
+                // 🔍 BUSCA: SafeNavigationBehavior para navegação de volta
+                var backBehavior = FindBackNavigationBehavior(currentPage);
+                if (backBehavior != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"HeaderComponent: Delegando para SafeNavigationBehavior");
+                    await backBehavior.NavigateToPageAsync();
+                    return;
+                }
 
-                // Lógica específica baseada no tipo da página
-                if (pageType.Name == "StackPage")
-                {
-                    // StackPage = página principal → sair do app
-                    await ExitApplicationAsync();
-                }
-                else if (pageType.Name == "PersonPage" || pageType.Name == "SpotPage" || pageType.Name == "SpotFormPage")
-                {
-                    // PersonPage/SpotPage/SpotFormPage → voltar para página anterior
-                    await UseDefaultNavigationAsync();
-                }
-                else if (IsMainPage(currentPage))
-                {
-                    // Outras páginas principais → sair do app
-                    await ExitApplicationAsync();
-                }
-                else
-                {
-                    // Páginas secundárias → usar navegação padrão
-                    await UseDefaultNavigationAsync();
-                }
+                // ⚠️ AVISO: Nenhum SafeNavigationBehavior encontrado
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Nenhum SafeNavigationBehavior encontrado para {currentPage.GetType().Name}");
+                await HandleSpecialCaseNavigationAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"HandleAutomaticNavigation - Error: {ex.Message}");
-                // Fallback para navegação padrão
-                await UseDefaultNavigationAsync();
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Erro na delegação: {ex.Message}");
+                await HandleSpecialCaseNavigationAsync();
             }
         }
 
         /// <summary>
-        /// Usa a navegação padrão do MAUI (.NET)
+        /// 🔍 BUSCA: Encontra SafeNavigationBehavior de volta na página
         /// </summary>
-        private async Task UseDefaultNavigationAsync()
+        private SafeNavigationBehavior FindBackNavigationBehavior(ContentPage currentPage)
+        {
+            try
+            {
+                var behaviors = currentPage.Behaviors?.OfType<SafeNavigationBehavior>();
+                if (behaviors == null || !behaviors.Any())
+                {
+                    return null;
+                }
+
+                // 🎯 PRIORIDADE 1: Behavior explicitamente nomeado como "BackNavigationBehavior"
+                var namedBackBehavior = currentPage.FindByName<SafeNavigationBehavior>("BackNavigationBehavior");
+                if (namedBackBehavior != null)
+                {
+                    return namedBackBehavior;
+                }
+
+                // 🎯 PRIORIDADE 2: Se há apenas um SafeNavigationBehavior, assume que é o de volta
+                var behaviorsList = behaviors.ToList();
+                if (behaviorsList.Count == 1)
+                {
+                    return behaviorsList[0];
+                }
+
+                // 🎯 PRIORIDADE 3: Procura behavior que NÃO é para formulários (não vai para FormPage)
+                var nonFormBehavior = behaviorsList.FirstOrDefault(b =>
+                    b.TargetPageType != null && !b.TargetPageType.Name.Contains("Form"));
+                if (nonFormBehavior != null)
+                {
+                    return nonFormBehavior;
+                }
+
+                // 🎯 ÚLTIMO RECURSO: Pega o primeiro disponível
+                return behaviorsList.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Erro ao buscar SafeNavigationBehavior: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 🎯 CASOS ESPECIAIS: Lida com casos onde não há SafeNavigationBehavior
+        /// </summary>
+        private async Task HandleSpecialCaseNavigationAsync()
         {
             try
             {
                 var currentPage = GetCurrentPage();
-                if (currentPage?.Navigation?.NavigationStack?.Count > 1)
+                if (currentPage == null)
                 {
-                    // Há páginas na pilha → volta uma página
+                    return;
+                }
+
+                // ✅ ÚNICA EXCEÇÃO: StackPage sai da aplicação
+                if (currentPage.GetType().Name == "StackPage")
+                {
+                    System.Diagnostics.Debug.WriteLine("HeaderComponent: StackPage detectada - saindo da aplicação");
+                    await ExitApplicationAsync();
+                    return;
+                }
+
+                // 🛡️ FALLBACK: Para outras páginas, tenta PopAsync simples
+                if (currentPage.Navigation?.NavigationStack?.Count > 1)
+                {
                     await currentPage.Navigation.PopAsync();
-                    System.Diagnostics.Debug.WriteLine("Navegação padrão: PopAsync() executado");
+                    System.Diagnostics.Debug.WriteLine("HeaderComponent: PopAsync simples executado como fallback");
                 }
                 else
                 {
-                    // Não há páginas na pilha → sair do app
+                    // Se não há stack, sai da aplicação
                     await ExitApplicationAsync();
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"UseDefaultNavigation - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Erro nos casos especiais: {ex.Message}");
                 await ExitApplicationAsync();
             }
         }
 
         /// <summary>
-        /// Navega especificamente para a StackPage
-        /// </summary>
-        private async Task NavigateToStackPageAsync()
-        {
-            try
-            {
-                var currentPage = GetCurrentPage();
-                if (currentPage != null)
-                {
-                    // Tenta voltar pela pilha de navegação primeiro
-                    if (currentPage.Navigation?.NavigationStack?.Count > 1)
-                    {
-                        await currentPage.Navigation.PopAsync();
-                        System.Diagnostics.Debug.WriteLine("Voltou para StackPage via PopAsync");
-                        return;
-                    }
-
-                    // Se não conseguir, cria nova StackPage
-                    await currentPage.Navigation.PushAsync(new StackPage());
-                    System.Diagnostics.Debug.WriteLine("Navegou para nova StackPage");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"NavigateToStackPage - Error: {ex.Message}");
-                await UseDefaultNavigationAsync();
-            }
-        }
-
-        /// <summary>
-        /// Sai da aplicação de forma segura
+        /// 🚪 SAÍDA: Sai da aplicação
         /// </summary>
         private async Task ExitApplicationAsync()
         {
             try
             {
-                // Pequeno delay para melhor UX
                 await Task.Delay(100);
-
                 Application.Current?.Quit();
-                System.Diagnostics.Debug.WriteLine("Aplicação fechada via HeaderComponent");
+                System.Diagnostics.Debug.WriteLine("HeaderComponent: Aplicação fechada");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ExitApplication - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Erro ao sair da aplicação: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Fallback para casos extremos
-        /// </summary>
-        private async Task HandleFallbackNavigationAsync()
-        {
-            try
-            {
-                // Tenta navegação padrão como último recurso
-                await UseDefaultNavigationAsync();
-            }
-            catch
-            {
-                // Se tudo falhar, sai da aplicação
-                Application.Current?.Quit();
-            }
-        }
-
-        /// <summary>
-        /// Obtém a página atual navegando pela hierarquia
+        /// 🔍 HELPER: Obtém a página atual
         /// </summary>
         private ContentPage GetCurrentPage()
         {
@@ -285,7 +218,12 @@ namespace MyKaraoke.View.Components
                     element = element.Parent;
                 }
 
-                // Método 2: Via Application.Current
+                // Método 2: Via Application.Current.MainPage
+                if (Application.Current?.MainPage is NavigationPage navPage)
+                {
+                    return navPage.CurrentPage as ContentPage;
+                }
+
                 if (Application.Current?.MainPage is ContentPage mainPage)
                     return mainPage;
 
@@ -297,59 +235,35 @@ namespace MyKaraoke.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GetCurrentPage - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: GetCurrentPage - Error: {ex.Message}");
                 return null;
             }
         }
 
         /// <summary>
-        /// Verifica se é uma página principal (não tem parent na navegação)
-        /// </summary>
-        private bool IsMainPage(ContentPage page)
-        {
-            try
-            {
-                return page?.Navigation?.NavigationStack?.Count <= 1;
-            }
-            catch
-            {
-                return true; // Em caso de dúvida, assume que é página principal
-            }
-        }
-
-
-        /// <summary>
-        /// 🎯 NAVEGAÇÃO SEGURA: Configurar SafeNavigationBehavior para botão voltar
-        /// Chame este método no OnHandlerChanged do HeaderComponent
+        /// 🎯 CONFIGURAÇÃO: Método utilitário para páginas que precisem configurar programaticamente
+        /// (Mantido para compatibilidade, mas não é necessário na maioria dos casos)
         /// </summary>
         public void ConfigureSafeBackNavigation(Type targetPageType, int debounceMs = 500)
         {
             try
             {
-                // 🔍 BUSCA: Botão voltar no HeaderComponent
                 var backButton = FindBackButton();
                 if (backButton != null)
                 {
-                    // ✅ CRIA: SafeNavigationBehavior para navegação segura
                     var safeBehavior = new SafeNavigationBehavior
                     {
                         TargetPageType = targetPageType,
                         DebounceMilliseconds = debounceMs
                     };
 
-                    // 🎯 ANEXA: Behavior ao botão voltar
                     backButton.Behaviors.Add(safeBehavior);
-
-                    System.Diagnostics.Debug.WriteLine($"✅ HeaderComponent: SafeNavigationBehavior configurado para {targetPageType.Name}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ HeaderComponent: Botão voltar não encontrado");
+                    System.Diagnostics.Debug.WriteLine($"HeaderComponent: SafeNavigationBehavior configurado para {targetPageType.Name}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ HeaderComponent: Erro ao configurar navegação segura: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Erro ao configurar navegação: {ex.Message}");
             }
         }
 
@@ -360,25 +274,14 @@ namespace MyKaraoke.View.Components
         {
             try
             {
-                // 🔍 ESTRATÉGIA: Busca por campo nomeado comum
-                var backButtonField = this.GetType().GetField("backButton",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-                if (backButtonField != null)
-                {
-                    return backButtonField.GetValue(this) as VisualElement;
-                }
-
-                // 🔍 FALLBACK: Busca por Button com texto "←" ou image "setaesquerda.png"
                 return FindBackButtonInContent(this.Content);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ HeaderComponent: Erro ao buscar botão voltar: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Erro ao buscar botão voltar: {ex.Message}");
                 return null;
             }
         }
-
 
         /// <summary>
         /// 🔍 RECURSIVA: Busca botão voltar no conteúdo
@@ -397,6 +300,17 @@ namespace MyKaraoke.View.Components
             if (content is Image image && image.Source?.ToString().Contains("setaesquerda") == true)
             {
                 return image;
+            }
+
+            // 🎯 STACKLAYOUT: Se é StackLayout com TapGestureRecognizer (padrão atual)
+            if (content is StackLayout stackLayout &&
+                stackLayout.GestureRecognizers?.Any(g => g is TapGestureRecognizer) == true)
+            {
+                if (stackLayout.Children?.Any(c => c is Image img &&
+                    img.Source?.ToString().Contains("setaesquerda") == true) == true)
+                {
+                    return stackLayout;
+                }
             }
 
             // 🔍 LAYOUT: Busca recursivamente em layouts

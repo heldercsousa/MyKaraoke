@@ -5,9 +5,10 @@ using MauiView = Microsoft.Maui.Controls.View;
 namespace MyKaraoke.View.Behaviors
 {
     /// <summary>
-    /// ✅ BEHAVIOR ELEGANTE: Previne navegação duplicada automaticamente
+    /// ✅ BEHAVIOR INTELIGENTE: Previne navegação duplicada + navegação inteligente por stack
     /// 🛡️ REUTILIZÁVEL: Pode ser aplicado a qualquer elemento que navega
     /// 🎯 CONFIGURÁVEL: Via propriedades bindáveis
+    /// 🧠 INTELIGENTE: Determina automaticamente para onde navegar baseado no stack
     /// </summary>
     public class SafeNavigationBehavior : Behavior<VisualElement>
     {
@@ -24,6 +25,10 @@ namespace MyKaraoke.View.Behaviors
 
         public static readonly BindableProperty CreatePageFuncProperty =
             BindableProperty.Create(nameof(CreatePageFunc), typeof(Func<ContentPage>), typeof(SafeNavigationBehavior));
+
+        // ✅ NOVA: Propriedade para habilitar navegação inteligente por stack
+        public static readonly BindableProperty EnableSmartStackNavigationProperty =
+            BindableProperty.Create(nameof(EnableSmartStackNavigation), typeof(bool), typeof(SafeNavigationBehavior), true);
 
         #endregion
 
@@ -65,6 +70,15 @@ namespace MyKaraoke.View.Behaviors
             set => SetValue(CreatePageFuncProperty, value);
         }
 
+        /// <summary>
+        /// ✅ NOVA: Habilita navegação inteligente por stack (padrão: true)
+        /// </summary>
+        public bool EnableSmartStackNavigation
+        {
+            get => (bool)GetValue(EnableSmartStackNavigationProperty);
+            set => SetValue(EnableSmartStackNavigationProperty, value);
+        }
+
         #endregion
 
         #region Private Fields
@@ -96,7 +110,7 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Event Attachment - AUTO-DETECT
+        #region Event Attachment - AUTO-DETECT (PRESERVADO)
 
         /// <summary>
         /// 🎯 INTELIGENTE: Detecta automaticamente o tipo de elemento e anexa ao evento correto
@@ -109,13 +123,11 @@ namespace MyKaraoke.View.Behaviors
                     button.Clicked += OnElementActivated;
                     break;
 
-                // 🎯 EXTENSÍVEL: Adicione mais tipos conforme necessário
                 case Frame frame:
                     AttachTapGestureToFrame(frame);
                     break;
 
                 default:
-                    // 🛡️ FALLBACK: Tenta adicionar TapGestureRecognizer se for View
                     if (_associatedElement is MauiView view)
                     {
                         AttachTapGestureToView(view);
@@ -145,9 +157,6 @@ namespace MyKaraoke.View.Behaviors
                 case Button button:
                     button.Clicked -= OnElementActivated;
                     break;
-
-                    // Para Frame e View com TapGesture adicionado dinamicamente, 
-                    // a limpeza acontece automaticamente quando o elemento é destruído
             }
         }
 
@@ -162,23 +171,16 @@ namespace MyKaraoke.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Navegação solicitada para {TargetPageType?.Name}");
+                System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Navegação solicitada");
 
-                // 🛡️ VALIDAÇÃO 1: Verifica se tipo da página foi configurado
-                if (TargetPageType == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("❌ SafeNavigationBehavior: TargetPageType não configurado");
-                    return;
-                }
-
-                // 🛡️ PROTEÇÃO 2: Verifica debounce via PageInstanceManager
-                if (!_instanceManager.CanNavigateToPage(TargetPageType, DebounceMilliseconds))
+                // 🛡️ PROTEÇÃO: Verifica debounce
+                if (TargetPageType != null && !_instanceManager.CanNavigateToPage(TargetPageType, DebounceMilliseconds))
                 {
                     System.Diagnostics.Debug.WriteLine($"🚫 SafeNavigationBehavior: Navegação BLOQUEADA por debounce");
                     return;
                 }
 
-                // 🎯 EXECUÇÃO: Comando customizado tem prioridade
+                // 🎯 PRIORIDADE 1: Comando customizado
                 if (NavigationCommand != null && NavigationCommand.CanExecute(null))
                 {
                     System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Executando comando customizado");
@@ -186,26 +188,21 @@ namespace MyKaraoke.View.Behaviors
                     return;
                 }
 
-                // 🏗️ CRIAÇÃO: Usa função customizada ou construtor padrão
-                ContentPage targetPage;
-                if (CreatePageFunc != null)
+                // 🎯 PRIORIDADE 2: Navegação para página específica configurada
+                if (TargetPageType != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🏗️ SafeNavigationBehavior: Criando página via função customizada");
-                    targetPage = CreatePageFunc();
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"🏗️ SafeNavigationBehavior: Criando página via construtor padrão");
-                    targetPage = (ContentPage)Activator.CreateInstance(TargetPageType);
+                    await ExecuteTargetPageNavigationAsync();
+                    return;
                 }
 
-                // 🎯 MARCAÇÃO: Marca página para bypass de behaviors problemáticos se necessário
-                MarkPageForSpecialHandling(targetPage);
+                // 🧠 PRIORIDADE 3: Navegação inteligente por stack (NOVA FUNCIONALIDADE)
+                if (EnableSmartStackNavigation)
+                {
+                    await ExecuteSmartStackNavigationAsync();
+                    return;
+                }
 
-                // 🚀 NAVEGAÇÃO: Executa navegação via Shell ou Navigation
-                await ExecuteSafeNavigation(targetPage);
-
-                System.Diagnostics.Debug.WriteLine($"✅ SafeNavigationBehavior: Navegação concluída para {TargetPageType.Name}");
+                System.Diagnostics.Debug.WriteLine($"⚠️ SafeNavigationBehavior: Nenhuma estratégia de navegação aplicável");
             }
             catch (Exception ex)
             {
@@ -214,23 +211,183 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// 🎯 MARCAÇÃO: Marca página para tratamento especial se necessário
+        /// 🎯 ESPECÍFICO: Navegação para página específica configurada (LÓGICA ORIGINAL PRESERVADA)
+        /// </summary>
+        private async Task ExecuteTargetPageNavigationAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Navegando para {TargetPageType.Name}");
+
+                // 🏗️ CRIAÇÃO: Usa função customizada ou construtor padrão
+                ContentPage targetPage;
+                if (CreatePageFunc != null)
+                {
+                    targetPage = CreatePageFunc();
+                }
+                else
+                {
+                    targetPage = (ContentPage)Activator.CreateInstance(TargetPageType);
+                }
+
+                // 🎯 MARCAÇÃO: Marca página para bypass de behaviors problemáticos se necessário
+                MarkPageForSpecialHandling(targetPage);
+
+                // 🚀 NAVEGAÇÃO: Executa navegação
+                await ExecuteSafeNavigation(targetPage);
+
+                System.Diagnostics.Debug.WriteLine($"✅ SafeNavigationBehavior: Navegação concluída para {TargetPageType.Name}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação específica: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 🧠 NOVA: Navegação inteligente baseada no stack de navegação
+        /// </summary>
+        private async Task ExecuteSmartStackNavigationAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🧠 SafeNavigationBehavior: Executando navegação inteligente por stack");
+
+                var currentPage = GetCurrentPage();
+                if (currentPage == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Página atual não encontrada");
+                    return;
+                }
+
+                var navigation = currentPage.Navigation;
+                var navigationStack = navigation?.NavigationStack;
+
+                if (navigationStack == null || navigationStack.Count <= 1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🚪 SafeNavigationBehavior: Sem stack de navegação - não há para onde voltar");
+                    return;
+                }
+
+                // 🔍 ANÁLISE: Encontra posição da página atual no stack
+                var currentPageIndex = FindCurrentPageIndexInStack(navigationStack, currentPage);
+                if (currentPageIndex <= 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Página atual é a primeira - fazendo PopAsync simples");
+                    await navigation.PopAsync();
+                    return;
+                }
+
+                // 🎯 INTELIGENTE: Volta para página anterior
+                var previousPage = navigationStack[currentPageIndex - 1];
+                System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Voltando para {previousPage.GetType().Name}");
+
+                // 🚀 EXECUÇÃO: Remove página atual do stack
+                await RemoveCurrentPageFromStackAsync(navigation, currentPageIndex, navigationStack.Count);
+
+                System.Diagnostics.Debug.WriteLine($"✅ SafeNavigationBehavior: Navegação inteligente concluída");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação inteligente: {ex.Message}");
+
+                // 🛡️ FALLBACK: PopAsync simples
+                try
+                {
+                    var currentPage = GetCurrentPage();
+                    if (currentPage?.Navigation != null)
+                    {
+                        await currentPage.Navigation.PopAsync();
+                    }
+                }
+                catch (Exception fallbackEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro no fallback: {fallbackEx.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 🔍 HELPER: Encontra o índice da página atual no stack
+        /// </summary>
+        private int FindCurrentPageIndexInStack(IReadOnlyList<Page> navigationStack, ContentPage currentPage)
+        {
+            try
+            {
+                // 🎯 BUSCA POR REFERÊNCIA: Mais confiável
+                for (int i = 0; i < navigationStack.Count; i++)
+                {
+                    if (ReferenceEquals(navigationStack[i], currentPage))
+                    {
+                        return i;
+                    }
+                }
+
+                // 🎯 BUSCA POR TIPO: Fallback - assume que é a última do mesmo tipo
+                for (int i = navigationStack.Count - 1; i >= 0; i--)
+                {
+                    if (navigationStack[i].GetType() == currentPage.GetType())
+                    {
+                        return i;
+                    }
+                }
+
+                // 🎯 ÚLTIMO RECURSO: Assume que é a última página
+                return navigationStack.Count - 1;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro ao encontrar página no stack: {ex.Message}");
+                return navigationStack.Count - 1;
+            }
+        }
+
+        /// <summary>
+        /// 🗑️ LIMPEZA: Remove página atual do stack de forma inteligente
+        /// </summary>
+        private async Task RemoveCurrentPageFromStackAsync(INavigation navigation, int currentPageIndex, int stackCount)
+        {
+            try
+            {
+                // Se a página atual é a última no stack, simplesmente faz PopAsync
+                if (currentPageIndex == stackCount - 1)
+                {
+                    await navigation.PopAsync();
+                    return;
+                }
+
+                // Se há páginas intermediárias após a atual, remove todas até voltar à anterior
+                var pagesToRemove = stackCount - currentPageIndex;
+                System.Diagnostics.Debug.WriteLine($"🗑️ SafeNavigationBehavior: Removendo {pagesToRemove} páginas do stack");
+
+                for (int i = 0; i < pagesToRemove; i++)
+                {
+                    await navigation.PopAsync(false); // false = sem animação para ser mais rápido
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro ao remover páginas do stack: {ex.Message}");
+                // Fallback: PopAsync simples
+                await navigation.PopAsync();
+            }
+        }
+
+        /// <summary>
+        /// 🎯 MARCAÇÃO: Marca página para tratamento especial se necessário (PRESERVADO)
         /// </summary>
         private void MarkPageForSpecialHandling(ContentPage page)
         {
-            // 🎯 ESPECÍFICO: Para SpotPage, marca para bypass do PageLifecycleBehavior
             if (page is SpotPage)
             {
                 page.StyleId = "BYPASS_PAGELIFECYCLE";
                 System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: SpotPage marcada para bypass");
             }
-
-            // 🎯 EXTENSÍVEL: Adicione outras páginas conforme necessário
-            // if (page is PersonPage personPage) { ... }
         }
 
         /// <summary>
-        /// 🚀 NAVEGAÇÃO: Executa navegação segura com fallbacks
+        /// 🚀 NAVEGAÇÃO: Executa navegação segura com fallbacks (PRESERVADO)
         /// </summary>
         private async Task ExecuteSafeNavigation(ContentPage targetPage)
         {
@@ -268,7 +425,7 @@ namespace MyKaraoke.View.Behaviors
         }
 
         /// <summary>
-        /// 🎯 HELPER: Obtém a página atual de forma robusta
+        /// 🎯 HELPER: Obtém a página atual de forma robusta (PRESERVADO)
         /// </summary>
         private ContentPage GetCurrentPage()
         {
@@ -302,7 +459,7 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Public Methods for Manual Usage
+        #region Public Methods for Manual Usage (PRESERVADO)
 
         /// <summary>
         /// 🎯 PÚBLICO: Permite executar navegação manualmente

@@ -18,10 +18,20 @@ namespace MyKaraoke.View.Components
             BindableProperty.Create(nameof(SelectionCount), typeof(int), typeof(CrudNavBarComponent), 0,
             propertyChanged: OnSelectionCountChanged);
 
+        public static readonly BindableProperty IsFormModeProperty =
+            BindableProperty.Create(nameof(IsFormMode), typeof(bool), typeof(CrudNavBarComponent), false,
+            propertyChanged: OnModeChanged);
+
         public int SelectionCount
         {
             get => (int)GetValue(SelectionCountProperty);
             set => SetValue(SelectionCountProperty, value);
+        }
+
+        public bool IsFormMode
+        {
+            get => (bool)GetValue(IsFormModeProperty);
+            set => SetValue(IsFormModeProperty, value);
         }
 
         #endregion
@@ -119,7 +129,7 @@ namespace MyKaraoke.View.Components
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: UpdateLayoutAndButtons iniciado - SelectionCount={SelectionCount}, Initialized={_isInitialized}");
+                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: UpdateLayoutAndButtons iniciado - IsFormMode={IsFormMode}, Initialized={_isInitialized}");
 
                 // 🎯 NOVA LÓGICA: Se não está inicializado, tenta forçar
                 if (!_isInitialized)
@@ -154,24 +164,33 @@ namespace MyKaraoke.View.Components
                     return;
                 }
 
-                // 1. Determina botões baseado na seleção
                 var visibleButtons = new List<NavButtonConfig>();
 
-                if (SelectionCount == 0)
+                if (IsFormMode)
                 {
-                    visibleButtons.Add(_buttonConfigs[CrudButtonType.Adicionar]);
-                    System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: SelectionCount=0 - Adicionando botão Adicionar");
+                    // 🆕 MODO FORMULÁRIO: Não usa SelectionCount, será controlado pelos métodos ShowSaveButtonAsync/HideSaveButtonAsync
+                    System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [FORM] Modo formulário - aguardando chamada explícita de ShowSaveButtonAsync/HideSaveButtonAsync");
+                    return; // 🎯 IMPORTANTE: Não configura botões automaticamente no modo formulário
                 }
-                else if (SelectionCount == 1)
+                else
                 {
-                    visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
-                    visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                    System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: SelectionCount=1 - Adicionando botões Editar e Excluir");
-                }
-                else // > 1
-                {
-                    visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: SelectionCount={SelectionCount} - Adicionando botão Excluir");
+                    // 📋 MODO LISTA: Lógica original para listas (usando SelectionCount)
+                    if (SelectionCount == 0)
+                    {
+                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Adicionar]);
+                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=0 - Adicionando botão Adicionar");
+                    }
+                    else if (SelectionCount == 1)
+                    {
+                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
+                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
+                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=1 - Adicionando botões Editar e Excluir");
+                    }
+                    else // > 1
+                    {
+                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
+                        System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: [LIST] SelectionCount={SelectionCount} - Adicionando botão Excluir");
+                    }
                 }
 
                 System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {visibleButtons.Count} botões preparados para exibição");
@@ -189,25 +208,39 @@ namespace MyKaraoke.View.Components
                 navBarBehavior.CustomColumnDefinitions = columnDefinitions;
                 navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
 
+                // 🎯 CORREÇÃO: Força exibição apenas para modo lista
+                if (visibleButtons.Count > 0)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        await Task.Delay(200);
+                        try
+                        {
+                            await navBarBehavior.ShowAsync();
+                            System.Diagnostics.Debug.WriteLine($"🎯 ShowAsync executado para {visibleButtons.Count} botões");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"❌ Erro ao executar ShowAsync: {ex.Message}");
+                        }
+                    });
+                }
+
                 System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: NavBarBehavior configurado com {visibleButtons.Count} botões");
-
-                // 🔧 VERIFICAÇÃO ADICIONAL: Confirma se foi setado
-                var setButtonsCount = navBarBehavior.Buttons?.Count ?? 0;
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: Verificação - NavBarBehavior.Buttons.Count = {setButtonsCount}");
-
-                if (setButtonsCount != visibleButtons.Count)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: ERRO - Esperava {visibleButtons.Count} botões, mas NavBarBehavior tem {setButtonsCount}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"✅ CrudNavBarComponent: Configuração bem-sucedida - {setButtonsCount} botões setados");
-                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em UpdateLayoutAndButtons: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+            }
+        }
+
+        private static void OnModeChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is CrudNavBarComponent navBar)
+            {
+                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: IsFormMode mudou de {oldValue} para {newValue}");
+                navBar.UpdateLayoutAndButtons();
             }
         }
 
@@ -409,6 +442,153 @@ namespace MyKaraoke.View.Components
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em HideAsync: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+
+
+        #region Métodos Específicos para Modo Formulário
+
+        /// <summary>
+        /// 🎯 NOVO: Método específico para mostrar botão Salvar (modo formulário)
+        /// </summary>
+        public async Task ShowSaveButtonAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: ShowSaveButtonAsync chamado");
+
+                if (!IsFormMode)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ CrudNavBarComponent: ShowSaveButtonAsync ignorado - não está em modo formulário");
+                    return;
+                }
+
+                // 🎯 FORÇA: Cria botão Salvar se não existe
+                await ForceCreateSaveButton();
+
+                // 🎯 GARANTE: Botão fica visível
+                await ForceShowNavBar();
+
+                System.Diagnostics.Debug.WriteLine($"✅ CrudNavBarComponent: Botão Salvar exibido com sucesso");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ShowSaveButtonAsync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Método específico para esconder botão Salvar (modo formulário)
+        /// </summary>
+        public async Task HideSaveButtonAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: HideSaveButtonAsync chamado");
+
+                if (!IsFormMode)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ CrudNavBarComponent: HideSaveButtonAsync ignorado - não está em modo formulário");
+                    return;
+                }
+
+                // 🎯 FORÇA: Remove botão Salvar
+                await ForceRemoveSaveButton();
+
+                System.Diagnostics.Debug.WriteLine($"✅ CrudNavBarComponent: Botão Salvar escondido com sucesso");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em HideSaveButtonAsync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 PRIVADO: Força criação do botão Salvar
+        /// </summary>
+        private async Task ForceCreateSaveButton()
+        {
+            try
+            {
+                var visibleButtons = new List<NavButtonConfig>
+        {
+            _buttonConfigs[CrudButtonType.Salvar]
+        };
+
+                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Criando botão Salvar forçadamente");
+
+                // Cria colunas dinâmicas
+                var columnDefinitions = new ColumnDefinitionCollection();
+                foreach (var _ in visibleButtons)
+                {
+                    columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+                }
+
+                // ✅ BEHAVIOR: Configura através do NavBarBehavior
+                if (navBarBehavior != null)
+                {
+                    navBarBehavior.CustomColumnDefinitions = columnDefinitions;
+                    navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
+
+                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBarBehavior configurado com botão Salvar");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ForceCreateSaveButton: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 PRIVADO: Força remoção do botão Salvar
+        /// </summary>
+        private async Task ForceRemoveSaveButton()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Removendo botão Salvar forçadamente");
+
+                // ✅ BEHAVIOR: Remove botões através do NavBarBehavior
+                if (navBarBehavior != null)
+                {
+                    navBarBehavior.CustomColumnDefinitions = new ColumnDefinitionCollection();
+                    navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>();
+
+                    // 🎯 ESCONDE: NavBar quando não há botões
+                    await navBarBehavior.HideAsync();
+
+                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBarBehavior configurado sem botões");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ForceRemoveSaveButton: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 PRIVADO: Força exibição da NavBar
+        /// </summary>
+        private async Task ForceShowNavBar()
+        {
+            try
+            {
+                if (navBarBehavior != null)
+                {
+                    // 🎯 CORREÇÃO CRÍTICA: Reseta flags para permitir nova exibição
+                    navBarBehavior.GetType().GetField("_isShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(navBarBehavior, false);
+                    navBarBehavior.GetType().GetField("_isAnimating", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(navBarBehavior, false);
+
+                    await navBarBehavior.ShowAsync();
+                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: ForceShowNavBar concluído");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ForceShowNavBar: {ex.Message}");
             }
         }
 

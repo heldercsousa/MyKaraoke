@@ -95,7 +95,7 @@
 		<None Remove="Resources\AppIcon\manage.png" />
 		<None Remove="Resources\AppIcon\manage_purple.png" />
 		<None Remove="Resources\AppIcon\musicos.png" />
-		<None Remove="Resources\AppIcon\novo.png" />
+		<None Remove="Resources\AppIcon\save.png" />
 		<None Remove="Resources\AppIcon\setaesquerda.png" />
 		<None Remove="Resources\AppIcon\spot.png" />
 		<None Remove="Resources\AppIcon\spot_purple.png" />
@@ -115,7 +115,7 @@
 		<MauiImage Include="Resources\AppIcon\manage.png" />
 		<MauiImage Include="Resources\AppIcon\manage_purple.png" />
 		<MauiImage Include="Resources\AppIcon\musicos.png" />
-		<MauiImage Include="Resources\AppIcon\novo.png" />
+		<MauiImage Include="Resources\AppIcon\save.png" />
 		<MauiImage Include="Resources\AppIcon\setaesquerda.png" />
 		<MauiImage Include="Resources\AppIcon\spot.png" />
 		<MauiImage Include="Resources\AppIcon\spot_purple.png" />

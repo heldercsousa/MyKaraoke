@@ -2,91 +2,107 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:components="clr-namespace:MyKaraoke.View.Components"
+             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
+             xmlns:local="clr-namespace:MyKaraoke.View"
              x:Class="MyKaraoke.View.SpotFormPage"
+             x:DataType="local:SpotFormPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
-    <Grid RowDefinitions="Auto,*">
+    <!-- ✅ BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
+    <ContentPage.Behaviors>
+        <behaviors:SmartPageLifecycleBehavior 
+            NavBar="{x:Reference CrudNavBar}"
+            LoadingIndicator="{x:Reference loadingOverlay}"
+            MainContent="{x:Reference mainContentGrid}"
+            LoadDataCommand="{Binding LoadDataCommand}"
+            EnableAutoBypass="True"
+            MaxFailuresBeforeBypass="2" />
+
+        <!-- ✅ NAVEGAÇÃO SEGURA: Para voltar (StackPage) -->
+        <behaviors:SafeNavigationBehavior 
+            x:Name="BackNavigationBehavior"
+            TargetPageType="{x:Type local:StackPage}"
+            DebounceMilliseconds="500" />
+    </ContentPage.Behaviors>
+
+    <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- Header Component - Título dinâmico -->
         <components:HeaderComponent Grid.Row="0" 
                                    x:Name="headerComponent"
                                    Title="Novo Local"/>
 
-        <!-- Card Wrapper Component -->
-        <components:CardWrapperComponent Grid.Row="1" 
-            TitleText="Preencha"
-            IconPath="spot_purple.png"
-            BadgeIsVisible="False">
+        <!-- Main Content Grid -->
+        <Grid Grid.Row="1" x:Name="mainContentGrid">
+            <!-- Card Wrapper Component -->
+            <components:CardWrapperComponent 
+                TitleText="Preencha"
+                IconPath="spot_purple.png"
+                BadgeIsVisible="False">
 
-            <components:CardWrapperComponent.CardContent>
-                <!-- Conteúdo do Card -->
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*">
+                <components:CardWrapperComponent.CardContent>
+                    <!-- Conteúdo do Card -->
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
 
-                    <!-- Campo de entrada MAIOR com destaque -->
-                    <Frame Grid.Row="0"
-                           Style="{StaticResource LargeInputFieldStyle}">
-                        <Entry x:Name="nomeLocalEntry"  
-                               Placeholder="Nome do local"
-                               Style="{StaticResource LargeInputEntryStyle}"
-                               MaxLength="30"
-                               TextChanged="OnNomeLocalTextChanged" />
-                    </Frame>
+                        <!-- Campo de entrada MAIOR com destaque -->
+                        <Frame Grid.Row="0"
+                               Style="{StaticResource LargeInputFieldStyle}">
+                            <Entry x:Name="nomeLocalEntry"  
+                                   Placeholder="Nome do local"
+                                   Style="{StaticResource LargeInputEntryStyle}"
+                                   MaxLength="30"
+                                   TextChanged="OnNomeLocalTextChanged" />
+                        </Frame>
 
-                    <!-- Contador de caracteres -->
-                    <Label Grid.Row="1"
-                           x:Name="characterCounterLabel"
-                           Text="0/30"
-                           FontSize="12"
-                           TextColor="#b0a8c7"
-                           HorizontalOptions="End"
-                           VerticalOptions="Start"
-                           IsVisible="False"
-                           Margin="8,4,8,0" />
+                        <!-- Contador de caracteres -->
+                        <Label Grid.Row="1"
+                               x:Name="characterCounterLabel"
+                               Text="0/30"
+                               FontSize="12"
+                               TextColor="#b0a8c7"
+                               HorizontalOptions="End"
+                               VerticalOptions="Start"
+                               IsVisible="False"
+                               Margin="8,4,8,0" />
 
-                    <!-- Botões de ação -->
-                    <StackLayout Grid.Row="2" 
-                                 Orientation="Horizontal" 
-                                 Spacing="15"
-                                 Margin="0,20,0,0"
-                                 HorizontalOptions="Start">
+                        <!-- Label de validação -->
+                        <Label Grid.Row="2"
+                               x:Name="validationMessageLabel" 
+                               Text=""
+                               TextColor="#ff6b6b"
+                               FontSize="14"
+                               HorizontalOptions="Start"
+                               VerticalOptions="Start"
+                               IsVisible="False"
+                               Margin="0,12,0,0" />
 
-                        <!-- Botão Salvar -->
-                        <Button x:Name="salvarButton"
-                                Text="Salvar Local"
-                                Style="{StaticResource FormButtonStyle}"
-                                Clicked="OnSalvarLocalClicked"
-                                HorizontalOptions="Start" />
+                        <!-- Label de sucesso -->
+                        <Label Grid.Row="3"
+                               x:Name="successMessageLabel" 
+                               Text=""
+                               TextColor="#4CAF50"
+                               FontSize="14"
+                               HorizontalOptions="Start"
+                               VerticalOptions="Start"
+                               IsVisible="False"
+                               Margin="0,12,0,0" />
 
-                    </StackLayout>
+                        <!-- Espaço flexível -->
+                        <Grid Grid.Row="4" HeightRequest="40" />
+                    </Grid>
+                </components:CardWrapperComponent.CardContent>
+            </components:CardWrapperComponent>
 
-                    <!-- Label de validação -->
-                    <Label Grid.Row="3"
-                           x:Name="validationMessageLabel" 
-                           Text=""
-                           TextColor="#ff6b6b"
-                           FontSize="14"
-                           HorizontalOptions="Start"
-                           VerticalOptions="Start"
-                           IsVisible="False"
-                           Margin="0,12,0,0" />
+            <!-- Loading Overlay -->
+            <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
+        </Grid>
 
-                    <!-- Label de sucesso -->
-                    <Label Grid.Row="4"
-                           x:Name="successMessageLabel" 
-                           Text=""
-                           TextColor="#4CAF50"
-                           FontSize="14"
-                           HorizontalOptions="Start"
-                           VerticalOptions="Start"
-                           IsVisible="False"
-                           Margin="0,12,0,0" />
-
-                    <!-- Espaço flexível -->
-                    <Grid Grid.Row="6" HeightRequest="40" />
-                </Grid>
-            </components:CardWrapperComponent.CardContent>
-        </components:CardWrapperComponent>
+        <!-- CrudNavBar - Modo Formulário: Mostra botão Salvar quando há texto -->
+        <components:CrudNavBarComponent Grid.Row="2"
+                              x:Name="CrudNavBar"
+                              IsFormMode="True"
+                              ButtonClicked="OnCrudNavBarButtonClicked"/>
     </Grid>
 
 </ContentPage>

@@ -165,6 +165,12 @@ namespace MyKaraoke.View.Behaviors
                         await ExecutePageBypass();
                         return;
                     }
+                    else
+                    {
+                        // 🎯 CORREÇÃO CRÍTICA: Se falhou mas ainda não atingiu limite, FORÇA exibição da navbar
+                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Falha detectada - FORÇANDO exibição da NavBar");
+                        await ForceShowNavBarAfterFailure();
+                    }
                 }
                 else
                 {
@@ -177,11 +183,8 @@ namespace MyKaraoke.View.Behaviors
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageAppearing: {ex.Message}");
 
-                // 🛡️ FALLBACK: Em caso de erro crítico, tenta bypass
-                if (EnableAutoBypass)
-                {
-                    await ExecutePageBypass();
-                }
+                // 🛡️ FALLBACK: Em caso de erro crítico, tenta exibir navbar
+                await ForceShowNavBarAfterFailure();
             }
             finally
             {
@@ -189,6 +192,43 @@ namespace MyKaraoke.View.Behaviors
                 {
                     _isProcessing = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Força exibição da NavBar quando há falha mas ainda não chegou no bypass
+        /// ✅ CORREÇÃO CRÍTICA: Garante que navbar sempre seja exibida
+        /// </summary>
+        private async Task ForceShowNavBarAfterFailure()
+        {
+            if (NavBar == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: NavBar é NULL - pulando ShowAsync");
+                return;
+            }
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: FORÇA - Chamando NavBar.ShowAsync() após falha");
+
+                // 🎯 IGUAL ao TryShowNavBar: sempre chama ShowAsync
+                var showTask = NavBar.ShowAsync();
+                var timeoutTask = Task.Delay(5000); // Timeout de 5 segundos
+
+                var completedTask = await Task.WhenAny(showTask, timeoutTask);
+
+                if (completedTask == timeoutTask)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após falha");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após falha");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após falha: {ex.Message}");
             }
         }
 
@@ -241,25 +281,27 @@ namespace MyKaraoke.View.Behaviors
                 if (!navBarReady)
                 {
                     System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta");
-                    return false;
+                    // 🔧 NÃO retorna false - continua tentando mostrar
                 }
 
-                // ETAPA 2: Executa LoadDataCommand
+                // ETAPA 2: Executa LoadDataCommand (agora não considera NULL como falha)
                 var dataLoaded = await TryExecuteLoadDataCommand();
                 if (!dataLoaded)
                 {
                     System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: LoadDataCommand falhou");
-                    return false;
+                    // 🔧 NÃO retorna false - continua tentando mostrar navbar
                 }
 
-                // ETAPA 3: Mostra navbar
+                // ETAPA 3: SEMPRE tenta mostrar navbar (MUDANÇA CRÍTICA)
                 var navBarShown = await TryShowNavBar();
                 if (!navBarShown)
                 {
                     System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: ShowNavBar falhou");
-                    return false;
+                    return false; // 🔧 APENAS falha de ShowNavBar é crítica
                 }
 
+                // 🎯 SUCESSO: Navbar foi exibida com sucesso
+                System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal concluído - NavBar exibida");
                 return true;
             }
             catch (Exception ex)
@@ -303,14 +345,55 @@ namespace MyKaraoke.View.Behaviors
                     await _associatedPage.ExecuteStandardBypass();
                 }
 
+                // 🎯 CORREÇÃO CRÍTICA: SEMPRE chama NavBar.ShowAsync() após bypass
+                // ✅ RESPONSABILIDADE ÚNICA: SmartPageLifecycleBehavior é responsável por exibir navbar
+                await EnsureNavBarIsShownAfterBypass();
+
                 // ✅ MARCA: Sucesso no bypass
                 _hasExecutedSuccessfully = true;
                 _failureCount = 0;
-                System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Bypass executado com sucesso");
+                System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Bypass executado com sucesso E navbar exibida");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Garante que NavBar.ShowAsync() é chamado após bypass
+        /// ✅ RESPONSABILIDADE ÚNICA: Apenas SmartPageLifecycleBehavior chama ShowAsync
+        /// </summary>
+        private async Task EnsureNavBarIsShownAfterBypass()
+        {
+            if (NavBar == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: NavBar é NULL - pulando ShowAsync");
+                return;
+            }
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: BYPASS - Chamando NavBar.ShowAsync()");
+
+                // 🎯 IGUAL ao PageLifecycleBehavior: sempre chama ShowAsync
+                var showTask = NavBar.ShowAsync();
+                var timeoutTask = Task.Delay(5000); // Timeout de 5 segundos
+
+                var completedTask = await Task.WhenAny(showTask, timeoutTask);
+
+                if (completedTask == timeoutTask)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após bypass");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após bypass");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após bypass: {ex.Message}");
             }
         }
 
@@ -378,14 +461,14 @@ namespace MyKaraoke.View.Behaviors
             {
                 if (LoadDataCommand == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand é NULL");
-                    return false;
+                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand é NULL - continuando sem erro");
+                    return true; // 🎯 MUDANÇA: NULL não é falha crítica
                 }
 
                 if (!LoadDataCommand.CanExecute(null))
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand.CanExecute = false");
-                    return false;
+                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand.CanExecute = false - continuando sem erro");
+                    return true; // 🎯 MUDANÇA: CanExecute=false não é falha crítica
                 }
 
                 SetLoadingState(true);
@@ -394,7 +477,6 @@ namespace MyKaraoke.View.Behaviors
                 {
                     System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Executando LoadDataCommand");
 
-                    // 🔧 CORRIGIDO: Execução simplificada sem detecção complexa
                     LoadDataCommand.Execute(null);
 
                     // Aguarda um tempo para operações assíncronas internas
@@ -412,7 +494,7 @@ namespace MyKaraoke.View.Behaviors
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro executando LoadDataCommand: {ex.Message}");
                 SetLoadingState(false);
-                return false;
+                return false; // 🎯 APENAS exceções são falhas críticas
             }
         }
 

@@ -46,23 +46,44 @@ namespace MyKaraoke.View.Extensions
                     System.Diagnostics.Debug.WriteLine($"⚠️ PageExtensions: LoadDataCommand não disponível ou não executável");
                 }
 
-                // ETAPA 3: Força exibição de navbar se existir
-                var navBar = FindNavBar(page);
-                if (navBar != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🎯 PageExtensions: Forçando exibição de NavBar");
-                    await ForceShowNavBar(navBar);
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ PageExtensions: NavBar não encontrada");
-                }
+                // 🔧 REMOVIDO: Não chama mais ForceShowNavBar
+                // ✅ RESPONSABILIDADE: SmartPageLifecycleBehavior é responsável por exibir navbar
+
+                // ETAPA 3: Apenas configura elementos da página, sem tocar na navbar
+                await ConfigurePageElements(page);
 
                 System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: Bypass padrão concluído para {page.GetType().Name}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro no bypass padrão: {ex.Message}");
+            }
+        }
+
+        private static async Task ConfigurePageElements(ContentPage page)
+        {
+            try
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    // 🎯 CONFIGURAÇÃO: Apenas configura a página, não a navbar
+                    page.IsVisible = true;
+                    page.Opacity = 1.0;
+
+                    // 🎯 ESPECÍFICO: Para tipos conhecidos, configura propriedades mas não força ShowAsync
+                    if (page is SpotPage spotPage)
+                    {
+                        // Apenas configura SelectionCount, não chama ShowAsync
+                        spotPage.SelectionCount = 0;
+                        System.Diagnostics.Debug.WriteLine($"🔧 PageExtensions: SpotPage configurada - SelectionCount=0");
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"🔧 PageExtensions: Elementos da página configurados");
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro ao configurar elementos: {ex.Message}");
             }
         }
 
@@ -381,7 +402,7 @@ namespace MyKaraoke.View.Extensions
             {
                 System.Diagnostics.Debug.WriteLine($"🎯 PageExtensions: ExecuteSpotPageBypass para SpotPage (Hash: {spotPage.GetHashCode()})");
 
-                // ETAPA 1: Executa bypass padrão
+                // ETAPA 1: Executa bypass padrão (que não toca na navbar)
                 await spotPage.ExecuteStandardBypass();
 
                 // ETAPA 2: Lógica específica da SpotPage
@@ -389,10 +410,10 @@ namespace MyKaraoke.View.Extensions
                 {
                     try
                     {
-                        // 🎯 FORÇA: SelectionCount = 0 para mostrar botão "Adicionar"
+                        // 🎯 APENAS: SelectionCount = 0 para preparar botão "Adicionar"
                         spotPage.SelectionCount = 0;
 
-                        // 🎯 FORÇA: Dispara PropertyChanged
+                        // 🎯 APENAS: Dispara PropertyChanged
                         var propertyChangedMethod = spotPage.GetType().GetMethod("OnPropertyChanged",
                             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
@@ -410,7 +431,10 @@ namespace MyKaraoke.View.Extensions
                     }
                 });
 
-                System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: SpotPageBypass concluído com sucesso");
+                // 🔧 REMOVIDO: Não chama mais ShowAsync da navbar
+                // ✅ RESPONSABILIDADE: SmartPageLifecycleBehavior exibirá a navbar
+
+                System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: SpotPageBypass concluído sem tocar na navbar");
             }
             catch (Exception ex)
             {
@@ -527,23 +551,17 @@ namespace MyKaraoke.View.Extensions
                 {
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
-                        // 🎯 FORÇA: SelectionCount = 0 para mostrar botão Adicionar
+                        // 🎯 APENAS: SelectionCount = 0 para preparar botão Adicionar
                         crudNavBar.SelectionCount = 0;
                         crudNavBar.IsVisible = true;
 
-                        System.Diagnostics.Debug.WriteLine($"🔧 PageExtensions: CrudNavBarComponent corrigido - SelectionCount=0");
+                        System.Diagnostics.Debug.WriteLine($"🔧 PageExtensions: CrudNavBarComponent configurado - SelectionCount=0");
                     });
 
-                    // 🎯 FORÇA: ShowAsync
-                    try
-                    {
-                        await crudNavBar.ShowAsync();
-                        System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: CrudNavBarComponent.ShowAsync() executado");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ PageExtensions: Erro em ShowAsync: {ex.Message}");
-                    }
+                    // 🔧 REMOVIDO: Não chama mais ShowAsync
+                    // ✅ RESPONSABILIDADE: SmartPageLifecycleBehavior chamará ShowAsync
+
+                    System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: CrudNavBarComponent configurado sem chamar ShowAsync");
                 }
                 else
                 {

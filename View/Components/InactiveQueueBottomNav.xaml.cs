@@ -9,9 +9,27 @@ namespace MyKaraoke.View.Components
     /// ✅ CORRIGIDO: Eliminar eventos duplicados que causavam múltiplas navegações
     /// 🔧 SIMPLIFICADO: Usa apenas NavBarBehavior + SafeNavigationBehavior
     /// 🛡️ PROTEÇÃO: Anti-eventos duplicados integrada
+    /// 🎯 CORREÇÃO CRÍTICA: Adicionada propriedade IsReady para trigger automático igual CrudNavBarComponent
     /// </summary>
     public partial class InactiveQueueBottomNav : ContentView, IAnimatableNavBar
     {
+        #region Bindable Properties - CORREÇÃO CRÍTICA
+
+        /// <summary>
+        /// 🎯 CORREÇÃO: Propriedade que dispara inicialização automática (igual CrudNavBarComponent.SelectionCount)
+        /// </summary>
+        public static readonly BindableProperty IsReadyProperty =
+            BindableProperty.Create(nameof(IsReady), typeof(bool), typeof(InactiveQueueBottomNav), false,
+            propertyChanged: OnIsReadyChanged);
+
+        public bool IsReady
+        {
+            get => (bool)GetValue(IsReadyProperty);
+            set => SetValue(IsReadyProperty, value);
+        }
+
+        #endregion
+
         #region Events - MANTIDOS para compatibilidade com StackPage
 
         public event EventHandler LocaisClicked, BandokeClicked, NovaFilaClicked, HistoricoClicked, AdministrarClicked;
@@ -34,20 +52,88 @@ namespace MyKaraoke.View.Components
         {
             InitializeComponent();
             InitializeNavigationBehaviors();
-            System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Construtor chamado");
+
+            // 🎯 CORREÇÃO CRÍTICA: Define IsReady=true para disparar inicialização
+            IsReady = true;
+
+            System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Construtor chamado - IsReady definido como True");
         }
 
-        #region Initialization
+        #region Initialization - CORREÇÃO CRÍTICA
+
+        /// <summary>
+        /// 🎯 CORREÇÃO: PropertyChanged que dispara inicialização automática (igual CrudNavBarComponent)
+        /// </summary>
+        private static void OnIsReadyChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is InactiveQueueBottomNav navBar && (bool)newValue)
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: IsReady mudou para True - disparando inicialização");
+                navBar.EnsureInitialization();
+            }
+        }
+
+        /// <summary>
+        /// 🎯 CORREÇÃO: Garante inicialização mesmo se OnHandlerChanged falhar/atrasar
+        /// </summary>
+        private void EnsureInitialization()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: EnsureInitialization - Initialized={_isInitialized}, Handler={Handler != null}");
+
+                if (!_isInitialized)
+                {
+                    if (Handler != null && navBarBehavior != null)
+                    {
+                        // ✅ INICIALIZAÇÃO DIRETA
+                        InitializeNavBar();
+                        _isInitialized = true;
+                        System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Inicialização FORÇADA via EnsureInitialization");
+                    }
+                    else
+                    {
+                        // 🎯 AGENDA RETRY: Se Handler não está pronto, agenda nova tentativa
+                        System.Diagnostics.Debug.WriteLine($"⏰ InactiveQueueBottomNav: Handler não pronto - agendando retry");
+                        Device.BeginInvokeOnMainThread(async () =>
+                        {
+                            await Task.Delay(100);
+                            if (!_isInitialized && Handler != null)
+                            {
+                                EnsureInitialization();
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Já inicializado - verificando botões");
+
+                    // 🎯 VERIFICA: Se já inicializado mas sem botões, força reconfiguração
+                    var buttonCount = navBarBehavior?.Buttons?.Count ?? 0;
+                    if (buttonCount == 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: Sem botões - reconfigurando");
+                        InitializeNavBar();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: Erro em EnsureInitialization: {ex.Message}");
+            }
+        }
 
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
 
+            System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: OnHandlerChanged - Handler={Handler != null}, Initialized={_isInitialized}");
+
             if (Handler != null && !_isInitialized)
             {
-                InitializeNavBar();
-                _isInitialized = true;
-                System.Diagnostics.Debug.WriteLine("✅ InactiveQueueBottomNav inicializado com NavBarBehavior");
+                // 🎯 CORREÇÃO: Chama EnsureInitialization em vez de InitializeNavBar diretamente
+                EnsureInitialization();
             }
         }
 
@@ -81,39 +167,71 @@ namespace MyKaraoke.View.Components
 
         /// <summary>
         /// ✅ CONFIGURAÇÃO: Define todos os botões através do NavBarBehavior
+        /// 🎯 CORREÇÃO: Mais logs para debug
         /// </summary>
         private void InitializeNavBar()
         {
-            var buttons = new ObservableCollection<NavButtonConfig>
+            try
             {
-                // Botões Regulares
-                NavButtonConfig.Regular("Locais", "spot.png", new Command(() => OnLocaisClicked())),
-                NavButtonConfig.Regular("Bandokê", "musicos.png", new Command(() => OnBandokeClicked())),
+                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: InitializeNavBar INICIADO - navBarBehavior={navBarBehavior != null}");
 
-                // ✅ BOTÃO ESPECIAL: Nova Fila com animação pulse
-                new NavButtonConfig
+                if (navBarBehavior == null)
                 {
-                    Text = "Nova Fila",
-                    IsSpecial = true,
-                    CenterContent = "+",
-                    Command = new Command(() => OnNovaFilaClicked()),
-                    GradientStyle = SpecialButtonGradientType.Yellow,
-                    SpecialAnimationTypes = SpecialButtonAnimationType.ShowHide | SpecialButtonAnimationType.Pulse,
-                    IsAnimated = true
-                },
+                    System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: navBarBehavior é NULL - abortando");
+                    return;
+                }
 
-                // Botões Regulares
-                NavButtonConfig.Regular("Histórico", "historico.png", new Command(() => OnHistoricoClicked())),
-                NavButtonConfig.Regular("Administrar", "manage.png", new Command(() => OnAdministrarClicked()))
-            };
+                var buttons = new ObservableCollection<NavButtonConfig>
+                {
+                    // Botões Regulares
+                    NavButtonConfig.Regular("Locais", "spot.png", new Command(() => OnLocaisClicked())),
+                    NavButtonConfig.Regular("Bandokê", "musicos.png", new Command(() => OnBandokeClicked())),
 
-            // ✅ BEHAVIOR: Configura botões - SEM subscrever eventos duplicados
-            navBarBehavior.Buttons = buttons;
+                    // ✅ BOTÃO ESPECIAL: Nova Fila com animação pulse
+                    new NavButtonConfig
+                    {
+                        Text = "Nova Fila",
+                        IsSpecial = true,
+                        CenterContent = "+",
+                        Command = new Command(() => OnNovaFilaClicked()),
+                        GradientStyle = SpecialButtonGradientType.Yellow,
+                        SpecialAnimationTypes = SpecialButtonAnimationType.ShowHide | SpecialButtonAnimationType.Pulse,
+                        IsAnimated = true
+                    },
 
-            // 🔧 CORREÇÃO: Não subscrevemos ButtonClicked para evitar eventos duplicados
-            // Os eventos são disparados diretamente pelos Commands configurados acima
+                    // Botões Regulares
+                    NavButtonConfig.Regular("Histórico", "historico.png", new Command(() => OnHistoricoClicked())),
+                    NavButtonConfig.Regular("Administrar", "manage.png", new Command(() => OnAdministrarClicked()))
+                };
 
-            System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: NavBarBehavior configurado com {buttons.Count} botões SEM eventos duplicados");
+                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: {buttons.Count} botões criados");
+
+                // ✅ BEHAVIOR: Configura botões - SEM subscrever eventos duplicados
+                navBarBehavior.Buttons = buttons;
+
+                // 🔧 CORREÇÃO: NÃO subscrevemos ButtonClicked para evitar eventos duplicados
+                // Os eventos são disparados diretamente pelos Commands configurados acima
+
+                System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: NavBarBehavior configurado com {buttons.Count} botões SEM eventos duplicados");
+
+                // 🎯 VERIFICAÇÃO: Confirma se foi setado
+                var setButtonsCount = navBarBehavior.Buttons?.Count ?? 0;
+                System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: Verificação - NavBarBehavior.Buttons.Count = {setButtonsCount}");
+
+                if (setButtonsCount != buttons.Count)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: ERRO - Esperava {buttons.Count} botões, mas NavBarBehavior tem {setButtonsCount}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Configuração bem-sucedida - {setButtonsCount} botões setados");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: Erro em InitializeNavBar: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+            }
         }
 
         #endregion
@@ -248,17 +366,31 @@ namespace MyKaraoke.View.Components
 
         /// <summary>
         /// ✅ DELEGADO: ShowAsync via NavBarBehavior
+        /// 🎯 CORREÇÃO: Garante inicialização antes de mostrar (igual CrudNavBarComponent)
         /// </summary>
         public async Task ShowAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: ShowAsync chamado");
+                System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: ShowAsync chamado - IsVisible={this.IsVisible}");
 
                 this.IsVisible = true;
 
+                // 🎯 CORREÇÃO CRÍTICA: Garante inicialização antes de mostrar (igual CrudNavBarComponent)
+                if (!_isInitialized)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: Não inicializado - forçando inicialização");
+                    EnsureInitialization();
+
+                    // Aguarda um pouco para garantir que inicializou
+                    await Task.Delay(50);
+                }
+
                 if (navBarBehavior != null)
                 {
+                    var buttonCount = navBarBehavior.Buttons?.Count ?? 0;
+                    System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: Chamando navBarBehavior.ShowAsync() - Buttons.Count={buttonCount}");
+
                     await navBarBehavior.ShowAsync();
                     System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: navBarBehavior.ShowAsync() concluído");
                 }
@@ -315,6 +447,7 @@ namespace MyKaraoke.View.Components
             return new Dictionary<string, object>
             {
                 { "IsInitialized", _isInitialized },
+                { "IsReady", IsReady },
                 { "IsVisible", this.IsVisible },
                 { "HasNavBarBehavior", navBarBehavior != null },
                 { "ButtonCount", navBarBehavior?.Buttons?.Count ?? 0 },
@@ -332,17 +465,19 @@ namespace MyKaraoke.View.Components
             {
                 System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: Aplicando correções do componente");
 
-                // 🔧 CORREÇÃO 1: Força inicialização se não foi feita
+                // 🔧 CORREÇÃO 1: Força IsReady=true para disparar inicialização
+                IsReady = true;
+
+                // 🔧 CORREÇÃO 2: Força inicialização se não foi feita
                 if (!_isInitialized && Handler != null)
                 {
-                    InitializeNavBar();
-                    _isInitialized = true;
+                    EnsureInitialization();
                 }
 
-                // 🔧 CORREÇÃO 2: Força visibilidade
+                // 🔧 CORREÇÃO 3: Força visibilidade
                 this.IsVisible = true;
 
-                // 🔧 CORREÇÃO 3: Tenta ShowAsync se navBarBehavior disponível
+                // 🔧 CORREÇÃO 4: Tenta ShowAsync se navBarBehavior disponível
                 if (navBarBehavior != null)
                 {
                     try

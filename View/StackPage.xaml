@@ -9,12 +9,15 @@
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
+    <!-- ✅ CORRETO: Apenas SmartPageLifecycleBehavior -->
     <ContentPage.Behaviors>
-        <behaviors:PageLifecycleBehavior 
+        <behaviors:SmartPageLifecycleBehavior 
             NavBar="{x:Reference bottomNav}"
             LoadingIndicator="{x:Reference loadingOverlay}"
             MainContent="{x:Reference mainContentGrid}"
-            LoadDataCommand="{Binding LoadDataCommand}" />
+            LoadDataCommand="{Binding LoadDataCommand}"
+            EnableAutoBypass="True"
+            MaxFailuresBeforeBypass="2" />
     </ContentPage.Behaviors>
 
     <Grid Padding="0,0,0,0">
@@ -198,9 +201,11 @@
             <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
         </Grid>
 
+        <!-- ✅ CORRIGIDO: InactiveQueueBottomNav SEM SafeNavigationBehavior no XAML -->
+        <!-- A navegação segura é feita via código no InactiveQueueBottomNav.xaml.cs -->
         <components:InactiveQueueBottomNav Grid.Row="2" 
                                          x:Name="bottomNav" 
                                          IsVisible="True" />
     </Grid>
 
-</ContentPage>
+</ContentPage>  

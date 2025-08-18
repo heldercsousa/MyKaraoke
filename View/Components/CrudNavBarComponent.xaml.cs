@@ -32,6 +32,11 @@ namespace MyKaraoke.View.Components
 
         #endregion
 
+        /// <summary>
+        /// ✅ CORREÇÃO CS0122: Expõe navBarBehavior (gerado pelo XAML) como propriedade pública
+        /// </summary>
+        public NavBarBehavior NavBarBehavior => navBarBehavior;
+
         #region Private Fields
 
         private readonly Dictionary<CrudButtonType, NavButtonConfig> _buttonConfigs;

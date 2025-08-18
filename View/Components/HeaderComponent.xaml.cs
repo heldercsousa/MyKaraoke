@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using MyKaraoke.View.Behaviors;
+using System.Windows.Input;
+using MauiView = Microsoft.Maui.Controls.View;
 
 namespace MyKaraoke.View.Components
 {
@@ -313,6 +315,110 @@ namespace MyKaraoke.View.Components
             {
                 return true; // Em caso de dúvida, assume que é página principal
             }
+        }
+
+
+        /// <summary>
+        /// 🎯 NAVEGAÇÃO SEGURA: Configurar SafeNavigationBehavior para botão voltar
+        /// Chame este método no OnHandlerChanged do HeaderComponent
+        /// </summary>
+        public void ConfigureSafeBackNavigation(Type targetPageType, int debounceMs = 500)
+        {
+            try
+            {
+                // 🔍 BUSCA: Botão voltar no HeaderComponent
+                var backButton = FindBackButton();
+                if (backButton != null)
+                {
+                    // ✅ CRIA: SafeNavigationBehavior para navegação segura
+                    var safeBehavior = new SafeNavigationBehavior
+                    {
+                        TargetPageType = targetPageType,
+                        DebounceMilliseconds = debounceMs
+                    };
+
+                    // 🎯 ANEXA: Behavior ao botão voltar
+                    backButton.Behaviors.Add(safeBehavior);
+
+                    System.Diagnostics.Debug.WriteLine($"✅ HeaderComponent: SafeNavigationBehavior configurado para {targetPageType.Name}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ HeaderComponent: Botão voltar não encontrado");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HeaderComponent: Erro ao configurar navegação segura: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 🔍 BUSCA: Encontra o botão voltar no HeaderComponent
+        /// </summary>
+        private VisualElement FindBackButton()
+        {
+            try
+            {
+                // 🔍 ESTRATÉGIA: Busca por campo nomeado comum
+                var backButtonField = this.GetType().GetField("backButton",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                if (backButtonField != null)
+                {
+                    return backButtonField.GetValue(this) as VisualElement;
+                }
+
+                // 🔍 FALLBACK: Busca por Button com texto "←" ou image "setaesquerda.png"
+                return FindBackButtonInContent(this.Content);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ HeaderComponent: Erro ao buscar botão voltar: {ex.Message}");
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// 🔍 RECURSIVA: Busca botão voltar no conteúdo
+        /// </summary>
+        private VisualElement FindBackButtonInContent(MauiView content)
+        {
+            if (content == null) return null;
+
+            // 🎯 BOTÃO: Se é Button com texto "←"
+            if (content is Button button && (button.Text == "←" || button.Text == "Voltar"))
+            {
+                return button;
+            }
+
+            // 🎯 IMAGE: Se é Image com source "setaesquerda.png"
+            if (content is Image image && image.Source?.ToString().Contains("setaesquerda") == true)
+            {
+                return image;
+            }
+
+            // 🔍 LAYOUT: Busca recursivamente em layouts
+            if (content is Layout layout)
+            {
+                foreach (var child in layout.Children)
+                {
+                    if (child is MauiView childView)
+                    {
+                        var found = FindBackButtonInContent(childView);
+                        if (found != null) return found;
+                    }
+                }
+            }
+
+            // 🔍 CONTENTVIEW: Busca dentro de ContentView
+            if (content is ContentView contentView && contentView.Content != null)
+            {
+                return FindBackButtonInContent(contentView.Content);
+            }
+
+            return null;
         }
     }
 }

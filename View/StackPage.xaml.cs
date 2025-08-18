@@ -1,6 +1,7 @@
 ﻿using MyKaraoke.Contracts;
 using MyKaraoke.Domain;
 using MyKaraoke.Services;
+using MyKaraoke.View.Extensions;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
@@ -13,7 +14,7 @@ namespace MyKaraoke.View
         private IQueueService _queueService;
         private ServiceProvider _serviceProvider;
         private ObservableCollection<PessoaListItemDto> _fila;
-        private const string ActiveQueueKey = "ActiveFilaDeCQueue"; // Chave para a fila ativa nas Preferences
+        private const string ActiveQueueKey = "ActiveFilaDeCQueue";
 
         // Propriedade para o badge do card
         private string _queueStatusText = "---";
@@ -30,7 +31,7 @@ namespace MyKaraoke.View
             }
         }
 
-        // Comando que o PageLifecycleBehavior irá executar
+        // Comando que o SmartPageLifecycleBehavior irá executar
         public ICommand LoadDataCommand { get; }
 
         public StackPage()
@@ -38,22 +39,19 @@ namespace MyKaraoke.View
             InitializeComponent();
 
             _fila = new ObservableCollection<PessoaListItemDto>();
-
-            // Define o comando que encapsula nossa lógica de inicialização e carregamento
             LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
-
             this.BindingContext = this;
 
-            // Verify filaCollectionView exists before setting ItemsSource
             if (filaCollectionView != null)
             {
                 filaCollectionView.ItemsSource = _fila;
                 filaCollectionView.ReorderCompleted += OnFilaReorderCompleted;
             }
 
-            // Debug: Log component initialization
+            // 📝 REGISTRO: Auto-registro no PageInstanceManager
+            this.RegisterInInstanceManager();
+
             System.Diagnostics.Debug.WriteLine($"StackPage Constructor - bottomNav: {bottomNav != null}");
-            System.Diagnostics.Debug.WriteLine($"StackPage Constructor - emptyQueueMessage: {emptyQueueMessage != null}");
         }
 
         protected override void OnHandlerChanged()
@@ -62,15 +60,12 @@ namespace MyKaraoke.View
 
             if (Handler != null)
             {
-                // Inscrever eventos
                 _serviceProvider = ServiceProvider.FromPage(this);
                 _queueService = _serviceProvider.GetService<IQueueService>();
 
-                if (bottomNav != null)
-                {
-                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
-                    bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
-                }
+                // ✅ SIMPLIFICADO: Sem evento manual - SafeNavigationBehavior cuida da navegação
+                // bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
+                // bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
 
                 if (filaCollectionView != null)
                 {
@@ -80,12 +75,6 @@ namespace MyKaraoke.View
             }
             else
             {
-                // 🎯 CLEANUP quando Handler é removido
-                if (bottomNav != null)
-                {
-                    bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
-                }
-
                 if (filaCollectionView != null)
                 {
                     filaCollectionView.ReorderCompleted -= OnFilaReorderCompleted;
@@ -93,29 +82,52 @@ namespace MyKaraoke.View
             }
         }
 
-        // Este método privado é a AÇÃO que o Behavior executa.
-        private async Task InitializeAndLoadDataAsync()
+        protected override void OnDisappearing()
         {
-            // A lógica de SetLoading(true/false) foi movida para o Behavior.
-            // Este método agora foca apenas no que é específico da página.
+            base.OnDisappearing();
+            this.UnregisterFromInstanceManager();
+        }
+
+        // ===== MÉTODO DE BYPASS PARA SMARTPAGELIFECYCLEBEHAVIOR =====
+
+        /// <summary>
+        /// 🎯 BYPASS: Método que o SmartPageLifecycleBehavior chamará se necessário
+        /// </summary>
+        private async Task OnAppearingBypass()
+        {
             try
             {
-                System.Diagnostics.Debug.WriteLine("InitializeAndLoadDataAsync - Starting");
+                System.Diagnostics.Debug.WriteLine($"🎯 StackPage: OnAppearingBypass executado");
 
-                LoadActiveQueueState(); // Chama o método local
+                // ✅ SIMPLES: Usa extension method padrão
+                await this.ExecuteStandardBypass();
 
-                await Task.Delay(100);
-
-                await CheckActiveQueueAsync(); // Nova verificação de fila ativa
+                System.Diagnostics.Debug.WriteLine($"✅ StackPage: OnAppearingBypass concluído com sucesso");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"InitializeAndLoadDataAsync - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ StackPage: Erro no OnAppearingBypass: {ex.Message}");
+            }
+        }
+
+        // ===== MÉTODOS ORIGINAIS PRESERVADOS =====
+
+        private async Task InitializeAndLoadDataAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("StackPage: InitializeAndLoadDataAsync - Starting");
+                LoadActiveQueueState();
+                await Task.Delay(100);
+                await CheckActiveQueueAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"StackPage: InitializeAndLoadDataAsync - Error: {ex.Message}");
                 ShowEmptyQueueState();
             }
         }
 
-        // --- Métodos de Persistência da Fila Ativa na UI (usando Preferences) ---
         private void LoadActiveQueueState()
         {
             string filaJson = Preferences.Get(ActiveQueueKey, string.Empty);
@@ -130,7 +142,7 @@ namespace MyKaraoke.View
             }
             else
             {
-                _fila.Clear(); // Garante que a lista está vazia se não houver dados
+                _fila.Clear();
             }
         }
 
@@ -142,143 +154,123 @@ namespace MyKaraoke.View
 
         private async Task CheckActiveQueueAsync()
         {
-            System.Diagnostics.Debug.WriteLine("CheckActiveQueueAsync - Starting");
+            System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - Starting");
 
             try
             {
                 if (_queueService == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("CheckActiveQueueAsync - QueueService is null, showing empty state");
-                    // Fallback: mostrar estado vazio se serviço não estiver disponível
+                    System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - QueueService is null, showing empty state");
                     ShowEmptyQueueState();
                     return;
                 }
 
                 var activeEvent = await _queueService.GetActiveEventAsync();
-                System.Diagnostics.Debug.WriteLine($"CheckActiveQueueAsync - ActiveEvent: {activeEvent?.Id}, FilaAtiva: {activeEvent?.FilaAtiva}");
+                System.Diagnostics.Debug.WriteLine($"StackPage: CheckActiveQueueAsync - ActiveEvent: {activeEvent?.Id}, FilaAtiva: {activeEvent?.FilaAtiva}");
 
                 if (activeEvent == null || !activeEvent.FilaAtiva)
                 {
-                    System.Diagnostics.Debug.WriteLine("CheckActiveQueueAsync - No active event, showing empty state");
+                    System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - No active event, showing empty state");
                     ShowEmptyQueueState();
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("CheckActiveQueueAsync - Active event found, showing active state");
+                    System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - Active event found, showing active state");
                     ShowActiveQueueState();
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"CheckActiveQueueAsync - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackPage: CheckActiveQueueAsync - Error: {ex.Message}");
                 ShowEmptyQueueState();
             }
         }
 
         private async void ShowEmptyQueueState()
         {
-            System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - Starting");
+            System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - Starting");
 
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 try
                 {
-                    // Atualizar título para "My Karaoke"
                     UpdateHeaderTitle(false);
 
                     if (emptyQueueMessage != null)
                     {
                         emptyQueueMessage.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - emptyQueueMessage set to visible");
+                        System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - emptyQueueMessage set to visible");
                     }
 
                     if (filaCollectionView != null)
                     {
                         filaCollectionView.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - filaCollectionView set to hidden");
-                    }
-
-                    if (bottomNav != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - bottomNav visibility controlled by behavior");
+                        System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - filaCollectionView set to hidden");
                     }
 
                     QueueStatusText = "---";
-                    System.Diagnostics.Debug.WriteLine("ShowEmptyQueueState - QueueStatusText set to ---");
+                    System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - QueueStatusText set to ---");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"ShowEmptyQueueState - Exception: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"StackPage: ShowEmptyQueueState - Exception: {ex.Message}");
                 }
             });
         }
 
         private async void ShowActiveQueueState()
         {
-            System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - Starting");
+            System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - Starting");
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
                 try
                 {
-                    // 🎯 CORREÇÃO: Para a animação quando há fila ativa
-                    if (bottomNav != null)
-                    {
-                        try
-                        {
-                            //await bottomNav.StopNovaFilaAnimationAsync();
-                            System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - Animação Nova Fila parada");
-                        }
-                        catch (Exception animEx)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"ShowActiveQueueState - Erro ao parar animação: {animEx.Message}");
-                        }
-                    }
-
-                    // Atualizar título para "Fila"
                     UpdateHeaderTitle(true);
 
                     if (emptyQueueMessage != null)
                     {
                         emptyQueueMessage.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - emptyQueueMessage set to hidden");
+                        System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - emptyQueueMessage set to hidden");
                     }
 
                     if (filaCollectionView != null)
                     {
                         filaCollectionView.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - filaCollectionView set to visible");
+                        System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - filaCollectionView set to visible");
                     }
 
                     if (bottomNav != null)
                     {
                         bottomNav.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("ShowActiveQueueState - bottomNav set to HIDDEN");
+                        System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - bottomNav set to HIDDEN");
                     }
 
                     int participantCount = _fila?.Count ?? 0;
                     QueueStatusText = participantCount.ToString();
-                    System.Diagnostics.Debug.WriteLine($"ShowActiveQueueState - QueueStatusText set to {participantCount}");
+                    System.Diagnostics.Debug.WriteLine($"StackPage: ShowActiveQueueState - QueueStatusText set to {participantCount}");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"ShowActiveQueueState - Exception: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"StackPage: ShowActiveQueueState - Exception: {ex.Message}");
                 }
             });
         }
+
+        // ===== RESTO DOS MÉTODOS ORIGINAIS =====
 
         private async void OnParticipouClicked(object sender, EventArgs e)
         {
             try
             {
                 PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
-                await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Presente); // Passa o ID
-                pessoaDto.IncrementarParticipacoes(); // Atualiza o contador no DTO
+                await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Presente);
+                pessoaDto.IncrementarParticipacoes();
                 SaveActiveQueueState(_fila.ToList());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"OnParticipouClicked - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackPage: OnParticipouClicked - Error: {ex.Message}");
             }
         }
 
@@ -287,13 +279,13 @@ namespace MyKaraoke.View
             try
             {
                 PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
-                await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Ausente); // Passa o ID
-                pessoaDto.IncrementarAusencias(); // Atualiza o contador no DTO
+                await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Ausente);
+                pessoaDto.IncrementarAusencias();
                 SaveActiveQueueState(_fila.ToList());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"OnAusenteClicked - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackPage: OnAusenteClicked - Error: {ex.Message}");
             }
         }
 
@@ -311,7 +303,7 @@ namespace MyKaraoke.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"OnMoveToBottomClicked - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackPage: OnMoveToBottomClicked - Error: {ex.Message}");
             }
         }
 
@@ -323,7 +315,7 @@ namespace MyKaraoke.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"OnFilaReorderCompleted - Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"StackPage: OnFilaReorderCompleted - Error: {ex.Message}");
             }
         }
 
@@ -355,7 +347,6 @@ namespace MyKaraoke.View
             return value;
         }
 
-
         private void UpdateHeaderTitle(bool hasActiveQueue)
         {
             MainThread.BeginInvokeOnMainThread(() =>
@@ -365,26 +356,14 @@ namespace MyKaraoke.View
                     if (headerComponent != null)
                     {
                         headerComponent.Title = hasActiveQueue ? "Bandokê, Trend´s, 09 jul" : "My Karaoke";
-                        System.Diagnostics.Debug.WriteLine($"Header title updated to: {headerComponent.Title}");
+                        System.Diagnostics.Debug.WriteLine($"StackPage: Header title updated to: {headerComponent.Title}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"UpdateHeaderTitle - Error: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"StackPage: UpdateHeaderTitle - Error: {ex.Message}");
                 }
             });
-        }
-
-        private async void OnBottomNavLocaisClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                await Navigation.PushAsync(new SpotPage());
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Falha ao navegar para SpotPage: {ex.Message}");
-            }
         }
 
         #region INotifyPropertyChanged

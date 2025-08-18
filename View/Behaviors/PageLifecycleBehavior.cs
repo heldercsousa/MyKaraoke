@@ -354,54 +354,15 @@ namespace MyKaraoke.View.Behaviors
 
             try
             {
-                // 🔧 DEBUG CRÍTICO: Verifica detalhadamente o LoadDataCommand
-                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] DEBUG LoadDataCommand:");
-                System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand property: {LoadDataCommand}");
-                System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand != null: {LoadDataCommand != null}");
-
-                if (LoadDataCommand != null)
+                if (LoadDataCommand == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand.CanExecute(null): {LoadDataCommand.CanExecute(null)}");
-                    System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand type: {LoadDataCommand.GetType().Name}");
+                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand é NULL");
+                    return;
                 }
 
-                // 🔧 DEBUG: Verifica a página associada também
-                if (_associatedPage != null)
+                if (!LoadDataCommand.CanExecute(null))
                 {
-                    System.Diagnostics.Debug.WriteLine($"   - Associated page: {_associatedPage.GetType().Name}");
-                    System.Diagnostics.Debug.WriteLine($"   - Associated page BindingContext: {_associatedPage.BindingContext}");
-
-                    // 🎯 TENTATIVA: Acessar LoadDataCommand via BindingContext
-                    if (_associatedPage.BindingContext != null)
-                    {
-                        var bindingContext = _associatedPage.BindingContext;
-                        var loadDataProperty = bindingContext.GetType().GetProperty("LoadDataCommand");
-
-                        if (loadDataProperty != null)
-                        {
-                            var loadDataFromBinding = loadDataProperty.GetValue(bindingContext) as ICommand;
-                            System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand via BindingContext: {loadDataFromBinding != null}");
-
-                            if (loadDataFromBinding != null)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"   - LoadDataCommand via BindingContext CanExecute: {loadDataFromBinding.CanExecute(null)}");
-
-                                // 🎯 CORREÇÃO: Usa comando do BindingContext se o property do Behavior for null
-                                if (LoadDataCommand == null && loadDataFromBinding.CanExecute(null))
-                                {
-                                    System.Diagnostics.Debug.WriteLine("🎯 [PageLifecycleBehavior] Usando LoadDataCommand do BindingContext");
-                                    SetLoadingState(true);
-                                    await Task.Run(() => loadDataFromBinding.Execute(null));
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (LoadDataCommand == null || !LoadDataCommand.CanExecute(null))
-                {
-                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand não disponível ou não executável");
+                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand.CanExecute retornou FALSE");
                     return;
                 }
 
@@ -409,14 +370,31 @@ namespace MyKaraoke.View.Behaviors
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Executando LoadDataCommand");
-                    // Executa o comando fornecido pela página.
-                    await Task.Run(() => LoadDataCommand.Execute(null));
+                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] ⚡ EXECUTANDO LoadDataCommand");
+
+                    // 🔧 CORREÇÃO CRÍTICA: Detecta se é Command assíncrono e aguarda adequadamente
+                    if (LoadDataCommand is Command asyncCommand)
+                    {
+                        // Para Command que encapsula operação async, executa diretamente
+                        LoadDataCommand.Execute(null);
+
+                        // 🛡️ AGUARDA um tempo para operação assíncrona interna completar
+                        await Task.Delay(500);
+                        System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] ✅ Command executado (com delay para async)");
+                    }
+                    else
+                    {
+                        // Para outros tipos de comando, usa abordagem original
+                        await Task.Run(() => LoadDataCommand.Execute(null));
+                        System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] ✅ Command executado (Task.Run)");
+                    }
+
                     System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand concluído");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] Erro ao executar LoadDataCommand: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] ❌ ERRO ao executar LoadDataCommand: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] StackTrace: {ex.StackTrace}");
                 }
                 finally
                 {

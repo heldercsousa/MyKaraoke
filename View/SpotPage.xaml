@@ -10,12 +10,27 @@
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
+    <!-- ✅ BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
     <ContentPage.Behaviors>
-        <behaviors:PageLifecycleBehavior 
+        <behaviors:SmartPageLifecycleBehavior 
             NavBar="{x:Reference CrudNavBar}"
             LoadingIndicator="{x:Reference loadingOverlay}"
             MainContent="{x:Reference mainContentGrid}"
-            LoadDataCommand="{Binding LoadDataCommand}" />
+            LoadDataCommand="{Binding LoadDataCommand}"
+            EnableAutoBypass="True"
+            MaxFailuresBeforeBypass="2" />
+
+        <!-- ✅ NAVEGAÇÃO SEGURA: Para SpotFormPage -->
+        <behaviors:SafeNavigationBehavior 
+            x:Name="SpotFormNavigationBehavior"
+            TargetPageType="{x:Type local:SpotFormPage}"
+            DebounceMilliseconds="800" />
+
+        <!-- ✅ NAVEGAÇÃO SEGURA: Para voltar (StackPage) -->
+        <behaviors:SafeNavigationBehavior 
+            x:Name="BackNavigationBehavior"
+            TargetPageType="{x:Type local:StackPage}"
+            DebounceMilliseconds="500" />
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">

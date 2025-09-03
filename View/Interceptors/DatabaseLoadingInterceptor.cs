@@ -38,10 +38,10 @@ namespace MyKaraoke.View.Interceptors
         /// <summary>
         /// 🎯 INTERCEPTA: Comandos síncronos
         /// </summary>
-        public override DbDataReader ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
+        public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
         {
             ShowLoadingForCommand(command);
-            return base.ReaderExecuting(command, eventData, result);
+            return result;
         }
 
         /// <summary>
@@ -54,16 +54,16 @@ namespace MyKaraoke.View.Interceptors
             CancellationToken cancellationToken = default)
         {
             await ShowLoadingForCommandAsync(command);
-            return await base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
+            return result;
         }
 
         /// <summary>
         /// 🎯 INTERCEPTA: Comandos NonQuery síncronos
         /// </summary>
-        public override int NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
+        public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
         {
             ShowLoadingForCommand(command);
-            return base.NonQueryExecuting(command, eventData, result);
+            return result;
         }
 
         /// <summary>
@@ -76,16 +76,16 @@ namespace MyKaraoke.View.Interceptors
             CancellationToken cancellationToken = default)
         {
             await ShowLoadingForCommandAsync(command);
-            return await base.NonQueryExecutingAsync(command, eventData, result, cancellationToken);
+            return result;
         }
 
         /// <summary>
         /// 🎯 INTERCEPTA: Comandos Scalar síncronos
         /// </summary>
-        public override object ScalarExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<object> result)
+        public override InterceptionResult<object> ScalarExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<object> result)
         {
             ShowLoadingForCommand(command);
-            return base.ScalarExecuting(command, eventData, result);
+            return result;
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace MyKaraoke.View.Interceptors
             CancellationToken cancellationToken = default)
         {
             await ShowLoadingForCommandAsync(command);
-            return await base.ScalarExecutingAsync(command, eventData, result, cancellationToken);
+            return result;
         }
 
         #endregion
@@ -111,7 +111,7 @@ namespace MyKaraoke.View.Interceptors
         public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
         {
             HideLoadingForCommand(command);
-            return base.ReaderExecuted(command, eventData, result);
+            return result;
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace MyKaraoke.View.Interceptors
             CancellationToken cancellationToken = default)
         {
             await HideLoadingForCommandAsync(command);
-            return await base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
+            return result;
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace MyKaraoke.View.Interceptors
         public override int NonQueryExecuted(DbCommand command, CommandExecutedEventData eventData, int result)
         {
             HideLoadingForCommand(command);
-            return base.NonQueryExecuted(command, eventData, result);
+            return result;
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace MyKaraoke.View.Interceptors
             CancellationToken cancellationToken = default)
         {
             await HideLoadingForCommandAsync(command);
-            return await base.NonQueryExecutedAsync(command, eventData, result, cancellationToken);
+            return result;
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace MyKaraoke.View.Interceptors
         public override object ScalarExecuted(DbCommand command, CommandExecutedEventData eventData, object result)
         {
             HideLoadingForCommand(command);
-            return base.ScalarExecuted(command, eventData, result);
+            return result;
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace MyKaraoke.View.Interceptors
             CancellationToken cancellationToken = default)
         {
             await HideLoadingForCommandAsync(command);
-            return await base.ScalarExecutedAsync(command, eventData, result, cancellationToken);
+            return result;
         }
 
         #endregion

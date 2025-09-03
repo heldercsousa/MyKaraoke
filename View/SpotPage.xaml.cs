@@ -90,9 +90,6 @@ namespace MyKaraoke.View
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-
-            // 🗑️ LIMPEZA: Auto-remoção do PageInstanceManager
-            this.UnregisterFromInstanceManager();
         }
 
         // ===== MÉTODO DE BYPASS PARA SMARTPAGELIFECYCLEBEHAVIOR =====
@@ -403,7 +400,6 @@ namespace MyKaraoke.View
 
         private void SetLoading(bool isLoading)
         {
-            loadingOverlay.IsVisible = isLoading;
             locaisCollectionView.IsVisible = !isLoading && Locais.Any();
             emptyStateFrame.IsVisible = !isLoading && !Locais.Any();
         }

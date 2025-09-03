@@ -1,6 +1,5 @@
 ﻿using MyKaraoke.View.Components;
 using MyKaraoke.View.Extensions;
-using MyKaraoke.View.Managers;
 using System.Reflection;
 using System.Windows.Input;
 
@@ -11,10 +10,11 @@ namespace MyKaraoke.View.Behaviors
     /// 🛡️ AUTO-BYPASS: Se LoadDataCommand falha, executa fallback local
     /// 🎯 SELF-HEALING: Se navbar não aparece, força exibição direta
     /// 🔄 BACKWARD-COMPATIBLE: Mantém 100% compatibilidade com PageLifecycleBehavior original
+    /// 🧹 LIMPO: Removido PageInstanceManager desnecessário - GC gerencia ciclo de vida
     /// </summary>
     public class SmartPageLifecycleBehavior : Behavior<ContentPage>
     {
-        #region Bindable Properties - MANTIDAS + NOVAS
+        #region Bindable Properties
 
         public static readonly BindableProperty NavBarProperty =
             BindableProperty.Create(nameof(NavBar), typeof(IAnimatableNavBar), typeof(SmartPageLifecycleBehavior));
@@ -35,11 +35,9 @@ namespace MyKaraoke.View.Behaviors
         public static readonly BindableProperty MaxFailuresBeforeBypassProperty =
             BindableProperty.Create(nameof(MaxFailuresBeforeBypass), typeof(int), typeof(SmartPageLifecycleBehavior), 2);
 
-        // 🎯 NOVA: Propriedade para customizar mensagem de loading
         public static readonly BindableProperty LoadingMessageProperty =
             BindableProperty.Create(nameof(LoadingMessage), typeof(string), typeof(SmartPageLifecycleBehavior), "Carregando...");
 
-        // 🎯 NOVA: Propriedade para habilitar loading automático
         public static readonly BindableProperty UseGlobalLoadingProperty =
             BindableProperty.Create(nameof(UseGlobalLoading), typeof(bool), typeof(SmartPageLifecycleBehavior), true);
 
@@ -58,20 +56,12 @@ namespace MyKaraoke.View.Behaviors
         public VisualElement MainContent { get => (VisualElement)GetValue(MainContentProperty); set => SetValue(MainContentProperty, value); }
         public bool EnableAutoBypass { get => (bool)GetValue(EnableAutoBypassProperty); set => SetValue(EnableAutoBypassProperty, value); }
         public int MaxFailuresBeforeBypass { get => (int)GetValue(MaxFailuresBeforeBypassProperty); set => SetValue(MaxFailuresBeforeBypassProperty, value); }
-
-        /// <summary>
-        /// 🎯 NOVA: Mensagem customizada do loading
-        /// </summary>
         public string LoadingMessage { get => (string)GetValue(LoadingMessageProperty); set => SetValue(LoadingMessageProperty, value); }
-
-        /// <summary>
-        /// 🎯 NOVA: Habilita loading singleton automático (padrão: true)
-        /// </summary>
         public bool UseGlobalLoading { get => (bool)GetValue(UseGlobalLoadingProperty); set => SetValue(UseGlobalLoadingProperty, value); }
 
         #endregion
 
-        #region Private Fields - MANTIDOS
+        #region Private Fields
 
         private ContentPage _associatedPage;
         private bool _hasExecutedSuccessfully = false;
@@ -81,7 +71,7 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Behavior Lifecycle - MANTIDO
+        #region Behavior Lifecycle - LIMPO
 
         protected override void OnAttachedTo(ContentPage page)
         {
@@ -90,9 +80,6 @@ namespace MyKaraoke.View.Behaviors
             _associatedPage = page;
             _associatedPage.Appearing += OnPageAppearing;
             _associatedPage.Disappearing += OnPageDisappearing;
-
-            // 📝 REGISTRO: Mantido para compatibilidade (mesmo que PageInstanceManager seja removido)
-            PageInstanceManager.Instance.RegisterPageInstance(page);
 
             System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Anexado à {page.GetType().Name} (Hash: {page.GetHashCode()}) - UseGlobalLoading: {UseGlobalLoading}");
         }
@@ -105,9 +92,6 @@ namespace MyKaraoke.View.Behaviors
                 {
                     _associatedPage.Appearing -= OnPageAppearing;
                     _associatedPage.Disappearing -= OnPageDisappearing;
-
-                    // 🗑️ REMOÇÃO: Mantido para compatibilidade
-                    PageInstanceManager.Instance.UnregisterPageInstance(_associatedPage);
                 }
 
                 _isProcessing = false;
@@ -123,7 +107,7 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Smart Page Lifecycle - MELHORADO COM LOADING SINGLETON
+        #region Smart Page Lifecycle - OTIMIZADO
 
         private async void OnPageAppearing(object sender, EventArgs e)
         {
@@ -199,9 +183,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// 🧠 TENTATIVA: Executa ciclo normal com loading singleton integrado
-        /// </summary>
         private async Task<bool> TryExecuteNormalCycle()
         {
             try
@@ -280,9 +261,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        /// <summary>
-        /// 🛡️ BYPASS: Executa bypass com loading singleton
-        /// </summary>
         private async Task ExecutePageBypass()
         {
             try
@@ -302,6 +280,8 @@ namespace MyKaraoke.View.Behaviors
 
                     // 🎯 REFLEXÃO: Tenta encontrar método OnAppearingBypass na página
                     var pageType = _associatedPage.GetType();
+
+                    // MÉTODO 1: Procura método OnAppearingBypass por reflexão (compatibilidade com páginas existentes)
                     var bypassMethod = pageType.GetMethod("OnAppearingBypass", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
                     if (bypassMethod != null)
@@ -319,7 +299,8 @@ namespace MyKaraoke.View.Behaviors
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Método OnAppearingBypass não encontrado em {pageType.Name}");
+                        // MÉTODO 2: Extension method fallback
+                        System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Método OnAppearingBypass não encontrado em {pageType.Name} - usando fallback padrão");
                         await _associatedPage.ExecuteStandardBypass();
                     }
 
@@ -351,9 +332,50 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
+        private async void OnPageDisappearing(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: OnPageDisappearing para {_associatedPage.GetType().Name}");
+
+                // ✅ LOADING SINGLETON: Esconde loading se página está saindo
+                if (UseGlobalLoading)
+                {
+                    await GlobalLoadingOverlay.HideLoadingAsync();
+                }
+
+                if (NavBar != null)
+                {
+                    try
+                    {
+                        var hideTask = NavBar.HideAsync();
+                        var timeoutTask = Task.Delay(3000);
+                        var completedTask = await Task.WhenAny(hideTask, timeoutTask);
+
+                        if (completedTask == timeoutTask)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao esconder NavBar");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar escondida com sucesso");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao esconder NavBar: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageDisappearing: {ex.Message}");
+            }
+        }
+
         #endregion
 
-        #region Métodos Auxiliares - MANTIDOS COM ADAPTAÇÕES
+        #region Helper Methods - MANTIDOS E OTIMIZADOS
 
         private bool ShouldBypassBehavior()
         {
@@ -366,7 +388,10 @@ namespace MyKaraoke.View.Behaviors
                     return true;
                 }
 
-                if (_associatedPage is SpotPage)
+                // 🔍 DETECÇÃO: Verifica se é SpotPage sem LoadDataCommand
+                // Usando reflexão para evitar dependência direta do tipo SpotPage
+                var pageType = _associatedPage.GetType();
+                if (pageType.Name == "SpotPage" || pageType.BaseType?.Name == "SpotPage")
                 {
                     if (LoadDataCommand == null)
                     {
@@ -381,33 +406,6 @@ namespace MyKaraoke.View.Behaviors
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em ShouldBypassBehavior: {ex.Message}");
                 return false;
-            }
-        }
-
-        private async Task ForceShowNavBarAfterFailure()
-        {
-            if (NavBar == null) return;
-
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: FORÇA - Chamando NavBar.ShowAsync() após falha");
-
-                var showTask = NavBar.ShowAsync();
-                var timeoutTask = Task.Delay(5000);
-                var completedTask = await Task.WhenAny(showTask, timeoutTask);
-
-                if (completedTask == timeoutTask)
-                {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após falha");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após falha");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após falha: {ex.Message}");
             }
         }
 
@@ -542,6 +540,33 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
+        private async Task ForceShowNavBarAfterFailure()
+        {
+            if (NavBar == null) return;
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: FORÇA - Chamando NavBar.ShowAsync() após falha");
+
+                var showTask = NavBar.ShowAsync();
+                var timeoutTask = Task.Delay(5000);
+                var completedTask = await Task.WhenAny(showTask, timeoutTask);
+
+                if (completedTask == timeoutTask)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após falha");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após falha");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após falha: {ex.Message}");
+            }
+        }
+
         private async Task EnsureNavBarIsShownAfterBypass()
         {
             if (NavBar == null) return;
@@ -569,51 +594,6 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
-        private async void OnPageDisappearing(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: OnPageDisappearing para {_associatedPage.GetType().Name}");
-
-                // ✅ LOADING SINGLETON: Esconde loading se página está saindo
-                if (UseGlobalLoading)
-                {
-                    await GlobalLoadingOverlay.HideLoadingAsync();
-                }
-
-                if (NavBar != null)
-                {
-                    try
-                    {
-                        var hideTask = NavBar.HideAsync();
-                        var timeoutTask = Task.Delay(3000);
-                        var completedTask = await Task.WhenAny(hideTask, timeoutTask);
-
-                        if (completedTask == timeoutTask)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao esconder NavBar");
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar escondida com sucesso");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao esconder NavBar: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageDisappearing: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🎯 LOADING: Controla estado de loading tradicional (FALLBACK)
-        /// ⚠️ USADO: Apenas quando UseGlobalLoading=false
-        /// </summary>
         private void SetLoadingState(bool isLoading)
         {
             try
@@ -635,7 +615,7 @@ namespace MyKaraoke.View.Behaviors
 
         #endregion
 
-        #region Public Methods for Diagnostics - MANTIDOS
+        #region Public Methods for Diagnostics - LIMPO
 
         public Dictionary<string, object> GetDiagnostics()
         {
@@ -651,7 +631,7 @@ namespace MyKaraoke.View.Behaviors
                 { "HasNavBar", NavBar != null },
                 { "HasLoadDataCommand", LoadDataCommand != null },
                 { "LoadDataCommandCanExecute", LoadDataCommand?.CanExecute(null) ?? false },
-                { "UseGlobalLoading", UseGlobalLoading } // ✅ NOVO
+                { "UseGlobalLoading", UseGlobalLoading }
             };
         }
 

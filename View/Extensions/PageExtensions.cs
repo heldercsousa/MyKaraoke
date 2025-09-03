@@ -1,5 +1,4 @@
 ﻿using MyKaraoke.View;
-using MyKaraoke.View.Managers;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
@@ -10,10 +9,11 @@ namespace MyKaraoke.View.Extensions
     /// ✅ EXTENSÕES COMPLETAS: Todos os métodos existentes + novos métodos genéricos
     /// 🚀 BACKWARD-COMPATIBLE: Mantém compatibilidade com código existente
     /// 🎯 REUTILIZÁVEL: Novos métodos genéricos para escalabilidade
+    /// 🧹 LIMPO: Sem dependências do PageInstanceManager removido
     /// </summary>
     public static class PageExtensions
     {
-        #region Métodos de Registro e Diagnóstico - PRESERVADOS
+        #region Métodos de Registro e Diagnóstico - LIMPOS
 
         /// <summary>
         /// 📊 DIAGNÓSTICO: Retorna informações de diagnóstico da página
@@ -34,21 +34,6 @@ namespace MyKaraoke.View.Extensions
                     { "Navigation", page.Navigation != null },
                     { "Behaviors", page.Behaviors?.Count ?? 0 }
                 };
-
-                // ✅ SIMPLIFICADO: Informações básicas do PageInstanceManager
-                try
-                {
-                    var instanceManager = PageInstanceManager.Instance;
-                    if (instanceManager != null)
-                    {
-                        diagnostics["PageInstanceManagerAvailable"] = true;
-                        // Adicione outras informações básicas se necessário
-                    }
-                }
-                catch
-                {
-                    diagnostics["PageInstanceManagerAvailable"] = false;
-                }
 
                 return diagnostics;
             }
@@ -114,7 +99,6 @@ namespace MyKaraoke.View.Extensions
             }
         }
 
-        
         #endregion
 
         #region Métodos de Correção - PRESERVADOS
@@ -180,7 +164,7 @@ namespace MyKaraoke.View.Extensions
 
         #endregion
 
-        #region Novos Métodos Genéricos - ADICIONADOS
+        #region Métodos Genéricos Especializados - REUTILIZÁVEIS
 
         /// <summary>
         /// 🎯 GENÉRICO: Bypass para páginas com lista (SpotPage, PersonPage, etc.)

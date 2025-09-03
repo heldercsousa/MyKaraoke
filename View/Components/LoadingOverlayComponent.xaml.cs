@@ -92,11 +92,17 @@ namespace MyKaraoke.View.Components
                 this.HorizontalOptions = LayoutOptions.Fill;
                 this.VerticalOptions = LayoutOptions.Fill;
 
-                // 🎯 PARENT: Se está em Layout, força subir para frente
+                // 🎯 PARENT: Se está em Layout, força reposicionamento via remoção/adição
                 if (this.Parent is Layout parentLayout)
                 {
-                    parentLayout.RaiseChild(this);
-                    System.Diagnostics.Debug.WriteLine($"🎯 LoadingOverlayComponent: RaiseChild executado");
+                    // ✅ MAUI: Remove e adiciona novamente para forçar posição no topo
+                    var index = parentLayout.Children.IndexOf(this);
+                    if (index >= 0)
+                    {
+                        parentLayout.Children.RemoveAt(index);
+                        parentLayout.Children.Add(this); // Adiciona no final (mais na frente)
+                        System.Diagnostics.Debug.WriteLine($"🎯 LoadingOverlayComponent: Reposicionado no layout");
+                    }
                 }
 
                 // 🎯 GRID: Se está em Grid, força última posição

@@ -31,7 +31,7 @@ namespace MyKaraoke.View.Components
 
         #endregion
 
-        #region Public Methods
+        #region Public Instance Methods
 
         /// <summary>
         /// 🔄 SHOW: Mostra loading na página atual automaticamente
@@ -111,38 +111,6 @@ namespace MyKaraoke.View.Components
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro ao esconder: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🎯 WRAPPER: Executa ação com loading automático
-        /// </summary>
-        public async Task ExecuteWithLoadingAsync(Func<Task> action, string message = "Carregando...")
-        {
-            try
-            {
-                await ShowAsync(message);
-                await action();
-            }
-            finally
-            {
-                await HideAsync();
-            }
-        }
-
-        /// <summary>
-        /// 🎯 WRAPPER: Executa ação com loading automático (com resultado)
-        /// </summary>
-        public async Task<T> ExecuteWithLoadingAsync<T>(Func<Task<T>> action, string message = "Carregando...")
-        {
-            try
-            {
-                await ShowAsync(message);
-                return await action();
-            }
-            finally
-            {
-                await HideAsync();
             }
         }
 
@@ -332,19 +300,35 @@ namespace MyKaraoke.View.Components
         }
 
         /// <summary>
-        /// 🎯 STATIC: Wrapper estático para ações com loading
+        /// 🎯 STATIC: Wrapper estático para ações com loading (sem retorno)
         /// </summary>
         public static async Task ExecuteWithLoadingAsync(Func<Task> action, string message = "Carregando...")
         {
-            await Instance.ExecuteWithLoadingAsync(action, message);
+            try
+            {
+                await ShowLoadingAsync(message);
+                await action();
+            }
+            finally
+            {
+                await HideLoadingAsync();
+            }
         }
 
         /// <summary>
-        /// 🎯 STATIC: Wrapper estático para ações com loading (com resultado)
+        /// 🎯 STATIC: Wrapper estático para ações com loading (com retorno)
         /// </summary>
         public static async Task<T> ExecuteWithLoadingAsync<T>(Func<Task<T>> action, string message = "Carregando...")
         {
-            return await Instance.ExecuteWithLoadingAsync(action, message);
+            try
+            {
+                await ShowLoadingAsync(message);
+                return await action();
+            }
+            finally
+            {
+                await HideLoadingAsync();
+            }
         }
 
         /// <summary>

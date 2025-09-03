@@ -63,9 +63,6 @@ namespace MyKaraoke.View.Interceptors
                     System.Diagnostics.Debug.WriteLine($"🎯 NavigationInterceptor: Hook adicionado ao Application.Current");
                 }
 
-                // 🎯 HOOK: Para cada nova página que for criada
-                ContentPage.PageCreated += OnPageCreated; // Fictício - precisaria ser implementado no framework
-
                 System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: Hooks de aplicação configurados");
             }
             catch (Exception ex)
@@ -84,15 +81,6 @@ namespace MyKaraoke.View.Interceptors
                 System.Diagnostics.Debug.WriteLine($"🎯 NavigationInterceptor: MainPage mudou - configurando interceptação");
                 ConfigurePageInterception(Application.Current?.MainPage);
             }
-        }
-
-        /// <summary>
-        /// 🎯 HOOK: Detecta criação de novas páginas
-        /// </summary>
-        private static void OnPageCreated(ContentPage page)
-        {
-            System.Diagnostics.Debug.WriteLine($"🎯 NavigationInterceptor: Nova página criada: {page.GetType().Name}");
-            ConfigurePageInterception(page);
         }
 
         #endregion

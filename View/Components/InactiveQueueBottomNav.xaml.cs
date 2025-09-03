@@ -144,20 +144,16 @@ namespace MyKaraoke.View.Components
         {
             try
             {
-                // 🎯 NAVEGAÇÃO SEGURA: Para SpotPage
+                // ✅ SIMPLES: SafeNavigationBehavior decide se cria nova ou reutiliza
                 _locaisNavigationBehavior = new SafeNavigationBehavior
                 {
-                    TargetPageType = typeof(SpotPage),
+                    TargetPageType = typeof(SpotPage),          // ← Para saber qual página criar
+                    EnableSmartStackNavigation = true,          // ← Para ser inteligente
                     DebounceMilliseconds = 1000,
-                    CreatePageFunc = () =>
-                    {
-                        var spotPage = new SpotPage();
-                        System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: SpotPage criada via SafeNavigationBehavior - Hash: {spotPage.GetHashCode()}");
-                        return spotPage;
-                    }
+                    CreatePageFunc = () => new SpotPage()       // ← Como criar quando necessário
                 };
 
-                System.Diagnostics.Debug.WriteLine("✅ InactiveQueueBottomNav: SafeNavigationBehaviors inicializados");
+                System.Diagnostics.Debug.WriteLine("✅ InactiveQueueBottomNav: SafeNavigationBehavior configurado - behavior decide tudo");
             }
             catch (Exception ex)
             {

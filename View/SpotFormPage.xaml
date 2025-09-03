@@ -13,7 +13,6 @@
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior 
             NavBar="{x:Reference CrudNavBar}"
-            LoadingIndicator="{x:Reference loadingOverlay}"
             MainContent="{x:Reference mainContentGrid}"
             LoadDataCommand="{Binding LoadDataCommand}"
             EnableAutoBypass="True"
@@ -90,15 +89,19 @@
 
                         <!-- Espaço flexível -->
                         <Grid Grid.Row="4" HeightRequest="40" />
+
+                        <Button Text="🧪 TESTE DEBUG" 
+        Clicked="OnTesteDebugClicked"
+        BackgroundColor="Red" 
+        TextColor="White"
+        Margin="0,20,0,0" />
+                        
                     </Grid>
                 </components:CardWrapperComponent.CardContent>
             </components:CardWrapperComponent>
 
-            <!-- Loading Overlay -->
-            <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
         </Grid>
 
-        <!-- CrudNavBar - Modo Formulário: Mostra botão Salvar quando há texto -->
         <components:CrudNavBarComponent Grid.Row="2"
                               x:Name="CrudNavBar"
                               IsFormMode="True"

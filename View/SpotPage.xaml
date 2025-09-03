@@ -14,7 +14,6 @@
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior 
             NavBar="{x:Reference CrudNavBar}"
-            LoadingIndicator="{x:Reference loadingOverlay}"
             MainContent="{x:Reference mainContentGrid}"
             LoadDataCommand="{Binding LoadDataCommand}"
             EnableAutoBypass="True"
@@ -23,7 +22,7 @@
         <!-- ✅ NAVEGAÇÃO PARA FORMULÁRIO: SpotFormPage -->
         <behaviors:SafeNavigationBehavior 
             x:Name="SpotFormNavigationBehavior"
-            TargetPageType="{x:Type local:SpotFormPage}"
+            EnableSmartStackNavigation="True"   
             DebounceMilliseconds="800" />
 
         <!-- ✅ NAVEGAÇÃO INTELIGENTE DE VOLTA: Usa stack navigation -->
@@ -83,7 +82,6 @@
                 </components:CardWrapperComponent.CardContent>
             </components:CardWrapperComponent>
 
-            <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
         </Grid>
 
         <components:CrudNavBarComponent Grid.Row="2"

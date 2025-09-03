@@ -14,7 +14,6 @@
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior 
             NavBar="{x:Reference bottomNav}"
-            LoadingIndicator="{x:Reference loadingOverlay}"
             MainContent="{x:Reference mainContentGrid}"
             LoadDataCommand="{Binding LoadDataCommand}"
             EnableAutoBypass="True"
@@ -29,7 +28,9 @@
         </Grid.RowDefinitions>
 
         <!-- Header Component -->
-        <components:HeaderComponent Grid.Row="0" x:Name="headerComponent"/>
+        <components:HeaderComponent Grid.Row="0" 
+                           x:Name="headerComponent"
+                           ExitApp="True" />
 
         <!-- Card usando CardWrapperComponent -->
         <Grid Grid.Row="1" x:Name="mainContentGrid">
@@ -199,7 +200,6 @@
                 </components:CardWrapperComponent.CardContent>
             </components:CardWrapperComponent>
 
-            <components:LoadingOverlayComponent x:Name="loadingOverlay"/>
         </Grid>
 
         <!-- ✅ InactiveQueueBottomNav com navegação interna -->

@@ -16,38 +16,6 @@ namespace MyKaraoke.View.Extensions
         #region Métodos de Registro e Diagnóstico - PRESERVADOS
 
         /// <summary>
-        /// 📝 REGISTRO: Auto-registro no PageInstanceManager
-        /// </summary>
-        public static void RegisterInInstanceManager(this ContentPage page)
-        {
-            try
-            {
-                PageInstanceManager.Instance.RegisterPageInstance(page);
-                System.Diagnostics.Debug.WriteLine($"📝 PageExtensions: {page.GetType().Name} registrada no PageInstanceManager");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro ao registrar página: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🗑️ REMOÇÃO: Auto-remoção do PageInstanceManager
-        /// </summary>
-        public static void UnregisterFromInstanceManager(this ContentPage page)
-        {
-            try
-            {
-                PageInstanceManager.Instance.UnregisterPageInstance(page);
-                System.Diagnostics.Debug.WriteLine($"🗑️ PageExtensions: {page.GetType().Name} removida do PageInstanceManager");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro ao remover página: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// 📊 DIAGNÓSTICO: Retorna informações de diagnóstico da página
         /// </summary>
         public static Dictionary<string, object> GetPageDiagnostics(this ContentPage page)
@@ -146,28 +114,7 @@ namespace MyKaraoke.View.Extensions
             }
         }
 
-        /// <summary>
-        /// 🎯 ESPECÍFICO ORIGINAL: Bypass específico para SpotPage (PRESERVADO para compatibilidade)
-        /// ⚠️ DEPRECATED: Use ExecuteListPageBypass() para novos desenvolvimentos
-        /// </summary>
-        public static async Task ExecuteSpotPageBypass(this SpotPage spotPage)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 PageExtensions: ExecuteSpotPageBypass INICIADO (DEPRECATED)");
-
-                // ✅ REDIRECIONA: Para método genérico
-                await spotPage.ExecuteListPageBypass();
-
-                System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: ExecuteSpotPageBypass CONCLUÍDO via método genérico");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro no ExecuteSpotPageBypass: {ex.Message}");
-                await spotPage.ExecuteStandardBypass();
-            }
-        }
-
+        
         #endregion
 
         #region Métodos de Correção - PRESERVADOS

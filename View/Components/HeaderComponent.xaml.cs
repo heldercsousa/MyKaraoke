@@ -29,13 +29,30 @@ namespace MyKaraoke.View.Components
         /// </summary>
         public event EventHandler BackButtonClicked;
 
+        #region ExitApp Property
+
+        public static readonly BindableProperty ExitAppProperty =
+            BindableProperty.Create(nameof(ExitApp), typeof(bool), typeof(HeaderComponent), false);
+
+        /// <summary>
+        /// 🚪 CONFIGURÁVEL: Se true, botão voltar sai da aplicação
+        /// </summary>
+        public bool ExitApp
+        {
+            get => (bool)GetValue(ExitAppProperty);
+            set => SetValue(ExitAppProperty, value);
+        }
+
+        #endregion
+
+
         public HeaderComponent()
         {
             InitializeComponent();
         }
 
         /// <summary>
-        /// Handler do botão voltar - MINIMALISTA: apenas delega
+        /// Handler do botão voltar - CORRIGIDO: usa ExitApp configurável
         /// </summary>
         private async void OnBackButtonClicked(object sender, EventArgs e)
         {
@@ -55,7 +72,15 @@ namespace MyKaraoke.View.Components
                     return;
                 }
 
-                // 3. ✅ DELEGAÇÃO: Busca SafeNavigationBehavior na página e delega
+                // 3. ✅ NOVO: Verifica configuração ExitApp
+                if (ExitApp)
+                {
+                    System.Diagnostics.Debug.WriteLine("HeaderComponent: ExitApp=true - saindo da aplicação");
+                    await ExitApplicationAsync();
+                    return;
+                }
+
+                // 4. ✅ DELEGAÇÃO: Busca SafeNavigationBehavior na página e delega
                 await DelegateToSafeNavigationBehaviorAsync();
             }
             catch (Exception ex)
@@ -146,7 +171,7 @@ namespace MyKaraoke.View.Components
         }
 
         /// <summary>
-        /// 🎯 CASOS ESPECIAIS: Lida com casos onde não há SafeNavigationBehavior
+        /// 🎯 CASOS ESPECIAIS: Fallback quando não há SafeNavigationBehavior - CORRIGIDO
         /// </summary>
         private async Task HandleSpecialCaseNavigationAsync()
         {
@@ -158,13 +183,8 @@ namespace MyKaraoke.View.Components
                     return;
                 }
 
-                // ✅ ÚNICA EXCEÇÃO: StackPage sai da aplicação
-                if (currentPage.GetType().Name == "StackPage")
-                {
-                    System.Diagnostics.Debug.WriteLine("HeaderComponent: StackPage detectada - saindo da aplicação");
-                    await ExitApplicationAsync();
-                    return;
-                }
+                // ✅ REMOVIDO: Hardcoding "if (currentPage.GetType().Name == "StackPage")"
+                // Agora usa apenas ExitApp configurável
 
                 // 🛡️ FALLBACK: Para outras páginas, tenta PopAsync simples
                 if (currentPage.Navigation?.NavigationStack?.Count > 1)
@@ -174,7 +194,7 @@ namespace MyKaraoke.View.Components
                 }
                 else
                 {
-                    // Se não há stack, sai da aplicação
+                    // Se não há stack, sai da aplicação (comportamento padrão)
                     await ExitApplicationAsync();
                 }
             }
@@ -184,6 +204,7 @@ namespace MyKaraoke.View.Components
                 await ExitApplicationAsync();
             }
         }
+
 
         /// <summary>
         /// 🚪 SAÍDA: Sai da aplicação
@@ -244,21 +265,28 @@ namespace MyKaraoke.View.Components
         /// 🎯 CONFIGURAÇÃO: Método utilitário para páginas que precisem configurar programaticamente
         /// (Mantido para compatibilidade, mas não é necessário na maioria dos casos)
         /// </summary>
-        public void ConfigureSafeBackNavigation(Type targetPageType, int debounceMs = 500)
+        public void ConfigureSafeBackNavigation(Type? targetPageType = null, int debounceMs = 500)
         {
             try
             {
+                var safeBehavior = new SafeNavigationBehavior
+                {
+                    EnableSmartStackNavigation = true,
+                    DebounceMilliseconds = debounceMs
+                };
+                var logText = $"HeaderComponent: SafeNavigationBehavior configurado para navegação inteligente";
+
                 var backButton = FindBackButton();
+                if (backButton != null && targetPageType!=null)
+                {
+                    safeBehavior.TargetPageType = targetPageType;
+                    logText = $"HeaderComponent: SafeNavigationBehavior configurado para {targetPageType.Name}";
+                }
+                
                 if (backButton != null)
                 {
-                    var safeBehavior = new SafeNavigationBehavior
-                    {
-                        TargetPageType = targetPageType,
-                        DebounceMilliseconds = debounceMs
-                    };
-
                     backButton.Behaviors.Add(safeBehavior);
-                    System.Diagnostics.Debug.WriteLine($"HeaderComponent: SafeNavigationBehavior configurado para {targetPageType.Name}");
+                    System.Diagnostics.Debug.WriteLine(logText);
                 }
             }
             catch (Exception ex)

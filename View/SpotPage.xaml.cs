@@ -40,6 +40,8 @@ namespace MyKaraoke.View
             LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
 
             System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: NOVA INSTÂNCIA criada - Hash: {this.GetHashCode()}");
+            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: LoadDataCommand criado: {LoadDataCommand != null}"); // ← ADICIONE ESTA LINHA
+
 
             InitializeComponent();
 
@@ -51,9 +53,6 @@ namespace MyKaraoke.View
 
             // ✅ INICIAL: Define SelectionCount inicial (para garantir que CrudNavBar tenha algo para trabalhar)
             SelectionCount = 0;
-
-            // 📝 REGISTRO: Auto-registro no PageInstanceManager
-            this.RegisterInInstanceManager();
 
             System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Construtor concluído - Hash: {this.GetHashCode()}, SelectionCount: {SelectionCount}");
 
@@ -77,7 +76,7 @@ namespace MyKaraoke.View
                     if (headerComponent != null)
                     {
                         // Configurar navegação segura para voltar à StackPage
-                        headerComponent.ConfigureSafeBackNavigation(typeof(StackPage), 500);
+                        headerComponent.ConfigureSafeBackNavigation(null, 500);
                         System.Diagnostics.Debug.WriteLine($"✅ SpotPage: HeaderComponent configurado para navegação segura");
                     }
                 }
@@ -109,7 +108,7 @@ namespace MyKaraoke.View
                 System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: OnAppearingBypass executado - Hash: {this.GetHashCode()}");
 
                 // ✅ SIMPLES: Usa extension method específico para SpotPage
-                await this.ExecuteSpotPageBypass();
+                await this.ExecuteListPageBypass();
 
                 System.Diagnostics.Debug.WriteLine($"✅ SpotPage: OnAppearingBypass concluído com sucesso");
             }
@@ -137,7 +136,7 @@ namespace MyKaraoke.View
 
             try
             {
-                // ✅ FORÇA SelectionCount=0 NO INÍCIO (garante botão Adicionar)
+                // ✅ FORÇA SelectionCount=0 NO INÍCIO
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
@@ -145,16 +144,37 @@ namespace MyKaraoke.View
                     System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no INÍCIO do InitializeAndLoadDataAsync");
                 });
 
+                // 🔍 DEBUG: Verifica se _estabelecimentoService é null
+                System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: _estabelecimentoService é null: {_estabelecimentoService == null}");
+
                 if (_estabelecimentoService == null)
                 {
+                    // 🔍 DEBUG: Verifica Handler
+                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Handler é null: {this.Handler == null}");
+
+                    if (this.Handler == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Handler é NULL - não pode obter ServiceProvider");
+                        return;
+                    }
+
+                    // 🔍 DEBUG: Verifica ServiceProvider
+                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Tentando obter ServiceProvider...");
                     var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
+                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: ServiceProvider criado: {serviceProvider != null}");
+
+                    // 🔍 DEBUG: Verifica se consegue obter o serviço
+                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Tentando obter IEstabelecimentoService...");
                     _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): EstabelecimentoService obtido: {_estabelecimentoService != null}");
+                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: EstabelecimentoService obtido: {_estabelecimentoService != null}");
                 }
 
+                // 🔍 DEBUG: Antes de chamar LoadLocaisAsync
+                System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Chamando LoadLocaisAsync...");
                 await LoadLocaisAsync();
+                System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: LoadLocaisAsync concluído");
 
-                // ✅ FORÇA SelectionCount=0 NO FINAL (garante que botão permaneça)
+                // ✅ FORÇA SelectionCount=0 NO FINAL
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
@@ -167,6 +187,7 @@ namespace MyKaraoke.View
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SpotPage ({this.GetHashCode()}): Erro em InitializeAndLoadDataAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: StackTrace: {ex.StackTrace}"); // ← ADICIONE ESTA LINHA
 
                 // ✅ FALLBACK: Mesmo com erro, garante que CrudNavBar tenha botão Adicionar
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -191,7 +212,7 @@ namespace MyKaraoke.View
             try
             {
                 var locais = await _estabelecimentoService.GetAllEstabelecimentosAsync();
-                System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): Locais carregados do banco: {locais?.Count() ?? 0}");
+                System.Diagnostics.Debug.WriteLine($"🔍 LOAD RESULT: {locais?.Count()} locais encontrados");
 
                 Locais.Clear();
                 if (locais != null)
@@ -199,8 +220,10 @@ namespace MyKaraoke.View
                     foreach (var local in locais)
                     {
                         Locais.Add(local);
+                        System.Diagnostics.Debug.WriteLine($"🔍 ADDED TO COLLECTION: {local.Id} - '{local.Nome}'");
                     }
                 }
+                System.Diagnostics.Debug.WriteLine($"🔍 FINAL COLLECTION COUNT: {Locais.Count}");
 
                 // ✅ CRÍTICO: Chama UpdateUIState no MainThread APÓS carregar dados
                 MainThread.BeginInvokeOnMainThread(() =>

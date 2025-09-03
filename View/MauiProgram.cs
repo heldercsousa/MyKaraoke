@@ -5,6 +5,7 @@ using MyKaraoke.Infra.Data.Repositories;
 using MyKaraoke.Services;
 using MyKaraoke.Infra.Utils;
 using Microsoft.EntityFrameworkCore;
+using MyKaraoke.View.Interceptors;
 
 namespace MyKaraoke.View;
 
@@ -36,7 +37,8 @@ public static class MauiProgram
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "mykaraoke.db");
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlite($"Data Source={dbPath}");
+            options.UseSqlite($"Data Source={dbPath}")
+            .AddInterceptors(new DatabaseLoadingInterceptor());
 #if DEBUG
             options.EnableSensitiveDataLogging();
             options.LogTo(message => System.Diagnostics.Debug.WriteLine(message), LogLevel.Information);
@@ -72,7 +74,10 @@ public static class MauiProgram
             var app = builder.Build();
             Services = app.Services;
 
-            System.Diagnostics.Debug.WriteLine("[MauiProgram] Aplicação construída com sucesso");
+            // ✅ INTERCEPTADOR DE NAVEGAÇÃO: Inicializa no startup
+            NavigationLoadingInterceptor.Initialize();
+
+            System.Diagnostics.Debug.WriteLine("[MauiProgram] Aplicação construída com interceptadores de loading automático");
             return app;
         }
         catch (Exception ex)

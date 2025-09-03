@@ -376,10 +376,13 @@ namespace MyKaraoke.View.Behaviors
 
         /// <summary>
         /// 🎯 MARCAÇÃO: Marca página para tratamento especial se necessário (PRESERVADO)
+        /// ✅ CORREÇÃO: Não marca SpotPage para bypass quando é navegação de volta
         /// </summary>
         private void MarkPageForSpecialHandling(ContentPage page)
         {
-            if (page is SpotPage)
+            // ✅ CRÍTICO: Apenas marca para bypass quando é navegação PARA FRENTE
+            // Navegação de volta (stack navigation) não deve marcar para bypass
+            if (page is SpotPage && !EnableSmartStackNavigation)
             {
                 page.StyleId = "BYPASS_PAGELIFECYCLE";
                 System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: SpotPage marcada para bypass");

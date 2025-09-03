@@ -49,9 +49,6 @@ namespace MyKaraoke.View
 
             // ✅ INICIAL: Define HasTextToSave inicial (false = sem botão Salvar inicialmente)
             HasTextToSave = false;
-
-            // 📝 REGISTRO: Auto-registro no PageInstanceManager
-            this.RegisterInInstanceManager();
         }
 
         protected override void OnHandlerChanged()
@@ -69,7 +66,7 @@ namespace MyKaraoke.View
                     var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
                     if (headerComponent != null)
                     {
-                        headerComponent.ConfigureSafeBackNavigation(typeof(SpotPage), 500);
+                        headerComponent.ConfigureSafeBackNavigation(null, 500);
                     }
                 }
                 catch (Exception ex)
@@ -289,66 +286,110 @@ namespace MyKaraoke.View
         /// </summary>
         private async Task OnSalvarLocalAsyncInternal()
         {
-            if (_estabelecimentoService == null)
-            {
-                ShowValidationMessage("Serviços não disponíveis");
-                return;
-            }
-
-            var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
-            var nomeLocal = nomeLocalEntry?.Text?.Trim();
-
-            // Validação básica
-            var validation = _estabelecimentoService.ValidateNameInput(nomeLocal);
-            if (!validation.isValid)
-            {
-                ShowValidationMessage(validation.message);
-                return;
-            }
+            System.Diagnostics.Debug.WriteLine("🚀 === OnSalvarLocalAsyncInternal INICIADO ===");
 
             try
             {
-                SetLoading(true);
-
-                if (_isEditing && _editingLocal != null)
+                if (_estabelecimentoService == null)
                 {
-                    var result = await _estabelecimentoService.UpdateEstabelecimentoAsync(_editingLocal.Id, nomeLocal);
-                    if (result.success)
+                    System.Diagnostics.Debug.WriteLine("❌ EstabelecimentoService é NULL!");
+                    ShowValidationMessage("Serviços não disponíveis");
+                    return;
+                }
+
+                var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
+                var nomeLocal = nomeLocalEntry?.Text?.Trim();
+
+                System.Diagnostics.Debug.WriteLine($"📝 Nome do local digitado: '{nomeLocal}'");
+                System.Diagnostics.Debug.WriteLine($"📝 Campo nomeLocalEntry encontrado: {nomeLocalEntry != null}");
+
+                // Validação básica
+                var validation = _estabelecimentoService.ValidateNameInput(nomeLocal);
+                System.Diagnostics.Debug.WriteLine($"✅ Validação: isValid={validation.isValid}, message='{validation.message}'");
+
+                if (!validation.isValid)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Validação falhou: {validation.message}");
+                    ShowValidationMessage(validation.message);
+                    return;
+                }
+
+                SetLoading(true);
+                System.Diagnostics.Debug.WriteLine("🔄 Loading ativado");
+
+                try
+                {
+                    if (_isEditing && _editingLocal != null)
                     {
-                        ShowSuccessMessage(result.message);
-                        await Task.Delay(1500);
-                        await NavigateBackToSpotPage();
+                        System.Diagnostics.Debug.WriteLine($"📝 MODO EDIÇÃO: Editando local ID {_editingLocal.Id}");
+                        var result = await _estabelecimentoService.UpdateEstabelecimentoAsync(_editingLocal.Id, nomeLocal);
+                        System.Diagnostics.Debug.WriteLine($"📝 Resultado UPDATE: success={result.success}, message='{result.message}'");
+
+                        if (result.success)
+                        {
+                            System.Diagnostics.Debug.WriteLine("✅ UPDATE bem-sucedido!");
+                            ShowSuccessMessage(result.message);
+                            await Task.Delay(1500);
+                            await NavigateBackToSpotPage();
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"❌ UPDATE falhou: {result.message}");
+                            ShowValidationMessage(result.message);
+                        }
                     }
                     else
                     {
-                        ShowValidationMessage(result.message);
+                        System.Diagnostics.Debug.WriteLine($"🆕 MODO CRIAÇÃO: Criando novo local");
+                        System.Diagnostics.Debug.WriteLine($"🆕 Chamando CreateEstabelecimentoAsync com nome: '{nomeLocal}'");
+
+                        var result = await _estabelecimentoService.CreateEstabelecimentoAsync(nomeLocal);
+                        System.Diagnostics.Debug.WriteLine($"🔍 CREATE RESULT: success={result.success}, message='{result.message}', estabelecimento={result.estabelecimento?.Id}");
+
+                        System.Diagnostics.Debug.WriteLine($"🆕 Resultado CREATE: success={result.success}");
+                        System.Diagnostics.Debug.WriteLine($"🆕 Resultado CREATE: message='{result.message}'");
+                        System.Diagnostics.Debug.WriteLine($"🆕 Estabelecimento criado: {result.estabelecimento?.Id} - '{result.estabelecimento?.Nome}'");
+
+                        if (result.success)
+                        {
+                            System.Diagnostics.Debug.WriteLine("✅ CREATE bem-sucedido!");
+                            ShowSuccessMessage(result.message);
+
+                            // Aguarda antes de navegar
+                            System.Diagnostics.Debug.WriteLine("⏳ Aguardando 1.5s antes de navegar...");
+                            await Task.Delay(1500);
+
+                            System.Diagnostics.Debug.WriteLine("🔙 Navegando de volta para SpotPage...");
+                            await NavigateBackToSpotPage();
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"❌ CREATE falhou: {result.message}");
+                            ShowValidationMessage(result.message);
+                        }
                     }
                 }
-                else
+                catch (Exception serviceEx)
                 {
-                    var result = await _estabelecimentoService.CreateEstabelecimentoAsync(nomeLocal);
-                    if (result.success)
-                    {
-                        ShowSuccessMessage(result.message);
-                        await Task.Delay(1500);
-                        await NavigateBackToSpotPage();
-                    }
-                    else
-                    {
-                        ShowValidationMessage(result.message);
-                    }
+                    System.Diagnostics.Debug.WriteLine($"❌ Erro no serviço: {serviceEx.Message}");
+                    System.Diagnostics.Debug.WriteLine($"❌ Service StackTrace: {serviceEx.StackTrace}");
+                    ShowValidationMessage($"Erro interno: {serviceEx.Message}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao salvar local: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Erro geral em OnSalvarLocalAsyncInternal: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ General StackTrace: {ex.StackTrace}");
                 ShowValidationMessage("Erro interno ao salvar");
             }
             finally
             {
                 SetLoading(false);
+                System.Diagnostics.Debug.WriteLine("🔄 Loading desativado");
+                System.Diagnostics.Debug.WriteLine("🚀 === OnSalvarLocalAsyncInternal FINALIZADO ===");
             }
         }
+
 
         #endregion
 
@@ -494,6 +535,130 @@ namespace MyKaraoke.View
             }
         }
 
+        // 1. MÉTODO DE DEBUG PARA VERIFICAR O FLUXO COMPLETO
+        private async Task<bool> DebugSaveFlow()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("🔍 === DEBUG SAVE FLOW INICIADO ===");
+
+                // Verifica se o serviço está disponível
+                System.Diagnostics.Debug.WriteLine($"🔍 EstabelecimentoService disponível: {_estabelecimentoService != null}");
+
+                // Verifica o texto do campo
+                var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
+                var nomeLocal = nomeLocalEntry?.Text?.Trim();
+                System.Diagnostics.Debug.WriteLine($"🔍 Texto do campo: '{nomeLocal}'");
+
+                // Verifica validação
+                if (_estabelecimentoService != null)
+                {
+                    var validation = _estabelecimentoService.ValidateNameInput(nomeLocal);
+                    System.Diagnostics.Debug.WriteLine($"🔍 Validação: isValid={validation.isValid}, message='{validation.message}'");
+
+                    if (validation.isValid)
+                    {
+                        // Tenta criar o estabelecimento
+                        System.Diagnostics.Debug.WriteLine("🔍 Chamando CreateEstabelecimentoAsync...");
+                        var result = await _estabelecimentoService.CreateEstabelecimentoAsync(nomeLocal);
+                        System.Diagnostics.Debug.WriteLine($"🔍 Resultado: success={result.success}, message='{result.message}'");
+                        System.Diagnostics.Debug.WriteLine($"🔍 Estabelecimento criado: {result.estabelecimento?.Id} - '{result.estabelecimento?.Nome}'");
+
+                        return result.success;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro no debug: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+                return false;
+            }
+            finally
+            {
+                System.Diagnostics.Debug.WriteLine("🔍 === DEBUG SAVE FLOW FINALIZADO ===");
+            }
+
+        }
+
+        public async Task TestCreateEstabelecimentoDirectly(string testName)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"🧪 === TESTE DIRETO DO SERVIÇO: '{testName}' ===");
+
+                if (_estabelecimentoService == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Serviço é NULL - inicializando...");
+                    var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
+                    _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+                    System.Diagnostics.Debug.WriteLine($"✅ Serviço inicializado: {_estabelecimentoService != null}");
+                }
+
+                if (_estabelecimentoService != null)
+                {
+                    var result = await _estabelecimentoService.CreateEstabelecimentoAsync(testName);
+                    System.Diagnostics.Debug.WriteLine($"🧪 Teste resultado: success={result.success}, message='{result.message}'");
+                    System.Diagnostics.Debug.WriteLine($"🧪 Estabelecimento: {result.estabelecimento?.Id} - '{result.estabelecimento?.Nome}'");
+
+                    // Verifica se foi realmente salvo
+                    var allEstabelecimentos = await _estabelecimentoService.GetAllEstabelecimentosAsync();
+                    System.Diagnostics.Debug.WriteLine($"🧪 Total de estabelecimentos no banco: {allEstabelecimentos?.Count()}");
+
+                    foreach (var est in allEstabelecimentos ?? Enumerable.Empty<Estabelecimento>())
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🧪 Estabelecimento no banco: {est.Id} - '{est.Nome}'");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro no teste direto: {ex.Message}");
+            }
+
+        }
+
+        private async void OnTesteDebugClicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("🧪 === TESTE SIMPLES INICIADO ===");
+
+            try
+            {
+                // 1. Testa se consegue criar o estabelecimento
+                await TestCreateEstabelecimentoDirectly("Teste Local " + DateTime.Now.ToString("HH:mm:ss"));
+
+                // 2. Aguarda um pouco
+                await Task.Delay(1000);
+
+                // 3. Testa se consegue listar
+                if (_estabelecimentoService != null)
+                {
+                    var todos = await _estabelecimentoService.GetAllEstabelecimentosAsync();
+                    System.Diagnostics.Debug.WriteLine($"🧪 Após criar - Total no banco: {todos?.Count()}");
+                }
+
+                // 4. Testa o fluxo normal
+                var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
+                if (nomeLocalEntry != null)
+                {
+                    nomeLocalEntry.Text = "Local de Teste " + DateTime.Now.ToString("mm:ss");
+                    System.Diagnostics.Debug.WriteLine($"🧪 Campo preenchido com: {nomeLocalEntry.Text}");
+
+                    // Simula o clique no botão salvar
+                    await Task.Delay(500);
+                    await OnSalvarLocalAsyncInternal();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro no teste: {ex.Message}");
+            }
+
+            System.Diagnostics.Debug.WriteLine("🧪 === TESTE SIMPLES FINALIZADO ===");
+
+        }
         #endregion
 
         #region INotifyPropertyChanged

@@ -48,9 +48,6 @@ namespace MyKaraoke.View
                 filaCollectionView.ReorderCompleted += OnFilaReorderCompleted;
             }
 
-            // 📝 REGISTRO: Auto-registro no PageInstanceManager
-            this.RegisterInInstanceManager();
-
             System.Diagnostics.Debug.WriteLine($"StackPage Constructor - bottomNav: {bottomNav != null}");
         }
 

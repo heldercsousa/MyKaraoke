@@ -202,14 +202,40 @@ namespace MyKaraoke.Services
 
         public async Task<IEnumerable<Estabelecimento>> GetAllEstabelecimentosAsync()
         {
+            System.Diagnostics.Debug.WriteLine("📋 === GetAllEstabelecimentosAsync INICIADO ===");
+
             try
             {
-                return await _estabelecimentoRepository.GetAllAsync();
+                System.Diagnostics.Debug.WriteLine($"📋 Repository disponível: {_estabelecimentoRepository != null}");
+
+                if (_estabelecimentoRepository == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Repository é NULL!");
+                    return new List<Estabelecimento>();
+                }
+
+                System.Diagnostics.Debug.WriteLine("📋 Chamando GetAllAsync...");
+                var estabelecimentos = await _estabelecimentoRepository.GetAllAsync();
+
+                var list = estabelecimentos?.ToList() ?? new List<Estabelecimento>();
+                System.Diagnostics.Debug.WriteLine($"📋 Estabelecimentos encontrados: {list.Count}");
+
+                foreach (var est in list)
+                {
+                    System.Diagnostics.Debug.WriteLine($"📋 Encontrado: {est.Id} - '{est.Nome}'");
+                }
+
+                return list;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao buscar estabelecimentos: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao buscar estabelecimentos: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
                 return new List<Estabelecimento>();
+            }
+            finally
+            {
+                System.Diagnostics.Debug.WriteLine("📋 === GetAllEstabelecimentosAsync FINALIZADO ===");
             }
         }
 

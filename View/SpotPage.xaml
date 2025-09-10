@@ -13,23 +13,24 @@
     <!-- ✅ BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior 
-            NavBar="{x:Reference CrudNavBar}"
-            MainContent="{x:Reference mainContentGrid}"
-            LoadDataCommand="{Binding LoadDataCommand}"
-            EnableAutoBypass="True"
-            MaxFailuresBeforeBypass="2" />
+        NavBar="{x:Reference CrudNavBar}"
+        MainContent="{x:Reference mainContentGrid}"
+        LoadDataCommand="{Binding LoadDataCommand}"
+        EnableAutoBypass="True"
+        MaxFailuresBeforeBypass="2" />
+        <!-- ✅ MANTIDO: LoadDataCommand igual à StackPage que funciona -->
 
         <!-- ✅ NAVEGAÇÃO PARA FORMULÁRIO: SpotFormPage -->
         <behaviors:SafeNavigationBehavior 
-            x:Name="SpotFormNavigationBehavior"
-            EnableSmartStackNavigation="True"   
-            DebounceMilliseconds="800" />
+        x:Name="SpotFormNavigationBehavior"
+        EnableSmartStackNavigation="True"   
+        DebounceMilliseconds="800" />
 
         <!-- ✅ NAVEGAÇÃO INTELIGENTE DE VOLTA: Usa stack navigation -->
         <behaviors:SafeNavigationBehavior 
-            x:Name="BackNavigationBehavior"
-            EnableSmartStackNavigation="True"
-            DebounceMilliseconds="500" />
+        x:Name="BackNavigationBehavior"
+        EnableSmartStackNavigation="True"
+        DebounceMilliseconds="500" />
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">

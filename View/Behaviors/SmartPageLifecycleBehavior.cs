@@ -267,14 +267,37 @@ namespace MyKaraoke.View.Behaviors
             {
                 System.Diagnostics.Debug.WriteLine($"🛡️ SmartPageLifecycleBehavior: Executando bypass para {_associatedPage.GetType().Name}");
 
-                // ✅ LOADING SINGLETON: Mostra durante bypass também
+                // ✅ CORREÇÃO: Aguarda NavBar estar pronta ANTES de mostrar loading (igual TryExecuteNormalCycle)
+                var navBarReady = await WaitForNavBarReady();
+                if (!navBarReady)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta no bypass");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar pronta para bypass");
+                }
+
+                // ✅ LOADING SINGLETON: Mostra durante bypass após NavBar estar pronta
                 if (UseGlobalLoading)
                 {
                     await GlobalLoadingOverlay.ShowLoadingAsync($"Carregando {_associatedPage.GetType().Name}...");
+                    System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading EXIBIDO para bypass");
                 }
+
+                // ✅ TIMING: Aguarda tempo visual mínimo
+                await Task.Delay(150);
 
                 try
                 {
+                    // ✅ CORREÇÃO: ESCONDE loading ANTES de executar LoadDataCommand
+                    // Isso permite que DatabaseInterceptor mostre loading próprio
+                    if (UseGlobalLoading)
+                    {
+                        await GlobalLoadingOverlay.HideLoadingAsync();
+                        System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading escondido ANTES do LoadDataCommand para permitir DatabaseInterceptor");
+                    }
+
                     // ✅ CRÍTICO: SEMPRE executa LoadDataCommand primeiro (se disponível)
                     await TryExecuteLoadDataCommand();
 
@@ -311,20 +334,18 @@ namespace MyKaraoke.View.Behaviors
                     _failureCount = 0;
                     System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Bypass executado com sucesso");
                 }
-                finally
+                catch (Exception ex)
                 {
-                    // ✅ LOADING SINGLETON: Esconde após bypass
-                    if (UseGlobalLoading)
-                    {
-                        await GlobalLoadingOverlay.HideLoadingAsync();
-                    }
+                    System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
                 }
+                // ✅ REMOVIDO: finally que escondia loading 
+                // Loading agora é gerenciado pelo DatabaseInterceptor
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
 
-                // 🔄 CLEANUP: Garante que loading seja escondido
+                // 🔄 CLEANUP: Garante que loading seja escondido em caso de erro crítico
                 if (UseGlobalLoading)
                 {
                     await GlobalLoadingOverlay.HideLoadingAsync();

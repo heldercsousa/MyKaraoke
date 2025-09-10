@@ -32,35 +32,28 @@ namespace MyKaraoke.View
         }
 
         // Comando que o SmartPageLifecycleBehavior irá executar
-        public ICommand LoadDataCommand { get; }
+        public ICommand LoadDataCommand { get; private set;  }
+
 
         public SpotPage()
         {
-            // ✅ CRÍTICO: Inicializa LoadDataCommand PRIMEIRO, antes de qualquer coisa
+            // ✅ EXATAMENTE como StackPage: LoadDataCommand ANTES do InitializeComponent
             LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
 
-            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: NOVA INSTÂNCIA criada - Hash: {this.GetHashCode()}");
-            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: LoadDataCommand criado: {LoadDataCommand != null}"); // ← ADICIONE ESTA LINHA
+            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: LoadDataCommand criado ANTES do InitializeComponent: {LoadDataCommand != null}");
 
-
+            // ✅ Agora o binding encontrará LoadDataCommand disponível
             InitializeComponent();
 
+            // ✅ Resto da inicialização
             Locais = new ObservableCollection<Estabelecimento>();
             locaisCollectionView.ItemsSource = Locais;
-
-            // ✅ CRÍTICO: Define BindingContext DEPOIS do LoadDataCommand
             this.BindingContext = this;
-
-            // ✅ INICIAL: Define SelectionCount inicial (para garantir que CrudNavBar tenha algo para trabalhar)
             SelectionCount = 0;
 
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Construtor concluído - Hash: {this.GetHashCode()}, SelectionCount: {SelectionCount}");
-
-            // ✅ GARANTE estado inicial correto
             UpdateUIState();
 
-            // ✅ VERIFICAÇÃO FINAL: Confirma que comando está disponível
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Verificação final - LoadDataCommand executável: {LoadDataCommand?.CanExecute(null)}");
+            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Construtor concluído - LoadDataCommand: {LoadDataCommand != null}");
         }
 
         protected override void OnHandlerChanged()
@@ -71,19 +64,55 @@ namespace MyKaraoke.View
             {
                 try
                 {
-                    // 🎯 CONFIGURAÇÃO: HeaderComponent para navegação segura de volta
+                    // ✅ VERIFICAÇÃO: LoadDataCommand ainda disponível
+                    if (LoadDataCommand == null)
+                    {
+                        LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
+                        OnPropertyChanged(nameof(LoadDataCommand));
+                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: LoadDataCommand recriado em OnHandlerChanged");
+                    }
+
+                    // Resto da configuração do HeaderComponent...
                     var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
                     if (headerComponent != null)
                     {
-                        // Configurar navegação segura para voltar à StackPage
                         headerComponent.ConfigureSafeBackNavigation(null, 500);
-                        System.Diagnostics.Debug.WriteLine($"✅ SpotPage: HeaderComponent configurado para navegação segura");
                     }
+
+                    EnsureEstabelecimentoService();
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao configurar HeaderComponent: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em OnHandlerChanged: {ex.Message}");
                 }
+            }
+        }
+
+        private void EnsureEstabelecimentoService()
+        {
+            try
+            {
+                if (_estabelecimentoService == null && Handler != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Inicializando EstabelecimentoService...");
+
+                    var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
+                    _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+
+                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage: EstabelecimentoService inicializado: {_estabelecimentoService != null}");
+
+                    // ✅ FORÇA: LoadDataCommand estar disponível para SmartPageLifecycleBehavior
+                    if (LoadDataCommand == null)
+                    {
+                        LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
+                        OnPropertyChanged(nameof(LoadDataCommand));
+                        System.Diagnostics.Debug.WriteLine($"✅ SpotPage: LoadDataCommand recriado após Handler disponível");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao inicializar EstabelecimentoService: {ex.Message}");
             }
         }
 
@@ -127,6 +156,7 @@ namespace MyKaraoke.View
         /// <summary>
         /// ✅ ORIGINAL: Este método é chamado pelo SmartPageLifecycleBehavior ou OnAppearingBypass
         /// </summary>
+
         private async Task InitializeAndLoadDataAsync()
         {
             System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): InitializeAndLoadDataAsync INICIADO");
@@ -138,45 +168,21 @@ namespace MyKaraoke.View
                 {
                     SelectionCount = 0;
                     OnPropertyChanged(nameof(SelectionCount));
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no INÍCIO do InitializeAndLoadDataAsync");
+                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no INÍCIO");
                 });
 
-                // 🔍 DEBUG: Verifica se _estabelecimentoService é null
-                System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: _estabelecimentoService é null: {_estabelecimentoService == null}");
+                // ✅ AGUARDA: Handler estar disponível se ainda não estiver
+                await EnsureHandlerAndServiceAvailable();
 
-                if (_estabelecimentoService == null)
-                {
-                    // 🔍 DEBUG: Verifica Handler
-                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Handler é null: {this.Handler == null}");
-
-                    if (this.Handler == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Handler é NULL - não pode obter ServiceProvider");
-                        return;
-                    }
-
-                    // 🔍 DEBUG: Verifica ServiceProvider
-                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Tentando obter ServiceProvider...");
-                    var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
-                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: ServiceProvider criado: {serviceProvider != null}");
-
-                    // 🔍 DEBUG: Verifica se consegue obter o serviço
-                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Tentando obter IEstabelecimentoService...");
-                    _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
-                    System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: EstabelecimentoService obtido: {_estabelecimentoService != null}");
-                }
-
-                // 🔍 DEBUG: Antes de chamar LoadLocaisAsync
-                System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: Chamando LoadLocaisAsync...");
+                // ✅ CARREGA: Dados do banco
                 await LoadLocaisAsync();
-                System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: LoadLocaisAsync concluído");
 
                 // ✅ FORÇA SelectionCount=0 NO FINAL
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
                     OnPropertyChanged(nameof(SelectionCount));
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no FINAL do InitializeAndLoadDataAsync");
+                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no FINAL");
                 });
 
                 System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): InitializeAndLoadDataAsync CONCLUÍDO");
@@ -184,16 +190,57 @@ namespace MyKaraoke.View
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SpotPage ({this.GetHashCode()}): Erro em InitializeAndLoadDataAsync: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: StackTrace: {ex.StackTrace}"); // ← ADICIONE ESTA LINHA
 
                 // ✅ FALLBACK: Mesmo com erro, garante que CrudNavBar tenha botão Adicionar
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
                     OnPropertyChanged(nameof(SelectionCount));
+                    UpdateUIState();
                     System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): Fallback - SelectionCount=0 definido");
                 });
             }
+        }
+
+
+        private async Task EnsureHandlerAndServiceAvailable()
+        {
+            int attempts = 0;
+            const int maxAttempts = 20; // 20 x 100ms = 2 segundos
+
+            while (attempts < maxAttempts)
+            {
+                if (Handler != null && _estabelecimentoService != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Handler e Service disponíveis após {attempts} tentativas");
+                    return;
+                }
+
+                if (Handler != null && _estabelecimentoService == null)
+                {
+                    try
+                    {
+                        var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
+                        _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+                        System.Diagnostics.Debug.WriteLine($"✅ SpotPage: EstabelecimentoService obtido na tentativa {attempts}");
+
+                        if (_estabelecimentoService != null)
+                        {
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao obter service na tentativa {attempts}: {ex.Message}");
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🔄 SpotPage: Aguardando Handler/Service - tentativa {attempts + 1}/{maxAttempts}");
+                await Task.Delay(100);
+                attempts++;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"⚠️ SpotPage: Timeout aguardando Handler/Service - continuando mesmo assim");
         }
 
         private async Task LoadLocaisAsync()

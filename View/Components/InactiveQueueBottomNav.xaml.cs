@@ -267,7 +267,7 @@ namespace MyKaraoke.View.Components
             {
                 System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: OnLocaisClicked via SafeNavigationBehavior");
 
-                // 🚀 NAVEGAÇÃO SEGURA: Usa SafeNavigationBehavior
+                // 🚀 APENAS SafeNavigationBehavior - SEM fallback que causa dupla navegação
                 if (_locaisNavigationBehavior != null)
                 {
                     await _locaisNavigationBehavior.NavigateToPageAsync();
@@ -275,19 +275,21 @@ namespace MyKaraoke.View.Components
                 }
                 else
                 {
-                    // 🛡️ FALLBACK: Dispara evento tradicional se behavior não disponível
-                    System.Diagnostics.Debug.WriteLine($"⚠️ InactiveQueueBottomNav: SafeNavigationBehavior não disponível - usando evento tradicional");
-                    LocaisClicked?.Invoke(this, EventArgs.Empty);
+                    System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: SafeNavigationBehavior não disponível");
                 }
+
+                // ❌ REMOVIDO: Fallback que causava dupla navegação
+                // LocaisClicked?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: Erro em OnLocaisClicked: {ex.Message}");
 
-                // 🛡️ FALLBACK: Tenta evento tradicional em caso de erro
+                // 🛡️ FALLBACK: Apenas em caso de erro crítico
                 try
                 {
                     LocaisClicked?.Invoke(this, EventArgs.Empty);
+                    System.Diagnostics.Debug.WriteLine($"🛡️ InactiveQueueBottomNav: Fallback executado após erro");
                 }
                 catch (Exception fallbackEx)
                 {

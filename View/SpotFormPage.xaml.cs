@@ -354,6 +354,13 @@ namespace MyKaraoke.View
                             System.Diagnostics.Debug.WriteLine("✅ CREATE bem-sucedido!");
                             ShowSuccessMessage(result.message);
 
+                            // ✅ CORREÇÃO: Limpa o campo após sucesso
+                            MainThread.BeginInvokeOnMainThread(() =>
+                            {
+                                nomeLocalEntry.Text = string.Empty;
+                                HasTextToSave = false;
+                            });
+
                             // Aguarda antes de navegar
                             System.Diagnostics.Debug.WriteLine("⏳ Aguardando 1.5s antes de navegar...");
                             await Task.Delay(1500);

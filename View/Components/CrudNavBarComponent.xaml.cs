@@ -95,12 +95,12 @@ namespace MyKaraoke.View.Components
         {
             var configs = new Dictionary<CrudButtonType, NavButtonConfig>
             {
-                { CrudButtonType.Anterior, new NavButtonConfig { Text = "Anterior", IconSource = "prior.png", Command = new Command(() => ButtonClicked?.Invoke(this, CrudButtonType.Anterior)) } },
-                { CrudButtonType.Adicionar, new NavButtonConfig { Text = "Adicionar", IconSource = "add.png", Command = new Command(() => ButtonClicked?.Invoke(this, CrudButtonType.Adicionar)) } },
-                { CrudButtonType.Editar, new NavButtonConfig { Text = "Editar", IconSource = "edit.png", Command = new Command(() => ButtonClicked?.Invoke(this, CrudButtonType.Editar)) } },
-                { CrudButtonType.Excluir, new NavButtonConfig { Text = "Apagar", IconSource = "delete.png", Command = new Command(() => ButtonClicked?.Invoke(this, CrudButtonType.Excluir)) } },
-                { CrudButtonType.Salvar, new NavButtonConfig { Text = "Salvar", IconSource = "save.png", Command = new Command(() => ButtonClicked?.Invoke(this, CrudButtonType.Salvar)) } },
-                { CrudButtonType.Proximo, new NavButtonConfig { Text = "Próximo", IconSource = "next.png", Command = new Command(() => ButtonClicked?.Invoke(this, CrudButtonType.Proximo)) } },
+                { CrudButtonType.Anterior, new NavButtonConfig { Text = "Anterior", IconSource = "prior.png" } },
+                { CrudButtonType.Adicionar, new NavButtonConfig { Text = "Adicionar", IconSource = "add.png" } },
+                { CrudButtonType.Editar, new NavButtonConfig { Text = "Editar", IconSource = "edit.png" } },
+                { CrudButtonType.Excluir, new NavButtonConfig { Text = "Apagar", IconSource = "delete.png" } },
+                { CrudButtonType.Salvar, new NavButtonConfig { Text = "Salvar", IconSource = "save.png" } }, // ✅ SEM Command
+                { CrudButtonType.Proximo, new NavButtonConfig { Text = "Próximo", IconSource = "next.png" } },
             };
 
             System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {configs.Count} configurações de botão inicializadas");

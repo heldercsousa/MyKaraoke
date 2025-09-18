@@ -94,6 +94,8 @@ namespace MyKaraoke.View.Behaviors
         private bool _isSpecialAnimationInProgress = false;
         private readonly object _animationLock = new object();
 
+        private static readonly bool DISABLE_NAVBAR_ANIMATIONS = true;
+
         #endregion
 
         #region Behavior Lifecycle
@@ -241,6 +243,12 @@ namespace MyKaraoke.View.Behaviors
 
         public async Task AnimateTapEffect()
         {
+            // 🚫 EARLY RETURN: Se animações desabilitadas
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                return;
+            }
+
             try
             {
                 var target = AnimationContainer ?? _associatedObject;
@@ -292,6 +300,23 @@ namespace MyKaraoke.View.Behaviors
 
         public async Task ShowAsync()
         {
+            // 🚫 EARLY RETURN: Se animações desabilitadas
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    if (_associatedObject != null)
+                    {
+                        _associatedObject.IsVisible = true;
+                        _associatedObject.Opacity = 1.0;
+                        _associatedObject.TranslationY = 0;
+                    }
+                });
+                _isShown = true;
+                System.Diagnostics.Debug.WriteLine("🚫 AnimatedButtonBehavior: ShowAsync SEM ANIMAÇÕES (desabilitadas globalmente)");
+                return;
+            }
+
             // 🛡️ PROTEÇÃO: Evita múltiplas execuções simultâneas
             lock (_animationLock)
             {
@@ -409,6 +434,21 @@ namespace MyKaraoke.View.Behaviors
 
         public async Task HideAsync()
         {
+            // 🚫 EARLY RETURN: Se animações desabilitadas
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    if (_associatedObject != null)
+                    {
+                        _associatedObject.IsVisible = false;
+                    }
+                });
+                _isShown = false;
+                System.Diagnostics.Debug.WriteLine("🚫 AnimatedButtonBehavior: HideAsync SEM ANIMAÇÕES (desabilitadas globalmente)");
+                return;
+            }
+
             // 🛡️ PROTEÇÃO: Evita múltiplas execuções simultâneas
             lock (_animationLock)
             {
@@ -494,6 +534,12 @@ namespace MyKaraoke.View.Behaviors
 
         public async Task StartSpecialAnimationAsync()
         {
+            // 🚫 EARLY RETURN: Se animações desabilitadas
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                return;
+            }
+
             // 🛡️ PROTEÇÃO: Evita múltiplas animações especiais simultâneas
             lock (_animationLock)
             {
@@ -540,6 +586,12 @@ namespace MyKaraoke.View.Behaviors
 
         public async Task StopAllAnimationsAsync()
         {
+            // 🚫 EARLY RETURN: Se animações desabilitadas
+            if (DISABLE_NAVBAR_ANIMATIONS)
+            {
+                return;
+            }
+
             try
             {
                 // 🛡️ RESET: Para flags de controle primeiro

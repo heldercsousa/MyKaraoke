@@ -409,18 +409,12 @@ namespace MyKaraoke.View.Behaviors
                     return true;
                 }
 
-                // 🔍 DETECÇÃO: Verifica se é SpotPage sem LoadDataCommand
-                // Usando reflexão para evitar dependência direta do tipo SpotPage
-                var pageType = _associatedPage.GetType();
-                if (pageType.Name == "SpotPage" || pageType.BaseType?.Name == "SpotPage")
+                if (LoadDataCommand == null)
                 {
-                    if (LoadDataCommand == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: SpotPage com LoadDataCommand NULL - forçando bypass");
-                        return true;
-                    }
+                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: SpotPage com LoadDataCommand NULL - forçando bypass");
+                    return true;
                 }
-
+                
                 return false;
             }
             catch (Exception ex)

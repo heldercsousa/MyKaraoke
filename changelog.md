@@ -2,6 +2,7 @@
 
 **IMPORTANT**: Before proposing any code changes, always request the current version of the specific files that will be modified, without assuming how they are currently implemented. Additionally, always ask the developer if the implementation of an enhancement or fix made together with the developer was successful! In some cases, ask the developer for the debugging log to ensure that a particular implementation was indeed successful! If positive, write a log line succinly describing the implementation carried out, so that it is recorded in this change log.
 The line should follow the following format: "- **dd/MM/yyyy** - Type - Succinct description of the implementation.", where:
+The line should follow the following format: "- **MM/dd/yyyy** - Type - Succinct description of the implementation.", where:
 dd/MM/yyyy is today's date in pt-br format; Type is Enhancement or Fix.
 
 ## Development Team

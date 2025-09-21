@@ -331,24 +331,43 @@ namespace MyKaraoke.View
 
         private async void OnCrudNavBarButtonClicked(object sender, CrudButtonType buttonType)
         {
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): Botão CrudNavBar clicado - {buttonType}");
+            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Botão {buttonType} clicado");
 
-            var selectedItems = locaisCollectionView.SelectedItems.Cast<EstabelecimentoListItemDto>().ToList();
+            var selectedItems = Locais.Where(x => x.IsSelected).ToList();
+            System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: {selectedItems.Count} itens selecionados");
 
             switch (buttonType)
             {
-                case CrudButtonType.Adicionar:
-                    await NavigateToSpotFormPageAsync(isEditing: false);
-                    break;
                 case CrudButtonType.Editar:
                     if (selectedItems.Count == 1)
                     {
-                        var entity = EstabelecimentoMapper.ToEntity(selectedItems.First());
-                        await NavigateToSpotFormPageAsync(isEditing: true, editingLocal: entity);
+                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Iniciando edição de '{selectedItems.First().Nome}'");
+                        try
+                        {
+                            var entity = EstabelecimentoMapper.ToEntity(selectedItems.First());
+                            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Entity mapeada: {entity?.Nome}");
+
+                            await NavigateToSpotFormPageAsync(isEditing: true, editingLocal: entity);
+                            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Navegação concluída");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na edição: {ex.Message}");
+                        }
                     }
                     break;
+
                 case CrudButtonType.Excluir:
-                    await ConfirmAndDeleteAsync(selectedItems);
+                    System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Iniciando exclusão de {selectedItems.Count} itens");
+                    try
+                    {
+                        await ConfirmAndDeleteAsync(selectedItems);
+                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Exclusão concluída");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na exclusão: {ex.Message}");
+                    }
                     break;
             }
         }

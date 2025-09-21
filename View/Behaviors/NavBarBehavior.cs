@@ -370,12 +370,35 @@ namespace MyKaraoke.View.Behaviors
                     // Continua execução para permitir atualização crítica
                 }
 
-                // 🛡️ PROTEÇÃO 2: Compara com cache apenas se NÃO há mudança real
+                // 🎯 NOVA VERIFICAÇÃO: Verifica se botões estão invisíveis mesmo com assinatura igual
+                bool hasInvisibleButtons = _buttonViews.Any(b => !b.IsVisible || b.Opacity < 1.0);
+
+                // 🛡️ PROTEÇÃO 2: Compara com cache apenas se NÃO há mudança real E botões estão visíveis
                 if (_hasBeenInitialized &&
                     !signatureChanged &&
+                    !hasInvisibleButtons &&
                     _buttonViews.Count > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons IGNORADO - assinatura inalterada ({currentSignature})");
+                    System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons IGNORADO - assinatura inalterada E botões visíveis ({currentSignature})");
+                    return;
+                }
+
+                if (!signatureChanged && hasInvisibleButtons)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: SmartRebuildButtons FORÇADO - assinatura igual MAS botões invisíveis");
+                    // 🎯 IMPORTANTE: Não reconstrói, apenas força ShowAsync
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await ShowAsync();
+                            System.Diagnostics.Debug.WriteLine($"✅ NavBarBehavior: ShowAsync forçado concluído para botões invisíveis");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"❌ NavBarBehavior: Erro ao forçar ShowAsync: {ex.Message}");
+                        }
+                    });
                     return;
                 }
 

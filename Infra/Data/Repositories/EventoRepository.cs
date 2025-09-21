@@ -1,5 +1,4 @@
 ﻿using MyKaraoke.Domain;
-using MyKaraoke.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyKaraoke.Infra.Data.Repositories

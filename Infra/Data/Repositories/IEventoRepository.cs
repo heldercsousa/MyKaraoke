@@ -1,5 +1,6 @@
-﻿
-namespace MyKaraoke.Domain.Repositories
+﻿using MyKaraoke.Domain;
+
+namespace MyKaraoke.Infra.Data.Repositories
 {
     public interface IEventoRepository : IBaseRepository<Evento>
     {

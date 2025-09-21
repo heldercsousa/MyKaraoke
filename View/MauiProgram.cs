@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using MyKaraoke.Infra.Data;
-using MyKaraoke.Domain.Repositories;
 using MyKaraoke.Infra.Data.Repositories;
 using MyKaraoke.Services;
 using MyKaraoke.Infra.Utils;

@@ -1,6 +1,6 @@
 ﻿using MyKaraoke.Domain;
 
-namespace MyKaraoke.Domain.Repositories
+namespace MyKaraoke.Infra.Data.Repositories
 {
     public interface IEstabelecimentoRepository : IBaseRepository<Estabelecimento>
     {
@@ -18,5 +18,8 @@ namespace MyKaraoke.Domain.Repositories
         /// Busca estabelecimentos por nome que contém o termo
         /// </summary>
         Task<IEnumerable<Estabelecimento>> SearchByNomeContainsAsync(string searchTerm, int maxResults = 10);
+
+        Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetAllWithHasEventsAsync();
+        Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetByIdsWithHasEventsAsync(IEnumerable<int> ids);
     }
 }

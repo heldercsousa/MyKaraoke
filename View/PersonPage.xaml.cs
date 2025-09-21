@@ -1,5 +1,4 @@
-﻿
-using MyKaraoke.Contracts;
+﻿using MyKaraoke.Contracts.Models;
 using MyKaraoke.Domain;
 using MyKaraoke.Infra.Utils;
 using MyKaraoke.Services;

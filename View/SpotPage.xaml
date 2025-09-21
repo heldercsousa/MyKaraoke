@@ -1,65 +1,78 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:MyKaraoke.View"
-             xmlns:components="clr-namespace:MyKaraoke.View.Components"
-             xmlns:domain="clr-namespace:MyKaraoke.Domain;assembly=MyKaraoke.Domain"
-             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
-             x:Class="MyKaraoke.View.SpotPage"
-             x:DataType="local:SpotPage"
-             Background="{StaticResource AppBackgroundGradient}"
-             NavigationPage.HasNavigationBar="False">
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:local="clr-namespace:MyKaraoke.View"
+			 xmlns:contracts="clr-namespace:MyKaraoke.Contracts.DTOs.List;assembly=MyKaraoke.Contracts"
+			 xmlns:components="clr-namespace:MyKaraoke.View.Components"
+			 xmlns:domain="clr-namespace:MyKaraoke.Domain;assembly=MyKaraoke.Domain"
+			 xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
+			 x:Class="MyKaraoke.View.SpotPage"
+			 x:DataType="local:SpotPage"
+			 Background="{StaticResource AppBackgroundGradient}"
+			 NavigationPage.HasNavigationBar="False">
 
-    <!-- ✅ BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior 
-        NavBar="{x:Reference CrudNavBar}"
-        MainContent="{x:Reference mainContentGrid}"
-        LoadDataCommand="{Binding LoadDataCommand}"
-        EnableAutoBypass="True"
-        MaxFailuresBeforeBypass="2" />
-        <!-- ✅ MANTIDO: LoadDataCommand igual à StackPage que funciona -->
+		NavBar="{x:Reference CrudNavBar}"
+		MainContent="{x:Reference mainContentGrid}"
+		LoadDataCommand="{Binding LoadDataCommand}"
+		EnableAutoBypass="True"
+		MaxFailuresBeforeBypass="2" />
 
-        <!-- ✅ NAVEGAÇÃO PARA FORMULÁRIO: SpotFormPage -->
         <behaviors:SafeNavigationBehavior 
-        x:Name="SpotFormNavigationBehavior"
-        EnableSmartStackNavigation="True"   
-        DebounceMilliseconds="800" />
+		x:Name="SpotFormNavigationBehavior"
+		EnableSmartStackNavigation="True"   
+		DebounceMilliseconds="800" />
 
-        <!-- ✅ NAVEGAÇÃO INTELIGENTE DE VOLTA: Usa stack navigation -->
         <behaviors:SafeNavigationBehavior 
-        x:Name="BackNavigationBehavior"
-        EnableSmartStackNavigation="True"
-        DebounceMilliseconds="500" />
+		x:Name="BackNavigationBehavior"
+		EnableSmartStackNavigation="True"
+		DebounceMilliseconds="500" />
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">
         <components:HeaderComponent Grid.Row="0" Title="Locais" />
 
         <Grid Grid.Row="1" x:Name="mainContentGrid">
-
             <components:CardWrapperComponent TitleText="Cadastrados" IconPath="spot_purple.png" BadgeIsVisible="False">
                 <components:CardWrapperComponent.CardContent>
                     <Grid RowDefinitions="*">
                         <CollectionView x:Name="locaisCollectionView"
-                                      ItemsSource="{Binding Locais}"
-                                      SelectionMode="Multiple"
-                                      SelectionChanged="OnLocalSelectionChanged">
+									  ItemsSource="{Binding Locais}"
+									  SelectionMode="None"
+									  BackgroundColor="Transparent">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="domain:Estabelecimento">
-                                    <Frame Style="{StaticResource CardListItemBackgroundStyle}" Padding="15,12" Margin="0,5">
-                                        <VisualStateManager.VisualStateGroups>
-                                            <VisualStateGroup Name="CommonStates">
-                                                <VisualState Name="Normal" />
-                                                <VisualState Name="Selected">
-                                                    <VisualState.Setters>
-                                                        <Setter Property="BackgroundColor" Value="#1A4A1D" />
-                                                        <Setter Property="BorderColor" Value="#2E7D32" />
-                                                    </VisualState.Setters>
-                                                </VisualState>
-                                            </VisualStateGroup>
-                                        </VisualStateManager.VisualStateGroups>
-                                        <Label Text="{Binding Nome}" FontSize="16" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
+                                <DataTemplate x:DataType="contracts:EstabelecimentoListItemDto">
+                                    <!-- FRAME LIMPO - todas as propriedades vêm do estilo -->
+                                    <Frame Style="{StaticResource SelectableCardListItemStyle}">
+
+                                        <Frame.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnItemTapped" />
+                                        </Frame.GestureRecognizers>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Label Grid.Column="0" 
+                                                Text="{Binding Nome}" 
+                                                Style="{StaticResource CardListItemMainTextStyle}"/>
+
+                                            <Frame Grid.Column="1" 
+                                                BackgroundColor="{StaticResource Error}" 
+                                                CornerRadius="8" 
+                                                Padding="6,3" 
+                                                IsVisible="{Binding HasEvents}"
+                                                Margin="8,0,0,0"
+                                                HasShadow="False">
+                                                <Label Text="COM EVENTOS" 
+                                                   FontSize="9" 
+                                                   TextColor="{StaticResource TextPrimary}" 
+                                                   FontAttributes="Bold"/>
+                                            </Frame>
+                                        </Grid>
                                     </Frame>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
@@ -82,12 +95,11 @@
                     </Grid>
                 </components:CardWrapperComponent.CardContent>
             </components:CardWrapperComponent>
-
         </Grid>
 
         <components:CrudNavBarComponent Grid.Row="2"
-                                      x:Name="CrudNavBar"
-                                      SelectionCount="{Binding SelectionCount}"
-                                      ButtonClicked="OnCrudNavBarButtonClicked"/>
+									  x:Name="CrudNavBar"
+									  SelectionCount="{Binding SelectionCount}"
+									  ButtonClicked="OnCrudNavBarButtonClicked"/>
     </Grid>
 </ContentPage>

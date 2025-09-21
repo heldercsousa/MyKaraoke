@@ -4,8 +4,8 @@
 Additionally, always ask the developer if the implementation of an enhancement or fix made together with the developer was successful! In some cases, ask the developer for the debugging log 
 to ensure that a particular implementation was indeed successful! If positive, write a log line succinly describing the implementation carried out, so that it is recorded in this change log.
 The line should follow the following format: "- **MM/dd/yyyy** - Type - Succinct description of the implementation and writen in english.", where:
-MM/dd/yyyy is today's date in en-US format; Type is Enhancement or Fix.
-
+MM/dd/yyyy is today's date in en-US format; Type is Enhancement or Fix. And, last but not least, avoid apply any style inline and give priority to use style files instead, so that it becomes 
+easly reusable and keeps a unique style pattern across all app places.
 ## Development Team
 
 **MyKaraoke** is developed through a collaborative partnership between human expertise and artificial intelligence:
@@ -196,3 +196,4 @@ the medley has been previously registered by the band/musician.
 - **09/09/2025** - Fix - CrudNavBarComponent double event firing: removed duplicate Command from NavButtonConfig that caused double ButtonClicked execution (first via individual Command, second via OnNavBarButtonClicked), fixed loading timing in SpotPage adding WaitForNavBarReady() in SmartPageLifecycleBehavior ExecutePageBypass(), implemented automatic field cleanup after successful save in SpotFormPage avoiding save attempts with old data.
 - **09/18/2025** - Fix - Critical performance optimization: implemented DISABLE_NAVBAR_ANIMATIONS in AnimatedButtonBehavior eliminating unnecessary RobustAnimationManager creation, removed "SpotPage" hardcoding in SmartPageLifecycleBehavior making it generic for any page. Fixes eliminate main thread overhead and significantly reduce dropped frames.
 - **09/21/2025** - Fix - Resolved GlobalLoadingOverlay initialization crash during application startup: implemented safety checks in GetCurrentPage() method to verify ContentPage initialization before overlay injection, added UseGlobalLoading default configuration protection, and optimized centralized loading system to prevent premature execution during app lifecycle. System now initializes correctly without threading conflicts or NULL reference exceptions during startup sequence.
+- **09/21/2025** - Fix - Resolved CollectionView item selection blocked by inline style conflicts in SpotPage by implementing proper style inheritance from CardListItemBackgroundStyle with DataTrigger for selection states

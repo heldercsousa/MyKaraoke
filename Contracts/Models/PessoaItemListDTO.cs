@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
-namespace MyKaraoke.Contracts
+namespace MyKaraoke.Contracts.Models
 {
     public class PessoaListItemDto : INotifyPropertyChanged
     {

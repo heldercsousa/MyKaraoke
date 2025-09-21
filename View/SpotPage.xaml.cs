@@ -9,13 +9,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using MyKaraoke.View.Interfaces;
+using MyKaraoke.Contracts.DTOs.List;
+using MyKaraoke.Services.Mappers;
 
 namespace MyKaraoke.View
 {
     public partial class SpotPage : ContentPage, IManipulableDataPage
     {
         private IEstabelecimentoService _estabelecimentoService;
-        public ObservableCollection<Estabelecimento> Locais { get; }
+        public ObservableCollection<EstabelecimentoListItemDto> Locais { get; }
 
         // Propriedade que o CrudNavBarComponent observa
         private int _selectionCount;
@@ -55,7 +57,7 @@ namespace MyKaraoke.View
             InitializeComponent();
 
             // ✅ Resto da inicialização
-            Locais = new ObservableCollection<Estabelecimento>();
+            Locais = new ObservableCollection<EstabelecimentoListItemDto>();
             locaisCollectionView.ItemsSource = Locais;
             this.BindingContext = this;
             SelectionCount = 0;
@@ -264,21 +266,19 @@ namespace MyKaraoke.View
 
             try
             {
-                var locais = await _estabelecimentoService.GetAllEstabelecimentosAsync();
-                System.Diagnostics.Debug.WriteLine($"🔍 LOAD RESULT: {locais?.Count()} locais encontrados");
+                var locaisViewModels = await _estabelecimentoService.GetAllEstabelecimentosForListAsync();
+                System.Diagnostics.Debug.WriteLine($"🔍 LOAD RESULT: {locaisViewModels?.Count()} locais encontrados");
 
                 Locais.Clear();
-                if (locais != null)
+                if (locaisViewModels != null)
                 {
-                    foreach (var local in locais)
+                    foreach (var localViewModel in locaisViewModels)
                     {
-                        Locais.Add(local);
-                        System.Diagnostics.Debug.WriteLine($"🔍 ADDED TO COLLECTION: {local.Id} - '{local.Nome}'");
+                        Locais.Add(localViewModel);
+                        System.Diagnostics.Debug.WriteLine($"🔍 ADDED: {localViewModel.Id} - '{localViewModel.Nome}' (HasEvents: {localViewModel.HasEvents})");
                     }
                 }
-                System.Diagnostics.Debug.WriteLine($"🔍 FINAL COLLECTION COUNT: {Locais.Count}");
 
-                // ✅ CRÍTICO: Chama UpdateUIState no MainThread APÓS carregar dados
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     UpdateUIState();
@@ -288,12 +288,7 @@ namespace MyKaraoke.View
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SpotPage ({this.GetHashCode()}): Erro ao carregar locais: {ex.Message}");
-
-                // ✅ FALLBACK: Mesmo com erro de banco, garante botão Adicionar
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    UpdateUIState();
-                });
+                MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
         }
 
@@ -325,17 +320,20 @@ namespace MyKaraoke.View
             }
         }
 
-        private void OnLocalSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnItemTapped(object sender, EventArgs e)
         {
-            SelectionCount = e.CurrentSelection.Count;
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): Seleção mudou - SelectionCount={SelectionCount}");
+            if (sender is Frame frame && frame.BindingContext is EstabelecimentoListItemDto item)
+            {
+                item.IsSelected = !item.IsSelected;
+                SelectionCount = Locais.Count(x => x.IsSelected);
+            }
         }
 
         private async void OnCrudNavBarButtonClicked(object sender, CrudButtonType buttonType)
         {
             System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): Botão CrudNavBar clicado - {buttonType}");
 
-            var selectedItems = locaisCollectionView.SelectedItems.Cast<Estabelecimento>().ToList();
+            var selectedItems = locaisCollectionView.SelectedItems.Cast<EstabelecimentoListItemDto>().ToList();
 
             switch (buttonType)
             {
@@ -345,7 +343,8 @@ namespace MyKaraoke.View
                 case CrudButtonType.Editar:
                     if (selectedItems.Count == 1)
                     {
-                        await NavigateToSpotFormPageAsync(isEditing: true, editingLocal: selectedItems.First());
+                        var entity = EstabelecimentoMapper.ToEntity(selectedItems.First());
+                        await NavigateToSpotFormPageAsync(isEditing: true, editingLocal: entity);
                     }
                     break;
                 case CrudButtonType.Excluir:
@@ -354,19 +353,55 @@ namespace MyKaraoke.View
             }
         }
 
-        private async Task ConfirmAndDeleteAsync(List<Estabelecimento> itemsToDelete)
+        private async Task ConfirmAndDeleteAsync(List<EstabelecimentoListItemDto> itemsToDelete)
         {
             if (!itemsToDelete.Any()) return;
 
-            var confirm = await DisplayAlert("Confirmar Exclusão", $"Tem certeza que deseja excluir {itemsToDelete.Count} local(is)?", "Excluir", "Cancelar");
-            if (!confirm) return;
-
-            SetLoading(true);
             try
             {
-                var result = await _estabelecimentoService.DeleteEstabelecimentosAsync(itemsToDelete.Select(i => i.Id));
-                await DisplayAlert("Resultado da Exclusão", result.message, "OK");
+                var itemsWithEvents = itemsToDelete.Where(l => l.HasEvents).ToList();
+                var itemsWithoutEvents = itemsToDelete.Where(l => !l.HasEvents).ToList();
+
+                string confirmMessage;
+                if (itemsWithEvents.Any() && itemsWithoutEvents.Any())
+                {
+                    var withEventsNames = string.Join(", ", itemsWithEvents.Select(l => $"'{l.Nome}'"));
+                    var withoutEventsNames = string.Join(", ", itemsWithoutEvents.Select(l => $"'{l.Nome}'"));
+                    confirmMessage = $"ATENÇÃO:\n\n" +
+                                   $"• Serão excluídos: {withoutEventsNames}\n" +
+                                   $"• NÃO serão excluídos (possuem eventos): {withEventsNames}\n\n" +
+                                   $"Deseja continuar?";
+                }
+                else if (itemsWithEvents.Any())
+                {
+                    var names = string.Join(", ", itemsWithEvents.Select(l => $"'{l.Nome}'"));
+                    await DisplayAlert("Exclusão Bloqueada",
+                        $"Os locais {names} não podem ser excluídos pois possuem eventos registrados.", "OK");
+                    return;
+                }
+                else
+                {
+                    var names = string.Join(", ", itemsWithoutEvents.Select(l => $"'{l.Nome}'"));
+                    confirmMessage = $"Tem certeza que deseja excluir {names}?";
+                }
+
+                var confirmed = await DisplayAlert("Confirmar Exclusão", confirmMessage, "Excluir", "Cancelar");
+                if (!confirmed) return;
+
+                SetLoading(true);
+
+                var idsToDelete = itemsToDelete.Select(vm => vm.Id);
+                var result = await _estabelecimentoService.DeleteEstabelecimentosAsync(idsToDelete);
+                await DisplayAlert("Resultado", result.message, "OK");
+
                 await LoadLocaisAsync();
+
+                locaisCollectionView.SelectedItems.Clear();
+                SelectionCount = 0;
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Erro", $"Erro ao excluir locais: {ex.Message}", "OK");
             }
             finally
             {

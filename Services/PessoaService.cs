@@ -1,5 +1,5 @@
 ﻿using MyKaraoke.Domain;
-using MyKaraoke.Domain.Repositories;
+using MyKaraoke.Infra.Data.Repositories;
 using MyKaraoke.Infra.Utils;
 using System;
 using System.Collections.Generic;

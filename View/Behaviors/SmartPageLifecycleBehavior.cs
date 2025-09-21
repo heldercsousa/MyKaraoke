@@ -39,7 +39,7 @@ namespace MyKaraoke.View.Behaviors
             BindableProperty.Create(nameof(LoadingMessage), typeof(string), typeof(SmartPageLifecycleBehavior), "Carregando...");
 
         public static readonly BindableProperty UseGlobalLoadingProperty =
-            BindableProperty.Create(nameof(UseGlobalLoading), typeof(bool), typeof(SmartPageLifecycleBehavior), false);
+            BindableProperty.Create(nameof(UseGlobalLoading), typeof(bool), typeof(SmartPageLifecycleBehavior), true);
 
         #endregion
 

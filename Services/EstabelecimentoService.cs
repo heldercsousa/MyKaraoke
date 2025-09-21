@@ -1,6 +1,8 @@
 ﻿using MyKaraoke.Domain;
-using MyKaraoke.Domain.Repositories;
+using MyKaraoke.Infra.Data.Repositories;
 using MyKaraoke.Infra.Utils;
+using MyKaraoke.Services.Mappers;
+using MyKaraoke.Contracts.DTOs.List;
 
 namespace MyKaraoke.Services
 {
@@ -138,55 +140,56 @@ namespace MyKaraoke.Services
 
             try
             {
-                var deletableIds = new List<int>();
-                var nonDeletableCount = 0;
+                // Query otimizada com EXISTS
+                var estabelecimentosWithEvents = await _estabelecimentoRepository.GetByIdsWithHasEventsAsync(ids);
+                var validationResults = new List<(int id, string nome, bool canDelete, string reason)>();
 
-                foreach (var id in ids)
+                foreach (var (estabelecimento, hasEvents) in estabelecimentosWithEvents)
                 {
-                    var hasEvents = await _eventoRepository.HasEventsByEstabelecimentoAsync(id);
-                    if (hasEvents)
-                    {
-                        nonDeletableCount++;
-                    }
-                    else
-                    {
-                        deletableIds.Add(id);
-                    }
+                    validationResults.Add((estabelecimento.Id, estabelecimento.Nome, !hasEvents,
+                        hasEvents ? "possui eventos registrados" : ""));
                 }
 
-                if (deletableIds.Any())
-                {
-                    // A busca das entidades para deletar precisa ser corrigida também,
-                    // usando a sobrecarga que criamos anteriormente.
-                    var entitiesToDelete = await _estabelecimentoRepository.GetAllAsync(e => deletableIds.Contains(e.Id));
+                var cannotDelete = validationResults.Where(v => !v.canDelete).ToList();
+                var canDelete = validationResults.Where(v => v.canDelete).ToList();
 
-                    if (entitiesToDelete.Any())
-                    {
-                        await _estabelecimentoRepository.DeleteRangeAsync(entitiesToDelete);
-                        await _estabelecimentoRepository.SaveChangesAsync();
-                    }
-                }
+                if (canDelete.Any())
+                {
+                    var entitiesToDelete = estabelecimentosWithEvents
+                        .Where(x => canDelete.Any(c => c.id == x.estabelecimento.Id))
+                        .Select(x => x.estabelecimento);
 
-                // CORREÇÃO: Declarar a variável 'message' aqui fora.
-                string message;
-                if (nonDeletableCount == 0 && deletableIds.Any())
-                {
-                    message = "Estabelecimento(s) excluído(s) com sucesso.";
-                }
-                else if (nonDeletableCount > 0 && deletableIds.Any())
-                {
-                    message = "Excluído(s) com sucesso. Alguns não puderam ser excluídos por terem outros dados associados.";
-                }
-                else // Apenas itens não deletáveis foram selecionados.
-                {
-                    message = "Não foi possível excluir o(s) registro(s) pois há outros dados associados.";
+                    await _estabelecimentoRepository.DeleteRangeAsync(entitiesToDelete);
+                    await _estabelecimentoRepository.SaveChangesAsync();
                 }
 
-                return (true, message);
+                return BuildDeleteResultMessage(canDelete, cannotDelete);
             }
             catch (Exception ex)
             {
                 return (false, $"Erro ao excluir locais: {ex.Message}");
+            }
+        }
+
+        private (bool success, string message) BuildDeleteResultMessage(
+            List<(int id, string nome, bool canDelete, string reason)> canDelete,
+            List<(int id, string nome, bool canDelete, string reason)> cannotDelete)
+        {
+            if (cannotDelete.Count == 0 && canDelete.Count > 0)
+            {
+                var nomes = string.Join(", ", canDelete.Select(c => $"'{c.nome}'"));
+                return (true, $"Local(is) {nomes} excluído(s) com sucesso!");
+            }
+            else if (cannotDelete.Count > 0 && canDelete.Count > 0)
+            {
+                var deletedNames = string.Join(", ", canDelete.Select(c => $"'{c.nome}'"));
+                var blockedNames = string.Join(", ", cannotDelete.Select(c => $"'{c.nome}' ({c.reason})"));
+                return (true, $"Excluídos: {deletedNames}.\nNão excluídos: {blockedNames}.");
+            }
+            else
+            {
+                var blockedNames = string.Join(", ", cannotDelete.Select(c => $"'{c.nome}' ({c.reason})"));
+                return (false, $"Nenhum local pôde ser excluído:\n{blockedNames}");
             }
         }
 
@@ -253,6 +256,33 @@ namespace MyKaraoke.Services
         }
 
         #endregion
+
+        public async Task<IEnumerable<EstabelecimentoListItemDto>> GetAllEstabelecimentosForListAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("📋 === GetAllEstabelecimentosForListAsync INICIADO ===");
+
+                var estabelecimentosWithEvents = await _estabelecimentoRepository.GetAllWithHasEventsAsync();
+
+                var result = estabelecimentosWithEvents.Select(x =>
+                    EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
+
+                System.Diagnostics.Debug.WriteLine($"📋 Total mapeados: {result.Count}");
+                foreach (var item in result)
+                {
+                    System.Diagnostics.Debug.WriteLine($"📋 Mapeado: {item.Id} - '{item.Nome}' (HasEvents: {item.HasEvents})");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Erro ao buscar estabelecimentos para lista: {ex.Message}");
+                return new List<EstabelecimentoListItemDto>();
+            }
+        }
+
 
         #region Utilitários
 

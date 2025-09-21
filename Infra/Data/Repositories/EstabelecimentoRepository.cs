@@ -1,5 +1,4 @@
 ﻿using MyKaraoke.Domain;
-using MyKaraoke.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace MyKaraoke.Infra.Data.Repositories
@@ -58,6 +57,32 @@ namespace MyKaraoke.Infra.Data.Repositories
         {
             return await _context.Estabelecimentos
                 .OrderBy(e => e.Nome)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetAllWithHasEventsAsync()
+        {
+            return await _context.Estabelecimentos
+                .Select(e => new
+                {
+                    Estabelecimento = e,
+                    HasEvents = e.Eventos.Any()
+                })
+                .OrderBy(x => x.Estabelecimento.Nome)
+                .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetByIdsWithHasEventsAsync(IEnumerable<int> ids)
+        {
+            return await _context.Estabelecimentos
+                .Where(e => ids.Contains(e.Id))
+                .Select(e => new
+                {
+                    Estabelecimento = e,
+                    HasEvents = e.Eventos.Any() // EXISTS otimizado
+                })
+                .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
                 .ToListAsync();
         }
     }

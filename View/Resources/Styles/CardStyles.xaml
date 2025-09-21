@@ -64,6 +64,23 @@
     </LinearGradientBrush>
 
     <!-- ============================================================================ -->
+    <!-- GRADIENTES ESPECÍFICOS PARA SELEÇÃO -->
+    <!-- ============================================================================ -->
+
+    <!-- Gradiente normal do item da lista -->
+    <LinearGradientBrush x:Key="CardNormalGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#4A3B6B" Offset="0.0" />
+        <GradientStop Color="#5B4485" Offset="0.5" />
+        <GradientStop Color="#6E4B98" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Gradiente para item selecionado (baseado no protótipo fila_ativa.html) -->
+    <LinearGradientBrush x:Key="CardSelectedGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#572564" Offset="0.0" />
+        <GradientStop Color="#613b93" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- ============================================================================ -->
     <!-- CARD LIST ITEM STYLES -->
     <!-- ============================================================================ -->
 
@@ -74,15 +91,7 @@
         <Setter Property="HasShadow" Value="False" />
         <Setter Property="Padding" Value="15" />
         <Setter Property="Margin" Value="0,5" />
-        <Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#4A3B6B" Offset="0.0" />
-                    <GradientStop Color="#5B4485" Offset="0.5" />
-                    <GradientStop Color="#6E4B98" Offset="1.0" />
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
+        <Setter Property="Background" Value="{StaticResource CardNormalGradient}" />
     </Style>
 
     <Style x:Key="CardListItemSubTextIconStyle" TargetType="Image">
@@ -126,6 +135,30 @@
     <Style x:Key="CardListItemHighlightBackgroundStyle" TargetType="Frame" BasedOn="{StaticResource CardListItemBackgroundStyle}">
         <Setter Property="BackgroundColor" Value="#1B5E20" />
         <Setter Property="BorderColor" Value="#4CAF50" />
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- ESTILO PARA SELEÇÃO MÚLTIPLA -->
+    <!-- ============================================================================ -->
+    <Style x:Key="SelectableCardListItemStyle" TargetType="Frame" BasedOn="{StaticResource CardListItemBackgroundStyle}">
+        <!-- Herda TODAS as propriedades do CardListItemBackgroundStyle:
+         - BackgroundColor="Transparent"
+         - BorderColor="#5e3f84" 
+         - CornerRadius="16"
+         - HasShadow="False"
+         - Padding="15"
+         - Margin="0,5"
+         - Background="{StaticResource CardNormalGradient}"
+    -->
+
+        <!-- Sobrescreve apenas o que precisa para seleção -->
+        <Style.Triggers>
+            <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="Background" Value="{StaticResource CardSelectedGradient}" />
+                <Setter Property="BorderColor" Value="#e91e63" />
+                <Setter Property="HasShadow" Value="True" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <!-- ============================================================================ -->

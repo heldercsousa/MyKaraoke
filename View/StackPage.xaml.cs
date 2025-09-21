@@ -2,6 +2,7 @@
 using MyKaraoke.Domain;
 using MyKaraoke.Services;
 using MyKaraoke.View.Extensions;
+using MyKaraoke.View.Interfaces;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
@@ -9,7 +10,7 @@ using System.Windows.Input;
 
 namespace MyKaraoke.View
 {
-    public partial class StackPage : ContentPage, INotifyPropertyChanged
+    public partial class StackPage : ContentPage, IManipulableDataPage
     {
         private IQueueService _queueService;
         private ServiceProvider _serviceProvider;
@@ -31,8 +32,17 @@ namespace MyKaraoke.View
             }
         }
 
-        // Comando que o SmartPageLifecycleBehavior irá executar
-        public ICommand LoadDataCommand { get; }
+        #region IManipulableDataPage Members 
+        
+        public ICommand LoadDataCommand { get; private set; }
+        public string FriendlyName => "Fila";
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
 
         public StackPage()
         {
@@ -362,12 +372,5 @@ namespace MyKaraoke.View
             });
         }
 
-        #region INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        #endregion
     }
 }

@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using MyKaraoke.View.Components;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MyKaraoke.View.Components;
 
 namespace MyKaraoke.View.Interceptors
 {
@@ -232,14 +233,27 @@ namespace MyKaraoke.View.Interceptors
                 var operation = GetOperationType(sql);
                 var message = OperationMessages.GetValueOrDefault(operation, "Processando...");
 
-                System.Diagnostics.Debug.WriteLine($"🔄 DatabaseInterceptor: Mostrando loading para {operation}: {message}");
+                // ✅ SISTEMA CENTRALIZADO: Solicita loading com baixa prioridade
+                var requesterId = $"Database_{operation}_{DateTime.Now.Ticks}";
+
+                System.Diagnostics.Debug.WriteLine($"🔄 DatabaseInterceptor: Solicitando loading para {operation}: {message}");
                 System.Diagnostics.Debug.WriteLine($"🔍 SQL: {sql.Substring(0, Math.Min(100, sql.Length))}...");
 
-                await GlobalLoadingOverlay.ShowLoadingAsync(message);
+                await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                    requesterId: requesterId,
+                    message: message,
+                    priority: LoadingPriority.Database,
+                    context: LoadingContext.DatabaseOperation,
+                    isPersistent: false,
+                    autoHideAfter: TimeSpan.FromSeconds(30) // Auto-hide após 30s como segurança
+                );
+
+                // 🎯 ARMAZENA: RequesterId para poder remover depois
+                command.SetRequesterId(requesterId);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ DatabaseInterceptor: Erro ao mostrar loading: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ DatabaseInterceptor: Erro ao solicitar loading: {ex.Message}");
             }
         }
 
@@ -264,12 +278,20 @@ namespace MyKaraoke.View.Interceptors
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🔄 DatabaseInterceptor: Escondendo loading");
-                await GlobalLoadingOverlay.HideLoadingAsync();
+                // 🎯 RECUPERA: RequesterId armazenado durante ShowLoadingForCommandAsync
+                var requesterId = command.GetRequesterId();
+                if (string.IsNullOrEmpty(requesterId))
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ DatabaseInterceptor: Comando sem requesterId para remoção");
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"🔄 DatabaseInterceptor: Removendo loading para {requesterId}");
+                await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ DatabaseInterceptor: Erro ao esconder loading: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ DatabaseInterceptor: Erro ao remover loading: {ex.Message}");
             }
         }
 
@@ -332,5 +354,24 @@ namespace MyKaraoke.View.Interceptors
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Extension method para armazenar RequesterId no DbCommand
+    /// </summary>
+    public static class DbCommandExtensions
+    {
+        private static readonly ConditionalWeakTable<DbCommand, string> _requesterIds = new();
+
+        public static void SetRequesterId(this DbCommand command, string requesterId)
+        {
+            _requesterIds.AddOrUpdate(command, requesterId);
+        }
+
+        public static string GetRequesterId(this DbCommand command)
+        {
+            _requesterIds.TryGetValue(command, out var requesterId);
+            return requesterId;
+        }
     }
 }

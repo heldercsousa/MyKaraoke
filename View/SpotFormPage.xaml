@@ -90,12 +90,6 @@
                         <!-- Espaço flexível -->
                         <Grid Grid.Row="4" HeightRequest="40" />
 
-                        <Button Text="🧪 TESTE DEBUG" 
-        Clicked="OnTesteDebugClicked"
-        BackgroundColor="Red" 
-        TextColor="White"
-        Margin="0,50,0,0" />
-                        
                     </Grid>
                 </components:CardWrapperComponent.CardContent>
             </components:CardWrapperComponent>

@@ -192,19 +192,29 @@ namespace MyKaraoke.View.Interceptors
             try
             {
                 var targetPageName = e.Page?.GetType().Name ?? "Desconhecida";
+                var requesterId = $"Navigation_Push_{targetPageName}_{DateTime.Now.Ticks}";
+
                 System.Diagnostics.Debug.WriteLine($"🚀 NavigationInterceptor: PUSH para {targetPageName}");
 
-                await GlobalLoadingOverlay.ShowLoadingAsync($"Navegando para {GetFriendlyPageName(targetPageName)}...");
+                // ✅ SISTEMA CENTRALIZADO: Solicita loading de navegação
+                await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                    requesterId: requesterId,
+                    message: $"Navegando para {GetFriendlyPageName(targetPageName)}...",
+                    priority: LoadingPriority.Navigation,
+                    context: LoadingContext.PageNavigation,
+                    isPersistent: false,
+                    autoHideAfter: TimeSpan.FromSeconds(3) // Auto-hide por segurança
+                );
 
                 // 🕐 DELAY: Pequeno delay para garantir que loading apareça
                 await Task.Delay(300);
 
-                await GlobalLoadingOverlay.HideLoadingAsync();
+                // Remove loading após delay
+                await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no PUSH: {ex.Message}");
-                await GlobalLoadingOverlay.HideLoadingAsync();
             }
         }
 
@@ -216,19 +226,29 @@ namespace MyKaraoke.View.Interceptors
             try
             {
                 var sourcePage = e.Page?.GetType().Name ?? "Desconhecida";
+                var requesterId = $"Navigation_Pop_{sourcePage}_{DateTime.Now.Ticks}";
+
                 System.Diagnostics.Debug.WriteLine($"🔙 NavigationInterceptor: POP de {sourcePage}");
 
-                await GlobalLoadingOverlay.ShowLoadingAsync("Voltando...");
+                // ✅ SISTEMA CENTRALIZADO: Solicita loading de volta
+                await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                    requesterId: requesterId,
+                    message: "Voltando...",
+                    priority: LoadingPriority.Navigation,
+                    context: LoadingContext.PageNavigation,
+                    isPersistent: false,
+                    autoHideAfter: TimeSpan.FromSeconds(2)
+                );
 
-                // 🕐 DELAY: Menor delay para voltar (operação mais rápida)
+                // 🕐 DELAY: Menor delay para voltar
                 await Task.Delay(200);
 
-                await GlobalLoadingOverlay.HideLoadingAsync();
+                // Remove loading após delay
+                await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no POP: {ex.Message}");
-                await GlobalLoadingOverlay.HideLoadingAsync();
             }
         }
 
@@ -381,8 +401,15 @@ namespace MyKaraoke.View.Interceptors
         /// </summary>
         public static async Task ShowNavigationLoadingAsync(string destinationPageName)
         {
+            var requesterId = $"Manual_Navigation_{destinationPageName}_{DateTime.Now.Ticks}";
             var friendlyName = GetFriendlyPageName(destinationPageName);
-            await GlobalLoadingOverlay.ShowLoadingAsync($"Navegando para {friendlyName}...");
+
+            await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                requesterId: requesterId,
+                message: $"Navegando para {friendlyName}...",
+                priority: LoadingPriority.Navigation,
+                context: LoadingContext.PageNavigation
+            );
         }
 
         /// <summary>
@@ -390,7 +417,8 @@ namespace MyKaraoke.View.Interceptors
         /// </summary>
         public static async Task HideNavigationLoadingAsync()
         {
-            await GlobalLoadingOverlay.HideLoadingAsync();
+            // Limpa todas as requisições de navegação
+            await GlobalLoadingOverlay.Instance.ClearContextAsync(LoadingContext.PageNavigation);
         }
 
         #endregion

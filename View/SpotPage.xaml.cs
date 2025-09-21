@@ -8,10 +8,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using MyKaraoke.View.Interfaces;
 
 namespace MyKaraoke.View
 {
-    public partial class SpotPage : ContentPage, INotifyPropertyChanged
+    public partial class SpotPage : ContentPage, IManipulableDataPage
     {
         private IEstabelecimentoService _estabelecimentoService;
         public ObservableCollection<Estabelecimento> Locais { get; }
@@ -31,9 +32,17 @@ namespace MyKaraoke.View
             }
         }
 
-        // Comando que o SmartPageLifecycleBehavior irá executar
-        public ICommand LoadDataCommand { get; private set;  }
+        #region IManipulableDataPage Members 
 
+        public ICommand LoadDataCommand { get; private set; }
+        public string FriendlyName => "Locais";
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
 
         public SpotPage()
         {
@@ -543,12 +552,5 @@ namespace MyKaraoke.View
             }
         }
 
-        #region INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        #endregion
     }
 }

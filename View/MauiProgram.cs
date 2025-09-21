@@ -74,9 +74,6 @@ public static class MauiProgram
             var app = builder.Build();
             Services = app.Services;
 
-            // ✅ INTERCEPTADOR DE NAVEGAÇÃO: Inicializa no startup
-            NavigationLoadingInterceptor.Initialize();
-
             System.Diagnostics.Debug.WriteLine("[MauiProgram] Aplicação construída com interceptadores de loading automático");
             return app;
         }

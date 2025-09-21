@@ -39,7 +39,7 @@ namespace MyKaraoke.View.Behaviors
             BindableProperty.Create(nameof(LoadingMessage), typeof(string), typeof(SmartPageLifecycleBehavior), "Carregando...");
 
         public static readonly BindableProperty UseGlobalLoadingProperty =
-            BindableProperty.Create(nameof(UseGlobalLoading), typeof(bool), typeof(SmartPageLifecycleBehavior), true);
+            BindableProperty.Create(nameof(UseGlobalLoading), typeof(bool), typeof(SmartPageLifecycleBehavior), false);
 
         #endregion
 
@@ -187,6 +187,9 @@ namespace MyKaraoke.View.Behaviors
         {
             try
             {
+                var pageType = _associatedPage.GetType().Name;
+                var requesterId = $"NormalCycle_{pageType}_{_associatedPage.GetHashCode()}";
+
                 System.Diagnostics.Debug.WriteLine($"🧠 SmartPageLifecycleBehavior: Tentando ciclo normal - UseGlobalLoading: {UseGlobalLoading}");
 
                 // ETAPA 1: Aguarda navbar estar pronta
@@ -196,16 +199,16 @@ namespace MyKaraoke.View.Behaviors
                     System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta");
                 }
 
-                // ETAPA 2: ✅ LOADING SINGLETON - Mostra loading se habilitado
+                // ETAPA 2: ✅ LOADING CENTRALIZADO - Solicita com prioridade de navegação
                 if (UseGlobalLoading)
                 {
-                    await GlobalLoadingOverlay.ShowLoadingAsync(LoadingMessage);
-                    System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading singleton EXIBIDO");
-                }
-                else
-                {
-                    // 🔄 FALLBACK: Usa LoadingIndicator tradicional se especificado
-                    SetLoadingState(true);
+                    await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                        requesterId: requesterId,
+                        message: LoadingMessage,
+                        priority: LoadingPriority.Navigation,
+                        context: LoadingContext.PageNavigation
+                    );
+                    System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading solicitado via sistema centralizado");
                 }
 
                 try
@@ -217,12 +220,11 @@ namespace MyKaraoke.View.Behaviors
                         System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: LoadDataCommand falhou");
                     }
 
-                    // ETAPA 4: Mostra navbar
-                    var navBarShown = await TryShowNavBar();
-                    if (!navBarShown)
+                    // ETAPA 4: Aguarda navbar estar COMPLETAMENTE pronta após carregamento de dados
+                    var navBarFullyReady = await WaitForNavBarFullyReady();
+                    if (!navBarFullyReady)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: ShowNavBar falhou");
-                        // 🔧 NÃO retorna false - navbar pode aparecer depois
+                        System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta - continuando");
                     }
 
                     System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal concluído");
@@ -230,86 +232,70 @@ namespace MyKaraoke.View.Behaviors
                 }
                 finally
                 {
-                    // ETAPA 5: ✅ LOADING SINGLETON - Esconde loading sempre
+                    // ETAPA 5: ✅ LOADING CENTRALIZADO - Remove requisição
                     if (UseGlobalLoading)
                     {
-                        await GlobalLoadingOverlay.HideLoadingAsync();
-                        System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading singleton ESCONDIDO");
-                    }
-                    else
-                    {
-                        // 🔄 FALLBACK: Esconde LoadingIndicator tradicional
-                        SetLoadingState(false);
+                        await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
+                        System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading removido via sistema centralizado");
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no ciclo normal: {ex.Message}");
-
-                // 🔄 CLEANUP: Garante que loading seja escondido mesmo com erro
-                if (UseGlobalLoading)
-                {
-                    await GlobalLoadingOverlay.HideLoadingAsync();
-                }
-                else
-                {
-                    SetLoadingState(false);
-                }
-
                 return false;
             }
+        }
+
+        private string GetFriendlyPageName(string technicalName)
+        {
+            return technicalName switch
+            {
+                "StackPage" => "Fila",
+                "SpotPage" => "Locais",
+                "PersonPage" => "Participantes",
+                "SpotFormPage" => "Cadastro de Local",
+                _ => "página"
+            };
         }
 
         private async Task ExecutePageBypass()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ SmartPageLifecycleBehavior: Executando bypass para {_associatedPage.GetType().Name}");
+                var pageType = _associatedPage.GetType().Name;
+                var requesterId = $"PageBypass_{pageType}_{_associatedPage.GetHashCode()}";
 
-                // ✅ CORREÇÃO: Aguarda NavBar estar pronta ANTES de mostrar loading (igual TryExecuteNormalCycle)
-                var navBarReady = await WaitForNavBarReady();
-                if (!navBarReady)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta no bypass");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar pronta para bypass");
-                }
+                System.Diagnostics.Debug.WriteLine($"🛡️ SmartPageLifecycleBehavior: Executando bypass para {pageType}");
 
-                // ✅ LOADING SINGLETON: Mostra durante bypass após NavBar estar pronta
-                if (UseGlobalLoading)
-                {
-                    await GlobalLoadingOverlay.ShowLoadingAsync($"Carregando {_associatedPage.GetType().Name}...");
-                    System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading EXIBIDO para bypass");
-                }
-
-                // ✅ TIMING: Aguarda tempo visual mínimo
-                await Task.Delay(150);
+                // ✅ LOADING CENTRALIZADO: Solicita loading com alta prioridade até navbar estar pronta
+                await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                    requesterId: requesterId,
+                    message: $"Carregando {GetFriendlyPageName(pageType)}...",
+                    priority: LoadingPriority.NavBarWait,
+                    context: LoadingContext.ComponentLoading,
+                    isPersistent: true // Mantém até explicitamente removido
+                );
 
                 try
                 {
-                    // ✅ CORREÇÃO: ESCONDE loading ANTES de executar LoadDataCommand
-                    // Isso permite que DatabaseInterceptor mostre loading próprio
-                    if (UseGlobalLoading)
+                    // ✅ CORREÇÃO: Aguarda NavBar estar pronta ANTES de executar qualquer comando
+                    var navBarReady = await WaitForNavBarReady();
+                    if (!navBarReady)
                     {
-                        await GlobalLoadingOverlay.HideLoadingAsync();
-                        System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading escondido ANTES do LoadDataCommand para permitir DatabaseInterceptor");
+                        System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta no bypass");
                     }
 
-                    // ✅ CRÍTICO: SEMPRE executa LoadDataCommand primeiro (se disponível)
+                    // ✅ EXECUTA: LoadDataCommand (DatabaseInterceptor pode mostrar seu próprio loading)
                     await TryExecuteLoadDataCommand();
 
-                    // 🎯 REFLEXÃO: Tenta encontrar método OnAppearingBypass na página
-                    var pageType = _associatedPage.GetType();
-
-                    // MÉTODO 1: Procura método OnAppearingBypass por reflexão (compatibilidade com páginas existentes)
-                    var bypassMethod = pageType.GetMethod("OnAppearingBypass", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    // ✅ MÉTODO REFLEXIVO: Tenta encontrar método OnAppearingBypass na página
+                    var pageTypeClass = _associatedPage.GetType();
+                    var bypassMethod = pageTypeClass.GetMethod("OnAppearingBypass", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
                     if (bypassMethod != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Chamando {pageType.Name}.OnAppearingBypass()");
+                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Chamando {pageTypeClass.Name}.OnAppearingBypass()");
 
                         if (bypassMethod.ReturnType == typeof(Task))
                         {
@@ -322,34 +308,27 @@ namespace MyKaraoke.View.Behaviors
                     }
                     else
                     {
-                        // MÉTODO 2: Extension method fallback
-                        System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Método OnAppearingBypass não encontrado em {pageType.Name} - usando fallback padrão");
+                        System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Método OnAppearingBypass não encontrado em {pageTypeClass.Name} - usando fallback padrão");
                         await _associatedPage.ExecuteStandardBypass();
                     }
 
-                    // 🎯 NAVBAR: Sempre chama NavBar.ShowAsync() após bypass
+                    // ✅ AGUARDA: NavBar estar COMPLETAMENTE pronta
                     await EnsureNavBarIsShownAfterBypass();
 
                     _hasExecutedSuccessfully = true;
                     _failureCount = 0;
                     System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Bypass executado com sucesso");
                 }
-                catch (Exception ex)
+                finally
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
+                    // ✅ SEMPRE: Remove a requisição de loading persistente
+                    await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
+                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Loading de bypass removido para {pageType}");
                 }
-                // ✅ REMOVIDO: finally que escondia loading 
-                // Loading agora é gerenciado pelo DatabaseInterceptor
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
-
-                // 🔄 CLEANUP: Garante que loading seja escondido em caso de erro crítico
-                if (UseGlobalLoading)
-                {
-                    await GlobalLoadingOverlay.HideLoadingAsync();
-                }
             }
         }
 
@@ -411,7 +390,7 @@ namespace MyKaraoke.View.Behaviors
 
                 if (LoadDataCommand == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: SpotPage com LoadDataCommand NULL - forçando bypass");
+                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: {_associatedPage.GetType().Name} com LoadDataCommand NULL - forçando bypass");
                     return true;
                 }
                 
@@ -420,6 +399,130 @@ namespace MyKaraoke.View.Behaviors
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em ShouldBypassBehavior: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Aguarda a navbar estar COMPLETAMENTE pronta (com botões criados)
+        /// </summary>
+        private async Task<bool> WaitForNavBarFullyReady()
+        {
+            if (NavBar == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Sem NavBar - considerando pronta");
+                return true;
+            }
+
+            try
+            {
+                int attempts = 0;
+                const int maxAttempts = 30; // 3 segundos
+
+                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar ficar COMPLETAMENTE pronta...");
+
+                while (attempts < maxAttempts)
+                {
+                    await Task.Delay(100);
+                    attempts++;
+
+                    var isFullyReady = await CheckIfNavBarIsFullyReady();
+
+                    if (isFullyReady)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar COMPLETAMENTE pronta após {attempts} tentativas");
+                        return true;
+                    }
+
+                    // 🎯 DEBUG: Log a cada 5 tentativas
+                    if (attempts % 5 == 0)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar... tentativa {attempts}/{maxAttempts}");
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout aguardando NavBar ficar completamente pronta");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro aguardando NavBar completamente pronta: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 🎯 NOVO: Verifica se NavBar específica está completamente pronta
+        /// </summary>
+        private async Task<bool> CheckIfNavBarIsFullyReady()
+        {
+            try
+            {
+                return await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    try
+                    {
+                        // 🎯 DETECÇÃO ESPECÍFICA: InactiveQueueBottomNav (StackPage)
+                        if (NavBar is InactiveQueueBottomNav inactiveNav)
+                        {
+                            // Verifica se está inicializado E tem botões
+                            var diagnostics = inactiveNav.GetComponentDiagnostics();
+                            var isInitialized = (bool)(diagnostics["IsInitialized"] ?? false);
+                            var buttonCount = (int)(diagnostics["ButtonCount"] ?? 0);
+                            var hasNavBarBehavior = (bool)(diagnostics["HasNavBarBehavior"] ?? false);
+
+                            var isReady = isInitialized && buttonCount > 0 && hasNavBarBehavior;
+
+                            if (!isReady)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: Init={isInitialized}, Buttons={buttonCount}, Behavior={hasNavBarBehavior}");
+                            }
+
+                            return isReady;
+                        }
+
+                        // 🎯 DETECÇÃO ESPECÍFICA: CrudNavBarComponent (SpotPage, etc.)
+                        if (NavBar is CrudNavBarComponent crudNav)
+                        {
+                            // Verifica se NavBarBehavior tem botões criados
+                            var navBarBehavior = crudNav.NavBarBehavior;
+                            if (navBarBehavior?.Buttons != null && navBarBehavior.Buttons.Count > 0)
+                            {
+                                return true;
+                            }
+
+                            System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Buttons={navBarBehavior?.Buttons?.Count ?? 0}");
+                            return false;
+                        }
+
+                        // 🎯 DETECÇÃO GENÉRICA: Qualquer ContentView com Grid interno
+                        if (NavBar is ContentView contentView)
+                        {
+                            if (contentView.Content is Grid grid && grid.Children.Count > 0)
+                            {
+                                // Verifica se tem estrutura de botões dentro do grid
+                                foreach (var child in grid.Children)
+                                {
+                                    if (child is Frame frame && frame.Content is Grid innerGrid && innerGrid.Children.Count > 0)
+                                    {
+                                        return true; // Tem estrutura de navbar com botões
+                                    }
+                                }
+                            }
+                        }
+
+                        return false;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ Erro ao verificar se NavBar está pronta: {ex.Message}");
+                        return false;
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao verificar NavBar: {ex.Message}");
                 return false;
             }
         }
@@ -584,6 +687,13 @@ namespace MyKaraoke.View.Behaviors
 
         private async Task EnsureNavBarIsShownAfterBypass()
         {
+            // 🎯 NOVA CORREÇÃO: Aguarda navbar estar completamente pronta antes de mostrar
+            var navBarFullyReady = await WaitForNavBarFullyReady();
+            if (!navBarFullyReady)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta no bypass");
+            }
+
             if (NavBar == null) return;
 
             try

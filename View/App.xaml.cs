@@ -1,4 +1,5 @@
 ﻿using MyKaraoke.Services;
+using MyKaraoke.View.Interceptors;
 
 namespace MyKaraoke.View
 {
@@ -304,6 +305,13 @@ namespace MyKaraoke.View
             {
                 System.Diagnostics.Debug.WriteLine("[App] OnStart chamado");
                 base.OnStart();
+
+                //// 🔄 AGORA: Inicializa interceptors com app rodando
+                Task.Run(async () =>
+                {
+                    await Task.Delay(2000); // Aguarda app estabilizar
+                    NavigationLoadingInterceptor.Initialize();
+                });
             }
             catch (Exception ex)
             {

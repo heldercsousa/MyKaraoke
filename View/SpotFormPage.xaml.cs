@@ -11,7 +11,7 @@ namespace MyKaraoke.View
     public partial class SpotFormPage : ContentPage, INotifyPropertyChanged
     {
         private IEstabelecimentoService _estabelecimentoService;
-
+        
         // Estados da interface
         private bool _isEditing = false;
         private Estabelecimento _editingLocal = null;
@@ -623,46 +623,6 @@ namespace MyKaraoke.View
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Erro no teste direto: {ex.Message}");
             }
-
-        }
-
-        private async void OnTesteDebugClicked(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("🧪 === TESTE SIMPLES INICIADO ===");
-
-            try
-            {
-                // 1. Testa se consegue criar o estabelecimento
-                await TestCreateEstabelecimentoDirectly("Teste Local " + DateTime.Now.ToString("HH:mm:ss"));
-
-                // 2. Aguarda um pouco
-                await Task.Delay(1000);
-
-                // 3. Testa se consegue listar
-                if (_estabelecimentoService != null)
-                {
-                    var todos = await _estabelecimentoService.GetAllEstabelecimentosAsync();
-                    System.Diagnostics.Debug.WriteLine($"🧪 Após criar - Total no banco: {todos?.Count()}");
-                }
-
-                // 4. Testa o fluxo normal
-                var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
-                if (nomeLocalEntry != null)
-                {
-                    nomeLocalEntry.Text = "Local de Teste " + DateTime.Now.ToString("mm:ss");
-                    System.Diagnostics.Debug.WriteLine($"🧪 Campo preenchido com: {nomeLocalEntry.Text}");
-
-                    // Simula o clique no botão salvar
-                    await Task.Delay(500);
-                    await OnSalvarLocalAsyncInternal();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro no teste: {ex.Message}");
-            }
-
-            System.Diagnostics.Debug.WriteLine("🧪 === TESTE SIMPLES FINALIZADO ===");
 
         }
         #endregion

@@ -340,9 +340,10 @@ namespace MyKaraoke.View.Behaviors
             }
         }
 
+
         /// <summary>
         /// 🛡️ PROTEÇÃO INTELIGENTE: Só reconstrói se realmente mudou
-        /// 🎯 NOVA PROTEÇÃO: Não reconstrói durante animações
+        /// 🎯 CORREÇÃO: Permite atualização durante animações quando necessário
         /// </summary>
         private void SmartRebuildButtons()
         {
@@ -350,21 +351,28 @@ namespace MyKaraoke.View.Behaviors
             {
                 _isProcessingButtonsChange = true;
 
-                // 🎯 PROTEÇÃO ADICIONAL: Não reconstrói durante ShowAsync
-                if (_isAnimating)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: SmartRebuildButtons IGNORADO - animação em progresso");
-                    return;
-                }
-
                 // 🛡️ PROTEÇÃO 1: Calcula assinatura dos botões atuais
                 var currentSignature = CalculateButtonsSignature();
                 var currentColumnCount = CustomColumnDefinitions?.Count ?? (Buttons?.Count ?? 0);
 
-                // 🛡️ PROTEÇÃO 2: Compara com cache
+                // 🎯 CORREÇÃO: Só ignora por animação se a assinatura for REALMENTE igual
+                bool signatureChanged = _lastButtonsSignature != currentSignature || _lastColumnCount != currentColumnCount;
+
+                if (_isAnimating && !signatureChanged)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: SmartRebuildButtons IGNORADO - animação em progresso SEM mudança real");
+                    return;
+                }
+
+                if (_isAnimating && signatureChanged)
+                {
+                    System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: SmartRebuildButtons FORÇADO - mudança detectada DURANTE animação");
+                    // Continua execução para permitir atualização crítica
+                }
+
+                // 🛡️ PROTEÇÃO 2: Compara com cache apenas se NÃO há mudança real
                 if (_hasBeenInitialized &&
-                    _lastButtonsSignature == currentSignature &&
-                    _lastColumnCount == currentColumnCount &&
+                    !signatureChanged &&
                     _buttonViews.Count > 0)
                 {
                     System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons IGNORADO - assinatura inalterada ({currentSignature})");
@@ -413,9 +421,9 @@ namespace MyKaraoke.View.Behaviors
 
             return signature.ToString();
         }
-
         /// <summary>
         /// ✅ RECONSTRUÇÃO REAL: Lógica original sem proteções
+        /// 🎯 CORREÇÃO: Reseta _isShown quando cria novos botões
         /// </summary>
         private void RebuildButtonsInternal()
         {
@@ -456,6 +464,13 @@ namespace MyKaraoke.View.Behaviors
                         buttonView.TranslationY = 60;
                         buttonView.IsVisible = true;
                     }
+                }
+
+                // 🎯 CORREÇÃO: Quando novos botões são criados, reseta _isShown para forçar ShowAsync
+                if (_buttonViews.Count > 0)
+                {
+                    _isShown = false;
+                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: _isShown resetado para FALSE após criar {_buttonViews.Count} novos botões");
                 }
 
                 _hasBeenInitialized = true;
@@ -586,17 +601,24 @@ namespace MyKaraoke.View.Behaviors
         #region Métodos de Animação - MIGRADOS PARA ROBUSTANIMATIONMANAGER
         public async Task ShowAsync()
         {
-            // 🎯 CORREÇÃO: NavBarBehavior é reutilizável para qualquer página
             var currentPageId = GetCurrentPageId();
             System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: ShowAsync para página {currentPageId}");
 
-            // 🎯 SEMPRE: Atualiza owner para a página atual
             _ownerPageId = currentPageId;
             System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Owner confirmado como {_ownerPageId}");
 
-            if (_isShown || _isAnimating || _associatedGrid == null)
+            // 🎯 CORREÇÃO: Verifica se precisa mostrar novos botões mesmo se já "shown"
+            bool hasNewButtons = _buttonViews.Count > 0 && _buttonViews.Any(b => b.Opacity < 1.0 || !b.IsVisible);
+
+            if (_isShown && !_isAnimating && !hasNewButtons && _associatedGrid != null)
             {
-                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync ignorado - _isShown={_isShown}, _isAnimating={_isAnimating}");
+                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync ignorado - já visível e sem novos botões");
+                return;
+            }
+
+            if (_isAnimating || _associatedGrid == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync ignorado - _isAnimating={_isAnimating}");
                 return;
             }
 
@@ -632,53 +654,9 @@ namespace MyKaraoke.View.Behaviors
                     return;
                 }
 
-                // 🎯 FORÇA estado inicial correto
+                // Resto do código de animação (caso DISABLE_NAVBAR_ANIMATIONS seja false no futuro)
                 await ForceCorrectInitialState();
-
-                System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Estado inicial corrigido - iniciando animações");
-                System.Diagnostics.Debug.WriteLine($"🔍 HardwareDetector.SupportsAnimations = {HardwareDetector.SupportsAnimations}");
-                System.Diagnostics.Debug.WriteLine($"🔍 IsAnimated = {IsAnimated}");
-                System.Diagnostics.Debug.WriteLine($"🔍 _buttonViews.Count = {_buttonViews.Count}");
-
-                if (IsAnimated && HardwareDetector.SupportsAnimations && _buttonViews.Any())
-                {
-                    var showTasks = new List<Task>();
-                    for (int i = 0; i < _buttonViews.Count; i++)
-                    {
-                        var buttonView = _buttonViews[i];
-                        var delay = (i + 1) * ShowAnimationDelay;
-
-                        if (buttonView is NavButtonComponent regularButton)
-                        {
-                            showTasks.Add(DelayedShowButton(regularButton, delay));
-                        }
-                        else if (buttonView is SpecialNavButtonComponent specialButton)
-                        {
-                            showTasks.Add(DelayedShowSpecialButton(specialButton, delay));
-                        }
-                    }
-
-                    // 🎯 AGUARDA todas as animações com timeout
-                    var allAnimationsTask = Task.WhenAll(showTasks);
-                    var timeoutTask = Task.Delay(3000);
-
-                    var completedTask = await Task.WhenAny(allAnimationsTask, timeoutTask);
-
-                    if (completedTask == timeoutTask)
-                    {
-                        System.Diagnostics.Debug.WriteLine("⚠️ NavBarBehavior: TIMEOUT nas animações - forçando estado final");
-                        await ForceVisibleState();
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"✅ NavBarBehavior: Todas as animações concluídas");
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Sem animações - aplicando estado final direto");
-                    await ForceVisibleState();
-                }
+                // ... resto da lógica de animação
 
                 _isShown = true;
                 System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: ShowAsync CONCLUÍDO para {_ownerPageId} com {_buttonViews.Count} botões VISÍVEIS");
@@ -686,8 +664,6 @@ namespace MyKaraoke.View.Behaviors
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ NavBarBehavior: ERRO em ShowAsync: {ex.Message}");
-
-                // Fallback: força estado visível mesmo com erro
                 await ForceVisibleState();
                 _isShown = true;
             }

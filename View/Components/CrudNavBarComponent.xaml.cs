@@ -103,6 +103,7 @@ namespace MyKaraoke.View.Components
                 { CrudButtonType.Proximo, new NavButtonConfig { Text = "Próximo", IconSource = "next.png" } },
             };
 
+            System.Diagnostics.Debug.WriteLine($"🔍 DEBUG: navBarBehavior._isShown: {navBarBehavior.GetType().GetField("_isShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(navBarBehavior)}");
             System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {configs.Count} configurações de botão inicializadas");
             return configs;
         }
@@ -204,9 +205,23 @@ namespace MyKaraoke.View.Components
 
                 System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {columnDefinitions.Count} colunas criadas");
 
-                // 3. ✅ BEHAVIOR: Configura através do NavBarBehavior
                 navBarBehavior.CustomColumnDefinitions = columnDefinitions;
                 navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
+
+                // 🔍 DEBUG - VERSÃO CORRIGIDA:
+                System.Diagnostics.Debug.WriteLine("🔍 DEBUG: navBarBehavior.Buttons configurado");
+
+                // Usa reflection de forma mais simples
+                var buttonViewsField = navBarBehavior.GetType().GetField("_buttonViews", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var buttonViewsValue = buttonViewsField?.GetValue(navBarBehavior);
+                var buttonViewsCount = buttonViewsValue is System.Collections.ICollection collection ? collection.Count : 0;
+
+                System.Diagnostics.Debug.WriteLine($"🔍 DEBUG: navBarBehavior._buttonViews.Count antes do ShowAsync: {buttonViewsCount}");
+
+                var isShownField = navBarBehavior.GetType().GetField("_isShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var isShownValue = isShownField?.GetValue(navBarBehavior) ?? false;
+
+                System.Diagnostics.Debug.WriteLine($"🔍 DEBUG: navBarBehavior._isShown: {isShownValue}");
 
                 // 🎯 CORREÇÃO: Força exibição apenas para modo lista
                 if (visibleButtons.Count > 0)
@@ -514,9 +529,9 @@ namespace MyKaraoke.View.Components
             try
             {
                 var visibleButtons = new List<NavButtonConfig>
-        {
-            _buttonConfigs[CrudButtonType.Salvar]
-        };
+                {
+                    _buttonConfigs[CrudButtonType.Salvar]
+                };
 
                 System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Criando botão Salvar forçadamente");
 

@@ -157,7 +157,6 @@ namespace MyKaraoke.View
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
-                    OnPropertyChanged(nameof(SelectionCount));
                 });
             }
         }
@@ -178,7 +177,6 @@ namespace MyKaraoke.View
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
-                    OnPropertyChanged(nameof(SelectionCount));
                     System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no INÍCIO");
                 });
 
@@ -192,7 +190,6 @@ namespace MyKaraoke.View
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
-                    OnPropertyChanged(nameof(SelectionCount));
                     System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no FINAL");
                 });
 
@@ -206,7 +203,6 @@ namespace MyKaraoke.View
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
-                    OnPropertyChanged(nameof(SelectionCount));
                     UpdateUIState();
                     System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): Fallback - SelectionCount=0 definido");
                 });
@@ -296,27 +292,31 @@ namespace MyKaraoke.View
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"SpotPage: UpdateUIState triggered");
                 bool hasLocais = Locais.Any();
                 emptyStateFrame.IsVisible = !hasLocais;
                 locaisCollectionView.IsVisible = hasLocais;
 
-                // ✅ CRÍTICO: Sempre SelectionCount=0 para mostrar botão "Adicionar"
-                var previousSelection = SelectionCount;
-                SelectionCount = 0;
-
-                System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): UpdateUIState concluído");
-                System.Diagnostics.Debug.WriteLine($"   - HasLocais: {hasLocais}");
-                System.Diagnostics.Debug.WriteLine($"   - SelectionCount: {SelectionCount} (era {previousSelection})");
-                System.Diagnostics.Debug.WriteLine($"   - emptyStateFrame.IsVisible: {emptyStateFrame.IsVisible}");
-                System.Diagnostics.Debug.WriteLine($"   - locaisCollectionView.IsVisible: {locaisCollectionView.IsVisible}");
-
-                // ✅ GARANTE: PropertyChanged sempre dispara (mesmo que valor seja igual)
-                OnPropertyChanged(nameof(SelectionCount));
-                System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): PropertyChanged(SelectionCount) disparado");
+                // ✅ CORREÇÃO: Só zera se não há itens ou se não há seleção real
+                if (!hasLocais)
+                {
+                    System.Diagnostics.Debug.WriteLine($"SpotPage: currentSelection: SelectionCount: 0");
+                    SelectionCount = 0; // Sem dados = sem seleção
+                }
+                else
+                {
+                    // Mantém a seleção atual (OnItemTapped já gerencia isso)
+                    var currentSelection = Locais.Count(x => x.IsSelected);
+                    System.Diagnostics.Debug.WriteLine($"SpotPage: currentSelection: {currentSelection} - SelectionCount: {SelectionCount}");
+                    if (SelectionCount != currentSelection)
+                    {
+                        SelectionCount = currentSelection;
+                    }
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage ({this.GetHashCode()}): Erro em UpdateUIState: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em UpdateUIState: {ex.Message}");
             }
         }
 
@@ -553,7 +553,6 @@ namespace MyKaraoke.View
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     SelectionCount = 0;
-                    OnPropertyChanged(nameof(SelectionCount));
                 });
 
                 // 🔧 CORREÇÃO 2: Verifica e configura CrudNavBar

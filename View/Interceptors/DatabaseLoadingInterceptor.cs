@@ -34,6 +34,16 @@ namespace MyKaraoke.View.Interceptors
             "SELECT 1 FROM", // Existence checks
         };
 
+        // 🛡️ NOVO: Comandos de migração que devem ser ignorados
+        private static readonly HashSet<string> MigrationOperations = new()
+        {
+            "__EFMigrationsLock",
+            "__EFMigrationsHistory",
+            "INSERT OR IGNORE INTO \"__EFMigrationsLock\"",
+            "DELETE FROM \"__EFMigrationsLock\"",
+            "CREATE TABLE IF NOT EXISTS \"__EFMigrationsHistory\""
+        };
+
         #region Command Execution Interception
 
         /// <summary>
@@ -222,6 +232,13 @@ namespace MyKaraoke.View.Interceptors
                     return;
                 }
 
+                // 🛡️ SKIP: Comandos de migração do Entity Framework
+                if (IsMigrationOperation(sql))
+                {
+                    System.Diagnostics.Debug.WriteLine($"🛡️ DatabaseInterceptor: Comando de migração ignorado: {sql.Substring(0, Math.Min(50, sql.Length))}...");
+                    return;
+                }
+
                 // 🛡️ SKIP: Operações muito rápidas que não precisam de loading
                 if (IsQuickOperation(sql))
                 {
@@ -273,7 +290,19 @@ namespace MyKaraoke.View.Interceptors
             try
             {
                 var sql = command.CommandText?.Trim();
-                if (string.IsNullOrEmpty(sql) || IsQuickOperation(sql))
+                if (string.IsNullOrEmpty(sql))
+                {
+                    return;
+                }
+
+                // 🛡️ SKIP: Comandos de migração (não criam loading, então não precisam remover)
+                if (IsMigrationOperation(sql))
+                {
+                    return;
+                }
+
+                // 🛡️ SKIP: Operações rápidas (não criam loading, então não precisam remover)
+                if (IsQuickOperation(sql))
                 {
                     return;
                 }
@@ -348,6 +377,27 @@ namespace MyKaraoke.View.Interceptors
             if (sql.Length < 20)
             {
                 return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 🛡️ VERIFICA: Se é comando de migração do Entity Framework
+        /// </summary>
+        private bool IsMigrationOperation(string sql)
+        {
+            if (string.IsNullOrEmpty(sql)) return false;
+
+            var upperSql = sql.ToUpperInvariant().Trim();
+
+            // 🛡️ VERIFICA: Se contém qualquer operação de migração
+            foreach (var migrationOp in MigrationOperations)
+            {
+                if (upperSql.Contains(migrationOp.ToUpperInvariant()))
+                {
+                    return true;
+                }
             }
 
             return false;

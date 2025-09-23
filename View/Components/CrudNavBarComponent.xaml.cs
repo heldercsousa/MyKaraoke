@@ -52,6 +52,11 @@ namespace MyKaraoke.View.Components
         private readonly Dictionary<CrudButtonType, NavButtonConfig> _buttonConfigs;
         private bool _isInitialized = false;
 
+        // 🎯 OTIMIZAÇÃO: Cache para evitar reconstruções desnecessárias
+        private int _lastProcessedSelectionCount = -1; // -1 = nunca processado
+        private bool _hasProcessedFirstUpdate = false;
+
+
         #endregion
 
         public CrudNavBarComponent()
@@ -121,16 +126,17 @@ namespace MyKaraoke.View.Components
             }
         }
 
+
         /// <summary>
-        /// ✅ CÉREBRO: Decide quais botões mostrar baseado na seleção
-        /// 🔧 DEBUG MELHORADO: Logs detalhados
-        /// 🎯 PROTEÇÃO: Só executa se inicializado ou força inicialização
+        /// ✅ CÉREBRO OTIMIZADO: Decide quais botões mostrar baseado na seleção
+        /// 🎯 OTIMIZAÇÃO: Só reconstrói quando realmente necessário
         /// </summary>
         private void UpdateLayoutAndButtons()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: UpdateLayoutAndButtons iniciado - IsFormMode={IsFormMode}, Initialized={_isInitialized}");
+                var currentCount = SelectionCount;
+                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: UpdateLayoutAndButtons iniciado - IsFormMode={IsFormMode}, SelectionCount={currentCount}");
 
                 // 🎯 NOVA LÓGICA: Se não está inicializado, tenta forçar
                 if (!_isInitialized)
@@ -138,7 +144,6 @@ namespace MyKaraoke.View.Components
                     if (Handler != null && navBarBehavior != null)
                     {
                         System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: Handler e navBarBehavior disponíveis - forçando inicialização inline");
-
                         try
                         {
                             navBarBehavior.ButtonClicked -= OnNavBarButtonClicked; // Remove se já existe
@@ -165,6 +170,13 @@ namespace MyKaraoke.View.Components
                     return;
                 }
 
+                // 🛡️ OTIMIZAÇÃO PRINCIPAL: Só reconstrói quando necessário
+                if (!ShouldRebuildButtons(currentCount))
+                {
+                    System.Diagnostics.Debug.WriteLine($"🛡️ CrudNavBarComponent: Reconstrução desnecessária evitada - SelectionCount={currentCount} (último processado: {_lastProcessedSelectionCount})");
+                    return;
+                }
+
                 var visibleButtons = new List<NavButtonConfig>();
 
                 if (IsFormMode)
@@ -176,12 +188,12 @@ namespace MyKaraoke.View.Components
                 else
                 {
                     // 📋 MODO LISTA: Lógica original para listas (usando SelectionCount)
-                    if (SelectionCount == 0)
+                    if (currentCount == 0)
                     {
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Adicionar]);
                         System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=0 - Adicionando botão Adicionar");
                     }
-                    else if (SelectionCount == 1)
+                    else if (currentCount == 1)
                     {
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
@@ -190,7 +202,7 @@ namespace MyKaraoke.View.Components
                     else // > 1
                     {
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                        System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: [LIST] SelectionCount={SelectionCount} - Adicionando botão Excluir");
+                        System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: [LIST] SelectionCount={currentCount} - Adicionando botão Excluir");
                     }
                 }
 
@@ -207,6 +219,10 @@ namespace MyKaraoke.View.Components
 
                 navBarBehavior.CustomColumnDefinitions = columnDefinitions;
                 navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
+
+                // 🎯 ATUALIZA: Cache após reconstrução bem-sucedida
+                _lastProcessedSelectionCount = currentCount;
+                _hasProcessedFirstUpdate = true;
 
                 // 🔍 DEBUG - VERSÃO CORRIGIDA:
                 System.Diagnostics.Debug.WriteLine("🔍 DEBUG: navBarBehavior.Buttons configurado");
@@ -248,6 +264,44 @@ namespace MyKaraoke.View.Components
                 System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em UpdateLayoutAndButtons: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
             }
+        }
+
+        /// <summary>
+        /// 🎯 OTIMIZAÇÃO: Determina se precisa reconstruir botões baseado na sua dica
+        /// Só reconstrói nas transições: 0→1, 1→2, 2→1, 1→0
+        /// </summary>
+        private bool ShouldRebuildButtons(int currentCount)
+        {
+            // Primeira execução - sempre reconstrói
+            if (!_hasProcessedFirstUpdate)
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Primeira execução - forçando reconstrução");
+                return true;
+            }
+
+            var lastCount = _lastProcessedSelectionCount;
+
+            // 🎯 TRANSIÇÕES QUE REQUEREM RECONSTRUÇÃO (baseado na sua dica):
+            // 0 → 1: Adicionar → Editar+Excluir
+            // 1 → 0: Editar+Excluir → Adicionar  
+            // 1 → 2: Editar+Excluir → Excluir
+            // 2 → 1: Excluir → Editar+Excluir
+
+            bool needsRebuild = (lastCount == 0 && currentCount == 1) ||   // 0 → 1
+                                (lastCount == 1 && currentCount == 0) ||   // 1 → 0  
+                                (lastCount == 1 && currentCount == 2) ||   // 1 → 2
+                                (lastCount == 2 && currentCount == 1);     // 2 → 1
+
+            if (needsRebuild)
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Transição detectada {lastCount}→{currentCount} - RECONSTRUINDO");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"🛡️ CrudNavBarComponent: Transição {lastCount}→{currentCount} não requer reconstrução");
+            }
+
+            return needsRebuild;
         }
 
         private static void OnModeChanged(BindableObject bindable, object oldValue, object newValue)

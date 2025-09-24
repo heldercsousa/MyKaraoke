@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens
 		.editorconfig.txt = .editorconfig.txt
 		changelog.md = changelog.md
 		global.json = global.json
+		mykaraoke_ui_ux_patterns_guide.md = mykaraoke_ui_ux_patterns_guide.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyKaraoke.View", "View\MyKaraoke.View.csproj", "{23B0A8E9-F736-DDF5-99E4-654D936B8CD0}"

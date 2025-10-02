@@ -338,6 +338,18 @@ namespace MyKaraoke.View
 
             switch (buttonType)
             {
+                case CrudButtonType.Adicionar:  // ✅ ADICIONAR ESTE CASE
+                    System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Iniciando navegação para adicionar novo local");
+                    try
+                    {
+                        await NavigateToSpotFormPageAsync(isEditing: false, editingLocal: null);
+                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Navegação para formulário concluída");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na navegação: {ex.Message}");
+                    }
+                    break;
                 case CrudButtonType.Editar:
                     if (selectedItems.Count == 1)
                     {

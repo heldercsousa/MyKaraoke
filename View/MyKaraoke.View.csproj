@@ -318,6 +318,9 @@
 		<MauiXaml Update="Components\NavButtonComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Components\Snackbarcomponent.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Components\SpecialNavButtonComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

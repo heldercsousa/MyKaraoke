@@ -294,83 +294,79 @@ namespace MyKaraoke.View
                     return;
                 }
 
+                // 🎯 CORREÇÃO: Inicia loading ANTES de salvar
                 SetLoading(true);
                 System.Diagnostics.Debug.WriteLine("🔄 Loading ativado");
 
                 try
                 {
+                    bool saveSuccess = false;
+                    string resultMessage = "";
+
                     if (_isEditing && _editingLocal != null)
                     {
                         System.Diagnostics.Debug.WriteLine($"📝 MODO EDIÇÃO: Editando local ID {_editingLocal.Id}");
                         var result = await _estabelecimentoService.UpdateEstabelecimentoAsync(_editingLocal.Id, nomeLocal);
+                        saveSuccess = result.success;
+                        resultMessage = result.message;
                         System.Diagnostics.Debug.WriteLine($"📝 Resultado UPDATE: success={result.success}, message='{result.message}'");
-
-                        if (result.success)
-                        {
-                            System.Diagnostics.Debug.WriteLine("✅ UPDATE bem-sucedido!");
-                            ShowSuccessMessage(result.message);
-                            await Task.Delay(1500);
-                            await NavigateBackToSpotPage();
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"❌ UPDATE falhou: {result.message}");
-                            ShowValidationMessage(result.message);
-                        }
                     }
                     else
                     {
                         System.Diagnostics.Debug.WriteLine($"🆕 MODO CRIAÇÃO: Criando novo local");
-                        System.Diagnostics.Debug.WriteLine($"🆕 Chamando CreateEstabelecimentoAsync com nome: '{nomeLocal}'");
-
                         var result = await _estabelecimentoService.CreateEstabelecimentoAsync(nomeLocal);
-                        System.Diagnostics.Debug.WriteLine($"🔍 CREATE RESULT: success={result.success}, message='{result.message}', estabelecimento={result.estabelecimento?.Id}");
+                        saveSuccess = result.success;
+                        resultMessage = result.message;
+                        System.Diagnostics.Debug.WriteLine($"🔍 CREATE RESULT: success={result.success}, message='{result.message}'");
+                    }
 
-                        if (result.success)
+                    if (saveSuccess)
+                    {
+                        System.Diagnostics.Debug.WriteLine("✅ Operação bem-sucedida!");
+
+                        // ✅ LIMPA campo após sucesso
+                        await MainThread.InvokeOnMainThreadAsync(() =>
                         {
-                            System.Diagnostics.Debug.WriteLine("✅ CREATE bem-sucedido!");
-                            ShowSuccessMessage(result.message);
-
-                            // ✅ CORREÇÃO: Limpa o campo após sucesso
-                            MainThread.BeginInvokeOnMainThread(() =>
+                            if (nomeLocalEntry != null)
                             {
-                                if (nomeLocalEntry != null)
-                                {
-                                    nomeLocalEntry.Text = string.Empty;
-                                }
-                            });
+                                nomeLocalEntry.Text = string.Empty;
+                            }
+                        });
 
-                            // Aguarda antes de navegar
-                            System.Diagnostics.Debug.WriteLine("⏳ Aguardando 1.5s antes de navegar...");
-                            await Task.Delay(1500);
+                        // 🎯 CRÍTICO: MANTÉM loading durante navegação
+                        System.Diagnostics.Debug.WriteLine("🔙 Navegando de volta para SpotPage COM loading...");
+                        await NavigateBackToSpotPage();
 
-                            System.Diagnostics.Debug.WriteLine("🔙 Navegando de volta para SpotPage...");
-                            await NavigateBackToSpotPage();
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"❌ CREATE falhou: {result.message}");
-                            ShowValidationMessage(result.message);
-                        }
+                        // 🎯 APENAS AGORA desativa loading e mostra snackbar
+                        SetLoading(false);
+                        System.Diagnostics.Debug.WriteLine("🔄 Loading desativado APÓS navegação");
+
+                        // 🎯 SNACKBAR: Mostra feedback de sucesso
+                        await snackbar.ShowSuccessAsync(resultMessage);
+                        System.Diagnostics.Debug.WriteLine("✅ Snackbar de sucesso exibido");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ Operação falhou: {resultMessage}");
+                        SetLoading(false); // Desativa loading se falhou
+                        ShowValidationMessage(resultMessage); // Erro inline
                     }
                 }
                 catch (Exception serviceEx)
                 {
                     System.Diagnostics.Debug.WriteLine($"❌ Erro no serviço: {serviceEx.Message}");
-                    System.Diagnostics.Debug.WriteLine($"❌ Service StackTrace: {serviceEx.StackTrace}");
+                    SetLoading(false);
                     ShowValidationMessage($"Erro interno: {serviceEx.Message}");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Erro geral em OnSalvarLocalAsyncInternal: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ General StackTrace: {ex.StackTrace}");
+                SetLoading(false);
                 ShowValidationMessage("Erro interno ao salvar");
             }
             finally
             {
-                SetLoading(false);
-                System.Diagnostics.Debug.WriteLine("🔄 Loading desativado");
                 System.Diagnostics.Debug.WriteLine("🚀 === OnSalvarLocalAsyncInternal FINALIZADO ===");
             }
         }

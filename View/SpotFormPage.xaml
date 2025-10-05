@@ -71,27 +71,19 @@
                                IsVisible="False"
                                Margin="8,4,8,0" />
 
-                        <!-- Label de validação -->
+                        <!-- Label de validação com ESTILO REUTILIZÁVEL -->
                         <Label Grid.Row="2"
-                               x:Name="validationMessageLabel" 
-                               Text=""
-                               TextColor="#ff6b6b"
-                               FontSize="14"
-                               HorizontalOptions="Start"
-                               VerticalOptions="Start"
-                               IsVisible="False"
-                               Margin="0,12,0,0" />
+                           x:Name="validationMessageLabel" 
+                           Text=""
+                           Style="{StaticResource ValidationErrorStyle}"
+                           IsVisible="False" />
 
-                        <!-- Label de sucesso -->
-                        <Label Grid.Row="3"
-                               x:Name="successMessageLabel" 
-                               Text=""
-                               TextColor="#4CAF50"
-                               FontSize="14"
-                               HorizontalOptions="Start"
-                               VerticalOptions="Start"
-                               IsVisible="False"
-                               Margin="0,12,0,0" />
+                                            <!-- Label de sucesso TEMPORÁRIA (será substituída por Snackbar) -->
+                         <Label Grid.Row="3"
+                           x:Name="successMessageLabel" 
+                           Text=""
+                           Style="{StaticResource InlineSuccessStyle}"
+                           IsVisible="False" />
 
                         <!-- Espaço flexível -->
                         <Grid Grid.Row="4" HeightRequest="40" />
@@ -101,7 +93,7 @@
             </components:CardWrapperComponent>
 
         </Grid>
-
+        <components:SnackbarComponent x:Name="snackbar" Grid.RowSpan="3" />
     </Grid>
 
 </ContentPage>

@@ -93,7 +93,6 @@
             </components:CardWrapperComponent>
 
         </Grid>
-        <components:SnackbarComponent x:Name="snackbar" Grid.RowSpan="3" />
     </Grid>
 
 </ContentPage>

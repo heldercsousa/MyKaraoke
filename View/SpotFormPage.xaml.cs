@@ -324,7 +324,7 @@ namespace MyKaraoke.View
                     {
                         System.Diagnostics.Debug.WriteLine("✅ Operação bem-sucedida!");
 
-                        // ✅ LIMPA campo após sucesso
+                        // Limpa campo
                         await MainThread.InvokeOnMainThreadAsync(() =>
                         {
                             if (nomeLocalEntry != null)
@@ -333,17 +333,15 @@ namespace MyKaraoke.View
                             }
                         });
 
-                        // 🎯 CRÍTICO: MANTÉM loading durante navegação
-                        System.Diagnostics.Debug.WriteLine("🔙 Navegando de volta para SpotPage COM loading...");
+                        // Navega de volta
                         await NavigateBackToSpotPage();
-
-                        // 🎯 APENAS AGORA desativa loading e mostra snackbar
                         SetLoading(false);
-                        System.Diagnostics.Debug.WriteLine("🔄 Loading desativado APÓS navegação");
 
-                        // 🎯 SNACKBAR: Mostra feedback de sucesso
-                        await snackbar.ShowSuccessAsync(resultMessage);
-                        System.Diagnostics.Debug.WriteLine("✅ Snackbar de sucesso exibido");
+                        // Aguarda navegação completar
+                        await Task.Delay(300);
+
+                        // SNACKBAR GLOBAL - uma linha apenas!
+                        await GlobalSnackbar.ShowSuccessAsync(resultMessage);
                     }
                     else
                     {

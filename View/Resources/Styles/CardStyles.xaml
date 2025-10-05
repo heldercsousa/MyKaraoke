@@ -399,51 +399,6 @@
         <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
 
-    <!-- ============================================================================ -->
-    <!-- 🎯 SNACKBAR STYLES (Bottom Toast Notifications) -->
-    <!-- ============================================================================ -->
-
-    <!-- Snackbar Container -->
-    <Style x:Key="SnackbarContainerStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="#323232" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="16,12" />
-        <Setter Property="Margin" Value="16,0,16,90" />
-        <Setter Property="HasShadow" Value="True" />
-        <Setter Property="HorizontalOptions" Value="Fill" />
-        <Setter Property="VerticalOptions" Value="End" />
-        <Setter Property="ZIndex" Value="10000" />
-    </Style>
-
-    <!-- Snackbar Success (Verde) -->
-    <Style x:Key="SnackbarSuccessStyle" TargetType="Frame" BasedOn="{StaticResource SnackbarContainerStyle}">
-        <Setter Property="BackgroundColor" Value="#2E7D32" />
-    </Style>
-
-    <!-- Snackbar Error (Vermelho) -->
-    <Style x:Key="SnackbarErrorStyle" TargetType="Frame" BasedOn="{StaticResource SnackbarContainerStyle}">
-        <Setter Property="BackgroundColor" Value="#D32F2F" />
-    </Style>
-
-    <!-- Snackbar Warning (Laranja) -->
-    <Style x:Key="SnackbarWarningStyle" TargetType="Frame" BasedOn="{StaticResource SnackbarContainerStyle}">
-        <Setter Property="BackgroundColor" Value="#F57C00" />
-    </Style>
-
-    <!-- Snackbar Text -->
-    <Style x:Key="SnackbarTextStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="White" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="LineBreakMode" Value="WordWrap" />
-    </Style>
-
-    <!-- Snackbar Icon -->
-    <Style x:Key="SnackbarIconStyle" TargetType="Image">
-        <Setter Property="WidthRequest" Value="20" />
-        <Setter Property="HeightRequest" Value="20" />
-        <Setter Property="Margin" Value="0,0,12,0" />
-        <Setter Property="VerticalOptions" Value="Center" />
-    </Style>
+  
 
 </ResourceDictionary>

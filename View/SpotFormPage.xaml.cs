@@ -3,36 +3,20 @@ using MyKaraoke.Services;
 using MyKaraoke.View.Components;
 using MyKaraoke.View.Extensions;
 using MyKaraoke.View.Behaviors;
-using System.ComponentModel;
 using System.Windows.Input;
 
 namespace MyKaraoke.View
 {
-    public partial class SpotFormPage : ContentPage, INotifyPropertyChanged
+    public partial class SpotFormPage : ContentPage
     {
         private IEstabelecimentoService _estabelecimentoService;
-        
+
         // Estados da interface
         private bool _isEditing = false;
         private Estabelecimento _editingLocal = null;
 
-        // Propriedade para controlar se deve mostrar botão Salvar na CrudNavBar
-        private bool _hasTextToSave;
-        public bool HasTextToSave
-        {
-            get => _hasTextToSave;
-            set
-            {
-                if (_hasTextToSave != value)
-                {
-                    _hasTextToSave = value;
-                    OnPropertyChanged(nameof(HasTextToSave));
-
-                    // 🎯 CORREÇÃO CRÍTICA: Notifica CrudNavBar diretamente sobre mudança
-                    NotifyCrudNavBarAboutTextChange(value);
-                }
-            }
-        }
+        // ✅ CRÍTICO: Flag para controlar inicialização
+        private bool _isInitialized = false;
 
         // Comando que o SmartPageLifecycleBehavior irá executar
         public ICommand LoadDataCommand { get; }
@@ -46,32 +30,72 @@ namespace MyKaraoke.View
 
             // ✅ CRÍTICO: Define BindingContext DEPOIS do LoadDataCommand
             this.BindingContext = this;
-
-            // ✅ INICIAL: Define HasTextToSave inicial (false = sem botão Salvar inicialmente)
-            HasTextToSave = false;
         }
+
+        #region Header Event Handlers
+
+        private async void OnCancelClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("SpotFormPage: Cancelar clicado");
+                await NavigateBackToSpotPage();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SpotFormPage: Erro ao cancelar: {ex.Message}");
+            }
+        }
+
+        private async void OnSaveClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("SpotFormPage: Salvar clicado via header");
+                await OnSalvarLocalAsyncInternal();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SpotFormPage: Erro ao salvar via header: {ex.Message}");
+            }
+        }
+
+        #endregion
 
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
 
-            if (Handler != null)
+            if (Handler != null && !_isInitialized)
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine("✅ SpotFormPage: OnHandlerChanged - Inicializando serviços");
+
                     var serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
                     _estabelecimentoService = serviceProvider?.GetService<IEstabelecimentoService>();
+
+                    if (_estabelecimentoService != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("✅ SpotFormPage: EstabelecimentoService inicializado com sucesso");
+                        _isInitialized = true;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("⚠️ SpotFormPage: EstabelecimentoService é NULL após inicialização");
+                    }
 
                     // 🎯 CONFIGURAÇÃO: HeaderComponent para navegação segura de volta
                     var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
                     if (headerComponent != null)
                     {
                         headerComponent.ConfigureSafeBackNavigation(null, 500);
+                        System.Diagnostics.Debug.WriteLine("✅ SpotFormPage: HeaderComponent configurado");
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao inicializar serviços SpotFormPage: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"❌ SpotFormPage: Erro ao inicializar serviços: {ex.Message}");
                 }
             }
         }
@@ -105,37 +129,63 @@ namespace MyKaraoke.View
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("🎯 SpotFormPage: OnAppearingBypass executado");
+
                 // ✅ GENÉRICO: Usa extension method reutilizável para FormPages
                 await this.ExecuteFormPageBypass();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SpotFormPage: Erro no OnAppearingBypass: {ex.Message}");
-                // 🛡️ FALLBACK: Garante estado mínimo mesmo com erro
-                MainThread.BeginInvokeOnMainThread(() => HasTextToSave = false);
             }
         }
 
         /// <summary>
-        /// ✅ SIMPLIFICADO: Inicialização de dados para SmartPageLifecycleBehavior
+        /// ✅ CORRIGIDO: Inicialização de dados para SmartPageLifecycleBehavior
+        /// Agora aguarda o Handler estar disponível e os serviços inicializados
         /// </summary>
         private async Task InitializeDataAsync()
         {
             try
             {
-                if (_estabelecimentoService == null)
+                System.Diagnostics.Debug.WriteLine("🔄 SpotFormPage: InitializeDataAsync INICIADO");
+
+                // ✅ AGUARDA: Handler estar disponível
+                var maxAttempts = 10;
+                var attempt = 0;
+                while (Handler == null && attempt < maxAttempts)
                 {
-                    var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
-                    _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+                    System.Diagnostics.Debug.WriteLine($"⏳ SpotFormPage: Aguardando Handler... tentativa {attempt + 1}/{maxAttempts}");
+                    await Task.Delay(50);
+                    attempt++;
                 }
 
-                // ✅ FORÇA: Estado inicial correto
-                MainThread.BeginInvokeOnMainThread(() => HasTextToSave = false);
+                if (Handler == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ SpotFormPage: Handler não disponível após espera");
+                    return;
+                }
+
+                // ✅ AGUARDA: Serviços estarem inicializados
+                attempt = 0;
+                while (!_isInitialized && attempt < maxAttempts)
+                {
+                    System.Diagnostics.Debug.WriteLine($"⏳ SpotFormPage: Aguardando inicialização... tentativa {attempt + 1}/{maxAttempts}");
+                    await Task.Delay(50);
+                    attempt++;
+                }
+
+                if (!_isInitialized || _estabelecimentoService == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ SpotFormPage: Serviços não inicializados após espera");
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine("✅ SpotFormPage: InitializeDataAsync CONCLUÍDO - Serviços disponíveis");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SpotFormPage: Erro em InitializeDataAsync: {ex.Message}");
-                MainThread.BeginInvokeOnMainThread(() => HasTextToSave = false);
             }
         }
 
@@ -162,7 +212,6 @@ namespace MyKaraoke.View
             }
 
             ClearMessages();
-            HasTextToSave = false;
         }
 
         /// <summary>
@@ -186,7 +235,6 @@ namespace MyKaraoke.View
             }
 
             ClearMessages();
-            HasTextToSave = !string.IsNullOrWhiteSpace(local.Nome);
         }
 
         #endregion
@@ -200,21 +248,13 @@ namespace MyKaraoke.View
                 var currentLength = e.NewTextValue?.Length ?? 0;
                 var hasText = !string.IsNullOrWhiteSpace(e.NewTextValue);
 
-                // ✅ FUNCIONALIDADE 4: Controla exibição do botão Salvar baseado no texto
-                HasTextToSave = hasText;
-
-                // 🧪 DEBUG: Logs para identificar o problema
-                System.Diagnostics.Debug.WriteLine($"🧪 OnNomeLocalTextChanged: hasText={hasText}, HasTextToSave={HasTextToSave}");
-
-                // 🧪 DEBUG: Verifica se CrudNavBar existe
-                var crudNavBar = this.FindByName<VisualElement>("CrudNavBar");
-                System.Diagnostics.Debug.WriteLine($"🧪 CrudNavBar encontrada: {crudNavBar != null}, IsVisible: {crudNavBar?.IsVisible}");
-
                 // Atualiza contador de caracteres
                 UpdateCharacterCounter(currentLength);
 
                 // Limpa mensagens de erro enquanto digita
                 ClearMessages();
+
+                System.Diagnostics.Debug.WriteLine($"SpotFormPage: Texto alterado - Length={currentLength}, HasText={hasText}");
             }
             catch (Exception ex)
             {
@@ -222,66 +262,8 @@ namespace MyKaraoke.View
             }
         }
 
-        // 🎯 NOVO MÉTODO: Notifica CrudNavBar sobre mudança de texto
-        private async void NotifyCrudNavBarAboutTextChange(bool hasText)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 SpotFormPage: NotifyCrudNavBarAboutTextChange - hasText={hasText}");
-
-                var crudNavBar = this.FindByName<CrudNavBarComponent>("CrudNavBar");
-                if (crudNavBar != null)
-                {
-                    // 🎯 ESTRATÉGIA: CrudNavBar no modo formulário observa HasTextToSave da página
-
-                    if (hasText)
-                    {
-                        // 🎯 FORÇA: Mostra botão Salvar quando há texto
-                        await crudNavBar.ShowSaveButtonAsync();
-                        System.Diagnostics.Debug.WriteLine($"✅ SpotFormPage: Botão Salvar EXIBIDO");
-                    }
-                    else
-                    {
-                        // 🎯 FORÇA: Esconde botão Salvar quando não há texto
-                        await crudNavBar.HideSaveButtonAsync();
-                        System.Diagnostics.Debug.WriteLine($"✅ SpotFormPage: Botão Salvar ESCONDIDO");
-                    }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ SpotFormPage: CrudNavBar não encontrada");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotFormPage: Erro ao notificar CrudNavBar: {ex.Message}");
-            }
-        }
-
-
         /// <summary>
-        /// ✅ FUNCIONALIDADE 5: Responde ao clique do botão Salvar da CrudNavBar
-        /// </summary>
-        private async void OnCrudNavBarButtonClicked(object sender, CrudButtonType buttonType)
-        {
-            switch (buttonType)
-            {
-                case CrudButtonType.Salvar:
-                    await OnSalvarLocalAsyncInternal();
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// 🛡️ COMPATIBILIDADE: Event handler para botão XAML (mantido temporariamente)
-        /// </summary>
-        private async void OnSalvarLocalClicked(object sender, EventArgs e)
-        {
-            await OnSalvarLocalAsyncInternal();
-        }
-
-        /// <summary>
-        /// ✅ MÉTODO PRINCIPAL: Lógica de salvamento (renomeado para evitar conflito)
+        /// ✅ MÉTODO PRINCIPAL: Lógica de salvamento
         /// </summary>
         private async Task OnSalvarLocalAsyncInternal()
         {
@@ -300,7 +282,6 @@ namespace MyKaraoke.View
                 var nomeLocal = nomeLocalEntry?.Text?.Trim();
 
                 System.Diagnostics.Debug.WriteLine($"📝 Nome do local digitado: '{nomeLocal}'");
-                System.Diagnostics.Debug.WriteLine($"📝 Campo nomeLocalEntry encontrado: {nomeLocalEntry != null}");
 
                 // Validação básica
                 var validation = _estabelecimentoService.ValidateNameInput(nomeLocal);
@@ -345,10 +326,6 @@ namespace MyKaraoke.View
                         var result = await _estabelecimentoService.CreateEstabelecimentoAsync(nomeLocal);
                         System.Diagnostics.Debug.WriteLine($"🔍 CREATE RESULT: success={result.success}, message='{result.message}', estabelecimento={result.estabelecimento?.Id}");
 
-                        System.Diagnostics.Debug.WriteLine($"🆕 Resultado CREATE: success={result.success}");
-                        System.Diagnostics.Debug.WriteLine($"🆕 Resultado CREATE: message='{result.message}'");
-                        System.Diagnostics.Debug.WriteLine($"🆕 Estabelecimento criado: {result.estabelecimento?.Id} - '{result.estabelecimento?.Nome}'");
-
                         if (result.success)
                         {
                             System.Diagnostics.Debug.WriteLine("✅ CREATE bem-sucedido!");
@@ -357,8 +334,10 @@ namespace MyKaraoke.View
                             // ✅ CORREÇÃO: Limpa o campo após sucesso
                             MainThread.BeginInvokeOnMainThread(() =>
                             {
-                                nomeLocalEntry.Text = string.Empty;
-                                HasTextToSave = false;
+                                if (nomeLocalEntry != null)
+                                {
+                                    nomeLocalEntry.Text = string.Empty;
+                                }
                             });
 
                             // Aguarda antes de navegar
@@ -395,7 +374,6 @@ namespace MyKaraoke.View
                 System.Diagnostics.Debug.WriteLine("🚀 === OnSalvarLocalAsyncInternal FINALIZADO ===");
             }
         }
-
 
         #endregion
 
@@ -541,98 +519,6 @@ namespace MyKaraoke.View
             }
         }
 
-        // 1. MÉTODO DE DEBUG PARA VERIFICAR O FLUXO COMPLETO
-        private async Task<bool> DebugSaveFlow()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("🔍 === DEBUG SAVE FLOW INICIADO ===");
-
-                // Verifica se o serviço está disponível
-                System.Diagnostics.Debug.WriteLine($"🔍 EstabelecimentoService disponível: {_estabelecimentoService != null}");
-
-                // Verifica o texto do campo
-                var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
-                var nomeLocal = nomeLocalEntry?.Text?.Trim();
-                System.Diagnostics.Debug.WriteLine($"🔍 Texto do campo: '{nomeLocal}'");
-
-                // Verifica validação
-                if (_estabelecimentoService != null)
-                {
-                    var validation = _estabelecimentoService.ValidateNameInput(nomeLocal);
-                    System.Diagnostics.Debug.WriteLine($"🔍 Validação: isValid={validation.isValid}, message='{validation.message}'");
-
-                    if (validation.isValid)
-                    {
-                        // Tenta criar o estabelecimento
-                        System.Diagnostics.Debug.WriteLine("🔍 Chamando CreateEstabelecimentoAsync...");
-                        var result = await _estabelecimentoService.CreateEstabelecimentoAsync(nomeLocal);
-                        System.Diagnostics.Debug.WriteLine($"🔍 Resultado: success={result.success}, message='{result.message}'");
-                        System.Diagnostics.Debug.WriteLine($"🔍 Estabelecimento criado: {result.estabelecimento?.Id} - '{result.estabelecimento?.Nome}'");
-
-                        return result.success;
-                    }
-                }
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro no debug: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-                return false;
-            }
-            finally
-            {
-                System.Diagnostics.Debug.WriteLine("🔍 === DEBUG SAVE FLOW FINALIZADO ===");
-            }
-
-        }
-
-        public async Task TestCreateEstabelecimentoDirectly(string testName)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🧪 === TESTE DIRETO DO SERVIÇO: '{testName}' ===");
-
-                if (_estabelecimentoService == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("❌ Serviço é NULL - inicializando...");
-                    var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
-                    _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
-                    System.Diagnostics.Debug.WriteLine($"✅ Serviço inicializado: {_estabelecimentoService != null}");
-                }
-
-                if (_estabelecimentoService != null)
-                {
-                    var result = await _estabelecimentoService.CreateEstabelecimentoAsync(testName);
-                    System.Diagnostics.Debug.WriteLine($"🧪 Teste resultado: success={result.success}, message='{result.message}'");
-                    System.Diagnostics.Debug.WriteLine($"🧪 Estabelecimento: {result.estabelecimento?.Id} - '{result.estabelecimento?.Nome}'");
-
-                    // Verifica se foi realmente salvo
-                    var allEstabelecimentos = await _estabelecimentoService.GetAllEstabelecimentosAsync();
-                    System.Diagnostics.Debug.WriteLine($"🧪 Total de estabelecimentos no banco: {allEstabelecimentos?.Count()}");
-
-                    foreach (var est in allEstabelecimentos ?? Enumerable.Empty<Estabelecimento>())
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🧪 Estabelecimento no banco: {est.Id} - '{est.Nome}'");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro no teste direto: {ex.Message}");
-            }
-
-        }
-        #endregion
-
-        #region INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
         #endregion
     }
 }

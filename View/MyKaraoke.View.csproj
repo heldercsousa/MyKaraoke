@@ -66,7 +66,9 @@
 	-->
 
 	<ItemGroup>
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiIcon>
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 		<MauiImage Include="Resources\Images\*" />
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
@@ -87,6 +89,7 @@
 		<None Remove="Resources\AppIcon\add.png" />
 		<None Remove="Resources\AppIcon\cake.png" />
 		<None Remove="Resources\AppIcon\cantores.png" />
+		<None Remove="Resources\AppIcon\close.png" />
 		<None Remove="Resources\AppIcon\delete.png" />
 		<None Remove="Resources\AppIcon\edit.png" />
 		<None Remove="Resources\AppIcon\email.png" />
@@ -101,26 +104,70 @@
 		<None Remove="Resources\AppIcon\spot_purple.png" />
 		<None Remove="Resources\AppIcon\stack.png" />
 		<None Remove="Resources\AppIcon\stack_purple.png" />
+		<None Remove="Resources\AppIcon\wrong.png" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<MauiImage Include="Resources\AppIcon\add.png" />
-		<MauiImage Include="Resources\AppIcon\cake.png" />
-		<MauiImage Include="Resources\AppIcon\cantores.png" />
-		<MauiImage Include="Resources\AppIcon\delete.png" />
-		<MauiImage Include="Resources\AppIcon\edit.png" />
-		<MauiImage Include="Resources\AppIcon\email.png" />
-		<MauiImage Include="Resources\AppIcon\email_purple.png" />
-		<MauiImage Include="Resources\AppIcon\historico.png" />
-		<MauiImage Include="Resources\AppIcon\manage.png" />
-		<MauiImage Include="Resources\AppIcon\manage_purple.png" />
-		<MauiImage Include="Resources\AppIcon\musicos.png" />
-		<MauiImage Include="Resources\AppIcon\save.png" />
-		<MauiImage Include="Resources\AppIcon\setaesquerda.png" />
-		<MauiImage Include="Resources\AppIcon\spot.png" />
-		<MauiImage Include="Resources\AppIcon\spot_purple.png" />
-		<MauiImage Include="Resources\AppIcon\stack.png" />
-		<MauiImage Include="Resources\AppIcon\stack_purple.png" />
+		<MauiImage Include="Resources\AppIcon\add.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\cake.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\cantores.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\close.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\delete.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\trash.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\edit.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\email.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\email_purple.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\historico.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\manage.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\manage_purple.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\musicos.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\save.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\setaesquerda.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\spot.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\spot_purple.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\stack.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\stack_purple.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\wrong.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -310,6 +357,15 @@
 		<MauiXaml Update="TonguePage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Resources\AppIcon\appiconfg.svg">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Resources\AppIcon\icons-urls.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

@@ -4,49 +4,102 @@
              x:Class="MyKaraoke.View.Components.HeaderComponent"
              x:Name="HeaderRoot">
 
-    <Grid ColumnDefinitions="Auto,*,Auto" Margin="15,0,15,5" Padding="0,0,0,5">
+    <Grid ColumnDefinitions="Auto,*,Auto" 
+          Margin="16,0,16,0" 
+          Padding="0,12,0,12"
+          RowSpacing="0"
+          ColumnSpacing="8">
 
-        <!-- Botão voltar compacto -->
-        <StackLayout Grid.Column="0" 
-            HorizontalOptions="Start" 
-            VerticalOptions="Start" 
-            Spacing="1">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnBackButtonClicked" />
-            </StackLayout.GestureRecognizers>
-            <Image Source="setaesquerda.png" Style="{StaticResource CompactNavIconStyle}" />
-        </StackLayout>
+        <!-- LEFT BUTTON CONTAINER -->
+        <Grid Grid.Column="0" 
+              WidthRequest="80"
+              HorizontalOptions="Start"
+              VerticalOptions="Center">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnLeftButtonClicked" />
+            </Grid.GestureRecognizers>
 
-        <!-- Sombra externa (glow maior) -->
-        <Label Grid.Column="1" Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-			   Style="{StaticResource HeaderTitleShadowOuterStyle}" />
+            <!-- Back Arrow (List Mode) -->
+            <Image x:Name="backArrowImage" 
+                   Source="setaesquerda.png" 
+                   WidthRequest="24"
+                   HeightRequest="24"
+                   HorizontalOptions="Start"
+                   VerticalOptions="Center"
+                   IsVisible="True" />
 
-        <!-- Sombra média -->
-        <Label Grid.Column="1" Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-			   Style="{StaticResource HeaderTitleShadowMiddleStyle}" />
+            <!-- Cancel Icon (Form Mode with Icon) -->
+            <Image x:Name="cancelIconImage"
+                   Source="close.png"
+                   WidthRequest="24"
+                   HeightRequest="24"
+                   HorizontalOptions="Start"
+                   VerticalOptions="Center"
+                   IsVisible="False" />
 
-        <!-- Title dinâmico -->
+            <!-- Cancel Text (Form Mode with Text) -->
+            <Label x:Name="cancelTextLabel"
+                   Text="Cancelar"
+                   TextColor="#D1D5DB"
+                   FontSize="16"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Start"
+                   LineBreakMode="NoWrap"
+                   IsVisible="False" />
+        </Grid>
+
+        <!-- TITLE SHADOWS -->
+        <Label Grid.Column="1" 
+               Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+               Style="{StaticResource HeaderTitleShadowOuterStyle}" />
+
+        <Label Grid.Column="1" 
+               Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+               Style="{StaticResource HeaderTitleShadowMiddleStyle}" />
+
+        <!-- TITLE -->
         <Label Grid.Column="1"
-            x:Name="headerTitle"
-            Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-            Style="{StaticResource HeaderTitleStyle}"/>
+               x:Name="headerTitle"
+               Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
+               Style="{StaticResource HeaderTitleStyle}"/>
 
-        <!-- Botão Adicionar (+ no canto direito) - CONTROLE CONDICIONAL -->
-        <!--<StackLayout Grid.Column="2" 
-                     x:Name="addButtonStack"
-                     HorizontalOptions="End" 
-                     VerticalOptions="Start" 
-                     Spacing="1"
-                     IsVisible="{Binding Source={x:Reference HeaderRoot}, Path=ShowAddButton}">
-            <StackLayout.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnAddButtonClicked" />
-            </StackLayout.GestureRecognizers>
-            <Image Source="add.png" 
-                   Style="{StaticResource CompactNavIconStyle}"
-                   Opacity="0.9" />
-        </StackLayout>-->
+        <!-- RIGHT BUTTON CONTAINER -->
+        <Grid Grid.Column="2" 
+              x:Name="rightButtonStack"
+              WidthRequest="80"
+              HorizontalOptions="End"
+              VerticalOptions="Center"
+              IsVisible="False">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnSaveButtonClicked" />
+            </Grid.GestureRecognizers>
 
-        <ContentView Grid.Column="2" WidthRequest="14" />
+            <!-- Save Icon (Form Mode with Icon) -->
+            <Image x:Name="saveIconImage"
+                   Source="save.png"
+                   WidthRequest="24"
+                   HeightRequest="24"
+                   HorizontalOptions="End"
+                   VerticalOptions="Center"
+                   IsVisible="False" />
+
+            <!-- Save Text (Form Mode with Text) -->
+            <Label x:Name="saveTextLabel"
+                   Text="Salvar"
+                   TextColor="#BB86FC"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   VerticalOptions="Center"
+                   HorizontalOptions="End"
+                   LineBreakMode="NoWrap"
+                   IsVisible="False" />
+        </Grid>
+
+        <!-- SPACER -->
+        <ContentView Grid.Column="2" 
+                     x:Name="rightSpacer"
+                     WidthRequest="80"
+                     IsVisible="True" />
 
     </Grid>
 </ContentView>

@@ -242,7 +242,7 @@
 
     <Style x:Key="HeaderTitleShadowBaseStyle" TargetType="Label">
         <Setter Property="TextColor" Value="Transparent" />
-        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontSize" Value="20" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
@@ -267,7 +267,7 @@
 
     <Style x:Key="HeaderTitleStyle" TargetType="Label">
         <Setter Property="TextColor" Value="#BB86FC" />
-        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontSize" Value="20" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
@@ -304,6 +304,60 @@
         <Setter Property="VerticalOptions" Value="Center" />
         <Setter Property="HorizontalTextAlignment" Value="Start" />
         <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <!-- ============================================================================ -->
+    <!-- HEADER FORM STYLES (iOS-Style Pattern - Section 11 from UX Standards) -->
+    <!-- ============================================================================ -->
+
+    <!-- Container do Header (56px height, 16px margins, 8px bottom padding) -->
+    <Style x:Key="HeaderContainerStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="16,0,16,0" />
+        <Setter Property="Padding" Value="0,0,0,8" />
+        <Setter Property="HeightRequest" Value="56" />
+    </Style>
+
+    <!-- Touch Target Base (44×44px guaranteed - Apple HIG & Material Design) -->
+    <Style x:Key="HeaderButtonBaseStyle" TargetType="StackLayout">
+        <Setter Property="WidthRequest" Value="44" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Spacing" Value="0" />
+    </Style>
+
+    <!-- Touch Target for TEXT buttons (44px height, auto width) -->
+    <Style x:Key="HeaderTextButtonBaseStyle" TargetType="StackLayout">
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="Spacing" Value="0" />
+        <Setter Property="Padding" Value="8,0" />
+    </Style>
+
+    <!-- Cancel Button Text (Gray - Secondary Action) -->
+    <Style x:Key="HeaderCancelTextStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#D1D5DB" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+    </Style>
+
+    <!-- Save Button Text (Purple Bold - Primary Action) -->
+    <Style x:Key="HeaderSaveTextStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#BB86FC" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+    </Style>
+
+    <!-- Header Icons (24×24px - Optional Alternative to Text) -->
+    <Style x:Key="HeaderIconStyle" TargetType="Image">
+        <Setter Property="WidthRequest" Value="24" />
+        <Setter Property="HeightRequest" Value="24" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
     <!-- ============================================================================ -->

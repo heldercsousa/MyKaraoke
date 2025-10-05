@@ -29,8 +29,14 @@
 
         <!-- Header Component - Título dinâmico -->
         <components:HeaderComponent Grid.Row="0" 
-                                   x:Name="headerComponent"
-                                   Title="Novo Local"/>
+                           x:Name="headerComponent"
+                           Title="Novo Local"
+                           ShowCancelButton="True"
+                           ShowSaveButton="True"
+                           UseCancelIcon="True"
+                           UseSaveIcon="True"
+                           CancelClicked="OnCancelClicked"
+                           SaveClicked="OnSaveClicked"/>
 
         <!-- Main Content Grid -->
         <Grid Grid.Row="1" x:Name="mainContentGrid">
@@ -96,10 +102,6 @@
 
         </Grid>
 
-        <components:CrudNavBarComponent Grid.Row="2"
-                              x:Name="CrudNavBar"
-                              IsFormMode="True"
-                              ButtonClicked="OnCrudNavBarButtonClicked"/>
     </Grid>
 
 </ContentPage>

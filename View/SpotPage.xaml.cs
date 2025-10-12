@@ -292,31 +292,128 @@ namespace MyKaraoke.View
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"========================================");
                 System.Diagnostics.Debug.WriteLine($"SpotPage: UpdateUIState triggered");
+
                 bool hasLocais = Locais.Any();
                 emptyStateFrame.IsVisible = !hasLocais;
                 locaisCollectionView.IsVisible = hasLocais;
 
-                // ✅ CORREÇÃO: Só zera se não há itens ou se não há seleção real
                 if (!hasLocais)
                 {
-                    System.Diagnostics.Debug.WriteLine($"SpotPage: currentSelection: SelectionCount: 0");
-                    SelectionCount = 0; // Sem dados = sem seleção
+                    System.Diagnostics.Debug.WriteLine($"SpotPage: Sem locais - SelectionCount=0");
+                    SelectionCount = 0;
                 }
                 else
                 {
-                    // Mantém a seleção atual (OnItemTapped já gerencia isso)
                     var currentSelection = Locais.Count(x => x.IsSelected);
-                    System.Diagnostics.Debug.WriteLine($"SpotPage: currentSelection: {currentSelection} - SelectionCount: {SelectionCount}");
+                    System.Diagnostics.Debug.WriteLine($"SpotPage: currentSelection={currentSelection}, SelectionCount atual={SelectionCount}");
                     if (SelectionCount != currentSelection)
                     {
                         SelectionCount = currentSelection;
                     }
                 }
+
+                bool shouldShowFab = SelectionCount == 0;
+                //bool isFabCurrentlyVisible = addFab != null && addFab.IsVisible;
+
+                //System.Diagnostics.Debug.WriteLine($"SpotPage: shouldShowFab={shouldShowFab}, isFabCurrentlyVisible={isFabCurrentlyVisible}");
+                //System.Diagnostics.Debug.WriteLine($"SpotPage: addFab is null? {addFab == null}");
+
+                //if (addFab != null)
+                //{
+                //    System.Diagnostics.Debug.WriteLine($"SpotPage: FAB - IsVisible={addFab.IsVisible}, Opacity={addFab.Opacity}, InputTransparent={addFab.InputTransparent}");
+                //}
+
+                //if (shouldShowFab && !isFabCurrentlyVisible)
+                //{
+                //    System.Diagnostics.Debug.WriteLine("SpotPage: Iniciando ShowAsync do FAB");
+                //    _ = Task.Run(async () =>
+                //    {
+                //        await Task.Delay(300);
+                //        await MainThread.InvokeOnMainThreadAsync(async () =>
+                //        {
+                //            try
+                //            {
+                //                await addFab.ShowAsync();
+                //                System.Diagnostics.Debug.WriteLine($"SpotPage: FAB mostrado - IsVisible={addFab.IsVisible}, Opacity={addFab.Opacity}");
+                //            }
+                //            catch (Exception ex)
+                //            {
+                //                System.Diagnostics.Debug.WriteLine($"ERRO ao mostrar FAB: {ex.Message}");
+                //            }
+                //        });
+                //    });
+                //}
+                //else if (!shouldShowFab && isFabCurrentlyVisible)
+                //{
+                //    System.Diagnostics.Debug.WriteLine("SpotPage: Iniciando HideAsync do FAB");
+                //    _ = Task.Run(async () =>
+                //    {
+                //        await MainThread.InvokeOnMainThreadAsync(async () =>
+                //        {
+                //            try
+                //            {
+                //                await addFab.HideAsync();
+                //                System.Diagnostics.Debug.WriteLine("SpotPage: FAB escondido com sucesso");
+                //            }
+                //            catch (Exception ex)
+                //            {
+                //                System.Diagnostics.Debug.WriteLine($"ERRO ao esconder FAB: {ex.Message}");
+                //            }
+                //        });
+                //    });
+                //}
+
+                System.Diagnostics.Debug.WriteLine($"========================================");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em UpdateUIState: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ERRO em UpdateUIState: {ex.Message}");
+            }
+        }
+
+        private void OnTestFrameTapped(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("========================================");
+            System.Diagnostics.Debug.WriteLine("FRAME DE TESTE CLICADO!!!");
+            System.Diagnostics.Debug.WriteLine("========================================");
+            DisplayAlert("Teste", "Frame funcionou!", "OK");
+        }
+
+        private async void OnAddFabClicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("🎯 SpotPage: OnAddFabClicked RECEBIDO");
+            await OnAddFabClickedAsync();
+        }
+     
+        /// <summary>
+        /// 🎯 MÉTODO ESPECÍFICO: Chamado pelo FAB para adicionar novo local
+        /// ✅ USA SafeNavigationBehavior igual à CrudNavBar
+        /// </summary>
+        public async Task OnAddFabClickedAsync()
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("========================================");
+                System.Diagnostics.Debug.WriteLine("🎯 SpotPage: OnAddFabClickedAsync INICIADO");
+                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: Thread: {Thread.CurrentThread.ManagedThreadId}");
+                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: Navigation: {Navigation != null}");
+                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: Handler: {Handler != null}");
+                System.Diagnostics.Debug.WriteLine("========================================");
+
+                System.Diagnostics.Debug.WriteLine("🎯 SpotPage: FAB clicado - navegando para adicionar novo local");
+
+                await NavigateToSpotFormPageAsync(isEditing: false, editingLocal: null);
+
+                System.Diagnostics.Debug.WriteLine("✅ SpotPage: Navegação do FAB concluída");
+                System.Diagnostics.Debug.WriteLine("========================================");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na navegação do FAB: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine("========================================");
             }
         }
 
@@ -425,10 +522,19 @@ namespace MyKaraoke.View
                 var result = await _estabelecimentoService.DeleteEstabelecimentosAsync(idsToDelete);
                 await DisplayAlert("Resultado", result.message, "OK");
 
+                // ✅ CORREÇÃO: Recarrega lista
                 await LoadLocaisAsync();
 
-                locaisCollectionView.SelectedItems.Clear();
-                SelectionCount = 0;
+                // ✅ CORREÇÃO PROBLEMA 4: Limpa seleção E força SelectionCount=0
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    locaisCollectionView.SelectedItems?.Clear();
+                    SelectionCount = 0; // FORÇA zero ANTES de UpdateUIState
+                    System.Diagnostics.Debug.WriteLine("✅ SpotPage: Seleção limpa e SelectionCount=0 após exclusão");
+
+                    // ✅ Atualiza UI após limpar
+                    UpdateUIState();
+                });
             }
             catch (Exception ex)
             {

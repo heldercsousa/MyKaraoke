@@ -306,6 +306,9 @@
 		<MauiXaml Update="Components\CrudNavBarComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Components\FabButtonComponent.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Components\HeaderComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

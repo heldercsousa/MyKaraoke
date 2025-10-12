@@ -399,6 +399,51 @@
         <Setter Property="Margin" Value="0,8,0,0" />
     </Style>
 
-  
+    <!-- ============================================================================ -->
+    <!-- 🎯 FAB (FLOATING ACTION BUTTON) STYLES -->
+    <!-- ============================================================================ -->
+
+    <!-- Gradiente FAB: Amarelo → Rosa (conforme mockups HTML) -->
+    <LinearGradientBrush x:Key="FabGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FFD700" Offset="0.0" />
+        <GradientStop Color="#FF6CAA" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Container do FAB -->
+    <Style x:Key="FabContainerStyle" TargetType="Frame">
+        <Setter Property="WidthRequest" Value="56" />
+        <Setter Property="HeightRequest" Value="56" />
+        <Setter Property="CornerRadius" Value="28" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="BorderColor" Value="Transparent" />
+        <Setter Property="HasShadow" Value="True" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalOptions" Value="End" />
+        <Setter Property="VerticalOptions" Value="End" />
+        <Setter Property="Margin" Value="0,0,16,16" />
+        <!-- 16px de todas as bordas -->
+        <Setter Property="Background" Value="{StaticResource FabGradient}" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#FFD700" Offset="0,6" Radius="20" Opacity="0.4" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Ícone do FAB - Centralização Perfeita -->
+    <Style x:Key="FabIconStyle" TargetType="Label">
+        <Setter Property="Text" Value="+" />
+        <Setter Property="TextColor" Value="#1A1024" />
+        <Setter Property="FontSize" Value="32" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="TranslationY" Value="-2" />
+        <!-- Ajuste fino para centralização visual -->
+    </Style>
 
 </ResourceDictionary>

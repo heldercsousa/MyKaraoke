@@ -101,7 +101,6 @@ namespace MyKaraoke.View.Components
             var configs = new Dictionary<CrudButtonType, NavButtonConfig>
             {
                 { CrudButtonType.Anterior, new NavButtonConfig { Text = "Anterior", IconSource = "prior.png" } },
-                { CrudButtonType.Adicionar, new NavButtonConfig { Text = "Adicionar", IconSource = "add.png" } },
                 { CrudButtonType.Editar, new NavButtonConfig { Text = "Editar", IconSource = "edit.png" } },
                 { CrudButtonType.Excluir, new NavButtonConfig { Text = "Apagar", IconSource = "delete.png" } },
                 { CrudButtonType.Salvar, new NavButtonConfig { Text = "Salvar", IconSource = "save.png" } }, // ✅ SEM Command
@@ -138,7 +137,6 @@ namespace MyKaraoke.View.Components
                 var currentCount = SelectionCount;
                 System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: UpdateLayoutAndButtons iniciado - IsFormMode={IsFormMode}, SelectionCount={currentCount}");
 
-                // 🎯 NOVA LÓGICA: Se não está inicializado, tenta forçar
                 if (!_isInitialized)
                 {
                     if (Handler != null && navBarBehavior != null)
@@ -146,8 +144,8 @@ namespace MyKaraoke.View.Components
                         System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: Handler e navBarBehavior disponíveis - forçando inicialização inline");
                         try
                         {
-                            navBarBehavior.ButtonClicked -= OnNavBarButtonClicked; // Remove se já existe
-                            navBarBehavior.ButtonClicked += OnNavBarButtonClicked; // Adiciona
+                            navBarBehavior.ButtonClicked -= OnNavBarButtonClicked;
+                            navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
                             _isInitialized = true;
                             System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: Inicialização inline bem-sucedida");
                         }
@@ -163,17 +161,18 @@ namespace MyKaraoke.View.Components
                     }
                 }
 
-                // 🔧 VERIFICAÇÃO: Se navBarBehavior é nulo
                 if (navBarBehavior == null)
                 {
                     System.Diagnostics.Debug.WriteLine("❌ CrudNavBarComponent: navBarBehavior é NULL!");
                     return;
                 }
 
-                // 🛡️ OTIMIZAÇÃO PRINCIPAL: Só reconstrói quando necessário
                 if (!ShouldRebuildButtons(currentCount))
                 {
                     System.Diagnostics.Debug.WriteLine($"🛡️ CrudNavBarComponent: Reconstrução desnecessária evitada - SelectionCount={currentCount} (último processado: {_lastProcessedSelectionCount})");
+
+                    // ✅ CORREÇÃO PROBLEMA 1 e 4: Mesmo sem reconstruir, atualiza visibilidade
+                    UpdateNavBarVisibility(currentCount);
                     return;
                 }
 
@@ -181,65 +180,50 @@ namespace MyKaraoke.View.Components
 
                 if (IsFormMode)
                 {
-                    // 🆕 MODO FORMULÁRIO: Não usa SelectionCount, será controlado pelos métodos ShowSaveButtonAsync/HideSaveButtonAsync
-                    System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [FORM] Modo formulário - aguardando chamada explícita de ShowSaveButtonAsync/HideSaveButtonAsync");
-                    return; // 🎯 IMPORTANTE: Não configura botões automaticamente no modo formulário
+                    System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [FORM] Modo formulário - aguardando chamada explícita");
+                    return;
                 }
                 else
                 {
-                    // 📋 MODO LISTA: Lógica original para listas (usando SelectionCount)
+                    // 📋 MODO LISTA
                     if (currentCount == 0)
                     {
-                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Adicionar]);
-                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=0 - Adicionando botão Adicionar");
+                        // ✅ CORREÇÃO: Lista VAZIA = NavBar ESCONDIDA
+                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=0 - NavBar será ESCONDIDA");
+                        visibleButtons.Clear();
                     }
                     else if (currentCount == 1)
                     {
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=1 - Adicionando botões Editar e Excluir");
+                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=1 - Adicionando Editar e Excluir");
                     }
                     else // > 1
                     {
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                        System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: [LIST] SelectionCount={currentCount} - Adicionando botão Excluir");
+                        System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: [LIST] SelectionCount={currentCount} - Adicionando Excluir");
                     }
                 }
 
                 System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {visibleButtons.Count} botões preparados para exibição");
 
-                // 2. Cria colunas dinâmicas
+                // Cria colunas dinâmicas
                 var columnDefinitions = new ColumnDefinitionCollection();
                 foreach (var _ in visibleButtons)
                 {
                     columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {columnDefinitions.Count} colunas criadas");
-
                 navBarBehavior.CustomColumnDefinitions = columnDefinitions;
                 navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
 
-                // 🎯 ATUALIZA: Cache após reconstrução bem-sucedida
                 _lastProcessedSelectionCount = currentCount;
                 _hasProcessedFirstUpdate = true;
 
-                // 🔍 DEBUG - VERSÃO CORRIGIDA:
-                System.Diagnostics.Debug.WriteLine("🔍 DEBUG: navBarBehavior.Buttons configurado");
+                // ✅ CORREÇÃO PROBLEMA 1 e 4: Atualiza visibilidade da NavBar
+                UpdateNavBarVisibility(currentCount);
 
-                // Usa reflection de forma mais simples
-                var buttonViewsField = navBarBehavior.GetType().GetField("_buttonViews", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var buttonViewsValue = buttonViewsField?.GetValue(navBarBehavior);
-                var buttonViewsCount = buttonViewsValue is System.Collections.ICollection collection ? collection.Count : 0;
-
-                System.Diagnostics.Debug.WriteLine($"🔍 DEBUG: navBarBehavior._buttonViews.Count antes do ShowAsync: {buttonViewsCount}");
-
-                var isShownField = navBarBehavior.GetType().GetField("_isShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var isShownValue = isShownField?.GetValue(navBarBehavior) ?? false;
-
-                System.Diagnostics.Debug.WriteLine($"🔍 DEBUG: navBarBehavior._isShown: {isShownValue}");
-
-                // 🎯 CORREÇÃO: Força exibição apenas para modo lista
+                // Força exibição apenas se há botões
                 if (visibleButtons.Count > 0)
                 {
                     _ = Task.Run(async () =>
@@ -263,6 +247,35 @@ namespace MyKaraoke.View.Components
             {
                 System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em UpdateLayoutAndButtons: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+            }
+        }
+
+        /// <summary>
+        /// ✅ NOVO MÉTODO: Atualiza visibilidade da NavBar baseado no SelectionCount
+        /// </summary>
+        private void UpdateNavBarVisibility(int selectionCount)
+        {
+            try
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (selectionCount == 0)
+                    {
+                        // Esconde NavBar quando não há seleção
+                        this.IsVisible = false;
+                        System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: NavBar ESCONDIDA (SelectionCount=0)");
+                    }
+                    else
+                    {
+                        // Mostra NavBar quando há seleção
+                        this.IsVisible = true;
+                        System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBar VISÍVEL (SelectionCount={selectionCount})");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro ao atualizar visibilidade: {ex.Message}");
             }
         }
 

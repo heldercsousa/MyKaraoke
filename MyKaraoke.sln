@@ -15,8 +15,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Itens de Solução", "Itens
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig.txt = .editorconfig.txt
 		changelog.md = changelog.md
+		CLAUDE.md = CLAUDE.md
 		global.json = global.json
+		mykaraoke_ide_comparison_maui.md = mykaraoke_ide_comparison_maui.md
+		mykaraoke_migration_clean_architecture_guide.md = mykaraoke_migration_clean_architecture_guide.md
+		mykaraoke_migration_material_design_guide.md = mykaraoke_migration_material_design_guide.md
 		research_dotnet_ai_dev_guide_20251010_claudeSonnet4_5.md = research_dotnet_ai_dev_guide_20251010_claudeSonnet4_5.md
+		mykaraoke_ui_ux_patterns_guide(obsolete).md = mykaraoke_ui_ux_patterns_guide(obsolete).md
+		View\Tongues.docx = View\Tongues.docx
+		View\Tongues.pdf = View\Tongues.pdf
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyKaraoke.View", "View\MyKaraoke.View.csproj", "{23B0A8E9-F736-DDF5-99E4-654D936B8CD0}"

@@ -1,4 +1,4 @@
-# CLAUDE.md - MyKaraoke Project Context
+# CLAUDE.md - MyVocaList Project Context
 
 > **Living Documentation for AI-Assisted Development**  
 > Last Updated: October 14, 2025  
@@ -8,7 +8,7 @@
 
 ## 📱 Application Overview
 
-**MyKaraoke** is a comprehensive .NET MAUI 8.0 mobile application designed for intelligent karaoke queue management with advanced features and future social network capabilities.
+**MyVocaList** is a comprehensive .NET MAUI 8.0 mobile application designed for intelligent karaoke queue management with advanced features and future social network capabilities.
 
 ### Core Purpose
 Manage karaoke participant queues with intelligent round-based organization, allowing administrators to track participation/absence, reorder singers, and provide real-time queue status information.
@@ -102,10 +102,10 @@ The development follows a structured approach where Helder provides strategic di
 ### Solution Structure (~11-13 Projects)
 
 ```
-MyKaraoke.sln                                  # Visual Studio Solution
+MyVocaList.sln                                  # Visual Studio Solution
 │
 ├── 📦 DOMAIN LAYER (Pure Entities - No Dependencies)
-│   └── MyKaraoke.Domain/                      
+│   └── MyVocaList.Domain/                      
 │       ├── Pessoa.cs                          # Person/Singer entity
 │       ├── Estabelecimento.cs                 # Establishment/Venue entity
 │       ├── Evento.cs                          # Event/Queue entity
@@ -113,20 +113,20 @@ MyKaraoke.sln                                  # Visual Studio Solution
 │       └── ConfiguracaoSistema.cs            # System configuration
 │
 ├── 📦 CONTRACTS LAYER (DTOs & ViewModels)
-│   ├── MyKaraoke.Contracts/                   
+│   ├── MyVocaList.Contracts/                   
 │   │   └── Models/                            # ViewModels for UI binding
 │   │       └── PessoaListItemDto.cs          # Person list DTO
 │   │
-│   ├── MyKaraoke.Contracts.DTOs/              # Data Transfer Objects
+│   ├── MyVocaList.Contracts.DTOs/              # Data Transfer Objects
 │   │   └── [Entity]Dto.cs                    
 │   │
-│   └── MyKaraoke.Contracts.DTOs.List/        # List-specific DTOs
+│   └── MyVocaList.Contracts.DTOs.List/        # List-specific DTOs
 │       ├── PessoaListItemDto.cs              
 │       ├── EstabelecimentoListItemDto.cs     
 │       └── [Entity]ListItemDto.cs            
 │
 ├── 📦 SERVICES LAYER (Business Logic)
-│   ├── MyKaraoke.Services/                    
+│   ├── MyVocaList.Services/                    
 │   │   ├── IDatabaseService.cs               # Interfaces
 │   │   ├── ILanguageService.cs
 │   │   ├── IPessoaService.cs
@@ -138,39 +138,39 @@ MyKaraoke.sln                                  # Visual Studio Solution
 │   │   ├── EstabelecimentoService.cs
 │   │   └── QueueService.cs
 │   │
-│   └── MyKaraoke.Services.Mappers/           # Domain ↔ DTO Mappings
+│   └── MyVocaList.Services.Mappers/           # Domain ↔ DTO Mappings
 │       ├── PessoaMapper.cs
 │       ├── EstabelecimentoMapper.cs
 │       └── [Entity]Mapper.cs
 │
 ├── 📦 INFRASTRUCTURE LAYER (Data Access)
-│   ├── MyKaraoke.Infra.Data/                 # EF Core DbContext
+│   ├── MyVocaList.Infra.Data/                 # EF Core DbContext
 │   │   ├── AppDbContext.cs                   
 │   │   └── AppDbContextFactory.cs            
 │   │
-│   ├── MyKaraoke.Infra.Data.Config/          # Fluent API Configurations
+│   ├── MyVocaList.Infra.Data.Config/          # Fluent API Configurations
 │   │   ├── PessoaConfiguration.cs            
 │   │   ├── EstabelecimentoConfiguration.cs   
 │   │   ├── EventoConfiguration.cs            
 │   │   └── [Entity]Configuration.cs          
 │   │
-│   ├── MyKaraoke.Infra.Data.Repositories/    # Repository Pattern
+│   ├── MyVocaList.Infra.Data.Repositories/    # Repository Pattern
 │   │   ├── IPessoaRepository.cs              # Interfaces
 │   │   ├── PessoaRepository.cs               # Implementations
 │   │   ├── IEstabelecimentoRepository.cs
 │   │   ├── EstabelecimentoRepository.cs
 │   │   └── [Entity]Repository.cs
 │   │
-│   ├── MyKaraoke.Infra.Migrations/           # EF Core Migrations
+│   ├── MyVocaList.Infra.Migrations/           # EF Core Migrations
 │   │   ├── [Timestamp]_InitialCreate.cs      
 │   │   └── [Timestamp]_[Migration].cs        
 │   │
-│   └── MyKaraoke.Infra.Utils/                # Infrastructure Utilities
+│   └── MyVocaList.Infra.Utils/                # Infrastructure Utilities
 │       ├── ITextNormalizer.cs                # Interface
 │       └── TextNormalizer.cs                 # Implementation
 │
 └── 📦 PRESENTATION LAYER (MAUI App)
-    ├── MyKaraoke.View/                        # Main MAUI Project
+    ├── MyVocaList.View/                        # Main MAUI Project
     │   ├── App.xaml/App.xaml.cs              # Application entry
     │   ├── MauiProgram.cs                    # DI configuration
     │   ├── ServiceProvider.cs                # Service resolution helper
@@ -191,7 +191,7 @@ MyKaraoke.sln                                  # Visual Studio Solution
     │   │   │   └── [generated PNGs]          # Platform-specific
     │   │   │
     │   │   ├── Splash/                       # Splash screen assets
-    │   │   │   └── mykaraokesplashpage.jpg   # Splash image
+    │   │   │   └── myvocalistsplashpage.jpg   # Splash image
     │   │   │
     │   │   ├── Styles/                       # Global XAML styles
     │   │   │   ├── Colors.xaml               # Color resources
@@ -231,20 +231,20 @@ MyKaraoke.sln                                  # Visual Studio Solution
     │   │
     │   └── Extensions/                       # Extension methods
     │
-    ├── MyKaraoke.View.Animations/            # UI Animations
+    ├── MyVocaList.View.Animations/            # UI Animations
     │   ├── PulseAnimation.cs
     │   ├── FadeAnimation.cs
     │   └── TranslateAnimation.cs
     │
-    ├── MyKaraoke.View.Behaviors/             # XAML Behaviors
+    ├── MyVocaList.View.Behaviors/             # XAML Behaviors
     │   ├── SmartPageLifecycleBehavior.cs
     │   ├── SafeNavigationBehavior.cs
     │   └── [Behavior].cs
     │
-    ├── MyKaraoke.View.Converters/            # Value Converters
+    ├── MyVocaList.View.Converters/            # Value Converters
     │   └── [Converter].cs
     │
-    ├── MyKaraoke.View.Components/            # Reusable UI Components
+    ├── MyVocaList.View.Components/            # Reusable UI Components
     │   ├── HeaderComponent.xaml/.cs          # Page header
     │   ├── CardWrapperComponent.xaml/.cs     # Card wrapper
     │   ├── CrudNavBarComponent.xaml/.cs      # CRUD nav bar
@@ -253,10 +253,10 @@ MyKaraoke.sln                                  # Visual Studio Solution
     │   ├── SpecialNavButtonComponent.xaml/.cs # Special nav button
     │   └── InactiveQueueBottomNav.xaml/.cs   # Bottom navigation
     │
-    ├── MyKaraoke.View.Interceptors/          # Database Interceptors
+    ├── MyVocaList.View.Interceptors/          # Database Interceptors
     │   └── DatabaseLoadingInterceptor.cs     # Loading indicators
     │
-    └── MyKaraoke.View.Interfaces/            # View Interfaces
+    └── MyVocaList.View.Interfaces/            # View Interfaces
         ├── IManipulableDataPage.cs           # Data manipulation
         └── [Interface].cs
 
@@ -275,14 +275,14 @@ MyKaraoke.sln                                  # Visual Studio Solution
 - **Team Collaboration**: Multiple developers can work on different layers
 
 **Interfaces & Implementations**: 
-- **Same folder**: Both interfaces and implementations live together in the same project folder (e.g., `MyKaraoke.Services/` contains both `IQueueService.cs` and `QueueService.cs`)
+- **Same folder**: Both interfaces and implementations live together in the same project folder (e.g., `MyVocaList.Services/` contains both `IQueueService.cs` and `QueueService.cs`)
 - **No subfolder separation**: Unlike some architectures, we don't separate `/Interfaces` and `/Implementations` into subfolders
 
 ---
 
 ## 🎯 Current Layer Responsibilities
 
-### **Domain Layer** (`MyKaraoke.Domain`)
+### **Domain Layer** (`MyVocaList.Domain`)
 - **Contains**: Pure business entities (POCOs)
 - **Dependencies**: NONE
 - **Purpose**: Core business concepts
@@ -292,12 +292,12 @@ MyKaraoke.sln                                  # Visual Studio Solution
   - Only properties and navigation properties
   - **NO business logic** (business logic belongs in Services!)
 
-### **Contracts Layer** (`MyKaraoke.Contracts.*`)
+### **Contracts Layer** (`MyVocaList.Contracts.*`)
 - **Contains**: ViewModels, DTOs
 - **Dependencies**: Domain only
 - **Purpose**: Data transfer and presentation abstractions
 
-### **Services Layer** (`MyKaraoke.Services.*`)
+### **Services Layer** (`MyVocaList.Services.*`)
 - **Contains**: ALL business logic and validation
 - **Dependencies**: Domain, Contracts, Infrastructure.Data.Repositories
 - **Purpose**: Implement use cases and business rules
@@ -307,12 +307,12 @@ MyKaraoke.sln                                  # Visual Studio Solution
   - Transaction management
   - Domain ↔ DTO transformations
 
-### **Infrastructure Layer** (`MyKaraoke.Infra.*`)
+### **Infrastructure Layer** (`MyVocaList.Infra.*`)
 - **Contains**: Data access, utilities
 - **Dependencies**: Domain, Contracts
 - **Purpose**: Technical concerns and database access
 
-### **Presentation Layer** (`MyKaraoke.View.*`)
+### **Presentation Layer** (`MyVocaList.View.*`)
 - **Contains**: MAUI UI, pages, components
 - **Dependencies**: Services, Contracts (NOT Domain directly!)
 - **Purpose**: User interface and interaction
@@ -325,23 +325,23 @@ MyKaraoke.sln                                  # Visual Studio Solution
 
 ```
 Step 1: Domain Layer
-├─ Add Song.cs to MyKaraoke.Domain
+├─ Add Song.cs to MyVocaList.Domain
 ├─ Define properties and relationships
 └─ NO business logic!
 
 Step 2: Infrastructure Layer  
-├─ Add SongConfiguration.cs to MyKaraoke.Infra.Data.Config
+├─ Add SongConfiguration.cs to MyVocaList.Infra.Data.Config
 ├─ Add ISongRepository.cs & SongRepository.cs (same folder!)
 ├─ Create migration: dotnet ef migrations add AddSongEntity
 └─ Review migration
 
 Step 3: Contracts Layer
-├─ Add SongDto.cs to MyKaraoke.Contracts.DTOs
-└─ Add SongListItemDto.cs to MyKaraoke.Contracts.DTOs.List
+├─ Add SongDto.cs to MyVocaList.Contracts.DTOs
+└─ Add SongListItemDto.cs to MyVocaList.Contracts.DTOs.List
 
 Step 4: Services Layer
 ├─ Add ISongService.cs & SongService.cs (same folder!)
-├─ Add SongMapper.cs to MyKaraoke.Services.Mappers
+├─ Add SongMapper.cs to MyVocaList.Services.Mappers
 ├─ Implement ALL business logic in service
 └─ Register in MauiProgram.cs (DI)
 
@@ -356,7 +356,7 @@ Step 5: Presentation Layer
 
 ### New UI Component
 ```
-MyKaraoke.View.Components/
+MyVocaList.View.Components/
 ├─ Add MyComponent.xaml
 ├─ Add MyComponent.xaml.cs
 └─ Add styles to Resources/Styles/[Component]Styles.xaml
@@ -444,7 +444,7 @@ builder.Services.AddTransient<SpotFormPage>();
 
 **Connection String**: 
 ```csharp
-var dbPath = Path.Combine(FileSystem.AppDataDirectory, "mykaraoke.db");
+var dbPath = Path.Combine(FileSystem.AppDataDirectory, "myvocalist.db");
 options.UseSqlite($"Data Source={dbPath}")
 ```
 
@@ -462,7 +462,7 @@ options.UseSqlite($"Data Source={dbPath}")
 
 **Status**: Custom gradient-based design
 **Future**: Material Design 3 (coordinated migration)
-**Guide**: See `mykaraoke_migration_material_design_guide.md`
+**Guide**: See `myvocalist_migration_material_design_guide.md`
 
 ### Current Design System
 
@@ -578,8 +578,8 @@ public partial class MyPage : ContentPage
 
 ### Project Guides
 - `changelog.md` - Development history
-- `mykaraoke_migration_clean_architecture_guide.md` - Architecture guide
-- `mykaraoke_migration_material_design_guide.md` - Material Design plan
+- `myvocalist_migration_clean_architecture_guide.md` - Architecture guide
+- `myvocalist_migration_material_design_guide.md` - Material Design plan
 - `research_dotnet_ai_dev_guide_20251010_claudeSonnet4_5.md` - Advanced patterns
 - `tongues.pdf` - Language strategy
 

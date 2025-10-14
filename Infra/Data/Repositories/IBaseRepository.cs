@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace MyKaraoke.Infra.Data.Repositories
+namespace MyVocaList.Infra.Data.Repositories
 {
     public interface IBaseRepository<T> where T : class
     {

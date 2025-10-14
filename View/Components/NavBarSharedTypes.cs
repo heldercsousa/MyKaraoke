@@ -1,8 +1,8 @@
-﻿using MyKaraoke.View.Animations;
+﻿using MyVocaList.View.Animations;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     #region Configuration Classes - MIGRADAS DO BASENAVBARCOMPONENT
 

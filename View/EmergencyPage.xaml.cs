@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class EmergencyPage : ContentPage
     {
@@ -31,9 +31,9 @@ namespace MyKaraoke.View
                 {
                     System.Diagnostics.Debug.WriteLine($"Erro ao carregar TonguePage: {ex2.Message}");
                     
-                    // Como último recurso, mostra mensagem de erro mais detalhada
-                    await DisplayAlert("Erro Crítico", 
-                        "Não foi possível inicializar o aplicativo. Por favor, reinstale o app.", 
+                    // Como ï¿½ltimo recurso, mostra mensagem de erro mais detalhada
+                    await DisplayAlert("Erro Crï¿½tico", 
+                        "Nï¿½o foi possï¿½vel inicializar o aplicativo. Por favor, reinstale o app.", 
                         "OK");
                 }
             }

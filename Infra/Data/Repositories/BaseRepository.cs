@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
-namespace MyKaraoke.Infra.Data.Repositories
+namespace MyVocaList.Infra.Data.Repositories
 {
     public class BaseRepository<T> : IBaseRepository<T> where T : class
     {

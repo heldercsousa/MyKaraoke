@@ -1,9 +1,9 @@
-﻿using MyKaraoke.View.Components;
-using MyKaraoke.View.Extensions;
+﻿using MyVocaList.View.Components;
+using MyVocaList.View.Extensions;
 using System.Reflection;
 using System.Windows.Input;
 
-namespace MyKaraoke.View.Behaviors
+namespace MyVocaList.View.Behaviors
 {
     /// <summary>
     /// ✅ EVOLUÇÃO: PageLifecycleBehavior inteligente que detecta problemas automaticamente

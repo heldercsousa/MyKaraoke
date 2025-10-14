@@ -1,9 +1,9 @@
-using MyKaraoke.View.Behaviors;
-using MyKaraoke.View.Components;
+using MyVocaList.View.Behaviors;
+using MyVocaList.View.Components;
 using System.Collections.ObjectModel;
-using MyKaraoke.View.Animations;
+using MyVocaList.View.Animations;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     /// <summary>
     /// ✅ CORRIGIDO: Eliminar eventos duplicados que causavam múltiplas navegações

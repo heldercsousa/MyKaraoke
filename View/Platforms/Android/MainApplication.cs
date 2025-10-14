@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace  MyKaraoke.View
+namespace  MyVocaList.View
 {
     [Application]
     public class MainApplication : MauiApplication

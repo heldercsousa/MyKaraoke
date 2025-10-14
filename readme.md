@@ -1,4 +1,4 @@
-# MyKaraoke
+# MyVocaList
 
 [![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-8.0-purple.svg)](https://dotnet.microsoft.com/apps/maui)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Windows%20%7C%20macOS-blue.svg)](https://dotnet.microsoft.com/apps/maui)
@@ -8,7 +8,7 @@ A professional .NET MAUI 8.0 application for managing participant queues in kara
 
 ## Overview
 
-MyKaraoke enables efficient queue management for karaoke events, allowing administrators to register participant attendance/absence as singers reach position 1 in the queue. The application supports round-based progression, queue reactivation, state rollback, and flexible participant positioning.
+MyVocaList enables efficient queue management for karaoke events, allowing administrators to register participant attendance/absence as singers reach position 1 in the queue. The application supports round-based progression, queue reactivation, state rollback, and flexible participant positioning.
 
 ### Key Features
 
@@ -42,11 +42,11 @@ Strategic multilingual support for **6 core languages**:
 
 ### Project Structure
 ```
-MyKaraoke/
-├── MyKaraoke.Domain/          # Domain entities and contracts
-├── MyKaraoke.Infra/           # Data access and utilities
-├── MyKaraoke.Services/        # Business logic services
-└── MyKaraoke.View/           # UI layer (MAUI)
+MyVocaList/
+├── MyVocaList.Domain/          # Domain entities and contracts
+├── MyVocaList.Infra/           # Data access and utilities
+├── MyVocaList.Services/        # Business logic services
+└── MyVocaList.View/           # UI layer (MAUI)
     ├── Components/           # Reusable UI components
     ├── Pages/               # Application pages
     ├── Styles/              # XAML styling resources
@@ -106,8 +106,8 @@ MyKaraoke/
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-username/mykaraoke.git
-cd mykaraoke
+git clone https://github.com/your-username/myvocalist.git
+cd myvocalist
 ```
 
 2. **Restore dependencies**

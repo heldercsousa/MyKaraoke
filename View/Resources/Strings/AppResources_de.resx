@@ -99,10 +99,10 @@
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
 	<data name="AppName" xml:space="preserve">
-		<value>MyKaraoke</value>
+		<value>MyVocaList</value>
 	</data>
 	<data name="Welcome" xml:space="preserve">
-		<value>Willkommen bei MyKaraoke!</value>
+		<value>Willkommen bei MyVocaList!</value>
 	</data>
 	<data name="NewQueue" xml:space="preserve">
 		<value>Neue Warteschlange</value>

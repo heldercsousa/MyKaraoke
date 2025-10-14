@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace  MyKaraoke.View
+namespace  MyVocaList.View
 {
     [Register("AppDelegate")]
     public class AppDelegate : MauiUIApplicationDelegate

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.Domain
+namespace MyVocaList.Domain
 {
     public class ConfiguracaoSistema
     {

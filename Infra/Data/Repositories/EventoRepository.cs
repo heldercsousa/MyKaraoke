@@ -1,7 +1,7 @@
-﻿using MyKaraoke.Domain;
+﻿using MyVocaList.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace MyKaraoke.Infra.Data.Repositories
+namespace MyVocaList.Infra.Data.Repositories
 {
     public class EventoRepository : BaseRepository<Evento>, IEventoRepository
     {

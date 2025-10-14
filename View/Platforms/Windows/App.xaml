@@ -1,8 +1,8 @@
 ﻿<maui:MauiWinUIApplication
-    x:Class="MyKaraoke.View.WinUI.App"
+    x:Class="MyVocaList.View.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:maui="using:Microsoft.Maui"
-    xmlns:local="using:MyKaraoke.View.WinUI">
+    xmlns:local="using:MyVocaList.View.WinUI">
 
 </maui:MauiWinUIApplication>

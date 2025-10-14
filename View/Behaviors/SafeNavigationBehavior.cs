@@ -1,7 +1,7 @@
 ﻿using System.Windows.Input;
 using MauiView = Microsoft.Maui.Controls.View;
 
-namespace MyKaraoke.View.Behaviors
+namespace MyVocaList.View.Behaviors
 {
     /// <summary>
     /// ✅ BEHAVIOR INTELIGENTE: Previne navegação duplicada + navegação inteligente por stack

@@ -6,7 +6,7 @@ using Android.Views;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     [Activity(
         Theme = "@style/Maui.SplashTheme",

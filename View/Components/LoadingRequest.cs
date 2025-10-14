@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     /// <summary>
     /// Requisição de loading com metadados completos

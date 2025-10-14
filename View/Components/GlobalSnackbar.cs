@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     /// <summary>
     /// Snackbar global singleton que se injeta automaticamente na página atual

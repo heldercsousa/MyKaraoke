@@ -1,11 +1,11 @@
-﻿using MyKaraoke.View.Animations;  // ✅ MANTIDO: Para GlobalAnimationCoordinator
+﻿using MyVocaList.View.Animations;  // ✅ MANTIDO: Para GlobalAnimationCoordinator
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public abstract class BaseAnimatedPage : ContentPage, IAsyncDisposable
     {

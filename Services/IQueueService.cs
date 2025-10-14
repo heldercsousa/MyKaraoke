@@ -1,6 +1,6 @@
-﻿using MyKaraoke.Domain;
+﻿using MyVocaList.Domain;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     /// <summary>
     /// Interface para operações de fila e eventos

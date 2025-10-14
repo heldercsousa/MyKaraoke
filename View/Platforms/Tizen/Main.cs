@@ -1,5 +1,5 @@
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     internal class Program : MauiApplication
     {

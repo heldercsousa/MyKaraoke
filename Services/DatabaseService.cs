@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MyKaraoke.Infra.Data;
+using MyVocaList.Infra.Data;
 using Microsoft.Extensions.Logging;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     public class DatabaseService : IDatabaseService
     {
@@ -19,7 +19,7 @@ namespace MyKaraoke.Services
         {
             try
             {
-                var dbPath = Path.Combine(FileSystem.AppDataDirectory, "MyKaraoke.db");
+                var dbPath = Path.Combine(FileSystem.AppDataDirectory, "MyVocaList.db");
                 var directory = Path.GetDirectoryName(dbPath);
 
                 // Garantir que o diretório existe

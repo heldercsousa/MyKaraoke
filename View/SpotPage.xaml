@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:local="clr-namespace:MyKaraoke.View"
-			 xmlns:contracts="clr-namespace:MyKaraoke.Contracts.DTOs.List;assembly=MyKaraoke.Contracts"
-			 xmlns:components="clr-namespace:MyKaraoke.View.Components"
-			 xmlns:domain="clr-namespace:MyKaraoke.Domain;assembly=MyKaraoke.Domain"
-			 xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
-			 x:Class="MyKaraoke.View.SpotPage"
+			 xmlns:local="clr-namespace:MyVocaList.View"
+			 xmlns:contracts="clr-namespace:MyVocaList.Contracts.DTOs.List;assembly=MyVocaList.Contracts"
+			 xmlns:components="clr-namespace:MyVocaList.View.Components"
+			 xmlns:domain="clr-namespace:MyVocaList.Domain;assembly=MyVocaList.Domain"
+			 xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
+			 x:Class="MyVocaList.View.SpotPage"
 			 x:DataType="local:SpotPage"
 			 Background="{StaticResource AppBackgroundGradient}"
 			 NavigationPage.HasNavigationBar="False">

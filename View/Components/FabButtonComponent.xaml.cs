@@ -1,4 +1,4 @@
-﻿namespace MyKaraoke.View.Components
+﻿namespace MyVocaList.View.Components
 {
     /// <summary>
     /// 🎯 FAB (Floating Action Button) - Padrão Material Design

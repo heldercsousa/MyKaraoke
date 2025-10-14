@@ -1,7 +1,7 @@
-﻿using MyKaraoke.View.Animations;
+﻿using MyVocaList.View.Animations;
 using System.Windows.Input;
 
-namespace MyKaraoke.View.Behaviors
+namespace MyVocaList.View.Behaviors
 {
     /// <summary>
     /// ✅ BEHAVIOR: Adiciona funcionalidades de animação a qualquer ContentView

@@ -1,8 +1,8 @@
-# MyKaraoke App - Padrões UI/UX Definitivos
+# MyVocaList App - Padrões UI/UX Definitivos
 
 **Versão:** Final (Consolidada das 19 versões)  
 **Data:** 24/09/2025  
-**Escopo:** Documento definitivo de padrões UI/UX para todo o MyKaraoke App
+**Escopo:** Documento definitivo de padrões UI/UX para todo o MyVocaList App
 
 ---
 

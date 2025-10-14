@@ -1,9 +1,9 @@
 ﻿using Microsoft.Maui.Controls;
-using MyKaraoke.View.Components;
+using MyVocaList.View.Components;
 using System;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Interceptors
+namespace MyVocaList.View.Interceptors
 {
     /// <summary>
     /// ✅ INTERCEPTADOR: Mostra loading automaticamente em todas as navegações

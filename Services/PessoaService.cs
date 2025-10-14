@@ -1,6 +1,6 @@
-﻿using MyKaraoke.Domain;
-using MyKaraoke.Infra.Data.Repositories;
-using MyKaraoke.Infra.Utils;
+﻿using MyVocaList.Domain;
+using MyVocaList.Infra.Data.Repositories;
+using MyVocaList.Infra.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     /// <summary>
     /// Serviço para operações de negócio relacionadas a pessoas

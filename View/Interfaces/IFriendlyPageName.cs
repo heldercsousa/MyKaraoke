@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Interfaces
+namespace MyVocaList.View.Interfaces
 {
     /// <summary>
     /// Interface para páginas que possuem nome amigável

@@ -1,7 +1,7 @@
-﻿using MyKaraoke.View.Components;
+﻿using MyVocaList.View.Components;
 using System.Windows.Input;
 
-namespace MyKaraoke.View.Behaviors
+namespace MyVocaList.View.Behaviors
 {
     /// <summary>
     /// Gerencia o ciclo de vida de uma ContentPage, orquestrando o carregamento

@@ -7,11 +7,11 @@ using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     public class LocalizationResourceManager : INotifyPropertyChanged
     {
-        private const string ResourceId = "MyKaraoke.Resources.Strings.AppResources";
+        private const string ResourceId = "MyVocaList.Resources.Strings.AppResources";
         private static readonly Lazy<LocalizationResourceManager> _instance = new(() => new LocalizationResourceManager());
         
         public static LocalizationResourceManager Instance => _instance.Value;

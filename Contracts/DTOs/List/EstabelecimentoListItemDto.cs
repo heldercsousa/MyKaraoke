@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace MyKaraoke.Contracts.DTOs.List
+namespace MyVocaList.Contracts.DTOs.List
 {
     public class EstabelecimentoListItemDto : INotifyPropertyChanged
     {

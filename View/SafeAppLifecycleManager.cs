@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MyKaraoke.View.Animations;  // ✅ Para GlobalAnimationCoordinator
+using MyVocaList.View.Animations;  // ✅ Para GlobalAnimationCoordinator
 
 #if ANDROID
 using Android.OS;               // ✅ Para Android.OS.Build
 using Java.Lang;               // ✅ Para JavaSystem.Exit
 #endif
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public class SafeAppLifecycleManager
     {

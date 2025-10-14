@@ -1,10 +1,10 @@
-﻿using MyKaraoke.View.Animations;
-using MyKaraoke.View.Components;
+﻿using MyVocaList.View.Animations;
+using MyVocaList.View.Components;
 using MauiView = Microsoft.Maui.Controls.View;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
-namespace MyKaraoke.View.Behaviors
+namespace MyVocaList.View.Behaviors
 {
     /// <summary>
     /// ✅ BEHAVIOR: Substitui BaseNavBarComponent centralizando toda lógica de navbar

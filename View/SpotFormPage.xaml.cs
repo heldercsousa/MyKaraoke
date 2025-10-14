@@ -1,11 +1,11 @@
-﻿using MyKaraoke.Domain;
-using MyKaraoke.Services;
-using MyKaraoke.View.Components;
-using MyKaraoke.View.Extensions;
-using MyKaraoke.View.Behaviors;
+﻿using MyVocaList.Domain;
+using MyVocaList.Services;
+using MyVocaList.View.Components;
+using MyVocaList.View.Extensions;
+using MyVocaList.View.Behaviors;
 using System.Windows.Input;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class SpotFormPage : ContentPage
     {
@@ -72,7 +72,7 @@ namespace MyKaraoke.View
                 {
                     System.Diagnostics.Debug.WriteLine("✅ SpotFormPage: OnHandlerChanged - Inicializando serviços");
 
-                    var serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
+                    var serviceProvider = MyVocaList.View.ServiceProvider.FromPage(this);
                     _estabelecimentoService = serviceProvider?.GetService<IEstabelecimentoService>();
 
                     if (_estabelecimentoService != null)

@@ -1,9 +1,9 @@
-﻿using MyKaraoke.Domain;
+﻿using MyVocaList.Domain;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
-namespace MyKaraoke.Contracts.Models
+namespace MyVocaList.Contracts.Models
 {
     public class PessoaListItemDto : INotifyPropertyChanged
     {

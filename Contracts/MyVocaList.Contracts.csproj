@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\MyKaraoke.Domain.csproj" />
+    <ProjectReference Include="..\Domain\MyVocaList.Domain.csproj" />
   </ItemGroup>
 
 </Project>

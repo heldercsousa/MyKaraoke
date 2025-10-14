@@ -1,4 +1,4 @@
-﻿namespace MyKaraoke.Domain
+﻿namespace MyVocaList.Domain
 {
     public class ParticipacaoEvento
     {

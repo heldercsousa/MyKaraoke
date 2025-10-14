@@ -1,9 +1,9 @@
-﻿using MyKaraoke.Infra.Data;
+﻿using MyVocaList.Infra.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
-using MyKaraoke.Domain;
+using MyVocaList.Domain;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     public class LanguageService : ILanguageService
     {

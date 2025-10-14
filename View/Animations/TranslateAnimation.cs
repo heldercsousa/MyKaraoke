@@ -1,4 +1,4 @@
-﻿namespace MyKaraoke.View.Animations
+﻿namespace MyVocaList.View.Animations
 {
     /// <summary>
     /// Sistema de animação de translação (movimento) reutilizável para qualquer VisualElement

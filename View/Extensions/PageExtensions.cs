@@ -1,9 +1,9 @@
-﻿using MyKaraoke.View;
+﻿using MyVocaList.View;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 
-namespace MyKaraoke.View.Extensions
+namespace MyVocaList.View.Extensions
 {
     /// <summary>
     /// ✅ EXTENSÕES COMPLETAS: Todos os métodos existentes + novos métodos genéricos

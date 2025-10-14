@@ -1,10 +1,10 @@
-﻿using MyKaraoke.Domain;
-using MyKaraoke.Infra.Data.Repositories;
-using MyKaraoke.Infra.Utils;
-using MyKaraoke.Services.Mappers;
-using MyKaraoke.Contracts.DTOs.List;
+﻿using MyVocaList.Domain;
+using MyVocaList.Infra.Data.Repositories;
+using MyVocaList.Infra.Utils;
+using MyVocaList.Services.Mappers;
+using MyVocaList.Contracts.DTOs.List;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     /// <summary>
     /// Serviço para operações de negócio relacionadas a estabelecimentos/locais

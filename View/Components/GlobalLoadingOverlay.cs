@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     /// <summary>
     /// 🎯 CENTRALIZADO: Loading overlay com sistema de requisições inteligente

@@ -1,7 +1,7 @@
-﻿using MyKaraoke.Services;
-using MyKaraoke.View.Interceptors;
+﻿using MyVocaList.Services;
+using MyVocaList.View.Interceptors;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class App : Application
     {
@@ -22,7 +22,7 @@ namespace MyKaraoke.View
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] === INICIANDO APLICAÇÃO MYKARAOKE ===");
+                System.Diagnostics.Debug.WriteLine("[App] === INICIANDO APLICAÇÃO MyVocaList ===");
 
                 // Configurações de ambiente antes da inicialização
                 ConfigureEnvironment();
@@ -153,7 +153,7 @@ namespace MyKaraoke.View
                         {
                             new Label
                             {
-                                Text = "MyKaraoke",
+                                Text = "MyVocaList",
                                 TextColor = Colors.White,
                                 FontSize = 32,
                                 FontAttributes = FontAttributes.Bold,
@@ -204,7 +204,7 @@ namespace MyKaraoke.View
                         BackgroundColor = Color.FromHex("#221b3c"),
                         Content = new Label
                         {
-                            Text = "MyKaraoke\nInicializando...",
+                            Text = "MyVocaList\nInicializando...",
                             TextColor = Colors.White,
                             FontSize = 24,
                             HorizontalOptions = LayoutOptions.Center,

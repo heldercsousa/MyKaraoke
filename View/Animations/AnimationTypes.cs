@@ -1,4 +1,4 @@
-﻿namespace MyKaraoke.View.Animations
+﻿namespace MyVocaList.View.Animations
 {
     /// <summary>
     /// Tipos de animação para botões de navegação regulares

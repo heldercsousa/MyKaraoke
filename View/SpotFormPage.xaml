@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:components="clr-namespace:MyKaraoke.View.Components"
-             xmlns:behaviors="clr-namespace:MyKaraoke.View.Behaviors"
-             xmlns:local="clr-namespace:MyKaraoke.View"
-             x:Class="MyKaraoke.View.SpotFormPage"
+             xmlns:components="clr-namespace:MyVocaList.View.Components"
+             xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
+             xmlns:local="clr-namespace:MyVocaList.View"
+             x:Class="MyVocaList.View.SpotFormPage"
              x:DataType="local:SpotFormPage"
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">

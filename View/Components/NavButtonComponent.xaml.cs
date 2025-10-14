@@ -1,10 +1,10 @@
 ﻿using Microsoft.Maui.Controls;
-using MyKaraoke.View.Animations;
-using MyKaraoke.View.Behaviors;
+using MyVocaList.View.Animations;
+using MyVocaList.View.Behaviors;
 using System.Windows.Input;
 using System.Linq;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     /// <summary>
     /// ✅ LIMPO: Behavior substitui todas as funcionalidades repetitivas

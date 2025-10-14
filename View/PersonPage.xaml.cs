@@ -1,18 +1,18 @@
-﻿using MyKaraoke.Contracts.Models;
-using MyKaraoke.Domain;
-using MyKaraoke.Infra.Utils;
-using MyKaraoke.Services;
+﻿using MyVocaList.Contracts.Models;
+using MyVocaList.Domain;
+using MyVocaList.Infra.Utils;
+using MyVocaList.Services;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class PersonPage : ContentPage
     {
         private IQueueService _queueService;
         private IPessoaService _pessoaService;
         private ITextNormalizer _textNormalizer;
-        private MyKaraoke.View.ServiceProvider _serviceProvider;
+        private MyVocaList.View.ServiceProvider _serviceProvider;
         private const string ActiveQueueKey = "ActiveFilaDeCQueue";
 
         // Coleções para sugestões
@@ -74,7 +74,7 @@ namespace MyKaraoke.View
             {
                 try
                 {
-                    _serviceProvider = MyKaraoke.View.ServiceProvider.FromPage(this);
+                    _serviceProvider = MyVocaList.View.ServiceProvider.FromPage(this);
                     _queueService = _serviceProvider?.GetService<IQueueService>();
                     _pessoaService = _serviceProvider?.GetService<IPessoaService>();
                     _textNormalizer = _serviceProvider?.GetService<ITextNormalizer>();

@@ -3,11 +3,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MyKaraoke.Infra.Data;
+using MyVocaList.Infra.Data;
 
 #nullable disable
 
-namespace MyKaraoke.Infra.Migrations
+namespace MyVocaList.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace MyKaraoke.Infra.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
-            modelBuilder.Entity("MyKaraoke.Domain.ConfiguracaoSistema", b =>
+            modelBuilder.Entity("MyVocaList.Domain.ConfiguracaoSistema", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -38,7 +38,7 @@ namespace MyKaraoke.Infra.Migrations
                     b.ToTable("ConfiguracoesSistema");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.Estabelecimento", b =>
+            modelBuilder.Entity("MyVocaList.Domain.Estabelecimento", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -55,7 +55,7 @@ namespace MyKaraoke.Infra.Migrations
                     b.ToTable("Estabelecimentos");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.Evento", b =>
+            modelBuilder.Entity("MyVocaList.Domain.Evento", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +85,7 @@ namespace MyKaraoke.Infra.Migrations
                     b.ToTable("Eventos");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.ParticipacaoEvento", b =>
+            modelBuilder.Entity("MyVocaList.Domain.ParticipacaoEvento", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -112,7 +112,7 @@ namespace MyKaraoke.Infra.Migrations
                     b.ToTable("ParticipacoesEventos");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.Pessoa", b =>
+            modelBuilder.Entity("MyVocaList.Domain.Pessoa", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -155,9 +155,9 @@ namespace MyKaraoke.Infra.Migrations
                     b.ToTable("Pessoas");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.Evento", b =>
+            modelBuilder.Entity("MyVocaList.Domain.Evento", b =>
                 {
-                    b.HasOne("MyKaraoke.Domain.Estabelecimento", "Estabelecimento")
+                    b.HasOne("MyVocaList.Domain.Estabelecimento", "Estabelecimento")
                         .WithMany("Eventos")
                         .HasForeignKey("EstabelecimentoId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -166,15 +166,15 @@ namespace MyKaraoke.Infra.Migrations
                     b.Navigation("Estabelecimento");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.ParticipacaoEvento", b =>
+            modelBuilder.Entity("MyVocaList.Domain.ParticipacaoEvento", b =>
                 {
-                    b.HasOne("MyKaraoke.Domain.Evento", "Evento")
+                    b.HasOne("MyVocaList.Domain.Evento", "Evento")
                         .WithMany("Participacoes")
                         .HasForeignKey("EventoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("MyKaraoke.Domain.Pessoa", "Pessoa")
+                    b.HasOne("MyVocaList.Domain.Pessoa", "Pessoa")
                         .WithMany()
                         .HasForeignKey("PessoaId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -185,12 +185,12 @@ namespace MyKaraoke.Infra.Migrations
                     b.Navigation("Pessoa");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.Estabelecimento", b =>
+            modelBuilder.Entity("MyVocaList.Domain.Estabelecimento", b =>
                 {
                     b.Navigation("Eventos");
                 });
 
-            modelBuilder.Entity("MyKaraoke.Domain.Evento", b =>
+            modelBuilder.Entity("MyVocaList.Domain.Evento", b =>
                 {
                     b.Navigation("Participacoes");
                 });

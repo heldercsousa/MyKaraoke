@@ -1,4 +1,4 @@
-﻿namespace MyKaraoke.View.Animations
+﻿namespace MyVocaList.View.Animations
 {
     /// <summary>
     /// Gerenciador centralizado de animações para Views

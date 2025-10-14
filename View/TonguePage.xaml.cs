@@ -1,10 +1,10 @@
 using Microsoft.Maui.Controls;
-using MyKaraoke.Contracts.Models;
-using MyKaraoke.Services;
+using MyVocaList.Contracts.Models;
+using MyVocaList.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class TonguePage : ContentPage
     {

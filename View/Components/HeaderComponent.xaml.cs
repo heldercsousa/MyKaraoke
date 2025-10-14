@@ -1,8 +1,8 @@
-﻿using MyKaraoke.View.Behaviors;
+﻿using MyVocaList.View.Behaviors;
 using System.Windows.Input;
 using MauiView = Microsoft.Maui.Controls.View;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     public partial class HeaderComponent : ContentView
     {

@@ -1,7 +1,7 @@
 ﻿
 using UIKit;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public class Program
     {

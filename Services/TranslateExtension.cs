@@ -3,7 +3,7 @@ using System.Globalization;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     [ContentProperty(nameof(Key))]
     public class TranslateExtension : IMarkupExtension

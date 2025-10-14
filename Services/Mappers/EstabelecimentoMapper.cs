@@ -1,7 +1,7 @@
-﻿using MyKaraoke.Domain;
-using MyKaraoke.Contracts.DTOs.List;
+﻿using MyVocaList.Domain;
+using MyVocaList.Contracts.DTOs.List;
 
-namespace MyKaraoke.Services.Mappers
+namespace MyVocaList.Services.Mappers
 {
     public static class EstabelecimentoMapper
     {

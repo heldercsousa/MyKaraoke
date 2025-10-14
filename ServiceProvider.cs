@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using MyKaraoke.Services;
+using MyVocaList.Services;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public class ServiceProvider
     {
@@ -15,14 +15,14 @@ namespace MyKaraoke.View
         public T GetService<T>() where T : class
         {
             return _services.GetService<T>() ?? 
-                throw new InvalidOperationException($"Não foi possível resolver o serviço {typeof(T).Name}");
+                throw new InvalidOperationException($"Nï¿½o foi possï¿½vel resolver o serviï¿½o {typeof(T).Name}");
         }
 
         public static ServiceProvider FromPage(Page page)
         {
             var services = page.Handler?.MauiContext?.Services;
             if (services == null)
-                throw new InvalidOperationException("O contexto de serviços não está disponível");
+                throw new InvalidOperationException("O contexto de serviï¿½os nï¿½o estï¿½ disponï¿½vel");
             
             return new ServiceProvider(services);
         }

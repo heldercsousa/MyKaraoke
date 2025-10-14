@@ -13,9 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Contracts\MyKaraoke.Contracts.csproj" />
-    <ProjectReference Include="..\Domain\MyKaraoke.Domain.csproj" />
-    <ProjectReference Include="..\Infra\MyKaraoke.Infra.csproj" />
+    <ProjectReference Include="..\Contracts\MyVocaList.Contracts.csproj" />
+    <ProjectReference Include="..\Domain\MyVocaList.Domain.csproj" />
+    <ProjectReference Include="..\Infra\MyVocaList.Infra.csproj" />
   </ItemGroup>
 
 </Project>

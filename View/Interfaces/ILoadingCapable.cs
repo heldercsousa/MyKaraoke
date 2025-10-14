@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Interfaces
+namespace MyVocaList.View.Interfaces
 {
     /// <summary>
     /// Interface opcional para páginas que possuem estado de loading próprio

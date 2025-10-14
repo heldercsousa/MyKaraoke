@@ -1,8 +1,8 @@
-﻿using MyKaraoke.View.Behaviors;
-using MyKaraoke.View.Components;
+﻿using MyVocaList.View.Behaviors;
+using MyVocaList.View.Components;
 using System.Collections.ObjectModel;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     public enum CrudButtonType { Anterior, Adicionar, Editar, Excluir, Salvar, Proximo }
 

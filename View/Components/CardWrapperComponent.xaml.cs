@@ -3,7 +3,7 @@ using System.Windows.Input;
 using MauiView = Microsoft.Maui.Controls.View;
 using MauiGrid = Microsoft.Maui.Controls.Grid;
 
-namespace MyKaraoke.View.Components;
+namespace MyVocaList.View.Components;
 
 public partial class CardWrapperComponent : ContentView
 {

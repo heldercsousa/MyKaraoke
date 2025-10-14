@@ -1,8 +1,8 @@
-﻿using MyKaraoke.Domain;
+﻿using MyVocaList.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace MyKaraoke.Infra.Data.Config
+namespace MyVocaList.Infra.Data.Config
 {
     public class PessoaConfiguration : IEntityTypeConfiguration<Pessoa>
     {

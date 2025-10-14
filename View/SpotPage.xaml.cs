@@ -1,18 +1,18 @@
-﻿using MyKaraoke.Domain;
-using MyKaraoke.Services;
-using MyKaraoke.View.Components;
-using MyKaraoke.View.Extensions;
-using MyKaraoke.View.Behaviors;
+﻿using MyVocaList.Domain;
+using MyVocaList.Services;
+using MyVocaList.View.Components;
+using MyVocaList.View.Extensions;
+using MyVocaList.View.Behaviors;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using MyKaraoke.View.Interfaces;
-using MyKaraoke.Contracts.DTOs.List;
-using MyKaraoke.Services.Mappers;
+using MyVocaList.View.Interfaces;
+using MyVocaList.Contracts.DTOs.List;
+using MyVocaList.Services.Mappers;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class SpotPage : ContentPage, IManipulableDataPage
     {

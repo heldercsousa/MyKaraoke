@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MyKaraoke.View.Resources.Strings {
+namespace MyVocaList.View.Resources.Strings {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace MyKaraoke.View.Resources.Strings {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MyKaraoke.View.Resources.Strings.AppResources_es", typeof(AppResources_es).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("MyVocaList.View.Resources.Strings.AppResources_es", typeof(AppResources_es).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -70,7 +70,7 @@ namespace MyKaraoke.View.Resources.Strings {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a MyKaraoke.
+        ///   Consulta uma cadeia de caracteres localizada semelhante a MyVocaList.
         /// </summary>
         internal static string AppName {
             get {
@@ -115,7 +115,7 @@ namespace MyKaraoke.View.Resources.Strings {
         }
         
         /// <summary>
-        ///   Consulta uma cadeia de caracteres localizada semelhante a ¡Bienvenido a MyKaraoke!.
+        ///   Consulta uma cadeia de caracteres localizada semelhante a ¡Bienvenido a MyVocaList!.
         /// </summary>
         internal static string Welcome {
             get {

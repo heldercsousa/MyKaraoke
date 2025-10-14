@@ -1,6 +1,6 @@
-﻿using MyKaraoke.Domain;
+﻿using MyVocaList.Domain;
 
-namespace MyKaraoke.Infra.Data.Repositories
+namespace MyVocaList.Infra.Data.Repositories
 {
     public interface IPessoaRepository : IBaseRepository<Pessoa>
     {

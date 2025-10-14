@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public static class CrashPreventionService
     {

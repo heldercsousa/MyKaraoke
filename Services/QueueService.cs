@@ -1,9 +1,9 @@
-﻿using MyKaraoke.Domain;
-using MyKaraoke.Infra.Data;
+﻿using MyVocaList.Domain;
+using MyVocaList.Infra.Data;
 using Microsoft.EntityFrameworkCore;
-using MyKaraoke.Infra.Data.Repositories;
+using MyVocaList.Infra.Data.Repositories;
 
-namespace MyKaraoke.Services;
+namespace MyVocaList.Services;
 
 /// <summary>
 /// Serviço responsável apenas por operações de fila e eventos

@@ -1,4 +1,4 @@
-﻿namespace MyKaraoke.View.Animations
+﻿namespace MyVocaList.View.Animations
 {
     /// <summary>
     /// Sistema de animação de fade (aparece/desaparece) reutilizável para qualquer VisualElement

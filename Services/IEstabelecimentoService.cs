@@ -1,12 +1,12 @@
-﻿using MyKaraoke.Contracts.DTOs.List;
-using MyKaraoke.Domain;
+﻿using MyVocaList.Contracts.DTOs.List;
+using MyVocaList.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     public interface IEstabelecimentoService
     {

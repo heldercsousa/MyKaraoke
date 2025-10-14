@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Components
+namespace MyVocaList.View.Components
 {
     /// <summary>
     /// ✅ MELHORADO: LoadingOverlay com auto-detecção e Z-index forçado

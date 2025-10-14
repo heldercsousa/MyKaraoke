@@ -1,14 +1,14 @@
-﻿using MyKaraoke.Contracts.Models;
-using MyKaraoke.Domain;
-using MyKaraoke.Services;
-using MyKaraoke.View.Extensions;
-using MyKaraoke.View.Interfaces;
+﻿using MyVocaList.Contracts.Models;
+using MyVocaList.Domain;
+using MyVocaList.Services;
+using MyVocaList.View.Extensions;
+using MyVocaList.View.Interfaces;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Windows.Input;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class StackPage : ContentPage, IManipulableDataPage
     {

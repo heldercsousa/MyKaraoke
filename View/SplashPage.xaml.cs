@@ -1,8 +1,8 @@
-﻿using MyKaraoke.Services;
+﻿using MyVocaList.Services;
 using Microsoft.EntityFrameworkCore;
-using MyKaraoke.Infra.Data;
+using MyVocaList.Infra.Data;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class SplashPage : ContentPage
     {

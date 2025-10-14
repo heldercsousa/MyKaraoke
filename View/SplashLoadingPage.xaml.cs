@@ -1,6 +1,6 @@
-using MyKaraoke.Services;
+using MyVocaList.Services;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public partial class SplashLoadingPage : ContentPage
     {
@@ -11,7 +11,7 @@ namespace MyKaraoke.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando inicialização");
+                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando inicializaï¿½ï¿½o");
                 InitializeComponent();
                 System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] InitializeComponent completado");
             }
@@ -33,7 +33,7 @@ namespace MyKaraoke.View
                 // Inicia o processo de carregamento automaticamente
                 Task.Run(async () => await SimulateLoading());
 
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] OnAppearing concluído");
+                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] OnAppearing concluï¿½do");
             }
             catch (Exception ex)
             {
@@ -73,19 +73,19 @@ namespace MyKaraoke.View
 
         public async Task SimulateLoading()
         {
-            // Etapas de carregamento básicas
+            // Etapas de carregamento bï¿½sicas
             string[] loadingSteps = new string[] {
                 "Verificando recursos...",
                 "Carregando assemblies...",
-                "Inicializando serviços...",
+                "Inicializando serviï¿½os...",
                 "Configurando banco de dados...",
                 "Preparando interface...",
-                "Finalizando inicialização..."
+                "Finalizando inicializaï¿½ï¿½o..."
             };
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando simulação de carregamento");
+                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando simulaï¿½ï¿½o de carregamento");
 
                 for (int i = 0; i < loadingSteps.Length; i++)
                 {
@@ -93,18 +93,18 @@ namespace MyKaraoke.View
                     double progress = (double)(i + 1) / loadingSteps.Length;
                     UpdateStatus(loadingSteps[i], progress);
 
-                    // Simula tempo de processamento com variação
+                    // Simula tempo de processamento com variaï¿½ï¿½o
                     int delay = i == 0 ? 500 : (200 + (i * 50)); // Primeiro step mais longo
                     await Task.Delay(delay);
 
-                    System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] Step {i + 1}/{loadingSteps.Length} concluído");
+                    System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] Step {i + 1}/{loadingSteps.Length} concluï¿½do");
                 }
 
                 // Status final
-                UpdateStatus("Inicialização concluída!", 1.0);
+                UpdateStatus("Inicializaï¿½ï¿½o concluï¿½da!", 1.0);
                 await Task.Delay(300);
 
-                // Navega para a próxima página
+                // Navega para a prï¿½xima pï¿½gina
                 await NavigateToNextPage();
             }
             catch (Exception ex)
@@ -124,7 +124,7 @@ namespace MyKaraoke.View
             {
                 if (_isNavigating)
                 {
-                    System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Navegação já em andamento, ignorando");
+                    System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Navegaï¿½ï¿½o jï¿½ em andamento, ignorando");
                     return;
                 }
                 _isNavigating = true;
@@ -132,7 +132,7 @@ namespace MyKaraoke.View
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando navegação para próxima página");
+                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando navegaï¿½ï¿½o para prï¿½xima pï¿½gina");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -141,7 +141,7 @@ namespace MyKaraoke.View
                         // Tenta navegar para SplashPage primeiro
                         var splashPage = new SplashPage();
                         Application.Current.MainPage = splashPage;
-                        System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Navegação para SplashPage realizada com sucesso");
+                        System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Navegaï¿½ï¿½o para SplashPage realizada com sucesso");
                     }
                     catch (Exception ex)
                     {
@@ -156,18 +156,18 @@ namespace MyKaraoke.View
                         }
                         catch (Exception fallbackEx)
                         {
-                            System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO CRÍTICO no fallback: {fallbackEx.Message}");
+                            System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO CRï¿½TICO no fallback: {fallbackEx.Message}");
 
-                            // Último recurso - página de emergência
+                            // ï¿½ltimo recurso - pï¿½gina de emergï¿½ncia
                             Application.Current.MainPage = CreateEmergencyPage();
-                            System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Página de emergência carregada");
+                            System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Pï¿½gina de emergï¿½ncia carregada");
                         }
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO FATAL na navegação: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO FATAL na navegaï¿½ï¿½o: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] Stack trace: {ex.StackTrace}");
             }
         }
@@ -176,7 +176,7 @@ namespace MyKaraoke.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Criando UI de emergência");
+                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Criando UI de emergï¿½ncia");
 
                 Content = new Grid
                 {
@@ -191,7 +191,7 @@ namespace MyKaraoke.View
                             {
                                 new Label
                                 {
-                                    Text = "MyKaraoke",
+                                    Text = "MyVocaList",
                                     TextColor = Colors.White,
                                     FontSize = 28,
                                     FontAttributes = FontAttributes.Bold,
@@ -218,11 +218,11 @@ namespace MyKaraoke.View
                     }
                 };
 
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] UI de emergência criada com sucesso");
+                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] UI de emergï¿½ncia criada com sucesso");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO CRÍTICO na UI de emergência: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO CRï¿½TICO na UI de emergï¿½ncia: {ex.Message}");
             }
         }
 
@@ -240,7 +240,7 @@ namespace MyKaraoke.View
                     {
                         new Label
                         {
-                            Text = "MyKaraoke",
+                            Text = "MyVocaList",
                             TextColor = Colors.White,
                             FontSize = 32,
                             FontAttributes = FontAttributes.Bold,
@@ -249,7 +249,7 @@ namespace MyKaraoke.View
                         },
                         new Label
                         {
-                            Text = "Erro na inicialização",
+                            Text = "Erro na inicializaï¿½ï¿½o",
                             TextColor = Color.FromHex("#ff6b6b"),
                             FontSize = 18,
                             HorizontalTextAlignment = TextAlignment.Center,
@@ -279,11 +279,11 @@ namespace MyKaraoke.View
             };
         }
 
-        // Impede o botão voltar durante o loading
+        // Impede o botï¿½o voltar durante o loading
         protected override bool OnBackButtonPressed()
         {
-            System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Botão voltar bloqueado durante carregamento");
-            return true; // Bloqueia o botão voltar
+            System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Botï¿½o voltar bloqueado durante carregamento");
+            return true; // Bloqueia o botï¿½o voltar
         }
     }
 }

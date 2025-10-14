@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace MyKaraoke.View.Interfaces
+namespace MyVocaList.View.Interfaces
 {
     /// <summary>
     /// Interface composta para páginas que manipulam dados

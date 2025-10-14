@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace MyKaraoke.Infra.Migrations
+namespace MyVocaList.Infra.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

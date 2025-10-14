@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace MyKaraoke.Infra.Migrations
+namespace MyVocaList.Infra.Migrations
 {
     /// <inheritdoc />
     public partial class addPessoasParaTeste : Migration

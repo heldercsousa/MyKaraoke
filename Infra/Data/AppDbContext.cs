@@ -1,8 +1,8 @@
-﻿using MyKaraoke.Domain;
-using MyKaraoke.Infra.Data.Config;
+﻿using MyVocaList.Domain;
+using MyVocaList.Infra.Data.Config;
 using Microsoft.EntityFrameworkCore;
 
-namespace MyKaraoke.Infra.Data;
+namespace MyVocaList.Infra.Data;
 
 public class AppDbContext : DbContext
 {
@@ -22,7 +22,7 @@ public class AppDbContext : DbContext
         if (!optionsBuilder.IsConfigured)
         {
             // Apenas para design-time/migrações - usar caminho temporário
-            var tempPath = Path.Combine(Path.GetTempPath(), "mykaraoke_design.db");
+            var tempPath = Path.Combine(Path.GetTempPath(), "myvocalist_design.db");
             optionsBuilder.UseSqlite($"Data Source={tempPath}");
         }
     }

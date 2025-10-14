@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MyKaraoke.Services
+namespace MyVocaList.Services
 {
     /// <summary>
     /// Serviço centralizado para normalização de texto multilíngue

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using MyKaraoke.Services;
+using MyVocaList.Services;
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     public class ServiceProvider
     {

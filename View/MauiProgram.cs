@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
-using MyKaraoke.Infra.Data;
-using MyKaraoke.Infra.Data.Repositories;
-using MyKaraoke.Services;
-using MyKaraoke.Infra.Utils;
+using MyVocaList.Infra.Data;
+using MyVocaList.Infra.Data.Repositories;
+using MyVocaList.Services;
+using MyVocaList.Infra.Utils;
 using Microsoft.EntityFrameworkCore;
-using MyKaraoke.View.Interceptors;
+using MyVocaList.View.Interceptors;
 
-namespace MyKaraoke.View;
+namespace MyVocaList.View;
 
 public static class MauiProgram
 {
@@ -33,7 +33,7 @@ public static class MauiProgram
 #endif
 
         // === BANCO DE DADOS ===
-        var dbPath = Path.Combine(FileSystem.AppDataDirectory, "mykaraoke.db");
+        var dbPath = Path.Combine(FileSystem.AppDataDirectory, "myvocalist.db");
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSqlite($"Data Source={dbPath}")

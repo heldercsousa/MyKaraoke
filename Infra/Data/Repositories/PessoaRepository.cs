@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MyKaraoke.Domain;
-using MyKaraoke.Infra.Utils;
+using MyVocaList.Domain;
+using MyVocaList.Infra.Utils;
 
-namespace MyKaraoke.Infra.Data.Repositories
+namespace MyVocaList.Infra.Data.Repositories
 {
     public class PessoaRepository : BaseRepository<Pessoa>, IPessoaRepository
     {

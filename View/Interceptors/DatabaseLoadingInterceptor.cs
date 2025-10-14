@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using MyKaraoke.View.Components;
+using MyVocaList.View.Components;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Interceptors
+namespace MyVocaList.View.Interceptors
 {
     /// <summary>
     /// ✅ INTERCEPTADOR: Mostra loading automaticamente em todas as operações de banco

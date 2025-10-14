@@ -1,6 +1,6 @@
 ﻿// Adicione estas propriedades à classe PersonSuggestion existente:
 
-namespace MyKaraoke.View
+namespace MyVocaList.View
 {
     /// <summary>
     /// Model para sugestões de pessoas na UI com propriedades para binding

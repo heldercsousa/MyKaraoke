@@ -1,7 +1,7 @@
 using System.Globalization;
 using Microsoft.Maui.Controls;
 
-namespace MyKaraoke.View.Converters
+namespace MyVocaList.View.Converters
 {
     public class BoolToStyleConverter : IValueConverter
     {

@@ -1,4 +1,4 @@
-﻿namespace MyKaraoke.View.Components
+﻿namespace MyVocaList.View.Components
 {
     /// <summary>
     /// Define um contrato para componentes de barra de navegação

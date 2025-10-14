@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace MyKaraoke.Contracts.Models
+namespace MyVocaList.Contracts.Models
 {
     public class LanguageItem : INotifyPropertyChanged
     {

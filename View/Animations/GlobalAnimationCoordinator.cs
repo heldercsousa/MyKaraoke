@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyKaraoke.View.Animations
+namespace MyVocaList.View.Animations
 {
     public class GlobalAnimationCoordinator
     {

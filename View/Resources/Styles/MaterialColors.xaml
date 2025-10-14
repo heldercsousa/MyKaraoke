@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- ============================================================================ -->
+    <!-- MATERIAL DESIGN 3 COLOR SYSTEM - MyVocaList Theme                           -->
+    <!-- Based on your existing brand colors: Pink #E91E63 + Purple gradients        -->
+    <!-- ============================================================================ -->
+
+    <!-- ============================================================================ -->
+    <!-- DARK THEME (Default - Your Current Design)                                  -->
+    <!-- ============================================================================ -->
+
+    <!-- Primary Colors (Pink - Your Brand Signature) -->
+    <Color x:Key="Primary">#E91E63</Color>
+    <Color x:Key="OnPrimary">#FFFFFF</Color>
+    <Color x:Key="PrimaryContainer">#C2185B</Color>
+    <Color x:Key="OnPrimaryContainer">#FFFFFF</Color>
+
+    <!-- Secondary Colors (Purple - Your Secondary Accent) -->
+    <Color x:Key="Secondary">#8B4CB8</Color>
+    <Color x:Key="OnSecondary">#FFFFFF</Color>
+    <Color x:Key="SecondaryContainer">#6B21A8</Color>
+    <Color x:Key="OnSecondaryContainer">#FFFFFF</Color>
+
+    <!-- Tertiary Colors (Gold - Your FAB/Special Actions) -->
+    <Color x:Key="Tertiary">#FFD700</Color>
+    <Color x:Key="OnTertiary">#1A1024</Color>
+    <Color x:Key="TertiaryContainer">#FFC107</Color>
+    <Color x:Key="OnTertiaryContainer">#1A1024</Color>
+
+    <!-- Error Colors (Standard MD3) -->
+    <Color x:Key="Error">#F44336</Color>
+    <Color x:Key="OnError">#FFFFFF</Color>
+    <Color x:Key="ErrorContainer">#FFCDD2</Color>
+    <Color x:Key="OnErrorContainer">#B71C1C</Color>
+
+    <!-- Background & Surface (Your Deep Purple Theme) -->
+    <Color x:Key="Background">#1A1024</Color>
+    <Color x:Key="OnBackground">#FFFFFF</Color>
+
+    <Color x:Key="Surface">#2D1B69</Color>
+    <Color x:Key="OnSurface">#FFFFFF</Color>
+
+    <Color x:Key="SurfaceVariant">#3D2A4F</Color>
+    <Color x:Key="OnSurfaceVariant">#D1D5DB</Color>
+
+    <Color x:Key="SurfaceDim">#1A1024</Color>
+    <Color x:Key="SurfaceBright">#4A3B6B</Color>
+
+    <!-- Outline & Borders -->
+    <Color x:Key="Outline">#5E3F84</Color>
+    <Color x:Key="OutlineVariant">#533682</Color>
+
+    <!-- Inverse Colors (for contrasting elements) -->
+    <Color x:Key="InverseSurface">#FFFFFF</Color>
+    <Color x:Key="InverseOnSurface">#1A1024</Color>
+    <Color x:Key="InversePrimary">#AD1457</Color>
+
+    <!-- Scrim (for overlays/modals) -->
+    <Color x:Key="Scrim">#80000000</Color>
+
+    <!-- Shadow (for elevation) -->
+    <Color x:Key="Shadow">#000000</Color>
+
+    <!-- ============================================================================ -->
+    <!-- GRADIENTS (Your Signature Look - Keep These!)                               -->
+    <!-- ============================================================================ -->
+
+    <!-- Background Gradient (Horizontal - Your Main Brand Gradient) -->
+    <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#221b3c" Offset="0.0" />
+        <GradientStop Color="#331e6e" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Card Background Gradient (Diagonal - For Elevated Cards) -->
+    <LinearGradientBrush x:Key="CardBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#33275d" Offset="0.0" />
+        <GradientStop Color="#513486" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Selected Item Gradient (Horizontal - For Active States) -->
+    <LinearGradientBrush x:Key="SelectedGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#572564" Offset="0.0" />
+        <GradientStop Color="#613b93" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Button Gradient (Horizontal - Pink to Purple) -->
+    <LinearGradientBrush x:Key="ButtonGradient" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#e52067" Offset="0.0" />
+        <GradientStop Color="#904ab4" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- FAB Gradient (Diagonal - Gold to Pink) -->
+    <LinearGradientBrush x:Key="FabGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FFD700" Offset="0.0" />
+        <GradientStop Color="#FF6CAA" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- ============================================================================ -->
+    <!-- SEMANTIC COLORS (For Specific Use Cases)                                    -->
+    <!-- ============================================================================ -->
+
+    <!-- Success (for positive feedback) -->
+    <Color x:Key="Success">#4CAF50</Color>
+    <Color x:Key="OnSuccess">#FFFFFF</Color>
+
+    <!-- Warning (for caution states) -->
+    <Color x:Key="Warning">#FF9800</Color>
+    <Color x:Key="OnWarning">#1A1024</Color>
+
+    <!-- Info (for informational elements) -->
+    <Color x:Key="Info">#2196F3</Color>
+    <Color x:Key="OnInfo">#FFFFFF</Color>
+
+    <!-- ============================================================================ -->
+    <!-- LIGHT THEME (For Future v1.1 Implementation)                                -->
+    <!-- TODO: Uncomment when implementing theme switching                           -->
+    <!-- ============================================================================ -->
+
+    <!--
+    <Color x:Key="PrimaryLight">#E91E63</Color>
+    <Color x:Key="OnPrimaryLight">#FFFFFF</Color>
+    <Color x:Key="BackgroundLight">#FFFFFF</Color>
+    <Color x:Key="OnBackgroundLight">#1A1024</Color>
+    <Color x:Key="SurfaceLight">#F5F5F5</Color>
+    <Color x:Key="OnSurfaceLight">#1A1024</Color>
+    -->
+
+</ResourceDictionary>

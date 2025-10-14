@@ -458,11 +458,411 @@ options.UseSqlite($"Data Source={dbPath}")
 
 ## 🎨 UI/UX Design System
 
-### ⚠️ Material Design Migration (Planned - REQUIRES HELDER COORDINATION!)
+### ⚠️ Material Design 3 Migration Guidelines (REQUIRES HELDER COORDINATION!)
 
-**Status**: Custom gradient-based design
-**Future**: Material Design 3 (coordinated migration)
-**Guide**: See `myvocalist_migration_material_design_guide.md`
+## 🎨 UI/UX - Material Design 3 System
+
+**Status**: In migration (v1.1)  
+**Approach**: Full MD3 adoption maintaining brand identity  
+**Colors**: Pink #E91E63 (Primary) + Purple gradients (Brand)  
+
+---
+
+### Color System
+
+**CRITICAL: Never use hardcoded colors!**
+
+**Color Roles (MD3 Standard):**
+
+```xml
+<!-- Primary (Your brand pink) -->
+<Color x:Key="Primary">#E91E63</Color>
+<Color x:Key="OnPrimary">#FFFFFF</Color>
+
+<!-- Secondary (Your brand purple) -->
+<Color x:Key="Secondary">#8B4CB8</Color>
+<Color x:Key="OnSecondary">#FFFFFF</Color>
+
+<!-- Tertiary (Your brand gold) -->
+<Color x:Key="Tertiary">#FFD700</Color>
+<Color x:Key="OnTertiary">#1A1024</Color>
+
+<!-- Surface & Background -->
+<Color x:Key="Background">#1A1024</Color>
+<Color x:Key="OnBackground">#FFFFFF</Color>
+<Color x:Key="Surface">#2D1B69</Color>
+<Color x:Key="OnSurface">#FFFFFF</Color>
+```
+
+**Usage:**
+
+```xml
+<!-- ✅ CORRECT -->
+<Button BackgroundColor="{StaticResource Primary}" 
+        TextColor="{StaticResource OnPrimary}" />
+
+<!-- ❌ WRONG -->
+<Button BackgroundColor="#E91E63" 
+        TextColor="White" />
+```
+
+**Why:** Enables theme switching, maintains accessibility, ensures consistency.
+
+---
+
+### Typography Hierarchy
+
+**Always use predefined styles, never set FontSize directly!**
+
+```xml
+<!-- Page titles -->
+<Label Text="Queue Management" Style="{StaticResource HeadlineLarge}" />
+
+<!-- Section titles -->
+<Label Text="Active Singers" Style="{StaticResource TitleLarge}" />
+
+<!-- Card titles / List item titles -->
+<Label Text="Singer Name" Style="{StaticResource TitleMedium}" />
+
+<!-- Main body text -->
+<Label Text="Description here..." Style="{StaticResource BodyLarge}" />
+
+<!-- Secondary text / metadata -->
+<Label Text="Last updated 2 hours ago" Style="{StaticResource BodySmall}" />
+
+<!-- Field labels -->
+<Label Text="Enter name:" Style="{StaticResource FieldLabel}" />
+
+<!-- Captions / small text -->
+<Label Text="Optional" Style="{StaticResource LabelSmall}" />
+```
+
+**Scale Reference:**
+- **Display**: 36-57pt (Hero sections - rare)
+- **Headline**: 24-32pt (Page titles)
+- **Title**: 14-22pt (Section/card titles)
+- **Body**: 12-16pt (Main content)
+- **Label**: 11-14pt (Captions, metadata)
+
+---
+
+### Button Patterns
+
+**Use correct button type for visual hierarchy!**
+
+**Rule: Maximum 1 Filled Button per screen**
+
+```xml
+<!-- Primary action (most important) -->
+<Button Text="Add to Queue" 
+        Style="{StaticResource FilledButton}"
+        Command="{Binding AddCommand}" />
+
+<!-- Secondary action -->
+<Button Text="Cancel" 
+        Style="{StaticResource OutlinedButton}"
+        Command="{Binding CancelCommand}" />
+
+<!-- Tertiary action (low emphasis) -->
+<Button Text="Learn More" 
+        Style="{StaticResource TextButton}"
+        Command="{Binding LearnMoreCommand}" />
+```
+
+**Button Decision Tree:**
+
+1. **Is this the most important action on screen?** → FilledButton
+2. **Is this a cancel/secondary action?** → OutlinedButton  
+3. **Is this optional/low priority?** → TextButton
+
+**Examples:**
+
+- Save form: FilledButton
+- Cancel: OutlinedButton or TextButton
+- Edit/Delete in list: TextButton
+- Navigation: TextButton
+- Learn more/Help: TextButton
+
+---
+
+### Card Usage
+
+**CRITICAL: Cards are for LIST ITEMS, not page wrappers!**
+
+**✅ CORRECT - Card for list item:**
+
+```xml
+<CollectionView ItemsSource="{Binding Singers}">
+    <CollectionView.ItemTemplate>
+        <DataTemplate>
+            <Frame Style="{StaticResource ElevatedCard}">
+                <Grid>
+                    <Label Text="{Binding Name}" Style="{StaticResource TitleMedium}" />
+                    <Label Text="{Binding Position}" Style="{StaticResource BodySmall}" />
+                </Grid>
+            </Frame>
+        </DataTemplate>
+    </CollectionView.ItemTemplate>
+</CollectionView>
+```
+
+**❌ WRONG - Card wrapping entire page:**
+
+```xml
+<!-- DON'T DO THIS! Wastes screen space -->
+<ContentPage>
+    <Frame Style="{StaticResource SomeCardStyle}">
+        <VerticalStackLayout>
+            <!-- Page content -->
+        </VerticalStackLayout>
+    </Frame>
+</ContentPage>
+```
+
+**✅ CORRECT - Direct content on page:**
+
+```xml
+<ContentPage BackgroundColor="{StaticResource Background}">
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource PageContainer}">
+            <!-- Page content directly, no card wrapper -->
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
+```
+
+**Card Styles:**
+
+- `ElevatedCard` - With shadow, for list items
+- `FilledCard` - With tint, for grouped content
+- `OutlinedCard` - With border, for subtle separation
+- `GradientCard` - Your custom branded card (special cases)
+
+---
+
+### Spacing System (8px Grid)
+
+**CRITICAL: All spacing must be multiples of 4px (prefer 8px)**
+
+```xml
+<!-- ✅ CORRECT -->
+<VerticalStackLayout Padding="16" Spacing="16">
+
+<!-- ❌ WRONG -->
+<VerticalStackLayout Padding="15" Spacing="20">
+```
+
+**Standard Values:**
+
+- **4dp**: Micro spacing (very close elements)
+- **8dp**: Related elements (form fields, list items)
+- **16dp**: Page padding, section spacing
+- **24dp**: Major section breaks
+- **32dp**: Large block separations
+
+**Common Patterns:**
+
+```xml
+<!-- Page layout -->
+<VerticalStackLayout Padding="16" Spacing="16">
+
+<!-- Form fields -->
+<VerticalStackLayout Spacing="8">
+    <Label Text="Name" Style="{StaticResource FieldLabel}" />
+    <Entry Style="{StaticResource MaterialEntry}" />
+</VerticalStackLayout>
+
+<!-- Card list -->
+<CollectionView>
+    <CollectionView.ItemTemplate>
+        <DataTemplate>
+            <Frame Style="{StaticResource ElevatedCard}" Margin="0,4">
+                <!-- 8dp total spacing between items (4dp each side) -->
+            </Frame>
+        </DataTemplate>
+    </CollectionView.ItemTemplate>
+</CollectionView>
+```
+
+---
+
+### Input Fields
+
+**Always use MaterialEntry with proper labeling:**
+
+```xml
+<!-- ✅ CORRECT Pattern -->
+<VerticalStackLayout Spacing="8">
+    <Label Text="Singer Name" Style="{StaticResource FieldLabel}" />
+    <Entry Placeholder="Enter name" 
+           Text="{Binding SingerName}"
+           Style="{StaticResource MaterialEntry}" />
+    <Label Text="Required field" Style="{StaticResource HelperText}" />
+</VerticalStackLayout>
+
+<!-- With error state -->
+<VerticalStackLayout Spacing="8">
+    <Label Text="Email" Style="{StaticResource FieldLabel}" />
+    <Entry Placeholder="email@example.com" 
+           Text="{Binding Email}"
+           Style="{StaticResource MaterialEntry}" />
+    <Label Text="Invalid email format" 
+           Style="{StaticResource ErrorText}"
+           IsVisible="{Binding HasEmailError}" />
+</VerticalStackLayout>
+```
+
+**Input Field Structure:**
+1. Field label (12pt, bold, OnSurfaceVariant color)
+2. Input field (MaterialEntry style, 56dp height)
+3. Helper text or error message (12pt, below field)
+
+---
+
+### Accessibility
+
+**Contrast Requirements (WCAG 2.1):**
+
+All color combinations are pre-validated:
+
+- White (#FFFFFF) on Background (#1A1024): **12.7:1** ✅
+- OnSurfaceVariant (#D1D5DB) on Background: **6.2:1** ✅  
+- Primary (#E91E63) on Background: **5.4:1** ✅
+
+**Always use On[Color] for text:**
+
+- Text on Primary → OnPrimary
+- Text on Surface → OnSurface
+- Text on Background → OnBackground
+
+**Touch Targets:**
+
+- Minimum: 48x48dp (Android standard)
+- Buttons: 40dp height minimum
+- List items: 56dp height minimum
+- FAB: 56x56dp
+
+---
+
+### Elevation System
+
+**Use shadows for hierarchy, not borders:**
+
+```xml
+<!-- Elevated card (2dp elevation) -->
+<Frame Style="{StaticResource ElevatedCard}">
+    <Shadow Brush="{StaticResource Shadow}" Offset="0,1" Radius="3" Opacity="0.2" />
+</Frame>
+
+<!-- Floating Action Button (6dp elevation) -->
+<Frame Style="{StaticResource FabContainer}">
+    <Shadow Brush="#FFD700" Offset="0,6" Radius="20" Opacity="0.4" />
+</Frame>
+```
+
+**Elevation Levels:**
+
+- **0dp**: Flat elements (text, icons)
+- **1-2dp**: Cards in lists
+- **4-8dp**: Elevated buttons, floating elements
+- **16dp+**: Modals, dialogs
+
+---
+
+### Page Structure Pattern
+
+**Standard page structure:**
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyVocaList.View.MyPage"
+             BackgroundColor="{StaticResource Background}"
+             Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource PageContainer}">
+            
+            <!-- Page Title -->
+            <Label Text="Page Title" Style="{StaticResource HeadlineLarge}" />
+            
+            <!-- Content sections with 16dp spacing -->
+            <VerticalStackLayout Spacing="16">
+                
+                <!-- Section 1 -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Section Title" Style="{StaticResource TitleMedium}" />
+                    <!-- Section content -->
+                </VerticalStackLayout>
+                
+                <!-- Section 2 -->
+                <VerticalStackLayout Spacing="8">
+                    <!-- More content -->
+                </VerticalStackLayout>
+                
+            </VerticalStackLayout>
+            
+            <!-- Actions at bottom -->
+            <HorizontalStackLayout Spacing="8" HorizontalOptions="End" Margin="0,24,0,0">
+                <Button Text="Cancel" Style="{StaticResource TextButton}" />
+                <Button Text="Save" Style="{StaticResource FilledButton}" />
+            </HorizontalStackLayout>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+    
+</ContentPage>
+```
+
+---
+
+## 🚨 Common Mistakes to Avoid
+
+### ❌ **Don't:**
+
+1. Use hardcoded colors: `BackgroundColor="#E91E63"`
+2. Set FontSize directly: `FontSize="16"`
+3. Use random spacing: `Padding="15,18,12,20"`
+4. Wrap pages in cards: `<Frame><VerticalStackLayout>...</Frame>`
+5. Mix button styles randomly (no visual hierarchy)
+6. Ignore 8px spacing grid
+7. Use more than 1 FilledButton per screen
+
+### ✅ **Do:**
+
+1. Use color resources: `BackgroundColor="{StaticResource Primary}"`
+2. Use typography styles: `Style="{StaticResource BodyLarge}"`
+3. Use 8px grid: `Padding="16" Spacing="16"`
+4. Put content directly on page background
+5. Follow button hierarchy (Filled > Outlined > Text)
+6. Apply spacing consistently
+7. Reserve FilledButton for primary action only
+
+---
+
+## 🎯 Quick Reference for Claude AI
+
+**When generating new pages:**
+
+1. Start with page structure template (see above)
+2. Use `PageContainer` for outer layout
+3. Apply typography styles (never FontSize)
+4. Use color resources (never hex codes)
+5. Follow 8px spacing grid
+6. Button hierarchy: 1 Filled max, then Outlined/Text
+7. Cards for list items only, NOT page wrappers
+8. Include ScrollView for long content
+
+**Testing checklist:**
+
+- [ ] No hardcoded colors
+- [ ] No hardcoded FontSize
+- [ ] Spacing is multiples of 4/8
+- [ ] Max 1 FilledButton per screen
+- [ ] No card wrapping entire page
+- [ ] Contrast ratios meet WCAG 2.1
+- [ ] Touch targets ≥ 48x48dp
 
 ### Current Design System
 
@@ -515,6 +915,439 @@ public partial class MyPage : ContentPage
     }
 }
 ```
+
+---
+# CLAUDE.md Section - Changelog & Git Workflow
+
+## 📝 Documentation & Version Control Workflow
+
+**Status**: Mandatory for ALL development  
+**Applies to**: Every enhancement, fix, refactoring, or migration  
+**Philosophy**: "Document as you build, commit as you succeed"
+
+---
+
+## 🔄 Standard Development Cycle
+
+Every implementation follows this **3-step cycle**:
+
+```
+1. IMPLEMENT → 2. VERIFY → 3. DOCUMENT & COMMIT
+    ↓              ↓              ↓
+  Code change   Test/confirm   changelog.md + git commit
+```
+
+**NEVER skip step 3!** Even "small" changes get documented and committed.
+
+---
+
+## 📋 When to Update changelog.md
+
+### **ALWAYS Document These:**
+
+✅ **Enhancements** - New features, UI improvements, refactorings  
+✅ **Fixes** - Bug fixes, corrections, problem resolutions  
+✅ **Migrations** - Architecture changes, library updates, pattern adoptions  
+✅ **Optimizations** - Performance improvements, code cleanup  
+
+### **DON'T Document These:**
+
+❌ Work in progress (not yet functional)  
+❌ Experimental code (not confirmed working)  
+❌ Commits to feature branches before merging  
+❌ Typo fixes in comments/docs (too granular)  
+
+**Rule of Thumb:** If it changes user-visible behavior OR code structure, document it!
+
+---
+
+## ✍️ Changelog Entry Format
+
+**Standard Format:**
+```
+- **MM/DD/YYYY** - [Type] - Succinct description in English
+```
+
+### **Entry Types:**
+
+- **Enhancement** - New features, improvements, additions
+- **Fix** - Bug fixes, corrections, problem resolutions
+- **Refactor** - Code restructuring without behavior change
+- **Migration** - Library/framework/pattern changes
+- **Optimization** - Performance improvements
+
+### **Description Guidelines:**
+
+✅ **Do:**
+- Be succinct but complete (1-3 sentences)
+- Mention WHAT changed and WHY
+- Include specific file/component names
+- Explain user-visible impact if applicable
+- Use technical terminology appropriately
+
+❌ **Don't:**
+- Write vague descriptions ("improved things")
+- Skip the reasoning ("updated PersonPage" - why?)
+- Use first-person ("I added..." - use "Added...")
+- Include code snippets (save for commit messages)
+
+### **Examples:**
+
+**✅ Good Entries:**
+
+```markdown
+- **10/14/2025** - Migration - Migrated PersonPage to Material Design 3: removed Frame card container wrapper (gained 60px vertical space), applied MaterialEntry style to input field, used FilledButton for primary action. Page now follows MD3 spacing grid (16dp padding, 16dp spacing) and typography scale (FieldLabel, TitleMedium).
+
+- **10/14/2025** - Enhancement - Implemented theme switching service: created IThemeService interface with Dark/Light/Auto modes, added ThemeService implementation with SQLite persistence, integrated with App.xaml resource dictionary switching. Users can now change themes via Settings page.
+
+- **10/15/2025** - Fix - Fixed CollectionView item selection not triggering Command: added TapGestureRecognizer to Frame wrapper (Commands don't work on Frame directly in MAUI), moved Command binding from Frame to GestureRecognizer. Queue item selection now works correctly on Android.
+
+- **10/15/2025** - Refactor - Extracted card selection logic from StackPage into reusable SelectableCardBehavior: created behavior in MyVocaList.View.Behaviors with IsSelected bindable property and visual state management. Reduced code duplication across 3 pages (StackPage, SpotPage, PersonPage).
+
+- **10/16/2025** - Optimization - Improved queue list scrolling performance: enabled CollectionView virtualization with CachingStrategy="RecycleElement", reduced item template complexity by removing nested Frames. List now scrolls smoothly with 200+ items.
+```
+
+**❌ Bad Entries:**
+
+```markdown
+- **10/14/2025** - Enhancement - Updated PersonPage
+  [Too vague - what changed? why?]
+
+- **10/14/2025** - Fix - Fixed bug
+  [What bug? where? how?]
+
+- **10/14/2025** - Enhancement - I added Material Design to the app
+  [Too broad, first-person, lacks specifics]
+
+- **10/15/2025** - Enhancement - Changed colors and stuff
+  [Unprofessional, vague, no detail]
+```
+
+---
+
+## 🔧 Git Commit Workflow
+
+### **Commit Frequency:**
+
+**Small, Focused Commits > Large, Monolithic Commits**
+
+**Commit after:**
+- ✅ Each page migration (during MD3 migration)
+- ✅ Each feature implementation
+- ✅ Each bug fix
+- ✅ Each refactoring that passes tests
+- ✅ Any working state you might want to rollback to
+
+**Don't commit:**
+- ❌ Broken/non-compiling code
+- ❌ Half-finished features (unless using feature flags)
+- ❌ Commented-out code blocks (clean them up first)
+- ❌ Debug logging you forgot to remove
+
+### **Commit Message Format:**
+
+**Standard Format:**
+```
+[Type] Brief description (50 chars max)
+
+Detailed explanation if needed:
+- What changed
+- Why it changed
+- Any breaking changes
+- Related issue/task numbers
+```
+
+**Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code restructuring
+- `style:` - UI/UX changes
+- `docs:` - Documentation only
+- `test:` - Test additions/changes
+- `chore:` - Maintenance tasks
+
+**Examples:**
+
+```bash
+# Simple commits (no body needed)
+git commit -m "feat: Add MaterialColors.xaml with brand color system"
+git commit -m "refactor: Migrate PersonPage to Material Design 3"
+git commit -m "fix: Resolve Button Command not firing on Android"
+
+# Complex commits (with body)
+git commit -m "refactor: Migrate all pages to Material Design 3
+
+- Removed card container wrappers from all 5 pages
+- Applied MD3 typography scale and spacing grid
+- Updated button hierarchy (Filled/Outlined/Text)
+- Maintained all existing functionality and bindings
+- Gained 10-15% more screen space across app
+
+Pages migrated:
+- PersonPage
+- SpotPage
+- SpotFormPage
+- TonguePage
+- StackPage
+
+Breaking changes: None (visual only)
+Testing: Verified on Android API 33"
+```
+
+---
+
+## 🔄 Example Workflow: Page Migration
+
+**Scenario:** Migrating PersonPage to Material Design 3
+
+### **Step 1: Implement**
+
+```bash
+# Start Claude Code
+claude-code
+
+# Give prompt for PersonPage refactoring
+# Claude Code shows changes
+# Review changes
+# Apply changes
+```
+
+### **Step 2: Verify**
+
+```bash
+# Build
+dotnet build -f net8.0-android
+
+# Run
+dotnet run -f net8.0-android
+
+# Manual testing checklist:
+# ✅ Page loads without errors
+# ✅ Layout looks correct (no card wrapper, proper spacing)
+# ✅ Input field accepts text
+# ✅ "Add to Queue" button responds to tap
+# ✅ Command fires correctly
+# ✅ Validation works as before
+# ✅ Navigation works (back button)
+```
+
+### **Step 3: Document & Commit**
+
+**3a. Ask Helder (If Working Together):**
+
+```
+Claude: "Helder, PersonPage migration is complete. I've:
+- Removed Frame card container wrapper
+- Applied MaterialEntry and FilledButton styles  
+- Used 16dp padding and spacing
+- Tested on Android - all functionality working
+
+Can you confirm the implementation was successful?"
+
+Helder: "Yes, looks good!"
+```
+
+**3b. Update changelog.md:**
+
+```markdown
+- **10/14/2025** - Migration - Migrated PersonPage to Material Design 3: removed Frame card container wrapper (gained 60px vertical space), applied MaterialEntry style to input field, used FilledButton for primary action, implemented 16dp padding and spacing following MD3 grid system. All functionality preserved, improved visual hierarchy with FieldLabel typography.
+```
+
+**3c. Git Commit:**
+
+```bash
+git add MyVocaList.View/PersonPage.xaml
+git add changelog.md
+git commit -m "refactor: Migrate PersonPage to Material Design 3
+
+- Removed Frame card container (gained 60px vertical space)
+- Applied MaterialEntry style to singer name input
+- Applied FilledButton style to 'Add to Queue' button
+- Implemented 16dp padding and spacing (MD3 grid)
+- Applied FieldLabel typography for field label
+
+Testing: Verified on Android API 33
+All functionality preserved"
+```
+
+**3d. Push (If Ready):**
+
+```bash
+# Push to feature branch
+git push origin feature/material-design-3
+```
+
+---
+
+## 📊 Multi-Step Task Workflow
+
+**For larger tasks (like full MD3 migration), commit incrementally:**
+
+### **Example: MD3 Migration (5 pages)**
+
+```bash
+# Initial setup
+git add Resources/Styles/MaterialColors.xaml
+git add Resources/Styles/MaterialStyles.xaml
+git add MyVocaList.View/App.xaml
+git add changelog.md
+git commit -m "feat: Add Material Design 3 style system"
+
+# Page 1
+# [implement → verify → document]
+git add MyVocaList.View/PersonPage.xaml
+git add changelog.md
+git commit -m "refactor: Migrate PersonPage to MD3"
+
+# Page 2
+# [implement → verify → document]
+git add MyVocaList.View/SpotFormPage.xaml
+git add changelog.md
+git commit -m "refactor: Migrate SpotFormPage to MD3"
+
+# Page 3
+# [implement → verify → document]
+git add MyVocaList.View/SpotPage.xaml
+git add changelog.md
+git commit -m "refactor: Migrate SpotPage to MD3"
+
+# Page 4
+# [implement → verify → document]
+git add MyVocaList.View/TonguePage.xaml
+git add changelog.md
+git commit -m "refactor: Rebuild TonguePage with MD3"
+
+# Page 5
+# [implement → verify → document]
+git add MyVocaList.View/StackPage.xaml
+git add changelog.md
+git commit -m "refactor: Migrate StackPage to MD3"
+
+# Final cleanup
+git add Resources/Styles/CardStyles.xaml
+git add CLAUDE.md
+git add changelog.md
+git commit -m "docs: Update CLAUDE.md with MD3 guidelines"
+
+# Merge to main
+git checkout main
+git merge feature/material-design-3
+git push origin main
+```
+
+**Result:** 7 clear commits, each representing a working state. Easy to:
+- Review what changed when
+- Rollback specific changes if needed
+- Understand project evolution
+- Generate release notes
+
+---
+
+## 🎯 Best Practices
+
+### **DO:**
+
+✅ **Commit early, commit often** - Small commits are easier to review and rollback  
+✅ **Write descriptive commit messages** - "Fix button" → "fix: Resolve Command binding on PersonPage button"  
+✅ **Test before committing** - Never commit broken code  
+✅ **Update changelog.md in same commit** - Keeps history synchronized  
+✅ **Use feature branches** - Isolate work, easy to abandon if needed  
+✅ **Ask for verification** - When working with Helder, confirm success before documenting  
+✅ **Group related changes** - Update .xaml + .cs in same commit if they're coupled  
+
+### **DON'T:**
+
+❌ **Commit without testing** - "git commit -m 'hopefully this works'"  
+❌ **Batch unrelated changes** - Don't mix PersonPage migration + bug fix in one commit  
+❌ **Skip changelog updates** - Future you will forget what you did  
+❌ **Use vague messages** - "fix stuff", "update", "changes"  
+❌ **Commit generated files** - bin/, obj/, .vs/ should be in .gitignore  
+❌ **Force push to main** - Only force push to feature branches if absolutely necessary  
+❌ **Forget to pull before pushing** - Always `git pull` first to avoid conflicts  
+
+---
+
+## 🚨 Troubleshooting
+
+### **"I forgot to update changelog.md before committing"**
+
+```bash
+# Edit changelog.md
+# Amend last commit
+git add changelog.md
+git commit --amend --no-edit
+
+# If already pushed (and you're on feature branch):
+git push --force-with-lease origin feature/material-design-3
+```
+
+### **"I committed broken code by mistake"**
+
+```bash
+# Undo last commit, keep changes
+git reset --soft HEAD~1
+
+# Fix the code
+# Test again
+# Commit properly
+git add .
+git commit -m "fix: Correct implementation of X"
+```
+
+### **"I need to split a large commit into smaller ones"**
+
+```bash
+# Undo last commit, keep changes
+git reset HEAD~1
+
+# Stage files individually
+git add MyVocaList.View/PersonPage.xaml
+git add changelog.md
+git commit -m "refactor: Migrate PersonPage to MD3"
+
+git add MyVocaList.View/SpotPage.xaml
+git add changelog.md
+git commit -m "refactor: Migrate SpotPage to MD3"
+```
+
+---
+
+## 📚 Quick Reference
+
+### **After Every Successful Implementation:**
+
+1. ✅ Test thoroughly
+2. ✅ Update changelog.md (succinct entry with date/type/description)
+3. ✅ Git add relevant files
+4. ✅ Git commit with clear message
+5. ✅ Push to feature branch (if ready)
+
+### **Changelog Entry Template:**
+
+```markdown
+- **MM/DD/YYYY** - [Type] - [What changed]: [details including file/component names, what was done, why it matters, impact]. [Technical specifics if relevant].
+```
+
+### **Git Commit Template:**
+
+```bash
+git commit -m "[type]: Brief description (50 chars)
+
+Detailed explanation:
+- What changed
+- Why it changed
+- Testing performed
+- Any breaking changes"
+```
+
+---
+
+**Remember:** Documentation and version control are not "extra work" - they're **essential parts of professional development**. Your future self (and Helder!) will thank you! 🚀
+
+---
+
+**Last Updated**: October 14, 2025  
+**Applies to**: All development (MVP, post-MVP, features, fixes, refactoring)
 
 ---
 

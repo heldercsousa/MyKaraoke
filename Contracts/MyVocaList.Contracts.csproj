@@ -7,8 +7,4 @@
 	<NoWarn>$(NoWarn);CS8618</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Domain\MyVocaList.Domain.csproj" />
-  </ItemGroup>
-
 </Project>

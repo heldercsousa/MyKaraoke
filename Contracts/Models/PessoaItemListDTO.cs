@@ -1,5 +1,4 @@
-﻿using MyVocaList.Domain;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
@@ -7,26 +6,12 @@ namespace MyVocaList.Contracts.Models
 {
     public class PessoaListItemDto : INotifyPropertyChanged
     {
-        // Propriedade para vincular à entidade de domínio (não será serializada no JSON de Preferences)
-        [JsonIgnore]
-        public Pessoa DomainPessoa { get; private set; } // Referência à entidade de domínio original
-
         public int Id { get; set; } // O ID da Pessoa do domínio
         private string _nomeCompleto;
         private int _participacoes;
         private int _ausencias;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        // Construtor para mapear da entidade de domínio Pessoa
-        public PessoaListItemDto(Pessoa domainPessoa)
-        {
-            DomainPessoa = domainPessoa; // Armazenar a referência à entidade de domínio
-            Id = domainPessoa.Id;
-            _nomeCompleto = domainPessoa.NomeCompleto;
-            _participacoes = 0; // Resetar para cada evento ativo/exibição
-            _ausencias = 0;     // Resetar para cada evento ativo/exibição
-        }
 
         // Construtor sem argumentos para deserialização de JSON (Preferences)
         public PessoaListItemDto() { }

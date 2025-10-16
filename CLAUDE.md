@@ -13,7 +13,7 @@
 ### Core Purpose
 Manage karaoke participant queues with intelligent round-based organization, allowing administrators to track participation/absence, reorder singers, and provide real-time queue status information.
 
-### MVP Key Features (Portuguese-Only)
+### MVP Key Features (English-Only)
 - **Queue Management**: One active queue at a time with round-based progression
 - **Participation Tracking**: Admin registers singers and marks participation/absence when reaching position 1
 - **Round System**: Automatic round increment when all participants complete
@@ -21,7 +21,7 @@ Manage karaoke participant queues with intelligent round-based organization, all
 - **Admin-Managed Registration**: Each singer registered by admin using standalone device
 - **Queue Modes**: Mechanical karaoke and Bandokê (live instrumental)
 - **Time Estimation**: Display estimated completion time based on pending singers
-- **Multi-language Infrastructure**: 6 languages supported (MVP focuses on Portuguese only)
+- **Multi-language Infrastructure**: 6 languages supported (MVP focuses on English only)
 
 ### Future Features (Post-MVP)
 - **Singer Autonomy**: Self-registration capability with admin notifications
@@ -99,7 +99,7 @@ The development follows a structured approach where Helder provides strategic di
 ### Architectural Style
 **Multi-Project Clean Architecture** with Service-Oriented Design
 
-### Solution Structure (~11-13 Projects)
+### Solution Structure (5 Projects)
 
 ```
 MyVocaList.sln                                  # Visual Studio Solution
@@ -213,8 +213,8 @@ MyVocaList.sln                                  # Visual Studio Solution
     │   │   │   └── OpenSans-Regular.ttf
     │   │   │
     │   │   └── Strings/                      # Localization (Infrastructure ready, MVP = PT only)
-    │   │       ├── AppResources.resx         # English (default/fallback)
-    │   │       ├── AppResources_pt-BR.resx   # Portuguese (PRIMARY for MVP!)
+    │   │       ├── AppResources.resx         # English (PRIMARY for MVP! default/fallback)
+    │   │       ├── AppResources_pt-BR.resx   # Portuguese 
     │   │       ├── AppResources_es.resx      # Spanish
     │   │       ├── AppResources_fr.resx      # French
     │   │       ├── AppResources_ja.resx      # Japanese
@@ -265,7 +265,7 @@ MyVocaList.sln                                  # Visual Studio Solution
 
 ### Key Architectural Notes
 
-**Project Count**: Approximately **11-13 core projects** (depends on whether you count View subprojects separately)
+**Project Count**: 5 core projects** 
 
 **Why This Structure?**
 - **Separation of Concerns**: Each project has ONE responsibility
@@ -294,12 +294,12 @@ MyVocaList.sln                                  # Visual Studio Solution
 
 ### **Contracts Layer** (`MyVocaList.Contracts.*`)
 - **Contains**: ViewModels, DTOs
-- **Dependencies**: Domain only
+- **Dependencies**: NONE
 - **Purpose**: Data transfer and presentation abstractions
 
 ### **Services Layer** (`MyVocaList.Services.*`)
 - **Contains**: ALL business logic and validation
-- **Dependencies**: Domain, Contracts, Infrastructure.Data.Repositories
+- **Dependencies**: Domain, Contracts, Infrastructure
 - **Purpose**: Implement use cases and business rules
 - **Responsibilities**:
   - All validation and business rules
@@ -309,12 +309,12 @@ MyVocaList.sln                                  # Visual Studio Solution
 
 ### **Infrastructure Layer** (`MyVocaList.Infra.*`)
 - **Contains**: Data access, utilities
-- **Dependencies**: Domain, Contracts
+- **Dependencies**: Domain
 - **Purpose**: Technical concerns and database access
 
 ### **Presentation Layer** (`MyVocaList.View.*`)
 - **Contains**: MAUI UI, pages, components
-- **Dependencies**: Services, Contracts (NOT Domain directly!)
+- **Dependencies**: Infrastructure (MauiProgram DI repositories registration), Services (MauiProgram DI services registration and usage), Contracts
 - **Purpose**: User interface and interaction
 
 ---
@@ -352,7 +352,7 @@ Step 5: Presentation Layer
 ```
 
 ### New Business Rule
-**Always Services layer**, never Domain or Repositories!
+**Always Services layer**, never Domain, Infrastructure (Infra.Data.Repositories) or View (directly in pages code-behind) layers!
 
 ### New UI Component
 ```
@@ -374,8 +374,8 @@ Based on `tongues.pdf` strategic analysis:
 
 | Code | Language | Market Reasoning |
 |------|----------|------------------|
-| `en` | English | International standard |
-| `pt` | Portuguese | Primary market (Brazil/Portugal) - **MVP FOCUS** |
+| `en` | English | International standard - **MVP FOCUS** |
+| `pt` | Portuguese | Primary market (Brazil/Portugal)|
 | `es` | Spanish | Latin America expansion |
 | `fr` | French | European market |
 | `ja` | Japanese | Huge karaoke market |
@@ -384,20 +384,20 @@ Based on `tongues.pdf` strategic analysis:
 ### Languages REMOVED
 - `de` (German), `zh` (Chinese), `ar` (Arabic), `ru` (Russian), `hi` (Hindi)
 
-### ⚠️ MVP Strategy: Portuguese-Only!
+### ⚠️ MVP Strategy: English-Only!
 
 **CRITICAL FOR CLAUDE AI**:
-- **MVP Phase**: Portuguese language ONLY
+- **MVP Phase**: English language ONLY
 - **DO NOT** implement localization in MVP
 - **DO NOT** create multi-language resources now
 - **Localization = Future Phase** (after MVP validation)
-- Focus on solid features in Portuguese first
+- Focus on solid features in English first
 
 ### Localization Resources (Infrastructure Ready)
 ```
 /Resources/Strings/
-├── AppResources.resx           # English (fallback)
-├── AppResources_pt-BR.resx     # Portuguese ⭐ PRIMARY
+├── AppResources.resx           # English ⭐ PRIMARY
+├── AppResources_pt-BR.resx     # Portuguese (future)
 ├── AppResources_es.resx        # Spanish (future)
 ├── AppResources_fr.resx        # French (future)
 ├── AppResources_ja.resx        # Japanese (future)
@@ -455,8 +455,6 @@ options.UseSqlite($"Data Source={dbPath}")
 - **Homonym Handling**: Birthday/Email for disambiguation
 
 ---
-
-## 🎨 UI/UX Design System
 
 ### ⚠️ Material Design 3 Migration Guidelines (REQUIRES HELDER COORDINATION!)
 
@@ -917,7 +915,7 @@ public partial class MyPage : ContentPage
 ```
 
 ---
-# CLAUDE.md Section - Changelog & Git Workflow
+# Changelog & Git Workflow
 
 ## 📝 Documentation & Version Control Workflow
 
@@ -1346,8 +1344,6 @@ Detailed explanation:
 
 ---
 
-**Last Updated**: October 14, 2025  
-**Applies to**: All development (MVP, post-MVP, features, fixes, refactoring)
 
 ---
 
@@ -1375,7 +1371,7 @@ Detailed explanation:
 
 1. ❌ Use `localStorage`/`sessionStorage` (not supported)
 2. ❌ Implement Material Design without Helder
-3. ❌ Create localization in MVP (Portuguese only!)
+3. ❌ Create localization in MVP (English only!)
 4. ❌ Use emojis in XAML (use PNG images)
 5. ❌ Add constructor parameters to Pages
 6. ❌ Skip error handling
@@ -1389,7 +1385,7 @@ Detailed explanation:
 ## 🌟 Future Growth Vision
 
 ### Phase Evolution
-1. **MVP** (Current): Portuguese, core features, local database
+1. **MVP** (Current): English, core features, local database
 2. **MVP Validation**: User feedback, optimization
 3. **Localization**: 6 languages implementation
 4. **Cloud**: API, authentication, synchronization
@@ -1434,24 +1430,24 @@ Detailed explanation:
 
 ---
 
-## 📊 Project Status
+## 📊 Project Status (MVP Phase)
 
 ### Implementation
-- ✅ Database: 100% (EF Core 9.0.6)
-- ✅ Services: 80%
-- ✅ UI Components: 70%
-- ✅ Navigation: 100%
+- ✅ Database: ~70% (EF Core 9.0.6)
+- ✅ Services: ~30%
+- ✅ UI Components: ~50%
+- ✅ Navigation: ~70%
 - 🚧 Material Design: 0% (planned)
-- 🚧 Localization: 30% (MVP = PT only)
+- 🚧 Localization: 30% (MVP = us-EN only)
 - 🚧 Testing: 0% (post-MVP)
 
 ### Technical Achievements
-- ✅ Clean Architecture (~11-13 projects)
+- ✅ Clean Architecture (5 projects)
 - ✅ ServiceProvider pattern
 - ✅ Anti-crash pthread_mutex system
 - ✅ Multilingual text search (6 languages)
 - ✅ Accent-insensitive search
-- ✅ Hardware-aware animations
+- ✅ Hardware-aware animations (animations avoided in MVP)
 
 ---
 
@@ -1467,7 +1463,7 @@ Before completing any task:
 - [ ] Use async/await for I/O
 - [ ] Check service scopes
 - [ ] Verify parameterless constructors
-- [ ] Remember MVP = Portuguese only
+- [ ] Remember MVP = English only
 - [ ] ASK Helder for architectural decisions
 
 ---
@@ -1485,7 +1481,7 @@ Code Implementation Specialist under Helder's architectural guidance
 5. Document successes
 
 ### Remember
-- MVP = Portuguese only (NO localization!)
+- MVP = English only (NO localization!)
 - Material Design = Helder coordination required
 - ServiceProvider pattern = Non-negotiable
 - Styles = Reuse from ResourceDictionary
@@ -1496,6 +1492,6 @@ Code Implementation Specialist under Helder's architectural guidance
 
 ---
 
-**Last Updated**: October 14, 2025  
+**Last Updated**: October 15, 2025  
 **Version**: 2.1 (Corrected)  
 **Maintained by**: Helder (Architect) + Claude AI (Developer)

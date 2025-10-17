@@ -314,56 +314,14 @@ namespace MyVocaList.View
                     }
                 }
 
+                // ✅ CONTROLE DE VISIBILIDADE DO FAB
                 bool shouldShowFab = SelectionCount == 0;
-                //bool isFabCurrentlyVisible = addFab != null && addFab.IsVisible;
 
-                //System.Diagnostics.Debug.WriteLine($"SpotPage: shouldShowFab={shouldShowFab}, isFabCurrentlyVisible={isFabCurrentlyVisible}");
-                //System.Diagnostics.Debug.WriteLine($"SpotPage: addFab is null? {addFab == null}");
-
-                //if (addFab != null)
-                //{
-                //    System.Diagnostics.Debug.WriteLine($"SpotPage: FAB - IsVisible={addFab.IsVisible}, Opacity={addFab.Opacity}, InputTransparent={addFab.InputTransparent}");
-                //}
-
-                //if (shouldShowFab && !isFabCurrentlyVisible)
-                //{
-                //    System.Diagnostics.Debug.WriteLine("SpotPage: Iniciando ShowAsync do FAB");
-                //    _ = Task.Run(async () =>
-                //    {
-                //        await Task.Delay(300);
-                //        await MainThread.InvokeOnMainThreadAsync(async () =>
-                //        {
-                //            try
-                //            {
-                //                await addFab.ShowAsync();
-                //                System.Diagnostics.Debug.WriteLine($"SpotPage: FAB mostrado - IsVisible={addFab.IsVisible}, Opacity={addFab.Opacity}");
-                //            }
-                //            catch (Exception ex)
-                //            {
-                //                System.Diagnostics.Debug.WriteLine($"ERRO ao mostrar FAB: {ex.Message}");
-                //            }
-                //        });
-                //    });
-                //}
-                //else if (!shouldShowFab && isFabCurrentlyVisible)
-                //{
-                //    System.Diagnostics.Debug.WriteLine("SpotPage: Iniciando HideAsync do FAB");
-                //    _ = Task.Run(async () =>
-                //    {
-                //        await MainThread.InvokeOnMainThreadAsync(async () =>
-                //        {
-                //            try
-                //            {
-                //                await addFab.HideAsync();
-                //                System.Diagnostics.Debug.WriteLine("SpotPage: FAB escondido com sucesso");
-                //            }
-                //            catch (Exception ex)
-                //            {
-                //                System.Diagnostics.Debug.WriteLine($"ERRO ao esconder FAB: {ex.Message}");
-                //            }
-                //        });
-                //    });
-                //}
+                if (addFab != null)
+                {
+                    addFab.IsVisible = shouldShowFab;
+                    System.Diagnostics.Debug.WriteLine($"SpotPage: FAB IsVisible={shouldShowFab} (SelectionCount={SelectionCount})");
+                }
 
                 System.Diagnostics.Debug.WriteLine($"========================================");
             }

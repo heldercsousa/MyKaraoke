@@ -101,6 +101,7 @@ namespace MyVocaList.View.Components
             var configs = new Dictionary<CrudButtonType, NavButtonConfig>
             {
                 { CrudButtonType.Anterior, new NavButtonConfig { Text = "Anterior", IconSource = "prior.png" } },
+                { CrudButtonType.Adicionar, new NavButtonConfig { Text = "Adicionar", IconSource = "add.png" } }, // ✅ BOTÃO ADICIONAR
                 { CrudButtonType.Editar, new NavButtonConfig { Text = "Editar", IconSource = "edit.png" } },
                 { CrudButtonType.Excluir, new NavButtonConfig { Text = "Apagar", IconSource = "delete.png" } },
                 { CrudButtonType.Salvar, new NavButtonConfig { Text = "Salvar", IconSource = "save.png" } }, // ✅ SEM Command
@@ -188,9 +189,9 @@ namespace MyVocaList.View.Components
                     // 📋 MODO LISTA
                     if (currentCount == 0)
                     {
-                        // ✅ CORREÇÃO: Lista VAZIA = NavBar ESCONDIDA
-                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=0 - NavBar será ESCONDIDA");
+                        // ✅ CORREÇÃO: Lista sem seleção = NavBar ESCONDIDA (FAB será usado)
                         visibleButtons.Clear();
+                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=0 - NavBar será ESCONDIDA (FAB disponível)");
                     }
                     else if (currentCount == 1)
                     {
@@ -251,7 +252,7 @@ namespace MyVocaList.View.Components
         }
 
         /// <summary>
-        /// ✅ NOVO MÉTODO: Atualiza visibilidade da NavBar baseado no SelectionCount
+        /// ✅ NOVO MÉTODO: Atualiza visibilidade da NavBar baseado nos BOTÕES (não SelectionCount!)
         /// </summary>
         private void UpdateNavBarVisibility(int selectionCount)
         {
@@ -259,17 +260,20 @@ namespace MyVocaList.View.Components
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    if (selectionCount == 0)
+                    // ✅ CORREÇÃO: Baseado em BOTÕES, não em SelectionCount
+                    var hasButtons = navBarBehavior?.Buttons?.Count > 0;
+
+                    if (hasButtons)
                     {
-                        // Esconde NavBar quando não há seleção
-                        this.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: NavBar ESCONDIDA (SelectionCount=0)");
+                        // Mostra NavBar quando há botões
+                        this.IsVisible = true;
+                        System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBar VISÍVEL ({navBarBehavior.Buttons.Count} botões, SelectionCount={selectionCount})");
                     }
                     else
                     {
-                        // Mostra NavBar quando há seleção
-                        this.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBar VISÍVEL (SelectionCount={selectionCount})");
+                        // Esconde NavBar quando não há botões
+                        this.IsVisible = false;
+                        System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: NavBar ESCONDIDA (sem botões)");
                     }
                 });
             }

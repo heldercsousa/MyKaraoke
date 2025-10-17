@@ -2,18 +2,23 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MyVocaList.View.Components.FabButtonComponent"
-             x:Name="fabRoot">
+             x:Name="fabRoot"
+             InputTransparent="False">
 
-    <Frame x:Name="fabContainer" Style="{StaticResource FabContainerStyle}">
+    <Frame x:Name="fabContainer"
+           Style="{StaticResource FabContainerStyle}"
+           InputTransparent="False">
         <Frame.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnFabTapped" />
         </Frame.GestureRecognizers>
 
         <!-- Grid para garantir centralização perfeita -->
-        <Grid HorizontalOptions="Fill" 
-              VerticalOptions="Fill">
-            <Label x:Name="fabIcon" 
-                   Style="{StaticResource FabIconStyle}" />
+        <Grid HorizontalOptions="Fill"
+              VerticalOptions="Fill"
+              InputTransparent="False">
+            <Label x:Name="fabIcon"
+                   Style="{StaticResource FabIconStyle}"
+                   InputTransparent="False" />
         </Grid>
     </Frame>
 

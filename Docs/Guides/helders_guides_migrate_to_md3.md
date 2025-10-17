@@ -111,7 +111,115 @@ git push origin feature/material-design-3
 
 ---
 
+## 🎨 Phase 1.5: Migrate HeaderComponent (30 minutes)
+
+**Why Migrate HeaderComponent First:**
+- ✅ Used by ALL pages (StackPage, SpotPage, SpotFormPage, TonguePage, PersonPage)
+- ✅ Migrating once updates entire app instantly
+- ✅ Establishes MD3 pattern before page migrations
+- ✅ Prevents rework on every page
+
+### **Task: Migrate HeaderComponent**
+
+#### **🔧 Step 1: Implement**
+
+**Copy this prompt to Claude Code:**
+```
+Task: Refactor HeaderComponent.xaml to Material Design 3
+
+Context:
+- HeaderComponent is used across all app pages
+- Currently has custom styling (shadows, specific sizes)
+- Needs to follow MD3 typography and spacing
+- Has three modes: back button, cancel/save (form mode), exit app
+
+Changes needed:
+1. Apply HeadlineMedium style to title (instead of HeaderTitleStyle)
+2. Remove shadow effects (MD3 uses elevation, not shadows on headers)
+3. Standardize left button size to 48x48dp (MD3 touch target)
+4. Standardize right button size to 48x48dp (form mode save button)
+5. Apply 16dp horizontal padding (MD3 standard)
+6. Apply 12dp vertical padding
+7. Use OnBackground color for title
+8. Use OnSurfaceVariant for button icons/text
+9. Keep all existing properties and functionality (ShowCancelButton, ShowSaveButton, ExitApp, etc.)
+10. Maintain backward compatibility with all pages
+
+Files to modify:
+- MyVocaList.View/Components/HeaderComponent.xaml
+
+IMPORTANT: 
+- Show me the COMPLETE new file
+- Don't break any existing functionality
+- All pages depend on this component!
+```
+
+**Review carefully, then apply.**
+
+#### **✅ Step 2: Verify**
+```bash
+dotnet build -f net8.0-android
+dotnet run -f net8.0-android
+
+# Test on EVERY page that uses HeaderComponent:
+# ✅ StackPage - Back button works, title displays, ExitApp works
+# ✅ SpotPage - Back button navigates correctly
+# ✅ SpotFormPage - Cancel/Save buttons appear/work correctly
+# ✅ TonguePage - Back button works
+# ✅ PersonPage - Back button works
+
+# Check visual consistency:
+# ✅ Title centered and readable
+# ✅ Buttons touchable (48x48dp)
+# ✅ No shadows (clean MD3 look)
+# ✅ Proper spacing (16dp sides, 12dp top/bottom)
+```
+
+#### **📝 Step 3: Document**
+
+**Update changelog.md:**
+```markdown
+- **10/14/2025** - Migration - Migrated HeaderComponent to Material Design 3: applied HeadlineMedium typography to title (28pt), removed shadow effects for clean MD3 appearance, standardized button touch targets to 48x48dp following accessibility guidelines, implemented 16dp horizontal and 12dp vertical padding (MD3 spacing grid), applied OnBackground color to title and OnSurfaceVariant to buttons. Component now follows MD3 standards while maintaining all existing functionality (ShowCancelButton, ShowSaveButton, ExitApp, BackCommand) and backward compatibility with all pages (StackPage, SpotPage, SpotFormPage, TonguePage, PersonPage).
+```
+
+#### **💾 Step 4: Commit**
+```bash
+git add MyVocaList.View/Components/HeaderComponent.xaml
+git add changelog.md
+git commit -m "refactor: Migrate HeaderComponent to Material Design 3
+
+- Applied HeadlineMedium typography (28pt)
+- Removed shadow effects (clean MD3 style)
+- Standardized button touch targets to 48x48dp
+- Implemented 16dp horizontal, 12dp vertical padding
+- Applied OnBackground and OnSurfaceVariant colors
+- Maintained all properties and functionality
+- Backward compatible with all pages
+Testing: Verified on StackPage, SpotPage, SpotFormPage, TonguePage, PersonPage"
+
+git push origin feature/material-design-3
+```
+
+✅ **HeaderComponent complete! All pages now have MD3 header. Proceed to page migrations.**
+
+---
+
+
+
 ## 📄 Phase 2: Page Migration (One Page at a Time!)
+
+**Migration Order (Simplest → Most Complex):**
+1. **SpotFormPage** - Simple CRUD form (good starting point, learn basic patterns)
+2. **SpotPage** - List view (learn CollectionView and card patterns)
+3. **TonguePage** - Rebuild from scratch (practice clean slate approach)
+4. **PersonPage** - Most outdated page (tackle with experience from 3 previous migrations)
+5. **StackPage** - Most critical page (do last with ALL lessons learned)
+
+**Why This Order:**
+- ✅ Build confidence with simpler pages first
+- ✅ Learn MD3 patterns progressively (forms → lists → rebuilds)
+- ✅ Tackle problematic PersonPage when you have experience
+- ✅ Save most critical StackPage for last when you're proficient
 
 **Workflow for EACH page:**
 1. 🔧 **IMPLEMENT** - Give prompt to Claude Code
@@ -121,90 +229,11 @@ git push origin feature/material-design-3
 
 ---
 
-### **PAGE 1: PersonPage (45 minutes)**
+### **PAGE 1: SpotFormPage (1 hour)**
 
 #### **🔧 Step 1: Implement**
 
 **Copy this prompt to Claude Code:**
-
-```
-Task: Refactor PersonPage.xaml to Material Design 3
-
-Context:
-- Simple singer name input form
-- Currently uses Frame card container wrapping entire content (wastes space)
-- MD3 approach: content directly on ContentPage background
-
-Changes needed:
-1. Remove Frame card container wrapper
-2. Apply MaterialEntry style to Entry field
-3. Apply FilledButton style to "Add to Queue" button
-4. Apply FieldLabel style to "Singer name" label
-5. Use PageContainer style for VerticalStackLayout
-6. Apply 16dp padding, 16dp spacing (MD3 grid)
-7. Keep background as AppBackgroundGradient
-8. Keep all Commands and Bindings intact
-
-Files to modify:
-- MyVocaList.View/PersonPage.xaml
-
-IMPORTANT: Show me the COMPLETE new file, not just diffs.
-```
-
-**Review the complete file Claude Code shows you, then apply.**
-
-#### **✅ Step 2: Verify**
-
-```bash
-# Build
-dotnet build -f net8.0-android
-
-# Run
-dotnet run -f net8.0-android
-
-# Test checklist:
-# ✅ Page loads without errors
-# ✅ No card wrapper (more screen space!)
-# ✅ Input field accepts text
-# ✅ "Add to Queue" button responds to tap
-# ✅ Command fires correctly
-# ✅ Navigation works (back button)
-```
-
-#### **📝 Step 3: Document**
-
-**Update changelog.md:**
-```markdown
-- **10/14/2025** - Migration - Migrated PersonPage to Material Design 3: removed Frame card container wrapper (gained ~60px vertical space), applied MaterialEntry style to input field with FieldLabel typography, used FilledButton for primary action, implemented 16dp padding and spacing following MD3 grid system. All functionality preserved.
-```
-
-#### **💾 Step 4: Commit**
-
-```bash
-git add MyVocaList.View/PersonPage.xaml
-git add changelog.md
-git commit -m "refactor: Migrate PersonPage to Material Design 3
-
-- Removed Frame card container (gained ~60px vertical space)
-- Applied MaterialEntry style to singer name input
-- Applied FilledButton style to 'Add to Queue' button
-- Applied FieldLabel typography for field label
-- Implemented 16dp padding and spacing (MD3 grid)
-Testing: Verified on Android, all functionality preserved"
-
-git push origin feature/material-design-3
-```
-
-✅ **PersonPage complete! Move to next page.**
-
----
-
-### **PAGE 2: SpotFormPage (1 hour)**
-
-#### **🔧 Step 1: Implement**
-
-**Copy this prompt to Claude Code:**
-
 ```
 Task: Refactor SpotFormPage.xaml to Material Design 3
 
@@ -231,7 +260,6 @@ Show complete file.
 ```
 
 #### **✅ Step 2: Verify**
-
 ```bash
 dotnet build -f net8.0-android
 dotnet run -f net8.0-android
@@ -253,7 +281,6 @@ dotnet run -f net8.0-android
 ```
 
 #### **💾 Step 4: Commit**
-
 ```bash
 git add MyVocaList.View/SpotFormPage.xaml
 git add changelog.md
@@ -273,12 +300,11 @@ git push origin feature/material-design-3
 
 ---
 
-### **PAGE 3: SpotPage (1.5 hours)**
+### **PAGE 2: SpotPage (1.5 hours)**
 
 #### **🔧 Step 1: Implement**
 
 **Copy this prompt to Claude Code:**
-
 ```
 Task: Refactor SpotPage.xaml to Material Design 3
 
@@ -305,7 +331,6 @@ CRITICAL: Don't break CollectionView bindings! Show complete file.
 ```
 
 #### **✅ Step 2: Verify**
-
 ```bash
 dotnet build -f net8.0-android
 dotnet run -f net8.0-android
@@ -327,7 +352,6 @@ dotnet run -f net8.0-android
 ```
 
 #### **💾 Step 4: Commit**
-
 ```bash
 git add MyVocaList.View/SpotPage.xaml
 git add changelog.md
@@ -347,12 +371,11 @@ git push origin feature/material-design-3
 
 ---
 
-### **PAGE 4: TonguePage (2 hours)**
+### **PAGE 3: TonguePage (2 hours)**
 
 #### **🔧 Step 1: Implement**
 
 **Copy this prompt to Claude Code:**
-
 ```
 Task: Rebuild TonguePage.xaml from scratch using Material Design 3
 
@@ -378,7 +401,6 @@ Create modern implementation from scratch. Show complete file.
 ```
 
 #### **✅ Step 2: Verify**
-
 ```bash
 dotnet build -f net8.0-android
 dotnet run -f net8.0-android
@@ -400,7 +422,6 @@ dotnet run -f net8.0-android
 ```
 
 #### **💾 Step 4: Commit**
-
 ```bash
 git add MyVocaList.View/TonguePage.xaml
 git add changelog.md
@@ -420,86 +441,86 @@ git push origin feature/material-design-3
 
 ---
 
-### **PAGE 5: StackPage (3 hours) - MOST CRITICAL**
+### **PAGE 4: PersonPage (1 hour)**
 
 #### **🔧 Step 1: Implement**
 
 **Copy this prompt to Claude Code:**
-
 ```
-Task: Refactor StackPage.xaml to Material Design 3
+Task: Refactor PersonPage.xaml to Material Design 3
 
 Context:
-- CRITICAL PAGE: Core queue management feature
-- Complex layout with multiple sections
-- Most important page - extra caution required!
+- Singer name input form
+- Most out of date page - needs significant updates
+- Currently uses Frame card container wrapping entire content
+- MD3 approach: content directly on ContentPage background
 
 Changes needed:
-1. Remove page-level card container
-2. Keep CollectionView for queue list (DO NOT break bindings!)
-3. Use GradientCard for queue items (maintain selection states/triggers!)
-4. Apply TitleMedium to singer names
-5. Apply BodySmall to metadata (position, round, status)
-6. FilledButton for primary actions (max 1 per screen!)
-7. OutlinedButton for secondary actions
-8. TextButton for tertiary actions
-9. PageContainer for outer layout (16dp padding)
-10. Maintain ALL existing Commands and Bindings - functionality must be identical
+1. Remove Frame card container wrapper
+2. Apply MaterialEntry style to Entry field
+3. Apply FilledButton style to "Add to Queue" button
+4. Apply FieldLabel style to "Singer name" label
+5. Use PageContainer style for VerticalStackLayout
+6. Apply 16dp padding, 16dp spacing (MD3 grid)
+7. Keep background as AppBackgroundGradient
+8. Keep all Commands and Bindings intact
+9. Clean up any outdated patterns from previous iterations
 
 Files to modify:
-- MyVocaList.View/StackPage.xaml
+- MyVocaList.View/PersonPage.xaml
 
-CRITICAL: This is the most important page. Show complete file. 
-Be extremely careful with bindings and selection states!
+IMPORTANT: Show me the COMPLETE new file, not just diffs.
 ```
 
-#### **✅ Step 2: Verify (Test Thoroughly!)**
+**Review the complete file Claude Code shows you, then apply.**
 
+#### **✅ Step 2: Verify**
 ```bash
 dotnet build -f net8.0-android
 dotnet run -f net8.0-android
 
-# EXTENSIVE test checklist:
-# ✅ Queue list displays correctly
-# ✅ Scrolling is smooth with many items
-# ✅ Item selection works (visual feedback)
-# ✅ Reordering items works (if applicable)
-# ✅ Mark present/absent works
-# ✅ Advance round works
-# ✅ All buttons respond correctly
-# ✅ Navigation works (back, to other pages)
-# ✅ Empty queue state displays correctly
-# ✅ Data persistence works (save/load state)
+# Test checklist:
+# ✅ Page loads without errors
+# ✅ No card wrapper (more screen space!)
+# ✅ Input field accepts text (including Unicode characters)
+# ✅ "Add to Queue" button responds to tap
+# ✅ Command fires correctly
+# ✅ Validation works (if applicable)
+# ✅ Navigation works (back button, to StackPage)
 ```
-
-**⚠️ If ANY issue found, discuss with Claude Chat before proceeding!**
 
 #### **📝 Step 3: Document**
 
 **Update changelog.md:**
 ```markdown
-- **10/15/2025** - Migration - Migrated StackPage to Material Design 3: removed page-level container while preserving GradientCard for queue items with selection states, applied TitleMedium for singer names and BodySmall for metadata, implemented proper button hierarchy (FilledButton for primary actions, OutlinedButton for secondary), used 16dp padding throughout. Core queue management functionality fully preserved with improved visual hierarchy and more screen space for queue list.
+- **10/15/2025** - Migration - Migrated PersonPage to Material Design 3: removed Frame card container wrapper (gained ~60px vertical space), applied MaterialEntry style to input field with FieldLabel typography, used FilledButton for primary action, implemented 16dp padding and spacing following MD3 grid system, cleaned up outdated patterns from previous iterations. All functionality preserved with improved visual consistency.
 ```
 
 #### **💾 Step 4: Commit**
-
 ```bash
-git add MyVocaList.View/StackPage.xaml
+git add MyVocaList.View/PersonPage.xaml
 git add changelog.md
-git commit -m "refactor: Migrate StackPage to Material Design 3
+git commit -m "refactor: Migrate PersonPage to Material Design 3
 
-- Removed page-level card container
-- Applied GradientCard to queue items (preserved selection states)
-- Applied TitleMedium and BodySmall typography
-- Implemented button hierarchy (Filled/Outlined/Text)
-- 16dp padding and spacing throughout
-- Preserved all Commands, Bindings, and selection functionality
-Testing: Extensively verified all queue operations on Android"
+- Removed Frame card container (gained ~60px vertical space)
+- Applied MaterialEntry style to singer name input
+- Applied FilledButton style to 'Add to Queue' button
+- Applied FieldLabel typography for field label
+- Implemented 16dp padding and spacing (MD3 grid)
+- Cleaned up outdated patterns
+Testing: Verified on Android, all functionality preserved"
 
 git push origin feature/material-design-3
 ```
 
-✅ **StackPage complete! All pages migrated!**
+✅ **PersonPage complete! Move to final page: StackPage.**
+
+---
+
+### **PAGE 5: StackPage (3 hours) - MOST CRITICAL**
+
+[Keep the existing StackPage section - it's correct!]
+
 
 ---
 
@@ -557,6 +578,29 @@ git commit -m "chore: Clean up unused styles post-MD3 migration
 
 git push origin feature/material-design-3
 ```
+
+---
+
+## 📊 Migration Progress Tracker
+
+**Day 1:**
+- [x] Setup: Register MD3 styles (30 min)
+- [ ] Migrate HeaderComponent (30 min) ← Component used by all pages
+- [ ] Migrate SpotFormPage (1 hour)
+- [ ] Migrate SpotPage (1.5 hours)
+
+**Day 2:**
+- [ ] Rebuild TonguePage (2 hours)
+- [ ] Migrate PersonPage (1 hour)
+- [ ] Test both pages thoroughly (1 hour)
+
+**Day 3:**
+- [ ] Migrate StackPage (3 hours)
+- [ ] Cleanup old styles (1 hour)
+- [ ] Final testing (1 hour)
+- [ ] Update CLAUDE.md (30 min)
+
+---
 
 ---
 
@@ -624,6 +668,22 @@ git push origin main
 ---
 
 ## 🎯 Quick Reference: Per-Page Workflow
+
+**CRITICAL: Migrate HeaderComponent FIRST (before any pages)!**
+- HeaderComponent is used by ALL pages
+- Migrating it once updates entire app
+- Do Phase 1.5 before Phase 2!
+
+**Migration Order:**
+0. **HeaderComponent** (Phase 1.5 - FIRST!)
+1. SpotFormPage (simple form - learn basics)
+2. SpotPage (list view - learn CollectionView)
+3. TonguePage (rebuild - practice clean slate)
+4. PersonPage (most outdated - tackle with experience)
+5. StackPage (most critical - all lessons learned)
+
+**For HeaderComponent migration:**
+[Follow Phase 1.5 steps above]
 
 **For EVERY page migration:**
 

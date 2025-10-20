@@ -43,7 +43,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Guides", "Guides", "{0709C1
 		Docs\Guides\research_dotnet_ai_dev_guide_20251010_claudeSonnet4_5.md = Docs\Guides\research_dotnet_ai_dev_guide_20251010_claudeSonnet4_5.md
 		Docs\Guides\Tongues.docx = Docs\Guides\Tongues.docx
 		Docs\Guides\Tongues.pdf = Docs\Guides\Tongues.pdf
-		Docs\Guides\WebDomains.png = Docs\Guides\WebDomains.png
 	EndProjectSection
 EndProject
 Global

@@ -83,6 +83,9 @@ namespace MyVocaList.View
                         System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: LoadDataCommand recriado em OnHandlerChanged");
                     }
 
+                    // ✅ AUTO-DISCOVERY: NavBar is automatically discovered by SmartPageLifecycleBehavior
+                    // No manual wiring needed! CrudNavBarComponent self-registers via OnParentSet()
+
                     // Resto da configuração do HeaderComponent...
                     var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
                     if (headerComponent != null)

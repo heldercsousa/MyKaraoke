@@ -78,10 +78,21 @@ namespace MyVocaList.View.Behaviors
             base.OnAttachedTo(page);
 
             _associatedPage = page;
+
+            // ✅ AUTO-DISCOVER: If NavBar not manually set, find it automatically
+            if (NavBar == null)
+            {
+                NavBar = AutoDiscoverNavBar(page);
+                if (NavBar != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar auto-discovered: {NavBar.GetType().Name}");
+                }
+            }
+
             _associatedPage.Appearing += OnPageAppearing;
             _associatedPage.Disappearing += OnPageDisappearing;
 
-            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Anexado à {page.GetType().Name} (Hash: {page.GetHashCode()}) - UseGlobalLoading: {UseGlobalLoading}");
+            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Anexado à {page.GetType().Name} (Hash: {page.GetHashCode()}) - UseGlobalLoading: {UseGlobalLoading}, NavBar: {NavBar?.GetType().Name ?? "NULL"}");
         }
 
         protected override void OnDetachingFrom(ContentPage page)
@@ -736,6 +747,73 @@ namespace MyVocaList.View.Behaviors
             {
                 System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao definir loading state: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// ✅ AUTO-DISCOVERY: Finds navbar in page using multiple strategies
+        /// 🎯 TIER 1: Self-registered navbar (via attached property) - FAST
+        /// 🎯 TIER 2: Visual tree search (fallback) - SLOWER
+        /// </summary>
+        private IAnimatableNavBar AutoDiscoverNavBar(ContentPage page)
+        {
+            try
+            {
+                // ✅ TIER 1: Self-registered navbar (AUTOMATIC via OnParentSet)
+                var navBar = MyVocaList.View.Extensions.NavBarExtensions.GetPageNavBar(page);
+                if (navBar != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ NavBar found via self-registration: {navBar.GetType().Name}");
+                    return navBar;
+                }
+
+                // ✅ TIER 2: Visual tree search (fallback for edge cases)
+                navBar = FindNavBarInVisualTree(page);
+                if (navBar != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"✅ NavBar found via visual tree search: {navBar.GetType().Name}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ No NavBar found in {page.GetType().Name}");
+                }
+
+                return navBar;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Error in AutoDiscoverNavBar: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 🔍 VISUAL TREE SEARCH: Recursively searches for IAnimatableNavBar in visual tree
+        /// </summary>
+        private IAnimatableNavBar FindNavBarInVisualTree(Element element)
+        {
+            if (element is IAnimatableNavBar navbar)
+            {
+                return navbar;
+            }
+
+            if (element is ContentPage page && page.Content != null)
+            {
+                return FindNavBarInVisualTree(page.Content);
+            }
+
+            if (element is Layout layout)
+            {
+                foreach (var child in layout.Children)
+                {
+                    if (child is Element childElement)
+                    {
+                        var found = FindNavBarInVisualTree(childElement);
+                        if (found != null) return found;
+                    }
+                }
+            }
+
+            return null;
         }
 
         #endregion

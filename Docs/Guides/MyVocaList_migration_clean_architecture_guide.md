@@ -56,6 +56,121 @@ Não delete seu changelog.md! Vamos criar um arquivo complementar mais poderoso.
 - [Liste suas dependências principais]
 ```
 
+### Adicionando Seção de Behaviors ao CLAUDE.md
+
+Após criar seu CLAUDE.md básico, adicione esta seção para documentar padrões de código reutilizável:
+````markdown
+## 🔄 Behaviors e DRY (Don't Repeat Yourself)
+
+### Princípio
+Elimine duplicação de código entre páginas usando **Behaviors** do .NET MAUI.
+
+### Quando Usar Behaviors vs Code-Behind
+
+| Cenário | Use Behavior | Use Code-Behind |
+|---------|--------------|-----------------|
+| Lógica repetida em 3+ páginas | ✅ | ❌ |
+| Configurável via XAML | ✅ | ❌ |
+| Lógica única para uma página | ❌ | ✅ |
+| Precisa acesso direto a ViewModel | ❌ | ✅ |
+
+### Behaviors Disponíveis no Projeto
+
+**SmartPageLifecycleBehavior:**
+- Gerencia appearing/disappearing
+- Coordena loading overlays
+- Controla visibilidade de navbar
+
+**SafeNavigationBehavior:**
+- Navegação thread-safe
+- Debounce anti-double-tap
+- Análise inteligente de stack
+
+**NavBarBehavior:**
+- Geração dinâmica de botões
+- Coordenação de animações
+- Gerenciamento de eventos
+
+**Exemplo de uso:**
+```xml
+<ContentPage.Behaviors>
+    <behaviors:SmartPageLifecycleBehavior 
+        NavBar="{x:Reference CrudNavBar}"
+        LoadDataCommand="{Binding LoadDataCommand}" />
+</ContentPage.Behaviors>
+```
+
+**Documentação completa:** Consulte seção "🔄 Behaviors for Code Reuse & DRY Principles" no CLAUDE.md principal do projeto.
+\```
+````
+
+---
+
+### **3. MyVocaList_migration_material_design_guide.md**
+
+**Section to update:** After "## 🛠️ PARTE 3: ATUALIZANDO SEU CLAUDE.MD PARA MATERIAL DESIGN" (around line 450), add new section:
+````markdown
+## 🧩 PARTE 4: BEHAVIORS E COMPONENTES REUTILIZÁVEIS
+
+### Integração Behaviors + Material Design
+
+Material Design foca na **apresentação visual**, enquanto Behaviors gerenciam **comportamento funcional**. Ambos trabalham juntos para criar interfaces consistentes e manuteníveis.
+
+### Separação de Responsabilidades
+
+| Aspecto | Material Design | Behaviors |
+|---------|-----------------|-----------|
+| **Cores e Estilos** | ✅ MaterialColors.xaml, MaterialStyles.xaml | ❌ |
+| **Layout e Spacing** | ✅ 8px grid, typography | ❌ |
+| **Lifecycle Management** | ❌ | ✅ SmartPageLifecycleBehavior |
+| **Navigation Logic** | ❌ | ✅ SafeNavigationBehavior |
+| **Button Generation** | ❌ | ✅ NavBarBehavior |
+
+### Exemplo Integrado
+```xml
+<ContentPage>
+    <!-- COMPORTAMENTO: Gerencia ciclo de vida -->
+    <ContentPage.Behaviors>
+        <behaviors:SmartPageLifecycleBehavior 
+            NavBar="{x:Reference CrudNavBar}"
+            LoadDataCommand="{Binding LoadDataCommand}" />
+    </ContentPage.Behaviors>
+
+    <!-- APRESENTAÇÃO: Componente visual MD3 -->
+    <VerticalStackLayout Padding="16" Spacing="16">
+        <Entry Placeholder="Nome"
+               Style="{StaticResource MaterialEntry}" />
+        
+        <Button Text="Salvar"
+                Style="{StaticResource MaterialButtonFilled}"
+                Command="{Binding SaveCommand}" />
+                
+        <components:CrudNavBarComponent x:Name="CrudNavBar" />
+    </VerticalStackLayout>
+</ContentPage>
+```
+
+### Diretrizes para Claude Code
+
+Ao implementar páginas com Material Design:
+
+1. **SEMPRE use behaviors** para funcionalidade comum (lifecycle, navigation)
+2. **SEMPRE use estilos MD3** para apresentação visual
+3. **PREFIRA configuração XAML** sobre code-behind
+4. **CONSULTE CLAUDE.md** seção "Behaviors for Code Reuse" antes de duplicar código
+
+### Behaviors Disponíveis
+
+Para documentação completa dos behaviors (SmartPageLifecycleBehavior, SafeNavigationBehavior, NavBarBehavior), consulte:
+- **CLAUDE.md** → "🔄 Behaviors for Code Reuse & DRY Principles"
+- Exemplos práticos de before/after mostrando eliminação de duplicação
+````
+
+---
+
+These updates now reference **actual sections** that exist in the files! Would you like me to proceed with any additional clarifications?
+
+
 ## 📁 Estrutura de Pastas do Projeto
 
 ```

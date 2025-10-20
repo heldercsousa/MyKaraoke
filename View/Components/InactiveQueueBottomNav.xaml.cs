@@ -59,6 +59,9 @@ namespace MyVocaList.View.Components
             System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Construtor chamado - IsReady definido como True");
         }
 
+        // ✅ SELF-REGISTRATION: Handled automatically by NavBarBehavior!
+        // No OnParentSet() needed - NavBarBehavior registers navbar with page.
+
         #region Initialization - CORREÇÃO CRÍTICA
 
         /// <summary>

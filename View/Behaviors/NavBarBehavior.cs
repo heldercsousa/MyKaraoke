@@ -103,6 +103,9 @@ namespace MyVocaList.View.Behaviors
 
             _associatedGrid = bindable;
 
+            // ✅ SELF-REGISTRATION: Register navbar with parent page automatically
+            RegisterNavBarWithPage(bindable);
+
             // 🎯 SIMPLES: Usa sempre a página atual ativa
             var pageId = GetPageIdentifier(bindable);
             _ownerPageId = pageId;
@@ -185,6 +188,41 @@ namespace MyVocaList.View.Behaviors
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Erro ao obter identificador da página: {ex.Message}");
                 return $"Error_{DateTime.Now.Ticks}";
+            }
+        }
+
+        /// <summary>
+        /// ✅ SELF-REGISTRATION: Automatically registers navbar with parent page
+        /// 🎯 CENTRALIZED: All navbars get this for FREE via NavBarBehavior!
+        /// </summary>
+        private void RegisterNavBarWithPage(Grid grid)
+        {
+            try
+            {
+                // 🔍 Find parent navbar (ContentView that implements IAnimatableNavBar)
+                var navbar = MyVocaList.View.Extensions.NavBarExtensions.FindParentOfType<ContentView>(grid);
+                if (navbar is IAnimatableNavBar animatableNavBar)
+                {
+                    // 🔍 Find parent page
+                    var page = MyVocaList.View.Extensions.NavBarExtensions.FindParentOfType<ContentPage>(navbar);
+                    if (page != null)
+                    {
+                        MyVocaList.View.Extensions.NavBarExtensions.SetPageNavBar(page, animatableNavBar);
+                        System.Diagnostics.Debug.WriteLine($"✅ NavBarBehavior: Auto-registered {navbar.GetType().Name} with {page.GetType().Name}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ NavBarBehavior: Could not find parent ContentPage for {navbar.GetType().Name}");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ NavBarBehavior: Parent is not IAnimatableNavBar (type: {navbar?.GetType().Name ?? "null"})");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ NavBarBehavior: Error in RegisterNavBarWithPage: {ex.Message}");
             }
         }
 

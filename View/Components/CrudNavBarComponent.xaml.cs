@@ -67,6 +67,9 @@ namespace MyVocaList.View.Components
             System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: Construtor chamado");
         }
 
+        // ✅ SELF-REGISTRATION: Handled automatically by NavBarBehavior!
+        // No OnParentSet() needed - NavBarBehavior registers navbar with page.
+
         #region Initialization
 
         protected override void OnHandlerChanged()

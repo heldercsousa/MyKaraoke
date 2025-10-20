@@ -4,15 +4,15 @@
              x:Class="MyVocaList.View.Components.HeaderComponent"
              x:Name="HeaderRoot">
 
-    <Grid ColumnDefinitions="Auto,*,Auto" 
-          Margin="16,0,16,0" 
-          Padding="0,12,0,12"
+    <Grid ColumnDefinitions="Auto,*,Auto"
+          Padding="16,12,16,12"
           RowSpacing="0"
           ColumnSpacing="8">
 
-        <!-- LEFT BUTTON CONTAINER -->
-        <Grid Grid.Column="0" 
-              WidthRequest="80"
+        <!-- LEFT BUTTON CONTAINER (48x48dp MD3 Touch Target) -->
+        <Grid Grid.Column="0"
+              WidthRequest="48"
+              HeightRequest="48"
               HorizontalOptions="Start"
               VerticalOptions="Center">
             <Grid.GestureRecognizers>
@@ -20,11 +20,11 @@
             </Grid.GestureRecognizers>
 
             <!-- Back Arrow (List Mode) -->
-            <Image x:Name="backArrowImage" 
-                   Source="setaesquerda.png" 
+            <Image x:Name="backArrowImage"
+                   Source="setaesquerda.png"
                    WidthRequest="24"
                    HeightRequest="24"
-                   HorizontalOptions="Start"
+                   HorizontalOptions="Center"
                    VerticalOptions="Center"
                    IsVisible="True" />
 
@@ -33,40 +33,36 @@
                    Source="close.png"
                    WidthRequest="24"
                    HeightRequest="24"
-                   HorizontalOptions="Start"
+                   HorizontalOptions="Center"
                    VerticalOptions="Center"
                    IsVisible="False" />
 
             <!-- Cancel Text (Form Mode with Text) -->
             <Label x:Name="cancelTextLabel"
                    Text="Cancelar"
-                   TextColor="#D1D5DB"
+                   TextColor="{StaticResource OnSurfaceVariant}"
                    FontSize="16"
                    VerticalOptions="Center"
-                   HorizontalOptions="Start"
+                   HorizontalOptions="Center"
                    LineBreakMode="NoWrap"
                    IsVisible="False" />
         </Grid>
 
-        <!-- TITLE SHADOWS -->
-        <Label Grid.Column="1" 
-               Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-               Style="{StaticResource HeaderTitleShadowOuterStyle}" />
-
-        <Label Grid.Column="1" 
-               Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-               Style="{StaticResource HeaderTitleShadowMiddleStyle}" />
-
-        <!-- TITLE -->
+        <!-- TITLE (MD3 HeadlineMedium - No Shadows) -->
         <Label Grid.Column="1"
                x:Name="headerTitle"
                Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-               Style="{StaticResource HeaderTitleStyle}"/>
+               Style="{StaticResource HeadlineMedium}"
+               TextColor="{StaticResource OnBackground}"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               HorizontalTextAlignment="Center" />
 
-        <!-- RIGHT BUTTON CONTAINER -->
-        <Grid Grid.Column="2" 
+        <!-- RIGHT BUTTON CONTAINER (48x48dp MD3 Touch Target) -->
+        <Grid Grid.Column="2"
               x:Name="rightButtonStack"
-              WidthRequest="80"
+              WidthRequest="48"
+              HeightRequest="48"
               HorizontalOptions="End"
               VerticalOptions="Center"
               IsVisible="False">
@@ -79,26 +75,26 @@
                    Source="save.png"
                    WidthRequest="24"
                    HeightRequest="24"
-                   HorizontalOptions="End"
+                   HorizontalOptions="Center"
                    VerticalOptions="Center"
                    IsVisible="False" />
 
             <!-- Save Text (Form Mode with Text) -->
             <Label x:Name="saveTextLabel"
                    Text="Salvar"
-                   TextColor="#BB86FC"
+                   TextColor="{StaticResource Primary}"
                    FontSize="16"
                    FontAttributes="Bold"
                    VerticalOptions="Center"
-                   HorizontalOptions="End"
+                   HorizontalOptions="Center"
                    LineBreakMode="NoWrap"
                    IsVisible="False" />
         </Grid>
 
-        <!-- SPACER -->
-        <ContentView Grid.Column="2" 
+        <!-- SPACER (When no right button is shown) -->
+        <ContentView Grid.Column="2"
                      x:Name="rightSpacer"
-                     WidthRequest="80"
+                     WidthRequest="48"
                      IsVisible="True" />
 
     </Grid>

@@ -9,26 +9,26 @@
              Background="{StaticResource AppBackgroundGradient}"
              NavigationPage.HasNavigationBar="False">
 
-    <!-- ✅ BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
+    <!-- BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
     <ContentPage.Behaviors>
-        <behaviors:SmartPageLifecycleBehavior 
+        <behaviors:SmartPageLifecycleBehavior
             NavBar="{x:Reference CrudNavBar}"
-            MainContent="{x:Reference mainContentGrid}"
+            MainContent="{x:Reference mainContentStack}"
             LoadDataCommand="{Binding LoadDataCommand}"
             EnableAutoBypass="True"
             MaxFailuresBeforeBypass="2" />
 
-        <!-- ✅ NAVEGAÇÃO INTELIGENTE DE VOLTA: Usa stack navigation -->
-        <behaviors:SafeNavigationBehavior 
+        <!-- NAVEGAÇÃO INTELIGENTE DE VOLTA: Usa stack navigation -->
+        <behaviors:SafeNavigationBehavior
             x:Name="BackNavigationBehavior"
             EnableSmartStackNavigation="True"
             DebounceMilliseconds="500" />
     </ContentPage.Behaviors>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,*">
 
-        <!-- Header Component - Título dinâmico -->
-        <components:HeaderComponent Grid.Row="0" 
+        <!-- Header Component - MD3 Migrated -->
+        <components:HeaderComponent Grid.Row="0"
                            x:Name="headerComponent"
                            Title="Novo Local"
                            ShowCancelButton="True"
@@ -38,61 +38,45 @@
                            CancelClicked="OnCancelClicked"
                            SaveClicked="OnSaveClicked"/>
 
-        <!-- Main Content Grid -->
-        <Grid Grid.Row="1" x:Name="mainContentGrid">
-            <!-- Card Wrapper Component -->
-            <components:CardWrapperComponent 
-                TitleText="Preencha"
-                IconPath="spot_purple.png"
-                BadgeIsVisible="False">
+        <!-- Main Content - MD3 PageContainer Pattern (No Card Wrapper!) -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="mainContentStack"
+                                 Style="{StaticResource PageContainer}">
 
-                <components:CardWrapperComponent.CardContent>
-                    <!-- Conteúdo do Card -->
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*">
+                <!-- Venue Name Input -->
+                <Label Text="Nome do local"
+                       Style="{StaticResource FieldLabel}" />
 
-                        <!-- Campo de entrada MAIOR com destaque -->
-                        <Frame Grid.Row="0"
-                               Style="{StaticResource LargeInputFieldStyle}">
-                            <Entry x:Name="nomeLocalEntry"  
-                                   Placeholder="Nome do local"
-                                   Style="{StaticResource LargeInputEntryStyle}"
-                                   MaxLength="30"
-                                   TextChanged="OnNomeLocalTextChanged" />
-                        </Frame>
+                <Entry x:Name="nomeLocalEntry"
+                       Placeholder="Digite o nome do local"
+                       Style="{StaticResource MaterialEntry}"
+                       MaxLength="30"
+                       TextChanged="OnNomeLocalTextChanged" />
 
-                        <!-- Contador de caracteres -->
-                        <Label Grid.Row="1"
-                               x:Name="characterCounterLabel"
-                               Text="0/30"
-                               FontSize="12"
-                               TextColor="#b0a8c7"
-                               HorizontalOptions="End"
-                               VerticalOptions="Start"
-                               IsVisible="False"
-                               Margin="8,4,8,0" />
+                <!-- Character Counter -->
+                <Label x:Name="characterCounterLabel"
+                       Text="0/30"
+                       Style="{StaticResource HelperText}"
+                       HorizontalOptions="End"
+                       IsVisible="False" />
 
-                        <!-- Label de validação com ESTILO REUTILIZÁVEL -->
-                        <Label Grid.Row="2"
-                           x:Name="validationMessageLabel" 
-                           Text=""
-                           Style="{StaticResource ValidationErrorStyle}"
-                           IsVisible="False" />
+                <!-- Validation Error Message -->
+                <Label x:Name="validationMessageLabel"
+                       Text=""
+                       Style="{StaticResource ErrorText}"
+                       IsVisible="False" />
 
-                                            <!-- Label de sucesso TEMPORÁRIA (será substituída por Snackbar) -->
-                         <Label Grid.Row="3"
-                           x:Name="successMessageLabel" 
-                           Text=""
-                           Style="{StaticResource InlineSuccessStyle}"
-                           IsVisible="False" />
+                <!-- Success Message (Temporary - will be replaced by Snackbar) -->
+                <Label x:Name="successMessageLabel"
+                       Text=""
+                       FontSize="14"
+                       TextColor="{StaticResource Success}"
+                       Margin="0,8,0,0"
+                       IsVisible="False" />
 
-                        <!-- Espaço flexível -->
-                        <Grid Grid.Row="4" HeightRequest="40" />
+            </VerticalStackLayout>
+        </ScrollView>
 
-                    </Grid>
-                </components:CardWrapperComponent.CardContent>
-            </components:CardWrapperComponent>
-
-        </Grid>
     </Grid>
 
 </ContentPage>

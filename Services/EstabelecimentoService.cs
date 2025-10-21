@@ -171,25 +171,41 @@ namespace MyVocaList.Services
             }
         }
 
+        /// <summary>
+        /// Constrói mensagem de resultado da exclusão seguindo padrão MD3 (count-based, não lista de nomes)
+        /// </summary>
         private (bool success, string message) BuildDeleteResultMessage(
             List<(int id, string nome, bool canDelete, string reason)> canDelete,
             List<(int id, string nome, bool canDelete, string reason)> cannotDelete)
         {
+            // ✅ MD3 PATTERN: Mensagens concisas com contagens, não listagens de nomes
+
             if (cannotDelete.Count == 0 && canDelete.Count > 0)
             {
-                var nomes = string.Join(", ", canDelete.Select(c => $"'{c.nome}'"));
-                return (true, $"Local(is) {nomes} excluído(s) com sucesso!");
+                // Todos os selecionados foram excluídos com sucesso
+                var count = canDelete.Count;
+                return (true, count == 1
+                    ? "1 local excluído com sucesso!"
+                    : $"{count} locais excluídos com sucesso!");
             }
             else if (cannotDelete.Count > 0 && canDelete.Count > 0)
             {
-                var deletedNames = string.Join(", ", canDelete.Select(c => $"'{c.nome}'"));
-                var blockedNames = string.Join(", ", cannotDelete.Select(c => $"'{c.nome}' ({c.reason})"));
-                return (true, $"Excluídos: {deletedNames}.\nNão excluídos: {blockedNames}.");
+                // Exclusão parcial: alguns excluídos, outros bloqueados
+                var deleted = canDelete.Count;
+                var blocked = cannotDelete.Count;
+                var total = deleted + blocked;
+
+                return (true, $"{deleted} de {total} {(total == 1 ? "local excluído" : "locais excluídos")} com sucesso. " +
+                             $"{blocked} {(blocked == 1 ? "local não pôde ser excluído" : "locais não puderam ser excluídos")} " +
+                             $"({(blocked == 1 ? "possui" : "possuem")} eventos).");
             }
             else
             {
-                var blockedNames = string.Join(", ", cannotDelete.Select(c => $"'{c.nome}' ({c.reason})"));
-                return (false, $"Nenhum local pôde ser excluído:\n{blockedNames}");
+                // Nenhum pôde ser excluído (todos bloqueados)
+                var count = cannotDelete.Count;
+                return (false, count == 1
+                    ? "O local não pôde ser excluído (possui eventos)."
+                    : $"Os {count} locais não puderam ser excluídos (possuem eventos).");
             }
         }
 

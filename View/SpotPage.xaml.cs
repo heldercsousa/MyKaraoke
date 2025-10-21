@@ -452,36 +452,47 @@ namespace MyVocaList.View
                 var itemsWithoutEvents = itemsToDelete.Where(l => !l.HasEvents).ToList();
 
                 string confirmMessage;
+                string confirmTitle;
+
+                // ✅ MD3 PATTERN: Concise messages with counts, not names
                 if (itemsWithEvents.Any() && itemsWithoutEvents.Any())
                 {
-                    var withEventsNames = string.Join(", ", itemsWithEvents.Select(l => $"'{l.Nome}'"));
-                    var withoutEventsNames = string.Join(", ", itemsWithoutEvents.Select(l => $"'{l.Nome}'"));
-                    confirmMessage = $"ATENÇÃO:\n\n" +
-                                   $"• Serão excluídos: {withoutEventsNames}\n" +
-                                   $"• NÃO serão excluídos (possuem eventos): {withEventsNames}\n\n" +
+                    // Mixed case: some can be deleted, some can't
+                    var canDelete = itemsWithoutEvents.Count;
+                    var cannotDelete = itemsWithEvents.Count;
+                    var total = itemsToDelete.Count;
+
+                    confirmTitle = "Confirmar Exclusão Parcial";
+                    confirmMessage = $"Serão excluídos {canDelete} de {total} locais selecionados.\n\n" +
+                                   $"{cannotDelete} {(cannotDelete == 1 ? "local possui" : "locais possuem")} eventos e não {(cannotDelete == 1 ? "pode ser excluído" : "podem ser excluídos")}.\n\n" +
                                    $"Deseja continuar?";
                 }
                 else if (itemsWithEvents.Any())
                 {
-                    var names = string.Join(", ", itemsWithEvents.Select(l => $"'{l.Nome}'"));
+                    // All selected items have events - can't delete any
+                    var count = itemsWithEvents.Count;
                     await DisplayAlert("Exclusão Bloqueada",
-                        $"Os locais {names} não podem ser excluídos pois possuem eventos registrados.", "OK");
+                        $"{(count == 1 ? "O local selecionado possui" : $"Os {count} locais selecionados possuem")} eventos registrados e não {(count == 1 ? "pode ser excluído" : "podem ser excluídos")}.",
+                        "OK");
                     return;
                 }
                 else
                 {
-                    var names = string.Join(", ", itemsWithoutEvents.Select(l => $"'{l.Nome}'"));
-                    confirmMessage = $"Tem certeza que deseja excluir {names}?";
+                    // All selected items can be deleted
+                    var count = itemsWithoutEvents.Count;
+                    confirmTitle = "Confirmar Exclusão";
+                    confirmMessage = count == 1
+                        ? "Tem certeza que deseja excluir 1 local?"
+                        : $"Tem certeza que deseja excluir {count} locais selecionados?";
                 }
 
-                var confirmed = await DisplayAlert("Confirmar Exclusão", confirmMessage, "Excluir", "Cancelar");
+                var confirmed = await DisplayAlert(confirmTitle, confirmMessage, "Excluir", "Cancelar");
                 if (!confirmed) return;
 
                 SetLoading(true);
 
                 var idsToDelete = itemsToDelete.Select(vm => vm.Id);
                 var result = await _estabelecimentoService.DeleteEstabelecimentosAsync(idsToDelete);
-                await DisplayAlert("Resultado", result.message, "OK");
 
                 // ✅ CORREÇÃO: Recarrega lista
                 await LoadLocaisAsync();
@@ -496,14 +507,16 @@ namespace MyVocaList.View
                     // ✅ Atualiza UI após limpar
                     UpdateUIState();
                 });
+
+                SetLoading(false);
+
+                // ✅ SNACKBAR: Mostra mensagem de sucesso (padrão igual a insert/update)
+                await Task.Delay(300); // Aguarda UI atualizar
+                await GlobalSnackbar.ShowSuccessAsync(result.message);
             }
             catch (Exception ex)
             {
                 await DisplayAlert("Erro", $"Erro ao excluir locais: {ex.Message}", "OK");
-            }
-            finally
-            {
-                SetLoading(false);
             }
         }
 

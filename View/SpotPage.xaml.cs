@@ -11,6 +11,7 @@ using System.Windows.Input;
 using MyVocaList.View.Interfaces;
 using MyVocaList.Contracts.DTOs.List;
 using MyVocaList.Services.Mappers;
+using CommunityToolkit.Maui.Views;
 
 namespace MyVocaList.View
 {
@@ -469,11 +470,12 @@ namespace MyVocaList.View
                 }
                 else if (itemsWithEvents.Any())
                 {
-                    // All selected items have events - can't delete any
+                    // All selected items have events - can't delete any (info popup, not confirmation)
                     var count = itemsWithEvents.Count;
-                    await DisplayAlert("Exclusão Bloqueada",
-                        $"{(count == 1 ? "O local selecionado possui" : $"Os {count} locais selecionados possuem")} eventos registrados e não {(count == 1 ? "pode ser excluído" : "podem ser excluídos")}.",
-                        "OK");
+                    var infoMessage = $"{(count == 1 ? "O local selecionado possui" : $"Os {count} locais selecionados possuem")} eventos registrados e não {(count == 1 ? "pode ser excluído" : "podem ser excluídos")}.";
+
+                    // Use DisplayAlert for info messages (not destructive actions)
+                    await DisplayAlert("Exclusão Bloqueada", infoMessage, "OK");
                     return;
                 }
                 else
@@ -486,7 +488,9 @@ namespace MyVocaList.View
                         : $"Tem certeza que deseja excluir {count} locais selecionados?";
                 }
 
-                var confirmed = await DisplayAlert(confirmTitle, confirmMessage, "Excluir", "Cancelar");
+                // ✅ MD3 PATTERN: Use ConfirmationPopup for destructive actions
+                var popup = new ConfirmationPopup(confirmTitle, confirmMessage, "Excluir", "Cancelar");
+                var confirmed = await popup.ShowAsync();
                 if (!confirmed) return;
 
                 SetLoading(true);

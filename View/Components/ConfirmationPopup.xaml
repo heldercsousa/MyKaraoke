@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="MyVocaList.View.Components.ConfirmationPopup"
+               Color="Transparent">
+
+    <!-- MD3 Dialog Container -->
+    <Frame Style="{StaticResource ElevatedCard}"
+           WidthRequest="300"
+           Padding="24"
+           CornerRadius="28"
+           HasShadow="True">
+
+        <VerticalStackLayout Spacing="16">
+
+            <!-- Title (MD3 HeadlineSmall) -->
+            <Label x:Name="titleLabel"
+                   Style="{StaticResource HeadlineSmall}"
+                   TextColor="{StaticResource OnSurface}"
+                   HorizontalOptions="Start" />
+
+            <!-- Message (MD3 BodyMedium) -->
+            <Label x:Name="messageLabel"
+                   Style="{StaticResource BodyMedium}"
+                   TextColor="{StaticResource OnSurfaceVariant}"
+                   HorizontalOptions="Start"
+                   LineBreakMode="WordWrap" />
+
+            <!-- Button Container (MD3 pattern: right-aligned, secondary then primary) -->
+            <HorizontalStackLayout Spacing="12"
+                                   HorizontalOptions="End"
+                                   Margin="0,8,0,0">
+
+                <!-- Cancel Button (TextButton - MD3 secondary action) -->
+                <Button x:Name="cancelButton"
+                        Text="Cancelar"
+                        Style="{StaticResource TextButton}"
+                        Clicked="OnCancelClicked"
+                        MinimumWidthRequest="80" />
+
+                <!-- Confirm Button (FilledButton - MD3 primary/destructive action) -->
+                <Button x:Name="confirmButton"
+                        Text="Confirmar"
+                        Style="{StaticResource FilledButton}"
+                        Clicked="OnConfirmClicked"
+                        MinimumWidthRequest="80" />
+
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+
+    </Frame>
+
+</toolkit:Popup>

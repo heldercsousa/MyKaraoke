@@ -5,6 +5,7 @@ using MyVocaList.Services;
 using MyVocaList.Infra.Utils;
 using Microsoft.EntityFrameworkCore;
 using MyVocaList.View.Interceptors;
+using CommunityToolkit.Maui;
 
 namespace MyVocaList.View;
 
@@ -18,6 +19,7 @@ public static class MauiProgram
 
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

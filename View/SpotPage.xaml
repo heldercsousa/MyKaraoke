@@ -32,7 +32,7 @@
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">
-        <components:HeaderComponent Grid.Row="0" Title="Venues" IconName="nightlife" />
+        <components:HeaderComponent Grid.Row="0" Title="Venues" />
 
         <!-- MAIN CONTENT (Grid 1) -->
         <ScrollView Grid.Row="1">
@@ -52,6 +52,14 @@
                                     <TapGestureRecognizer Tapped="OnItemTapped" />
                                 </Frame.GestureRecognizers>
 
+                                <!-- Visual feedback for selected state -->
+                                <Frame.Triggers>
+                                    <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource SecondaryContainer}" />
+                                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                    </DataTrigger>
+                                </Frame.Triggers>
+
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                                     <!-- Venue Name -->
                                     <Label Grid.Column="0"
@@ -61,7 +69,7 @@
 
                                     <!-- "HAS EVENTS" Badge -->
                                     <Frame Grid.Column="1"
-                                           BackgroundColor="{StaticResource Error}"
+                                           BackgroundColor="{StaticResource Tertiary}"
                                            CornerRadius="8"
                                            Padding="8,4"
                                            IsVisible="{Binding HasEvents}"
@@ -85,6 +93,10 @@
                        Padding="24"
                        Margin="0,16">
                     <VerticalStackLayout Spacing="16">
+                        <components:StatefulIcon IconName="nightlife"
+                             Size="Large"
+                             InactiveColor="{StaticResource OnSurfaceVariant}"
+                             HorizontalOptions="Center" />
                         <Label Text="No venue registered"
                                Style="{StaticResource TitleMedium}"
                                HorizontalOptions="Center" />
@@ -104,6 +116,19 @@
 
             </VerticalStackLayout>
         </ScrollView>
+
+
+        <!-- FAB comp - TODO: Fix Frame-based FAB not responding to taps -->
+        <!--<Frame Grid.Row="1"
+       x:Name="addFab"
+       Style="{StaticResource FabContainer}"
+       ZIndex="9999">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnAddFabClicked" />
+            </Frame.GestureRecognizers>
+            <components:StatefulIcon IconName="add"
+                             InactiveColor="{StaticResource OnTertiary}"/>
+        </Frame>-->
 
         <!-- FAB (Simple Button approach - GUARANTEED to work) -->
         <Button x:Name="addFab"

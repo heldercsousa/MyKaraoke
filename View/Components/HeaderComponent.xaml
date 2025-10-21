@@ -22,15 +22,17 @@
 
             <!-- Back Arrow (List Mode) -->
             <components:StatefulIcon x:Name="backArrowImage"
-                   IconName="arrow_back"/>
+                   IconName="arrow_back"
+                   IsVisible="True"/>
 
             <!-- Cancel Icon (Form Mode with Icon) -->
             <components:StatefulIcon x:Name="cancelIconImage"
-                   IconName="close"/>
+                   IconName="close"
+                   IsVisible="False"/>
 
             <!-- Cancel Text (Form Mode with Text) -->
             <Label x:Name="cancelTextLabel"
-                   Text="Cancelar"
+                   Text="Cancel"
                    TextColor="{StaticResource OnSurfaceVariant}"
                    FontSize="16"
                    VerticalOptions="Center"
@@ -39,50 +41,51 @@
                    IsVisible="False" />
         </Grid>
 
-        <HorizontalStackLayout Grid.Column="1"
-            Spacing="8"
-            HorizontalOptions="Center"
-            VerticalOptions="Center">
-
-            <components:StatefulIcon IconName="{Binding Source={x:Reference HeaderRoot}, Path=IconName}" />
-
-            <Label x:Name="headerTitle"
+        <!-- Title (Centered, No Icon - MD3 Recommended) -->
+        <Label Grid.Column="1"
+               x:Name="headerTitle"
                Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
                Style="{StaticResource HeadlineMedium}"
                TextColor="{StaticResource OnBackground}"
+               HorizontalOptions="Center"
                VerticalOptions="Center" />
 
-        </HorizontalStackLayout>
 
 
-
-        <!-- RIGHT BUTTON CONTAINER (48x48dp MD3 Touch Target) -->
-        <Grid Grid.Column="2"
-              x:Name="rightButtonStack"
-              WidthRequest="48"
-              HeightRequest="48"
-              HorizontalOptions="End"
-              VerticalOptions="Center"
-              IsVisible="False">
-            <Grid.GestureRecognizers>
+        <!-- RIGHT BUTTON CONTAINER (MD3 Primary Action with Filled Background) -->
+        <Frame Grid.Column="2"
+               x:Name="rightButtonStack"
+               BackgroundColor="{StaticResource Primary}"
+               CornerRadius="20"
+               Padding="16,8"
+               HasShadow="False"
+               HorizontalOptions="End"
+               VerticalOptions="Center"
+               IsVisible="False">
+            <Frame.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnSaveButtonClicked" />
-            </Grid.GestureRecognizers>
+            </Frame.GestureRecognizers>
 
-            <!-- Save Icon (Form Mode with Icon) -->
-            <components:StatefulIcon x:Name="saveIconImage"
-                   IconName="check"/>
+            <!-- Grid wrapper required - Frame can only have ONE child -->
+            <Grid>
+                <!-- Save Icon (Form Mode with Icon) - Standard 24dp on filled primary background -->
+                <components:StatefulIcon x:Name="saveIconImage"
+                       IconName="check"
+                       InactiveColor="{StaticResource OnPrimary}"
+                       IsVisible="False"/>
 
-            <!-- Save Text (Form Mode with Text) -->
-            <Label x:Name="saveTextLabel"
-                   Text="Salvar"
-                   TextColor="{StaticResource Primary}"
-                   FontSize="16"
-                   FontAttributes="Bold"
-                   VerticalOptions="Center"
-                   HorizontalOptions="Center"
-                   LineBreakMode="NoWrap"
-                   IsVisible="False" />
-        </Grid>
+                <!-- Save Text (Form Mode with Text) - White on primary background -->
+                <Label x:Name="saveTextLabel"
+                       Text="Save"
+                       TextColor="{StaticResource OnPrimary}"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"
+                       LineBreakMode="NoWrap"
+                       IsVisible="False" />
+            </Grid>
+        </Frame>
 
         <!-- SPACER (When no right button is shown) -->
         <ContentView Grid.Column="2"

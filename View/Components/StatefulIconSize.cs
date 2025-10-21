@@ -1,9 +1,13 @@
-﻿namespace MyVocaList.View.Components
+﻿using System.ComponentModel;
+using MyVocaList.View.Converters;
+
+namespace MyVocaList.View.Components
 {
     /// <summary>
     /// A typesafe "smart enum" for defining standard icon sizes.
     /// It's LINQ-ready and can hold more data than a standard enum.
     /// </summary>
+    [TypeConverter(typeof(StatefulIconSizeConverter))]
     public sealed class StatefulIconSize
     {
         public string Name { get; }

@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:MyVocaList.View"
              x:Class="MyVocaList.View.SpotFormPage"
              x:DataType="local:SpotFormPage"
-             Background="{StaticResource AppBackgroundGradient}"
+             Background="{StaticResource Background}"
              NavigationPage.HasNavigationBar="False">
 
     <!-- BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
@@ -18,7 +18,7 @@
             EnableAutoBypass="True"
             MaxFailuresBeforeBypass="2" />
 
-        <!-- NAVEGAÇÃO INTELIGENTE DE VOLTA: Usa stack navigation -->
+        <!-- SMART BACK NAVIGATION: Uses stack navigation -->
         <behaviors:SafeNavigationBehavior
             x:Name="BackNavigationBehavior"
             EnableSmartStackNavigation="True"
@@ -44,11 +44,11 @@
                                  Style="{StaticResource PageContainer}">
 
                 <!-- Venue Name Input -->
-                <Label Text="Nome do local"
+                <Label Text="Venue name"
                        Style="{StaticResource FieldLabel}" />
 
                 <Entry x:Name="nomeLocalEntry"
-                       Placeholder="Digite o nome do local"
+                       Placeholder="Enter venue name"
                        Style="{StaticResource MaterialEntry}"
                        MaxLength="30"
                        TextChanged="OnNomeLocalTextChanged" />

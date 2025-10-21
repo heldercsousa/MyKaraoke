@@ -202,7 +202,7 @@ namespace MyVocaList.View
             var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
             if (headerComponent != null)
             {
-                headerComponent.Title = "Adicionar Local";
+                headerComponent.Title = "Add Venue";
             }
 
             var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
@@ -225,7 +225,7 @@ namespace MyVocaList.View
             var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
             if (headerComponent != null)
             {
-                headerComponent.Title = "Editar Local";
+                headerComponent.Title = "Edit Venue";
             }
 
             var nomeLocalEntry = this.FindByName<Entry>("nomeLocalEntry");
@@ -423,12 +423,13 @@ namespace MyVocaList.View
                     characterCounterLabel.Text = text;
                     characterCounterLabel.IsVisible = true;
 
+                    // Use theme colors instead of hardcoded values
                     if (isError)
-                        characterCounterLabel.TextColor = Color.FromArgb("#ff6b6b");
+                        characterCounterLabel.TextColor = (Color)Application.Current.Resources["Error"];
                     else if (isWarning)
-                        characterCounterLabel.TextColor = Color.FromArgb("#FF9800");
+                        characterCounterLabel.TextColor = (Color)Application.Current.Resources["Warning"];
                     else
-                        characterCounterLabel.TextColor = Color.FromArgb("#b0a8c7");
+                        characterCounterLabel.TextColor = (Color)Application.Current.Resources["OnSurfaceVariant"];
                 }
                 else
                 {

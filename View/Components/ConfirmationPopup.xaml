@@ -42,7 +42,7 @@
                 <!-- Confirm Button (FilledButton - MD3 primary/destructive action) -->
                 <Button x:Name="confirmButton"
                         Text="Confirm"
-                        Style="{StaticResource FilledButton}"
+                        Style="{StaticResource FilledDestructiveButton}"
                         Clicked="OnConfirmClicked"
                         MinimumWidthRequest="80" />
 

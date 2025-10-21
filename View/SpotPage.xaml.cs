@@ -38,7 +38,7 @@ namespace MyVocaList.View
         #region IManipulableDataPage Members 
 
         public ICommand LoadDataCommand { get; private set; }
-        public string FriendlyName => "Locais";
+        public string FriendlyName => "Venues";
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
@@ -303,19 +303,14 @@ namespace MyVocaList.View
                 emptyStateFrame.IsVisible = !hasLocais;
                 locaisCollectionView.IsVisible = hasLocais;
 
-                if (!hasLocais)
+                // ✅ ALWAYS check current selection count, even when list is empty
+                var currentSelection = Locais.Count(x => x.IsSelected);
+                System.Diagnostics.Debug.WriteLine($"SpotPage: hasLocais={hasLocais}, currentSelection={currentSelection}, SelectionCount atual={SelectionCount}");
+
+                if (SelectionCount != currentSelection)
                 {
-                    System.Diagnostics.Debug.WriteLine($"SpotPage: Sem locais - SelectionCount=0");
-                    SelectionCount = 0;
-                }
-                else
-                {
-                    var currentSelection = Locais.Count(x => x.IsSelected);
-                    System.Diagnostics.Debug.WriteLine($"SpotPage: currentSelection={currentSelection}, SelectionCount atual={SelectionCount}");
-                    if (SelectionCount != currentSelection)
-                    {
-                        SelectionCount = currentSelection;
-                    }
+                    SelectionCount = currentSelection;
+                    System.Diagnostics.Debug.WriteLine($"SpotPage: SelectionCount updated to {currentSelection}");
                 }
 
                 // ✅ CONTROLE DE VISIBILIDADE DO FAB
@@ -463,33 +458,33 @@ namespace MyVocaList.View
                     var cannotDelete = itemsWithEvents.Count;
                     var total = itemsToDelete.Count;
 
-                    confirmTitle = "Confirmar Exclusão Parcial";
-                    confirmMessage = $"Serão excluídos {canDelete} de {total} locais selecionados.\n\n" +
-                                   $"{cannotDelete} {(cannotDelete == 1 ? "local possui" : "locais possuem")} eventos e não {(cannotDelete == 1 ? "pode ser excluído" : "podem ser excluídos")}.\n\n" +
-                                   $"Deseja continuar?";
+                    confirmTitle = "Confirm Partial Deletion";
+                    confirmMessage = $"{canDelete} of {total} selected venues will be deleted.\n\n" +
+                                   $"{cannotDelete} {(cannotDelete == 1 ? "venue has" : "venues have")} events and cannot be deleted.\n\n" +
+                                   $"Continue?";
                 }
                 else if (itemsWithEvents.Any())
                 {
                     // All selected items have events - can't delete any (info popup, not confirmation)
                     var count = itemsWithEvents.Count;
-                    var infoMessage = $"{(count == 1 ? "O local selecionado possui" : $"Os {count} locais selecionados possuem")} eventos registrados e não {(count == 1 ? "pode ser excluído" : "podem ser excluídos")}.";
+                    var infoMessage = $"{(count == 1 ? "The selected venue has" : $"The {count} selected venues have")} registered events and cannot be deleted.";
 
                     // Use DisplayAlert for info messages (not destructive actions)
-                    await DisplayAlert("Exclusão Bloqueada", infoMessage, "OK");
+                    await DisplayAlert("Deletion Blocked", infoMessage, "OK");
                     return;
                 }
                 else
                 {
                     // All selected items can be deleted
                     var count = itemsWithoutEvents.Count;
-                    confirmTitle = "Confirmar Exclusão";
+                    confirmTitle = "Confirm Deletion";
                     confirmMessage = count == 1
-                        ? "Tem certeza que deseja excluir 1 local?"
-                        : $"Tem certeza que deseja excluir {count} locais selecionados?";
+                        ? "Are you sure you want to delete 1 venue?"
+                        : $"Are you sure you want to delete {count} selected venues?";
                 }
 
                 // ✅ MD3 PATTERN: Use ConfirmationPopup for destructive actions
-                var popup = new ConfirmationPopup(confirmTitle, confirmMessage, "Excluir", "Cancelar");
+                var popup = new ConfirmationPopup(confirmTitle, confirmMessage, "Delete", "Cancel");
                 var confirmed = await popup.ShowAsync();
                 if (!confirmed) return;
 
@@ -504,6 +499,12 @@ namespace MyVocaList.View
                 // ✅ CORREÇÃO PROBLEMA 4: Limpa seleção E força SelectionCount=0
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
+                    // Clear IsSelected flag on all remaining items
+                    foreach (var item in Locais)
+                    {
+                        item.IsSelected = false;
+                    }
+
                     locaisCollectionView.SelectedItems?.Clear();
                     SelectionCount = 0; // FORÇA zero ANTES de UpdateUIState
                     System.Diagnostics.Debug.WriteLine("✅ SpotPage: Seleção limpa e SelectionCount=0 após exclusão");
@@ -520,7 +521,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Erro", $"Erro ao excluir locais: {ex.Message}", "OK");
+                await DisplayAlert("Error", $"Error deleting venues: {ex.Message}", "OK");
             }
         }
 

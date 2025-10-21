@@ -103,12 +103,13 @@ namespace MyVocaList.View.Components
         {
             var configs = new Dictionary<CrudButtonType, NavButtonConfig>
             {
-                { CrudButtonType.Anterior, new NavButtonConfig { Text = "Anterior", IconSource = "prior.png" } },
-                { CrudButtonType.Adicionar, new NavButtonConfig { Text = "Adicionar", IconSource = "add.png" } }, // ✅ BOTÃO ADICIONAR
-                { CrudButtonType.Editar, new NavButtonConfig { Text = "Editar", IconSource = "edit.png" } },
-                { CrudButtonType.Excluir, new NavButtonConfig { Text = "Apagar", IconSource = "delete.png" } },
-                { CrudButtonType.Salvar, new NavButtonConfig { Text = "Salvar", IconSource = "save.png" } }, // ✅ SEM Command
-                { CrudButtonType.Proximo, new NavButtonConfig { Text = "Próximo", IconSource = "next.png" } },
+                // MD3 SVG icons following iconography guideline
+                { CrudButtonType.Anterior, new NavButtonConfig { Text = "Previous", IconName = "arrow_back" } },
+                { CrudButtonType.Adicionar, new NavButtonConfig { Text = "Add", IconName = "add" } }, // ✅ ADD BUTTON
+                { CrudButtonType.Editar, new NavButtonConfig { Text = "Edit", IconName = "edit" } },
+                { CrudButtonType.Excluir, new NavButtonConfig { Text = "Delete", IconName = "delete" } },
+                { CrudButtonType.Salvar, new NavButtonConfig { Text = "Save", IconName = "check" } }, // ✅ NO Command
+                { CrudButtonType.Proximo, new NavButtonConfig { Text = "Next", IconName = "arrow_forward" } },
             };
 
             System.Diagnostics.Debug.WriteLine($"🔍 DEBUG: navBarBehavior._isShown: {navBarBehavior.GetType().GetField("_isShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(navBarBehavior)}");
@@ -346,13 +347,13 @@ namespace MyVocaList.View.Components
                 // Mapeia texto do botão para enum
                 var buttonType = e.ButtonConfig.Text switch
                 {
-                    "Anterior" => CrudButtonType.Anterior,
-                    "Adicionar" => CrudButtonType.Adicionar,
-                    "Editar" => CrudButtonType.Editar,
-                    "Apagar" => CrudButtonType.Excluir,
-                    "Salvar" => CrudButtonType.Salvar,
-                    "Próximo" => CrudButtonType.Proximo,
-                    _ => throw new ArgumentException($"Botão desconhecido: {e.ButtonConfig.Text}")
+                    "Previous" => CrudButtonType.Anterior,
+                    "Add" => CrudButtonType.Adicionar,
+                    "Edit" => CrudButtonType.Editar,
+                    "Delete" => CrudButtonType.Excluir,
+                    "Save" => CrudButtonType.Salvar,
+                    "Next" => CrudButtonType.Proximo,
+                    _ => throw new ArgumentException($"Unknown button: {e.ButtonConfig.Text}")
                 };
 
                 ButtonClicked?.Invoke(this, buttonType);

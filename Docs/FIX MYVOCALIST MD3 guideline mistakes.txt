@@ -1,0 +1,4 @@
+FIX MYVOCALIST
+1) When any venue selected in spotpage venue list, FAB remains visible!
+2) CrudNavBar Edit button without icon
+3) Gemini pro 2.5 / ChatGPT / Perplexity / Grok / Claude Chat researchs/inferences about MD3 most updated patterns compared to current app migration to MD3 guideline (distance between entry label and the entry, and between entry error label and entry, triggered concerns on Helder to search if there are mistakes in the created doc with migratiopn to MD3 guidelines.

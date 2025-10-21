@@ -182,62 +182,62 @@ namespace MyVocaList.View.Components
 
                 var buttons = new ObservableCollection<NavButtonConfig>
                 {
-                    // Botões com MD3 SVG icons
+                    // MD3 SVG icons following iconography guideline
                     new NavButtonConfig
                     {
-                        Text = "Locais",
-                        IconName = "nightlife",           // MD3: Venues icon
+                        Text = "Venues",
+                        IconName = "nightlife",           // MD3: Venues icon (karaoke atmosphere)
                         Command = new Command(() => OnLocaisClicked()),
                         IsAnimated = true,
                         AnimationTypes = NavButtonAnimationType.ShowHide
                     },
                     new NavButtonConfig
                     {
-                        Text = "Bandokê",
-                        IconName = "group",               // MD3: Musicians/Bands icon
+                        Text = "Musicians",
+                        IconName = "music_note",          // MD3: Musicians/Bands icon
                         Command = new Command(() => OnBandokeClicked()),
                         IsAnimated = true,
                         AnimationTypes = NavButtonAnimationType.ShowHide
                     },
-
-                    // ✅ BOTÃO ESPECIAL: Nova Fila com animação pulse
                     new NavButtonConfig
                     {
-                        Text = "Nova Fila",
-                        IsSpecial = true,
-                        CenterContent = "+",
-                        Command = new Command(() => OnNovaFilaClicked()),
-                        GradientStyle = SpecialButtonGradientType.Yellow,
-                        SpecialAnimationTypes = SpecialButtonAnimationType.ShowHide | SpecialButtonAnimationType.Pulse,
-                        IsAnimated = true
+                        Text = "History",
+                        IconName = "history",             // MD3: History icon (chronological record)
+                        Command = new Command(() => OnHistoricoClicked()),
+                        IsAnimated = true,
+                        AnimationTypes = NavButtonAnimationType.ShowHide
                     },
-
-                    // Botões com PNG (backward compatibility - pending MD3 migration)
-                    NavButtonConfig.Regular("Histórico", "historico.png", new Command(() => OnHistoricoClicked())),
-                    NavButtonConfig.Regular("Administrar", "manage.png", new Command(() => OnAdministrarClicked()))
+                    new NavButtonConfig
+                    {
+                        Text = "Settings",
+                        IconName = "settings",            // MD3: Settings icon (app configuration)
+                        Command = new Command(() => OnAdministrarClicked()),
+                        IsAnimated = true,
+                        AnimationTypes = NavButtonAnimationType.ShowHide
+                    }
                 };
 
-                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: {buttons.Count} botões criados");
+                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: {buttons.Count} buttons created");
 
-                // ✅ BEHAVIOR: Configura botões - SEM subscrever eventos duplicados
+                // ✅ BEHAVIOR: Configure buttons - WITHOUT subscribing duplicate events
                 navBarBehavior.Buttons = buttons;
 
-                // 🔧 CORREÇÃO: NÃO subscrevemos ButtonClicked para evitar eventos duplicados
-                // Os eventos são disparados diretamente pelos Commands configurados acima
+                // 🔧 FIX: DO NOT subscribe ButtonClicked to avoid duplicate events
+                // Events are triggered directly by Commands configured above
 
-                System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: NavBarBehavior configurado com {buttons.Count} botões SEM eventos duplicados");
+                System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: NavBarBehavior configured with {buttons.Count} buttons WITHOUT duplicate events");
 
-                // 🎯 VERIFICAÇÃO: Confirma se foi setado
+                // 🎯 VERIFICATION: Confirm if buttons were set
                 var setButtonsCount = navBarBehavior.Buttons?.Count ?? 0;
-                System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: Verificação - NavBarBehavior.Buttons.Count = {setButtonsCount}");
+                System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: Verification - NavBarBehavior.Buttons.Count = {setButtonsCount}");
 
                 if (setButtonsCount != buttons.Count)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: ERRO - Esperava {buttons.Count} botões, mas NavBarBehavior tem {setButtonsCount}");
+                    System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: ERROR - Expected {buttons.Count} buttons, but NavBarBehavior has {setButtonsCount}");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Configuração bem-sucedida - {setButtonsCount} botões setados");
+                    System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: Configuration successful - {setButtonsCount} buttons set");
                 }
             }
             catch (Exception ex)

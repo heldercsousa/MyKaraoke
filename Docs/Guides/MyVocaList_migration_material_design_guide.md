@@ -1268,6 +1268,97 @@ TASK: Analise usando o checklist de troubleshooting do CLAUDE.md e identifique a
 
 ---
 
+## 🎨 ICONOGRAPHY: Material Design 3 SVG Icons
+
+### 📖 IMPORTANT: Read the Iconography Guide First!
+
+**Before implementing ANY icons, read:**
+`MyVocaList_Iconography_MD3_Guideline.md`
+
+This document contains:
+- ✅ All official MD3 icon names and their meanings
+- ✅ Complete SVG source code for each icon (outlined & filled variants)
+- ✅ Icon usage guidelines and rationale
+- ✅ Implementation patterns with StatefulIcon component
+
+### ⚡ Quick Implementation Pattern
+
+**ALWAYS follow this pattern when adding icons:**
+
+1. **Check the iconography guide** for the correct icon name
+2. **Use StatefulIcon component** (auto-handles sizing, colors, variants)
+3. **Pass ONLY IconName** property (component auto-configures everything else)
+
+**Example:**
+```xml
+<!-- ✅ CORRECT: Only IconName -->
+<components:StatefulIcon IconName="nightlife" />
+
+<!-- ❌ WRONG: Don't set WidthRequest, HeightRequest, colors, etc -->
+<components:StatefulIcon IconName="nightlife"
+                        WidthRequest="24"
+                        HeightRequest="24"
+                        ActiveColor="..." />
+```
+
+### 🔧 StatefulIcon Component Features
+
+**Automatic behaviors:**
+- ✅ **Auto-sizing**: Detects parent context (HeaderComponent=24dp, NavBar=24dp, Page=32dp)
+- ✅ **Auto-variant**: Switches between `_outlined.svg` and `_filled.svg` based on `IsSelected`
+- ✅ **Auto-tinting**: Theme-aware color tinting for dark mode support
+- ✅ **Auto-aspect**: Maintains proper aspect ratio
+
+**Properties (all optional except IconName):**
+- `IconName` (required): Base name from iconography guide (e.g., "nightlife", "arrow_back")
+- `IsSelected` (optional): `false` = outlined, `true` = filled variant
+- `Size` (optional): Override auto-detection if needed
+- `ActiveColor` / `InactiveColor` (optional): Override theme colors
+
+### 📋 Common Icon Patterns
+
+**Headers (with title icon):**
+```xml
+<components:HeaderComponent Title="Venues" IconName="nightlife" />
+```
+
+**Navigation buttons:**
+```xml
+<!-- Back: arrow_back, Cancel: close, Save: check -->
+<components:HeaderComponent
+    IconName="nightlife"
+    ShowCancelButton="True"
+    ShowSaveButton="True"
+    UseCancelIcon="True"
+    UseSaveIcon="True" />
+```
+
+**Bottom navigation:**
+```xml
+<components:InactiveQueueBottomNav>
+    <!-- Icons auto-loaded from NavButtonConfig with IconName property -->
+</components:InactiveQueueBottomNav>
+```
+
+### 🎯 Icon Selection Rules
+
+**ALWAYS consult the iconography guide** (`MyVocaList_Iconography_MD3_Guideline.md`) to choose the correct icon:
+
+- **Venues**: `nightlife` (karaoke atmosphere)
+- **Queue**: `format_list_numbered` (numbered list)
+- **Musicians**: `music_note` (music creation)
+- **Singers**: `mic` (singing action)
+- **Events**: `event` (scheduled occasions)
+- **Back navigation**: `arrow_back`
+- **Cancel action**: `close`
+- **Confirm/Save**: `check`
+- **Settings**: `settings`
+- **History**: `history`
+
+**See the full iconography guide for all available icons and their rationale!**
+
+---
+
 ## 🎁 BÔNUS: Gerador Automático de Paleta Material Design
 
 Se quiser customizar as cores para seu brand:

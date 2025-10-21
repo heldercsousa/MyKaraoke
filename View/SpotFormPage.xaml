@@ -30,7 +30,7 @@
         <!-- Header Component - MD3 Migrated -->
         <components:HeaderComponent Grid.Row="0"
                            x:Name="headerComponent"
-                           Title="Novo Local"
+                           Title="New Venue"
                            ShowCancelButton="True"
                            ShowSaveButton="True"
                            UseCancelIcon="True"

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:MyVocaList.View.Components"
              x:Class="MyVocaList.View.Components.HeaderComponent"
              x:Name="HeaderRoot">
 
@@ -20,22 +21,12 @@
             </Grid.GestureRecognizers>
 
             <!-- Back Arrow (List Mode) -->
-            <Image x:Name="backArrowImage"
-                   Source="setaesquerda.png"
-                   WidthRequest="24"
-                   HeightRequest="24"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   IsVisible="True" />
+            <components:StatefulIcon x:Name="backArrowImage"
+                   IconName="arrow_back"/>
 
             <!-- Cancel Icon (Form Mode with Icon) -->
-            <Image x:Name="cancelIconImage"
-                   Source="close.png"
-                   WidthRequest="24"
-                   HeightRequest="24"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   IsVisible="False" />
+            <components:StatefulIcon x:Name="cancelIconImage"
+                   IconName="close"/>
 
             <!-- Cancel Text (Form Mode with Text) -->
             <Label x:Name="cancelTextLabel"
@@ -49,14 +40,11 @@
         </Grid>
 
         <HorizontalStackLayout Grid.Column="1"
-            Spacing="8" 
-            HorizontalOptions="Center" 
+            Spacing="8"
+            HorizontalOptions="Center"
             VerticalOptions="Center">
 
-            <Image Source="venue_purple.png"
-               WidthRequest="24"
-               HeightRequest="24"
-               VerticalOptions="Center" />
+            <components:StatefulIcon IconName="{Binding Source={x:Reference HeaderRoot}, Path=IconName}" />
 
             <Label x:Name="headerTitle"
                Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
@@ -81,13 +69,8 @@
             </Grid.GestureRecognizers>
 
             <!-- Save Icon (Form Mode with Icon) -->
-            <Image x:Name="saveIconImage"
-                   Source="save.png"
-                   WidthRequest="24"
-                   HeightRequest="24"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   IsVisible="False" />
+            <components:StatefulIcon x:Name="saveIconImage"
+                   IconName="check"/>
 
             <!-- Save Text (Form Mode with Text) -->
             <Label x:Name="saveTextLabel"

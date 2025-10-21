@@ -28,8 +28,10 @@
         </Grid.RowDefinitions>
 
         <!-- Header Component -->
-        <components:HeaderComponent Grid.Row="0" 
+        <components:HeaderComponent Grid.Row="0"
                            x:Name="headerComponent"
+                           Title="Queue"
+                           IconName="format_list_numbered"
                            ExitApp="True" />
 
         <!-- Card usando CardWrapperComponent -->

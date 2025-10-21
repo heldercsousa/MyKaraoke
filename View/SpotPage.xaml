@@ -32,7 +32,7 @@
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">
-        <components:HeaderComponent Grid.Row="0" Title="Venues" />
+        <components:HeaderComponent Grid.Row="0" Title="Venues" IconName="nightlife" />
 
         <!-- MAIN CONTENT (Grid 1) -->
         <ScrollView Grid.Row="1">

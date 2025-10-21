@@ -11,6 +11,9 @@ namespace MyVocaList.View.Components
         public static readonly BindableProperty TitleProperty =
             BindableProperty.Create(nameof(Title), typeof(string), typeof(HeaderComponent), string.Empty);
 
+        public static readonly BindableProperty IconNameProperty =
+            BindableProperty.Create(nameof(IconName), typeof(string), typeof(HeaderComponent), string.Empty);
+
         public static readonly BindableProperty BackCommandProperty =
             BindableProperty.Create(nameof(BackCommand), typeof(ICommand), typeof(HeaderComponent), null);
 
@@ -77,6 +80,12 @@ namespace MyVocaList.View.Components
         {
             get => (bool)GetValue(ExitAppProperty);
             set => SetValue(ExitAppProperty, value);
+        }
+
+        public string IconName
+        {
+            get => (string)GetValue(IconNameProperty);
+            set => SetValue(IconNameProperty, value);
         }
 
         #endregion

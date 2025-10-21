@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b \"C:\\Users\\helde\\source\\repos\\MyVocaList\\View\\Resources\\AppIcon\\*.svg\")",
+      "Bash(findstr:*)",
+      "WebFetch(domain:fonts.google.com)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:material-icons.github.io)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

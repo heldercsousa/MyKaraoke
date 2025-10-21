@@ -100,8 +100,6 @@
 		<None Remove="Resources\AppIcon\musicos.png" />
 		<None Remove="Resources\AppIcon\save.png" />
 		<None Remove="Resources\AppIcon\setaesquerda.png" />
-		<None Remove="Resources\AppIcon\spot.png" />
-		<None Remove="Resources\AppIcon\spot_purple.png" />
 		<None Remove="Resources\AppIcon\stack.png" />
 		<None Remove="Resources\AppIcon\stack_purple.png" />
 		<None Remove="Resources\AppIcon\wrong.png" />
@@ -153,10 +151,10 @@
 		<MauiImage Include="Resources\AppIcon\setaesquerda.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
-		<MauiImage Include="Resources\AppIcon\spot.png">
+		<MauiImage Include="Resources\AppIcon\venue.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
-		<MauiImage Include="Resources\AppIcon\spot_purple.png">
+		<MauiImage Include="Resources\AppIcon\venue_purple.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
 		<MauiImage Include="Resources\AppIcon\stack.png">

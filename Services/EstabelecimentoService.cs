@@ -35,19 +35,19 @@ namespace MyVocaList.Services
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                return (false, "Nome do local é obrigatório");
+                return (false, "Venue name is required");
             }
 
             name = name.Trim();
 
             if (name.Length > MaxInputLength)
             {
-                return (false, $"Nome muito longo. Máximo {MaxInputLength} caracteres.");
+                return (false, $"Name is too long. Maximum {MaxInputLength} characters.");
             }
 
             if (name.Length < 2)
             {
-                return (false, "Nome muito curto. Mínimo 2 caracteres.");
+                return (false, "Name is too short. Minimum is 2 characters.");
             }
 
             return (true, "");
@@ -74,7 +74,7 @@ namespace MyVocaList.Services
                 var existing = await _estabelecimentoRepository.GetByNomeAsync(nome);
                 if (existing != null)
                 {
-                    return (false, "Já existe um local com este nome", null);
+                    return (false, "There is another venue registered with this name", null);
                 }
 
                 // Cria novo estabelecimento
@@ -83,11 +83,11 @@ namespace MyVocaList.Services
                 await _estabelecimentoRepository.AddAsync(estabelecimento);
                 await _estabelecimentoRepository.SaveChangesAsync();
 
-                return (true, $"Local '{nome}' criado com sucesso!", estabelecimento);
+                return (true, $"Venue '{nome}' successfuly created!", estabelecimento);
             }
             catch (Exception ex)
             {
-                return (false, $"Erro ao criar local: {ex.Message}", null);
+                return (false, $"Error while creating venue: {ex.Message}", null);
             }
         }
 
@@ -108,14 +108,14 @@ namespace MyVocaList.Services
                 var estabelecimento = await _estabelecimentoRepository.GetByIdAsync(id);
                 if (estabelecimento == null)
                 {
-                    return (false, "Local não encontrado");
+                    return (false, "Venue not found");
                 }
 
                 // Verifica duplicação (exceto o próprio)
                 var existing = await _estabelecimentoRepository.GetByNomeAsync(novoNome);
                 if (existing != null && existing.Id != id)
                 {
-                    return (false, "Já existe um local com este nome");
+                    return (false, "There is another venue registered with this name");
                 }
 
                 // Atualiza
@@ -123,11 +123,11 @@ namespace MyVocaList.Services
                 await _estabelecimentoRepository.UpdateAsync(estabelecimento);
                 await _estabelecimentoRepository.SaveChangesAsync();
 
-                return (true, $"Local alterado para '{novoNome}' com sucesso!");
+                return (true, $"Venue name successfully updated to '{novoNome}'!");
             }
             catch (Exception ex)
             {
-                return (false, $"Erro ao atualizar local: {ex.Message}");
+                return (false, $"Error while updating venue: {ex.Message}");
             }
         }
 
@@ -135,7 +135,7 @@ namespace MyVocaList.Services
         {
             if (ids == null || !ids.Any())
             {
-                return (false, "Nenhum local selecionado para exclusão.");
+                return (false, "None venue was selected for removal.");
             }
 
             try
@@ -147,7 +147,7 @@ namespace MyVocaList.Services
                 foreach (var (estabelecimento, hasEvents) in estabelecimentosWithEvents)
                 {
                     validationResults.Add((estabelecimento.Id, estabelecimento.Nome, !hasEvents,
-                        hasEvents ? "possui eventos registrados" : ""));
+                        hasEvents ? "has registered events" : ""));
                 }
 
                 var cannotDelete = validationResults.Where(v => !v.canDelete).ToList();
@@ -167,7 +167,7 @@ namespace MyVocaList.Services
             }
             catch (Exception ex)
             {
-                return (false, $"Erro ao excluir locais: {ex.Message}");
+                return (false, $"Error while removing venue: {ex.Message}");
             }
         }
 
@@ -185,8 +185,8 @@ namespace MyVocaList.Services
                 // Todos os selecionados foram excluídos com sucesso
                 var count = canDelete.Count;
                 return (true, count == 1
-                    ? "1 local excluído com sucesso!"
-                    : $"{count} locais excluídos com sucesso!");
+                    ? "1 venue successfully removed!"
+                    : $"{count} venues successfully removed!");
             }
             else if (cannotDelete.Count > 0 && canDelete.Count > 0)
             {
@@ -195,17 +195,17 @@ namespace MyVocaList.Services
                 var blocked = cannotDelete.Count;
                 var total = deleted + blocked;
 
-                return (true, $"{deleted} de {total} {(total == 1 ? "local excluído" : "locais excluídos")} com sucesso. " +
-                             $"{blocked} {(blocked == 1 ? "local não pôde ser excluído" : "locais não puderam ser excluídos")} " +
-                             $"({(blocked == 1 ? "possui" : "possuem")} eventos).");
+                return (true, $"{deleted} of {total} successfully {(total == 1 ? "removed venue" : "removed venues")}. " +
+                             $"{blocked} {(blocked == 1 ? "venue couldn´t be removed" : "venue couldn´t be removed")} " +
+                             $"({(blocked == 1 ? "has" : "have")} events).");
             }
             else
             {
                 // Nenhum pôde ser excluído (todos bloqueados)
                 var count = cannotDelete.Count;
                 return (false, count == 1
-                    ? "O local não pôde ser excluído (possui eventos)."
-                    : $"Os {count} locais não puderam ser excluídos (possuem eventos).");
+                    ? "The venue couldn´t be removed (has events)."
+                    : $"The {count} venues couldn´t be removed (have events).");
             }
         }
 

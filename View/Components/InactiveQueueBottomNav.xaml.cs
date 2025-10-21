@@ -183,7 +183,7 @@ namespace MyVocaList.View.Components
                 var buttons = new ObservableCollection<NavButtonConfig>
                 {
                     // Botões Regulares
-                    NavButtonConfig.Regular("Locais", "spot.png", new Command(() => OnLocaisClicked())),
+                    NavButtonConfig.Regular("Locais", "venue.png", new Command(() => OnLocaisClicked())),
                     NavButtonConfig.Regular("Bandokê", "musicos.png", new Command(() => OnBandokeClicked())),
 
                     // ✅ BOTÃO ESPECIAL: Nova Fila com animação pulse

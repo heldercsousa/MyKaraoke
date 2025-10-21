@@ -32,22 +32,11 @@
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">
-        <components:HeaderComponent Grid.Row="0" Title="Locais" />
+        <components:HeaderComponent Grid.Row="0" Title="Venues" />
 
         <!-- MAIN CONTENT (Grid 1) -->
         <ScrollView Grid.Row="1">
             <VerticalStackLayout x:Name="mainContentGrid" Style="{StaticResource PageContainer}">
-
-                <!-- Section Title -->
-                <HorizontalStackLayout Spacing="12" Margin="0,0,0,16">
-                    <Image Source="spot_purple.png"
-                           WidthRequest="24"
-                           HeightRequest="24"
-                           VerticalOptions="Center" />
-                    <Label Text="Cadastrados"
-                           Style="{StaticResource TitleLarge}"
-                           VerticalOptions="Center" />
-                </HorizontalStackLayout>
 
                 <!-- Venues List -->
                 <CollectionView x:Name="locaisCollectionView"
@@ -78,7 +67,7 @@
                                            IsVisible="{Binding HasEvents}"
                                            HasShadow="False"
                                            VerticalOptions="Center">
-                                        <Label Text="COM EVENTOS"
+                                        <Label Text="HAS EVENTS"
                                                Style="{StaticResource LabelSmall}"
                                                TextColor="{StaticResource OnError}"
                                                FontAttributes="Bold"/>
@@ -96,7 +85,7 @@
                        Padding="24"
                        Margin="0,16">
                     <VerticalStackLayout Spacing="16">
-                        <Label Text="Nenhum local cadastrado"
+                        <Label Text="No venue registered"
                                Style="{StaticResource TitleMedium}"
                                HorizontalOptions="Center" />
                         <Label HorizontalOptions="Center"
@@ -104,9 +93,9 @@
                                Style="{StaticResource BodyMedium}">
                             <Label.FormattedText>
                                 <FormattedString>
-                                    <Span Text="• Toque no botão " />
+                                    <Span Text="• Touch button " />
                                     <Span Text="+" TextColor="{StaticResource Tertiary}" FontAttributes="Bold" FontSize="18" />
-                                    <Span Text=" no canto inferior direito para cadastrar seu primeiro local" />
+                                    <Span Text=" in the bottom right corner to register your first venue" />
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>

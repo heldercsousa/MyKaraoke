@@ -48,15 +48,25 @@
                    IsVisible="False" />
         </Grid>
 
-        <!-- TITLE (MD3 HeadlineMedium - No Shadows) -->
-        <Label Grid.Column="1"
-               x:Name="headerTitle"
+        <HorizontalStackLayout Grid.Column="1"
+            Spacing="8" 
+            HorizontalOptions="Center" 
+            VerticalOptions="Center">
+
+            <Image Source="venue_purple.png"
+               WidthRequest="24"
+               HeightRequest="24"
+               VerticalOptions="Center" />
+
+            <Label x:Name="headerTitle"
                Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
                Style="{StaticResource HeadlineMedium}"
                TextColor="{StaticResource OnBackground}"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"
-               HorizontalTextAlignment="Center" />
+               VerticalOptions="Center" />
+
+        </HorizontalStackLayout>
+
+
 
         <!-- RIGHT BUTTON CONTAINER (48x48dp MD3 Touch Target) -->
         <Grid Grid.Column="2"

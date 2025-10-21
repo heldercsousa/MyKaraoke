@@ -17,6 +17,9 @@ namespace MyVocaList.View.Components
         public static readonly BindableProperty IconSourceProperty =
             BindableProperty.Create(nameof(IconSource), typeof(string), typeof(NavButtonComponent), string.Empty, propertyChanged: OnIconSourceChanged);
 
+        public static readonly BindableProperty IconNameProperty =
+            BindableProperty.Create(nameof(IconName), typeof(string), typeof(NavButtonComponent), string.Empty, propertyChanged: OnIconNameChanged);
+
         public static readonly BindableProperty TextProperty =
             BindableProperty.Create(nameof(Text), typeof(string), typeof(NavButtonComponent), string.Empty, propertyChanged: OnTextChanged);
 
@@ -43,6 +46,12 @@ namespace MyVocaList.View.Components
         {
             get => (string)GetValue(IconSourceProperty);
             set => SetValue(IconSourceProperty, value);
+        }
+
+        public string IconName
+        {
+            get => (string)GetValue(IconNameProperty);
+            set => SetValue(IconNameProperty, value);
         }
 
         public string Text
@@ -111,15 +120,42 @@ namespace MyVocaList.View.Components
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        if (button.buttonIcon != null)
+                        if (button.buttonIcon != null && button.buttonIconMd3 != null)
                         {
+                            // PNG mode: show Image, hide StatefulIcon
                             button.buttonIcon.Source = iconSource;
+                            button.buttonIcon.IsVisible = !string.IsNullOrEmpty(iconSource);
+                            button.buttonIconMd3.IsVisible = false;
                         }
                     });
                 }
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Erro ao definir IconSource: {ex.Message}");
+                }
+            }
+        }
+
+        private static void OnIconNameChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is NavButtonComponent button && newValue is string iconName)
+            {
+                try
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        if (button.buttonIcon != null && button.buttonIconMd3 != null)
+                        {
+                            // MD3 mode: show StatefulIcon, hide Image
+                            button.buttonIconMd3.IconName = iconName;
+                            button.buttonIconMd3.IsVisible = !string.IsNullOrEmpty(iconName);
+                            button.buttonIcon.IsVisible = false;
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Erro ao definir IconName: {ex.Message}");
                 }
             }
         }
@@ -187,10 +223,20 @@ namespace MyVocaList.View.Components
         {
             try
             {
-                if (buttonIcon != null && !string.IsNullOrEmpty(IconSource))
+                // MD3 icons have priority over PNG
+                if (!string.IsNullOrEmpty(IconName) && buttonIconMd3 != null && buttonIcon != null)
+                {
+                    buttonIconMd3.IconName = IconName;
+                    buttonIconMd3.IsVisible = true;
+                    buttonIcon.IsVisible = false;
+                }
+                else if (!string.IsNullOrEmpty(IconSource) && buttonIcon != null && buttonIconMd3 != null)
                 {
                     buttonIcon.Source = IconSource;
+                    buttonIcon.IsVisible = true;
+                    buttonIconMd3.IsVisible = false;
                 }
+
                 if (buttonLabel != null && !string.IsNullOrEmpty(Text))
                 {
                     buttonLabel.Text = Text;

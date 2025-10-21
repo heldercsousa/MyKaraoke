@@ -1,6 +1,7 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
+             xmlns:components="clr-namespace:MyVocaList.View.Components"
              x:Class="MyVocaList.View.Components.NavButtonComponent">
 
     <!-- ✅ BEHAVIOR: Toda a lógica de animação -->
@@ -17,7 +18,16 @@
         <StackLayout.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnButtonTapped" />
         </StackLayout.GestureRecognizers>
-        <Image x:Name="buttonIcon" Style="{StaticResource NavButtonIconStyle}" />
+
+        <!-- OLD: PNG icons (backward compatibility) -->
+        <Image x:Name="buttonIcon"
+               Style="{StaticResource NavButtonIconStyle}"
+               IsVisible="False" />
+
+        <!-- NEW: MD3 SVG icons via StatefulIcon -->
+        <components:StatefulIcon x:Name="buttonIconMd3"
+                                  IsVisible="False" />
+
         <Label x:Name="buttonLabel" Style="{StaticResource NavButtonLabelStyle}" />
     </StackLayout>
 </ContentView>

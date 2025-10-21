@@ -66,9 +66,79 @@
 	-->
 
 	<ItemGroup>
+		<!-- App Icon (launcher icon only) -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiIcon>
+
+		<!-- MD3 SVG Icons (for UI usage) -->
+		<MauiImage Include="Resources\AppIcon\cloud_sync_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\cloud_sync_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\contrast_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\contrast_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\event_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\event_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\format_list_numbered_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\format_list_numbered_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\group_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\group_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\language_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\language_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\library_music_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\library_music_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\logout_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\logout_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\menu_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\menu_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\mic_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\mic_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\nightlife_filled.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\nightlife_outlined.svg">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</MauiImage>
+
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 		<MauiImage Include="Resources\Images\*" />
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
@@ -90,14 +160,36 @@
 		<None Remove="Resources\AppIcon\cake.png" />
 		<None Remove="Resources\AppIcon\cantores.png" />
 		<None Remove="Resources\AppIcon\close.png" />
+		<None Remove="Resources\AppIcon\cloud_sync_filled.svg" />
+		<None Remove="Resources\AppIcon\cloud_sync_outlined.svg" />
+		<None Remove="Resources\AppIcon\contrast_filled.svg" />
+		<None Remove="Resources\AppIcon\contrast_outlined.svg" />
 		<None Remove="Resources\AppIcon\delete.png" />
 		<None Remove="Resources\AppIcon\edit.png" />
 		<None Remove="Resources\AppIcon\email.png" />
 		<None Remove="Resources\AppIcon\email_purple.png" />
+		<None Remove="Resources\AppIcon\event_filled.svg" />
+		<None Remove="Resources\AppIcon\event_outlined.svg" />
+		<None Remove="Resources\AppIcon\format_list_numbered_filled.svg" />
+		<None Remove="Resources\AppIcon\format_list_numbered_outlined.svg" />
+		<None Remove="Resources\AppIcon\group_filled.svg" />
+		<None Remove="Resources\AppIcon\group_outlined.svg" />
 		<None Remove="Resources\AppIcon\historico.png" />
+		<None Remove="Resources\AppIcon\language_filled.svg" />
+		<None Remove="Resources\AppIcon\language_outlined.svg" />
+		<None Remove="Resources\AppIcon\library_music_filled.svg" />
+		<None Remove="Resources\AppIcon\library_music_outlined.svg" />
+		<None Remove="Resources\AppIcon\logout_filled.svg" />
+		<None Remove="Resources\AppIcon\logout_outlined.svg" />
 		<None Remove="Resources\AppIcon\manage.png" />
 		<None Remove="Resources\AppIcon\manage_purple.png" />
+		<None Remove="Resources\AppIcon\menu_filled.svg" />
+		<None Remove="Resources\AppIcon\menu_outlined.svg" />
+		<None Remove="Resources\AppIcon\mic_filled.svg" />
+		<None Remove="Resources\AppIcon\mic_outlined.svg" />
 		<None Remove="Resources\AppIcon\musicos.png" />
+		<None Remove="Resources\AppIcon\nightlife_filled.svg" />
+		<None Remove="Resources\AppIcon\nightlife_outlined.svg" />
 		<None Remove="Resources\AppIcon\save.png" />
 		<None Remove="Resources\AppIcon\setaesquerda.png" />
 		<None Remove="Resources\AppIcon\stack.png" />
@@ -169,7 +261,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="7.0.1" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
@@ -328,6 +420,9 @@
 		</MauiXaml>
 		<MauiXaml Update="Components\SpecialNavButtonComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Components\StatefulIcon.xaml">
+		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="EventPage.xaml">
 			<Generator>MSBuild:Compile</Generator>

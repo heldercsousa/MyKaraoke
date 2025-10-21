@@ -605,6 +605,7 @@ namespace MyVocaList.View.Behaviors
                     buttonView = new NavButtonComponent
                     {
                         IconSource = config.IconSource,
+                        IconName = config.IconName,              // NEW: MD3 SVG icons support
                         Text = config.Text,
                         Command = config.Command,
                         CommandParameter = config.CommandParameter,

@@ -182,9 +182,23 @@ namespace MyVocaList.View.Components
 
                 var buttons = new ObservableCollection<NavButtonConfig>
                 {
-                    // Botões Regulares
-                    NavButtonConfig.Regular("Locais", "venue.png", new Command(() => OnLocaisClicked())),
-                    NavButtonConfig.Regular("Bandokê", "musicos.png", new Command(() => OnBandokeClicked())),
+                    // Botões com MD3 SVG icons
+                    new NavButtonConfig
+                    {
+                        Text = "Locais",
+                        IconName = "nightlife",           // MD3: Venues icon
+                        Command = new Command(() => OnLocaisClicked()),
+                        IsAnimated = true,
+                        AnimationTypes = NavButtonAnimationType.ShowHide
+                    },
+                    new NavButtonConfig
+                    {
+                        Text = "Bandokê",
+                        IconName = "group",               // MD3: Musicians/Bands icon
+                        Command = new Command(() => OnBandokeClicked()),
+                        IsAnimated = true,
+                        AnimationTypes = NavButtonAnimationType.ShowHide
+                    },
 
                     // ✅ BOTÃO ESPECIAL: Nova Fila com animação pulse
                     new NavButtonConfig
@@ -198,7 +212,7 @@ namespace MyVocaList.View.Components
                         IsAnimated = true
                     },
 
-                    // Botões Regulares
+                    // Botões com PNG (backward compatibility - pending MD3 migration)
                     NavButtonConfig.Regular("Histórico", "historico.png", new Command(() => OnHistoricoClicked())),
                     NavButtonConfig.Regular("Administrar", "manage.png", new Command(() => OnAdministrarClicked()))
                 };

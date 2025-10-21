@@ -12,7 +12,8 @@ namespace MyVocaList.View.Components
     public class NavButtonConfig
     {
         public string Text { get; set; } = "";
-        public string IconSource { get; set; } = "";
+        public string IconSource { get; set; } = "";          // OLD: PNG icons (backward compatibility)
+        public string IconName { get; set; } = "";            // NEW: MD3 SVG icons
         public ICommand Command { get; set; }
         public object CommandParameter { get; set; }
         public bool IsAnimated { get; set; } = true;

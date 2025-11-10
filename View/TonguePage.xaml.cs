@@ -80,7 +80,7 @@ namespace MyVocaList.View
             CreateLanguageButtons();
 
             // Debug para verificar se os botões foram criados
-            System.Diagnostics.Debug.WriteLine($"Botões criados: {languagesContainer?.Count ?? 0}");
+            System.Diagnostics.Debug.WriteLine($"Botões criados: {languagesContainer?.Children.Count ?? 0}");
         }
 
         private void CreateLanguageButtons()
@@ -90,7 +90,7 @@ namespace MyVocaList.View
                 // Limpa os botões existentes
                 if (languagesContainer != null)
                 {
-                    languagesContainer.Clear();
+                    languagesContainer.Children.Clear();
                     System.Diagnostics.Debug.WriteLine("Container limpo com sucesso");
 
                     // Cria os botões de idioma
@@ -187,7 +187,7 @@ namespace MyVocaList.View
                         frame.GestureRecognizers.Add(tapGesture);
 
                         // Adiciona o frame ao container
-                        languagesContainer.Add(frame);
+                        languagesContainer.Children.Add(frame);
                         System.Diagnostics.Debug.WriteLine($"Botão para {language.Name} adicionado com sucesso");
                     }
                 }

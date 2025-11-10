@@ -3,13 +3,14 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- ============================================================================ -->
-    <!-- 🔥 BOTTOM NAVIGATION BAR STYLES -->
+    <!-- 🔥 BOTTOM NAVIGATION BAR STYLES - MATERIAL DESIGN 3 COMPLIANT -->
     <!-- ============================================================================ -->
 
     <!-- Base Bottom Navigation Bar Frame -->
     <Style x:Key="BaseBottomNavBarStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Black" />
-        <Setter Property="BorderColor" Value="#533682" />
+        <!-- ✅ FIXED: Using MD3 Primary instead of hardcoded #533682 -->
+        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="HasShadow" Value="False" />
         <Setter Property="Padding" Value="0" />
@@ -51,7 +52,8 @@
 
     <!-- Label Style for navbar buttons -->
     <Style x:Key="NavButtonLabelStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="#D1D5DB" />
+        <!-- ✅ FIXED: Using MD3 OnSurfaceVariant instead of hardcoded #D1D5DB -->
+        <Setter Property="TextColor" Value="{StaticResource OnSurfaceVariant}" />
         <Setter Property="FontSize" Value="10" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="End" />
@@ -83,7 +85,8 @@
 
     <Style x:Key="BottomNavButtonStyle" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="#D1D5DB" />
+        <!-- ✅ FIXED: Using MD3 OnSurfaceVariant instead of hardcoded #D1D5DB -->
+        <Setter Property="TextColor" Value="{StaticResource OnSurfaceVariant}" />
         <Setter Property="FontSize" Value="10" />
         <Setter Property="BorderWidth" Value="0" />
         <Setter Property="Padding" Value="0" />
@@ -93,7 +96,7 @@
     </Style>
 
     <!-- ============================================================================ -->
-    <!-- 🔥 SPECIAL BUTTON STYLES (Nova Fila, etc.) -->
+    <!-- 🔥 SPECIAL BUTTON STYLES (Nova Fila, etc.) - NOW USING MD3 TERTIARY -->
     <!-- ============================================================================ -->
 
     <!-- Special Button Container (for buttons like Nova Fila) -->
@@ -101,8 +104,9 @@
         <Setter Property="Spacing" Value="2" />
     </Style>
 
-    <!-- Yellow Gradient Frame Style (for Nova Fila button) -->
-    <Style x:Key="YellowGradientFrameStyle" TargetType="Frame">
+    <!-- ✅ RENAMED: TertiaryGradientFrameStyle (was YellowGradientFrameStyle) -->
+    <!-- Now uses MD3 TertiaryGradient (Orange #F57C00) from MaterialColors.xaml -->
+    <Style x:Key="TertiaryGradientFrameStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderColor" Value="Transparent" />
         <Setter Property="CornerRadius" Value="8" />
@@ -113,42 +117,30 @@
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
         <Setter Property="HasShadow" Value="False" />
-        <Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                    <GradientStop Color="#FFD700" Offset="0" />
-                    <GradientStop Color="#FFA500" Offset="1" />
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
+        <!-- ✅ FIXED: Using MD3 TertiaryGradient instead of hardcoded gold colors -->
+        <Setter Property="Background" Value="{StaticResource TertiaryGradient}" />
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Brush="#FFD700" Offset="0,2" Radius="8" Opacity="0.3" />
+                <!-- ✅ FIXED: Using MD3 Tertiary color for shadow -->
+                <Shadow Brush="{StaticResource Tertiary}" Offset="0,2" Radius="8" Opacity="0.3" />
             </Setter.Value>
         </Setter>
     </Style>
 
-    <!-- Orange Gradient Frame Style (alternative special button) -->
-    <Style x:Key="OrangeGradientFrameStyle" TargetType="Frame" BasedOn="{StaticResource YellowGradientFrameStyle}">
-        <Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                    <GradientStop Color="#FF9800" Offset="0" />
-                    <GradientStop Color="#FF5722" Offset="1" />
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Shadow">
-            <Setter.Value>
-                <Shadow Brush="#FF9800" Offset="0,2" Radius="8" Opacity="0.3" />
-            </Setter.Value>
-        </Setter>
+    <!-- ✅ BACKWARD COMPATIBILITY: Alias for old name -->
+    <Style x:Key="YellowGradientFrameStyle" TargetType="Frame" BasedOn="{StaticResource TertiaryGradientFrameStyle}">
+        <!-- Inherits all properties - allows existing code to work without changes -->
     </Style>
+
+    <!-- ✅ REMOVED: OrangeGradientFrameStyle -->
+    <!-- No longer needed - was duplicate of TertiaryGradientFrameStyle -->
+    <!-- Old references should use TertiaryGradientFrameStyle directly -->
 
     <!-- Plus Label Style (for + symbol in special buttons) -->
     <Style x:Key="PlusLabelStyle" TargetType="Label">
         <Setter Property="Text" Value="+" />
-        <Setter Property="TextColor" Value="#1A1024" />
+        <!-- ✅ FIXED: Using MD3 OnTertiary instead of hardcoded #1A1024 -->
+        <Setter Property="TextColor" Value="{StaticResource OnTertiary}" />
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="HorizontalOptions" Value="Center" />

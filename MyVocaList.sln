@@ -46,6 +46,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Guides", "Guides", "{0709C1
 		Docs\Guides\Tongues.pdf = Docs\Guides\Tongues.pdf
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyVocaList.Console.HCTTonalPaletteGenerator", "Console\HCTTonalPaletteGenerator\MyVocaList.Console.HCTTonalPaletteGenerator.csproj", "{63C00A7E-F560-F966-BDDC-133A4220AA04}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,10 @@ Global
 		{23B0A8E9-F736-DDF5-99E4-654D936B8CD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23B0A8E9-F736-DDF5-99E4-654D936B8CD0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{23B0A8E9-F736-DDF5-99E4-654D936B8CD0}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{63C00A7E-F560-F966-BDDC-133A4220AA04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C00A7E-F560-F966-BDDC-133A4220AA04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C00A7E-F560-F966-BDDC-133A4220AA04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C00A7E-F560-F966-BDDC-133A4220AA04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

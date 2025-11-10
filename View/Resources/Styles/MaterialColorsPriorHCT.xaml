@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!--
+        MaterialColorsPriorHCT: previous (prior-to-HCT) color definitions were stored here.
+        The original file contained nested/invalid comment markers which caused XAML parse
+        errors. The prior content has been preserved in git history � keep this file as
+        an empty ResourceDictionary for now to avoid build failures.
+    -->
+
+</ResourceDictionary>

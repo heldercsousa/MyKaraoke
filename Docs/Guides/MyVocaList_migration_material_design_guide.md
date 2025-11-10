@@ -86,7 +86,7 @@ Este projeto usa Material Design 3 color system. NUNCA use cores hardcoded.
 - **Botão Principal (em página/dialog):** `Style="{StaticResource FilledButton}"`
 - **Botão Secundário:** `Style="{StaticResource TextButton}"`
 - **Botão Destrutivo (em dialog):** `Style="{StaticResource FilledDestructiveButton}"`
-Helder - **Ação Principal (no header):** `<StatefulIcon IconName="check" InactiveColor="{StaticResource Primary}" />`
+- **Ação Principal (no header):** `<StatefulIcon IconName="check" InactiveColor="{StaticResource Primary}" />`
 - **Cards:** `Style="{StaticResource ElevatedCard}"`
 - **Inputs:** `Style="{StaticResource MaterialEntry}"`
 
@@ -104,7 +104,7 @@ Helder - **Ação Principal (no header):** `<StatefulIcon IconName="check" Inact
 
 **Use conforme importância:**
 
-Helder 1. **Filled Button** (Primary action - page body/dialog): Ação mais importante
+1. **Filled Button** (Primary action - page body/dialog): Ação mais importante
    ```xml
    <Button Text="Salvar" Style="{StaticResource FilledButton}" />
    ```
@@ -118,18 +118,17 @@ Helder 1. **Filled Button** (Primary action - page body/dialog): Ação mais imp
 3. **Text Button** (Tertiary action): Ação terciária
    ```xml
    <Button Text="Mais" Style="{StaticResource TextButton}" />
-
+      ```
 
 4. **Filled Destructive Button** (Destructive action in dialogs): Ação destrutiva
    ```xml
    <Button Text="Mais" Style="{StaticResource FilledDestructiveButton}" />
    ```
    
-5. **Filled Tonal Button** (Ação Secundária Importante ): É um botão de **média-alta ênfase**.
-5.1. **Exemplos de quando usar o `FilledTonalButton`:**
-* **Ação Secundária Importante:** Em um diálogo onde "Excluir" é o `FilledDestructiveButton`, "Cancelar" é o `TextButton`, você poderia ter "Arquivar" como um `FilledTonalButton`. É uma ação importante, mas menos final que excluir.
-* **Ação Principal em um Card:** Se você tem um card e o `FilledButton` rosa compete muito com outros elementos, o `FilledTonalButton` (roxo) é uma alternativa mais harmoniosa.
-* **Hierarquia na Página:** Em uma página que tem vários "calls-to-action", você pode usar o `FilledTonalButton` para ações intermediárias, reservando o `FilledButton` principal apenas para a ação final da jornada do usuário.
+5. **Filled Tonal Button** (Ação Secundária Importante ): É um botão de **média-alta ênfase**. Exemplos de quando usar:
+- Ação Secundária Importante: Em um diálogo onde "Excluir" é o `FilledDestructiveButton`, "Cancelar" é o `TextButton`, você poderia ter "Arquivar" como um `FilledTonalButton`. É uma ação importante, mas menos final que excluir.
+- Ação Principal em um Card: Se você tem um card e o `FilledButton` rosa compete muito com outros elementos, o `FilledTonalButton` (roxo) é uma alternativa mais harmoniosa.
+- Hierarquia na Página: Em uma página que tem vários "calls-to-action", você pode usar o `FilledTonalButton` para ações intermediárias, reservando o `FilledButton` principal apenas para a ação final da jornada do usuário.
    ```xml
    <Button Text="Salvar" Style="{StaticResource FilledTonalButton}" />
    ```

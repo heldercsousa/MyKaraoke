@@ -230,6 +230,20 @@ namespace MyVocaList.View.Behaviors
 
         #region Estado Inicial e Estrutura
 
+        /// <summary>
+        /// Gets MD3 color from resources with fallback
+        /// </summary>
+        private Color GetMD3Color(string resourceKey, string fallbackHex)
+        {
+            if (Application.Current?.Resources != null &&
+                Application.Current.Resources.TryGetValue(resourceKey, out var colorResource) &&
+                colorResource is Color color)
+            {
+                return color;
+            }
+
+            return Color.FromArgb(fallbackHex);
+        }
         private void ApplyInitialState()
         {
             try
@@ -272,7 +286,8 @@ namespace MyVocaList.View.Behaviors
             // Linha separadora
             var separator = new BoxView
             {
-                BackgroundColor = Color.FromArgb("#533682"),
+                // ✅ Using MD3 Primary color from MaterialColors.xaml
+                BackgroundColor = Application.Current.Resources.TryGetValue("Primary", out var primaryColor) ? (Color)primaryColor : Color.FromArgb("#7F41AC"), // Fallback to Option 1 Primary if resource not found
                 HeightRequest = 1,
                 HorizontalOptions = LayoutOptions.Fill,
                 VerticalOptions = LayoutOptions.Start
@@ -307,9 +322,12 @@ namespace MyVocaList.View.Behaviors
                 }
                 else
                 {
-                    // Fallback: estilo inline básico
+                    // Fallback: estilo inline básico usando MD3 cores
                     frame.BackgroundColor = Colors.Black;
-                    frame.BorderColor = Color.FromArgb("#533682");
+                    // ✅ Using MD3 Primary color from MaterialColors.xaml
+                    frame.BorderColor = Application.Current.Resources.TryGetValue("Primary", out var primaryColor)
+                        ? (Color)primaryColor
+                        : Color.FromArgb("#7F41AC"); // Fallback to Option 1 Primary
                     frame.CornerRadius = 0;
                     frame.Padding = 0;
                     frame.HasShadow = false;

@@ -372,6 +372,9 @@ namespace MyVocaList.View
             {
                 item.IsSelected = !item.IsSelected;
                 SelectionCount = Locais.Count(x => x.IsSelected);
+
+                // Update UI to reflect selection changes (including FAB visibility)
+                UpdateUIState();
             }
         }
 

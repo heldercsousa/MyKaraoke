@@ -1,4 +1,4 @@
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using MyVocaList.Contracts.Models;
 using MyVocaList.Services;
 using System.Collections.ObjectModel;

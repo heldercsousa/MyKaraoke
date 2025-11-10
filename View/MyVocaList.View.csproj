@@ -426,9 +426,6 @@
 			<AutoGen>True</AutoGen>
 			<DependentUpon>AppResources_pt-BR.resx</DependentUpon>
 		</Compile>
-		<Compile Update="TonguePage.xaml.cs">
-			<DependentUpon>TonguePage.xaml</DependentUpon>
-		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>

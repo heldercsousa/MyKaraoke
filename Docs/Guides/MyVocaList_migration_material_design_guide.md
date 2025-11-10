@@ -1,57 +1,5 @@
 # 🎨 Guia Definitivo: Material Design no MAUI + Soluções para Problemas de UI
 
-## 🎯 POR QUE Material Design Resolve SEUS Problemas Específicos
-
-### Problema 1: "Perco tempo definindo convenções de UI/UX"
-**✅ SOLUÇÃO:** Material Design já define TUDO:
-- Espaçamentos padronizados (4dp, 8dp, 16dp, 24dp)
-- Paleta de cores pré-definida (Primary, Secondary, Surface, etc)
-- Elevações consistentes (0dp, 1dp, 2dp, 4dp, 8dp, etc)
-- Tipografia hierárquica (Headline, Title, Body, Caption)
-- Estados visuais (Normal, Hover, Pressed, Disabled)
-
-**Antes (sem padrão):**
-```
-Você: "Claude, crie um card com informações do produto"
-Claude: [gera card com padding aleatório, cores inconsistentes]
-Você: "Muda o padding"
-Claude: [muda mas fica diferente dos outros cards]
-[Perde 30 minutos ajustando...]
-```
-
-**Depois (com Material Design):**
-```
-Você: "Claude, crie um MaterialCard com informações do produto"
-Claude: [gera card seguindo Material Design automaticamente]
-[Já sai padronizado! 0 ajustes necessários!]
-```
-
-### Problema 2: "Claude não gera coisas corretas"
-**✅ SOLUÇÃO:** Claude conhece Material Design MUITO BEM porque:
-- É um padrão global usado por milhões de apps
-- Documentação extensa e bem estruturada
-- Claude foi treinado em milhares de exemplos Material Design
-- É MUITO mais difícil errar quando há especificação clara
-
-### Problema 3: "Botões não funcionam e não consigo descobrir o motivo"
-**✅ SOLUÇÃO:** Vou te dar um CHECKLIST completo de troubleshooting (seção 5)
-
----
-
-## 📊 COMPARAÇÃO: Seu Cenário Atual vs Material Design
-
-| Aspecto | SEM Padrão (Atual) | COM Material Design |
-|---------|-------------------|---------------------|
-| **Tempo decidindo estilos** | 20-30% do tempo de dev | ~5% (já está definido) |
-| **Consistência UI** | Baixa (cada tela diferente) | Alta (padrão único) |
-| **Claude gera correto** | 60-70% acerto | 90-95% acerto |
-| **Bugs de UI** | Frequentes | Raros (componentes testados) |
-| **Look & Feel Android** | Custom/genérico | Nativo e moderno |
-| **Look & Feel iOS** | Custom/genérico | Pode adaptar (Cupertino) |
-| **Manutenção** | Difícil (sem padrão) | Fácil (tudo documentado) |
-
----
-
 ## 🚀 PARTE 1: IMPLEMENTANDO MATERIAL DESIGN NO SEU MAUI
 
 ### Opção A: Material Design com CommunityToolkit.Maui (RECOMENDADO)
@@ -62,420 +10,57 @@ Claude: [gera card seguindo Material Design automaticamente]
 - Funciona bem no Android, iOS, Windows
 - Fácil integração
 
-#### Passo 1: Instalar Pacote NuGet
-
-```bash
-dotnet add package CommunityToolkit.Maui
-```
-
-#### Passo 2: Configurar em MauiProgram.cs
-
-```csharp
-public static MauiApp CreateMauiApp()
-{
-    var builder = MauiApp.CreateBuilder();
-    builder
-        .UseMauiApp<App>()
-        .UseMauiCommunityToolkit() // ← ADICIONAR ESTA LINHA
-        .ConfigureFonts(fonts =>
-        {
-            fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-            fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-            // Opcional: Adicionar Material Icons
-            fonts.AddFont("MaterialIcons-Regular.ttf", "MaterialIcons");
-        });
-
-    return builder.Build();
-}
-```
-
-#### Passo 3: Criar Arquivo de Cores Material Design
-
-**Resources/Styles/MaterialColors.xaml:**
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary 
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-
-    <!-- Material Design 3 Color System -->
-    
-    <!-- Primary Colors (Sua cor principal - ajuste para seu brand) -->
-    <Color x:Key="Primary">#6750A4</Color>
-    <Color x:Key="OnPrimary">#FFFFFF</Color>
-    <Color x:Key="PrimaryContainer">#EADDFF</Color>
-    <Color x:Key="OnPrimaryContainer">#21005E</Color>
-    
-    <!-- Secondary Colors -->
-    <Color x:Key="Secondary">#625B71</Color>
-    <Color x:Key="OnSecondary">#FFFFFF</Color>
-    <Color x:Key="SecondaryContainer">#E8DEF8</Color>
-    <Color x:Key="OnSecondaryContainer">#1E192B</Color>
-    
-    <!-- Tertiary Colors -->
-    <Color x:Key="Tertiary">#7D5260</Color>
-    <Color x:Key="OnTertiary">#FFFFFF</Color>
-    <Color x:Key="TertiaryContainer">#FFD8E4</Color>
-    <Color x:Key="OnTertiaryContainer">#370B1E</Color>
-    
-    <!-- Error Colors -->
-    <Color x:Key="Error">#BA1A1A</Color>
-    <Color x:Key="OnError">#FFFFFF</Color>
-    <Color x:Key="ErrorContainer">#FFDAD6</Color>
-    <Color x:Key="OnErrorContainer">#410002</Color>
-    
-    <!-- Background/Surface -->
-    <Color x:Key="Background">#FFFBFE</Color>
-    <Color x:Key="OnBackground">#1C1B1F</Color>
-    <Color x:Key="Surface">#FFFBFE</Color>
-    <Color x:Key="OnSurface">#1C1B1F</Color>
-    <Color x:Key="SurfaceVariant">#E7E0EC</Color>
-    <Color x:Key="OnSurfaceVariant">#49454E</Color>
-    
-    <!-- Outline -->
-    <Color x:Key="Outline">#79747E</Color>
-    <Color x:Key="OutlineVariant">#CAC4D0</Color>
-    
-    <!-- Dark Mode (Opcional - adicione depois se precisar)
-    <Color x:Key="PrimaryDark">#D0BCFF</Color>
-    <Color x:Key="OnPrimaryDark">#381E72</Color>
-    etc...
-    -->
-    
-</ResourceDictionary>
-```
-
-#### Passo 4: Criar Estilos Material Design Base
-
-**Resources/Styles/MaterialStyles.xaml:**
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary 
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
-
-    <!-- Material Design Typography Scale -->
-    
-    <!-- Display Large -->
-    <Style x:Key="DisplayLarge" TargetType="Label">
-        <Setter Property="FontSize" Value="57" />
-        <Setter Property="LineHeight" Value="64" />
-        <Setter Property="TextColor" Value="{StaticResource OnBackground}" />
-    </Style>
-    
-    <!-- Headline Large -->
-    <Style x:Key="HeadlineLarge" TargetType="Label">
-        <Setter Property="FontSize" Value="32" />
-        <Setter Property="LineHeight" Value="40" />
-        <Setter Property="TextColor" Value="{StaticResource OnBackground}" />
-    </Style>
-    
-    <!-- Title Large -->
-    <Style x:Key="TitleLarge" TargetType="Label">
-        <Setter Property="FontSize" Value="22" />
-        <Setter Property="LineHeight" Value="28" />
-        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
-        <Setter Property="FontAttributes" Value="Bold" />
-    </Style>
-    
-    <!-- Body Large (Texto principal) -->
-    <Style x:Key="BodyLarge" TargetType="Label">
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="LineHeight" Value="24" />
-        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
-    </Style>
-    
-    <!-- Body Medium -->
-    <Style x:Key="BodyMedium" TargetType="Label">
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="LineHeight" Value="20" />
-        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
-    </Style>
-    
-    <!-- Label Small (Legendas) -->
-    <Style x:Key="LabelSmall" TargetType="Label">
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="LineHeight" Value="16" />
-        <Setter Property="TextColor" Value="{StaticResource OnSurfaceVariant}" />
-    </Style>
-
-    <!-- Material Button - Filled (Primary) -->
-    <Style x:Key="MaterialButtonFilled" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
-        <Setter Property="TextColor" Value="{StaticResource OnPrimary}" />
-        <Setter Property="CornerRadius" Value="20" />
-        <Setter Property="HeightRequest" Value="40" />
-        <Setter Property="Padding" Value="24,10" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="Shadow">
-            <Shadow Brush="{StaticResource Primary}"
-                    Opacity="0.3"
-                    Radius="8"
-                    Offset="0,2" />
-        </Setter>
-    </Style>
-    
-    <!-- Material Button - Outlined -->
-    <Style x:Key="MaterialButtonOutlined" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{StaticResource Primary}" />
-        <Setter Property="BorderColor" Value="{StaticResource Outline}" />
-        <Setter Property="BorderWidth" Value="1" />
-        <Setter Property="CornerRadius" Value="20" />
-        <Setter Property="HeightRequest" Value="40" />
-        <Setter Property="Padding" Value="24,10" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontAttributes" Value="Bold" />
-    </Style>
-    
-    <!-- Material Button - Text (No background) -->
-    <Style x:Key="MaterialButtonText" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{StaticResource Primary}" />
-        <Setter Property="BorderWidth" Value="0" />
-        <Setter Property="HeightRequest" Value="40" />
-        <Setter Property="Padding" Value="12,10" />
-        <Setter Property="FontSize" Value="14" />
-        <Setter Property="FontAttributes" Value="Bold" />
-    </Style>
-
-    <!-- Material Card -->
-    <Style x:Key="MaterialCard" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
-        <Setter Property="CornerRadius" Value="12" />
-        <Setter Property="Padding" Value="16" />
-        <Setter Property="HasShadow" Value="True" />
-        <Setter Property="BorderColor" Value="Transparent" />
-        <Setter Property="Shadow">
-            <Shadow Brush="Black"
-                    Opacity="0.1"
-                    Radius="4"
-                    Offset="0,2" />
-        </Setter>
-    </Style>
-    
-    <!-- Material Card - Elevated (mais sombra) -->
-    <Style x:Key="MaterialCardElevated" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
-        <Setter Property="CornerRadius" Value="12" />
-        <Setter Property="Padding" Value="16" />
-        <Setter Property="HasShadow" Value="True" />
-        <Setter Property="BorderColor" Value="Transparent" />
-        <Setter Property="Shadow">
-            <Shadow Brush="Black"
-                    Opacity="0.15"
-                    Radius="8"
-                    Offset="0,4" />
-        </Setter>
-    </Style>
-
-    <!-- Material Entry (Input) -->
-    <Style x:Key="MaterialEntry" TargetType="Entry">
-        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceVariant}" />
-        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
-        <Setter Property="PlaceholderColor" Value="{StaticResource OnSurfaceVariant}" />
-        <Setter Property="HeightRequest" Value="56" />
-        <Setter Property="Padding" Value="16,8" />
-        <Setter Property="FontSize" Value="16" />
-    </Style>
-
-    <!-- Material List Item -->
-    <Style x:Key="MaterialListItem" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
-        <Setter Property="Padding" Value="16,12" />
-        <Setter Property="CornerRadius" Value="0" />
-        <Setter Property="BorderColor" Value="{StaticResource OutlineVariant}" />
-        <Setter Property="HasShadow" Value="False" />
-    </Style>
-
-    <!-- Material Divider -->
-    <Style x:Key="MaterialDivider" TargetType="BoxView">
-        <Setter Property="BackgroundColor" Value="{StaticResource OutlineVariant}" />
-        <Setter Property="HeightRequest" Value="1" />
-        <Setter Property="HorizontalOptions" Value="Fill" />
-    </Style>
-
-</ResourceDictionary>
-```
-
-#### Passo 5: Registrar no App.xaml
-
-```xml
-<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="SeuApp.App">
-    <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <!-- Seus estilos existentes -->
-                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
-                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
-                
-                <!-- ADICIONAR Material Design -->
-                <ResourceDictionary Source="Resources/Styles/MaterialColors.xaml" />
-                <ResourceDictionary Source="Resources/Styles/MaterialStyles.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Application.Resources>
-</Application>
-```
-
----
-
 ## 🎨 PARTE 2: USANDO MATERIAL DESIGN NA PRÁTICA
 
-### Exemplo 1: Botão Material Design (3 variações)
+### ✨ NOVO: Escolhendo o Botão "Salvar" Correto (Hierarquia e Posição)
 
+A ênfase no botão "Salvar" depende crucialmente de **onde** ele está posicionado.
+
+#### Cenário 1: Ação no Top App Bar (Header)
+
+**REGRA:** Ações no header devem ser **Icon Buttons**, que não possuem um fundo preenchido visível. Usar botões com fundo sólido (circulares ou quadrados) nesta área é uma quebra do padrão MD3.
+
+**Opção A: Icon Button Padrão (Ênfase Baixa)**
+* **Descrição:** Apenas o ícone.
+* **Uso:** Ações secundárias ou quando a tela é muito simples.
 ```xml
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="SeuApp.Views.ExemploPage">
-    
-    <VerticalStackLayout Spacing="16" Padding="24">
-        
-        <!-- Botão Filled (Primary Action) -->
-        <Button Text="Salvar"
-                Style="{StaticResource MaterialButtonFilled}"
-                Command="{Binding SalvarCommand}" />
-        
-        <!-- Botão Outlined (Secondary Action) -->
-        <Button Text="Cancelar"
-                Style="{StaticResource MaterialButtonOutlined}"
-                Command="{Binding CancelarCommand}" />
-        
-        <!-- Botão Text (Tertiary Action) -->
-        <Button Text="Mais Opções"
-                Style="{StaticResource MaterialButtonText}"
-                Command="{Binding MaisOpcoesCommand}" />
-                
-    </VerticalStackLayout>
-    
-</ContentPage>
+<components:StatefulIcon IconName="check" InactiveColor="{StaticResource OnSurface}" />
 ```
 
-### Exemplo 2: Card com Informações de Produto
-
+**Opção B: Icon Button Tinted (Ênfase Média - RECOMENDADO)**
+* **Descrição:** O ícone é colorido com a cor Primary. É a forma mais comum e limpa de destacar a ação principal no header.
+* **Uso:** Ação primária na maioria dos formulários.
 ```xml
-<Frame Style="{StaticResource MaterialCard}">
-    <VerticalStackLayout Spacing="12">
-        
-        <!-- Imagem -->
-        <Image Source="produto.jpg"
-               HeightRequest="200"
-               Aspect="AspectFill"
-               CornerRadius="8" />
-        
-        <!-- Título -->
-        <Label Text="{Binding NomeProduto}"
-               Style="{StaticResource TitleLarge}" />
-        
-        <!-- Descrição -->
-        <Label Text="{Binding Descricao}"
-               Style="{StaticResource BodyMedium}"
-               LineBreakMode="WordWrap"
-               MaxLines="2" />
-        
-        <!-- Preço -->
-        <Label Text="{Binding Preco, StringFormat='R$ {0:N2}'}"
-               Style="{StaticResource HeadlineLarge}"
-               TextColor="{StaticResource Primary}" />
-        
-        <!-- Botão -->
-        <Button Text="Adicionar ao Carrinho"
-                Style="{StaticResource MaterialButtonFilled}"
-                Command="{Binding AdicionarCommand}" />
-                
-    </VerticalStackLayout>
+<components:StatefulIcon IconName="check" InactiveColor="{StaticResource Primary}" />
+```
+
+**Opção C: Outlined/Tonal Icon Button (Ênfase Alta)**
+* **Descrição:** O ícone fica dentro de um container circular com borda (Outlined) ou fundo sutil (Tonal).
+* **Uso:** Quando a ação de salvar precisa de destaque visual máximo dentro do header.
+```xml
+<Frame Style="{StaticResource OutlinedIconButton}">
+    <components:StatefulIcon IconName="check" InactiveColor="{StaticResource Primary}" VerticalOptions="Center" HorizontalOptions="Center" />
 </Frame>
 ```
 
-### Exemplo 3: Formulário Material Design
+#### Cenário 2: Ação no Fim da Página
 
+**REGRA:** Para formulários longos, o final da página é o local ideal para um Filled Button.
 ```xml
-<VerticalStackLayout Spacing="24" Padding="24">
-    
-    <!-- Campo Nome -->
-    <VerticalStackLayout Spacing="4">
-        <Label Text="Nome Completo"
-               Style="{StaticResource BodyMedium}"
-               TextColor="{StaticResource OnSurfaceVariant}" />
-        <Entry Text="{Binding Nome}"
-               Placeholder="Digite seu nome"
-               Style="{StaticResource MaterialEntry}" />
-    </VerticalStackLayout>
-    
-    <!-- Campo Email -->
-    <VerticalStackLayout Spacing="4">
-        <Label Text="E-mail"
-               Style="{StaticResource BodyMedium}"
-               TextColor="{StaticResource OnSurfaceVariant}" />
-        <Entry Text="{Binding Email}"
-               Placeholder="seu@email.com"
-               Keyboard="Email"
-               Style="{StaticResource MaterialEntry}" />
-    </VerticalStackLayout>
-    
-    <!-- Botões -->
-    <HorizontalStackLayout Spacing="12" HorizontalOptions="End">
-        <Button Text="Cancelar"
-                Style="{StaticResource MaterialButtonText}"
-                Command="{Binding CancelarCommand}" />
-        <Button Text="Salvar"
-                Style="{StaticResource MaterialButtonFilled}"
-                Command="{Binding SalvarCommand}" />
-    </HorizontalStackLayout>
-    
-</VerticalStackLayout>
+<HorizontalStackLayout Spacing="12" HorizontalOptions="End">
+    <Button Text="Cancelar" Style="{StaticResource TextButton}" />
+    <Button Text="Salvar" Style="{StaticResource FilledButton}" />
+</HorizontalStackLayout>
 ```
 
-### Exemplo 4: Lista Material Design
+#### Cenário 3: Ação Destrutiva (Ex: Excluir)
 
+**REGRA:** Ações destrutivas em diálogos de confirmação devem usar um estilo que aplique a cor Error.
 ```xml
-<CollectionView ItemsSource="{Binding Tarefas}">
-    <CollectionView.ItemTemplate>
-        <DataTemplate>
-            <Frame Style="{StaticResource MaterialListItem}">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    
-                    <!-- Conteúdo -->
-                    <VerticalStackLayout Grid.Column="0" Spacing="4">
-                        <Label Text="{Binding Titulo}"
-                               Style="{StaticResource BodyLarge}" />
-                        <Label Text="{Binding DataCriacao, StringFormat='{0:dd/MM/yyyy}'}"
-                               Style="{StaticResource LabelSmall}" />
-                    </VerticalStackLayout>
-                    
-                    <!-- Ícone -->
-                    <Image Grid.Column="1"
-                           Source="chevron_right.png"
-                           WidthRequest="24"
-                           HeightRequest="24"
-                           VerticalOptions="Center" />
-                           
-                </Grid>
-                
-                <!-- Gesture para click -->
-                <Frame.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:MinhaViewModel}}, Path=AbrirDetalheCommand}"
-                                          CommandParameter="{Binding .}" />
-                </Frame.GestureRecognizers>
-            </Frame>
-        </DataTemplate>
-    </CollectionView.ItemTemplate>
-</CollectionView>
+<Button Text="Excluir" Style="{StaticResource FilledDestructiveButton}" />
 ```
 
----
-
-## 🛠️ PARTE 3: ATUALIZANDO SEU CLAUDE.MD PARA MATERIAL DESIGN
-
-Adicione esta seção no seu CLAUDE.md:
-
-```markdown
-## 🎨 UI/UX - Material Design System
+## 🎨 PARTE 3: UI/UX - Material Design System+
 
 ### Paleta de Cores
 Este projeto usa Material Design 3 color system. NUNCA use cores hardcoded.
@@ -496,6 +81,15 @@ Este projeto usa Material Design 3 color system. NUNCA use cores hardcoded.
 <Button BackgroundColor="#6750A4" />
 ```
 
+### Componentes e Padrões
+- **Páginas:** `BackgroundColor="{StaticResource Background}"`
+- **Botão Principal (em página/dialog):** `Style="{StaticResource FilledButton}"`
+- **Botão Secundário:** `Style="{StaticResource TextButton}"`
+- **Botão Destrutivo (em dialog):** `Style="{StaticResource FilledDestructiveButton}"`
+Helder - **Ação Principal (no header):** `<StatefulIcon IconName="check" InactiveColor="{StaticResource Primary}" />`
+- **Cards:** `Style="{StaticResource ElevatedCard}"`
+- **Inputs:** `Style="{StaticResource MaterialEntry}"`
+
 ### Hierarquia de Tipografia
 
 **Sempre use os estilos predefinidos:**
@@ -508,22 +102,38 @@ Este projeto usa Material Design 3 color system. NUNCA use cores hardcoded.
 
 ### Botões Material Design
 
-**3 tipos, use conforme importância:**
+**Use conforme importância:**
 
-1. **Filled Button** (Primary action): Ação mais importante
+Helder 1. **Filled Button** (Primary action - page body/dialog): Ação mais importante
    ```xml
-   <Button Text="Salvar" Style="{StaticResource MaterialButtonFilled}" />
+   <Button Text="Salvar" Style="{StaticResource FilledButton}" />
    ```
+
 
 2. **Outlined Button** (Secondary action): Ação secundária
    ```xml
-   <Button Text="Cancelar" Style="{StaticResource MaterialButtonOutlined}" />
+   <Button Text="Cancelar" Style="{StaticResource OutlinedButton}" />
    ```
 
 3. **Text Button** (Tertiary action): Ação terciária
    ```xml
-   <Button Text="Mais" Style="{StaticResource MaterialButtonText}" />
+   <Button Text="Mais" Style="{StaticResource TextButton}" />
+
+
+4. **Filled Destructive Button** (Destructive action in dialogs): Ação destrutiva
+   ```xml
+   <Button Text="Mais" Style="{StaticResource FilledDestructiveButton}" />
    ```
+   
+5. **Filled Tonal Button** (Ação Secundária Importante ): É um botão de **média-alta ênfase**.
+5.1. **Exemplos de quando usar o `FilledTonalButton`:**
+* **Ação Secundária Importante:** Em um diálogo onde "Excluir" é o `FilledDestructiveButton`, "Cancelar" é o `TextButton`, você poderia ter "Arquivar" como um `FilledTonalButton`. É uma ação importante, mas menos final que excluir.
+* **Ação Principal em um Card:** Se você tem um card e o `FilledButton` rosa compete muito com outros elementos, o `FilledTonalButton` (roxo) é uma alternativa mais harmoniosa.
+* **Hierarquia na Página:** Em uma página que tem vários "calls-to-action", você pode usar o `FilledTonalButton` para ações intermediárias, reservando o `FilledButton` principal apenas para a ação final da jornada do usuário.
+   ```xml
+   <Button Text="Salvar" Style="{StaticResource FilledTonalButton}" />
+   ```
+
 
 **REGRA:** Nunca use mais de 1 Filled Button na mesma tela. Hierarquia visual é crítica.
 
@@ -1075,7 +685,7 @@ Ao implementar novas páginas com Material Design, **SEMPRE** siga este checklis
 
 | Elemento | Style MD3 Obrigatório |
 |----------|----------------------|
-| Background da página | `{StaticResource AppBackgroundGradient}` |
+| Background da página | `BackgroundColor="{StaticResource Background}"` |
 | Cards/Containers | `{StaticResource MaterialCard}` |
 | Botão principal | `{StaticResource MaterialButtonFilled}` |
 | Botão secundário | `{StaticResource MaterialButtonOutlined}` |

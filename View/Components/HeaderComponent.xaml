@@ -52,39 +52,37 @@
 
 
 
-        <!-- RIGHT BUTTON CONTAINER (MD3 Primary Action with Filled Background) -->
         <Frame Grid.Column="2"
-               x:Name="rightButtonStack"
-               BackgroundColor="{StaticResource Primary}"
-               CornerRadius="20"
-               Padding="16,8"
-               HasShadow="False"
-               HorizontalOptions="End"
-               VerticalOptions="Center"
-               IsVisible="False">
+       x:Name="rightButtonStack"
+       WidthRequest="48"
+       HeightRequest="48"
+       BackgroundColor="{StaticResource Primary}"
+       CornerRadius="24" Padding="0"
+       HasShadow="False"
+       HorizontalOptions="End"
+       VerticalOptions="Center"
+       IsVisible="False">
+
             <Frame.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnSaveButtonClicked" />
             </Frame.GestureRecognizers>
 
-            <!-- Grid wrapper required - Frame can only have ONE child -->
             <Grid>
-                <!-- Save Icon (Form Mode with Icon) - Standard 24dp on filled primary background -->
                 <components:StatefulIcon x:Name="saveIconImage"
-                       IconName="check"
-                       InactiveColor="{StaticResource OnPrimary}"
-                       IsVisible="False"/>
+               IconName="check"
+               InactiveColor="{StaticResource OnPrimary}" IsVisible="False"
+               VerticalOptions="Center"
+               HorizontalOptions="Center" />
 
-                <!-- Save Text (Form Mode with Text) - White on primary background -->
                 <Label x:Name="saveTextLabel"
-                       Text="Save"
-                       TextColor="{StaticResource OnPrimary}"
-                       FontSize="16"
-                       FontAttributes="Bold"
-                       VerticalOptions="Center"
-                       HorizontalOptions="Center"
-                       LineBreakMode="NoWrap"
-                       IsVisible="False" />
+               Text="Save"
+               TextColor="{StaticResource OnPrimary}" FontSize="16"
+               FontAttributes="Bold"
+               VerticalOptions="Center"
+               HorizontalOptions="Center"
+               IsVisible="False" />
             </Grid>
+
         </Frame>
 
         <!-- SPACER (When no right button is shown) -->

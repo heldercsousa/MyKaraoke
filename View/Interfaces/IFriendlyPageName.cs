@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MyVocaList.View.Interfaces
 {
     /// <summary>
-    /// Interface para páginas que possuem nome amigável
+    /// Interface for pages that have a friendly title and is auto shown by the pagebehavior.
     /// </summary>
     public interface IFriendlyPageName
     {

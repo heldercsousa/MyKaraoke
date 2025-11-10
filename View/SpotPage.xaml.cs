@@ -330,14 +330,6 @@ namespace MyVocaList.View
             }
         }
 
-        private void OnTestFrameTapped(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("========================================");
-            System.Diagnostics.Debug.WriteLine("FRAME DE TESTE CLICADO!!!");
-            System.Diagnostics.Debug.WriteLine("========================================");
-            DisplayAlert("Teste", "Frame funcionou!", "OK");
-        }
-
         private async void OnAddFabClicked(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("🎯 SpotPage: OnAddFabClicked RECEBIDO");

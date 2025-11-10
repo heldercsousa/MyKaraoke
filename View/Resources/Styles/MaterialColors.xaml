@@ -39,12 +39,13 @@
     <!-- Background & Surface (Your Deep Purple Theme) -->
     <Color x:Key="Background">#1A1024</Color>
     <Color x:Key="OnBackground">#FFFFFF</Color>
-
+    
     <Color x:Key="Surface">#2D1B69</Color>
     <Color x:Key="OnSurface">#FFFFFF</Color>
 
     <Color x:Key="SurfaceVariant">#3D2A4F</Color>
     <Color x:Key="OnSurfaceVariant">#D1D5DB</Color>
+
 
     <Color x:Key="SurfaceDim">#1A1024</Color>
     <Color x:Key="SurfaceBright">#4A3B6B</Color>

@@ -1,5 +1,6 @@
 ﻿using MyVocaList.View.Components;
 using MyVocaList.View.Extensions;
+using MyVocaList.View.Interfaces;
 using System.Reflection;
 using System.Windows.Input;
 
@@ -258,16 +259,18 @@ namespace MyVocaList.View.Behaviors
             }
         }
 
-        private string GetFriendlyPageName(string technicalName)
+        /// <summary>
+        /// Gets the friendly page name if the page implements IFriendlyPageName interface.
+        /// Returns null if the page doesn't implement the interface.
+        /// </summary>
+        private string GetFriendlyPageName()
         {
-            return technicalName switch
+            if (_associatedPage is IFriendlyPageName friendlyPage)
             {
-                "StackPage" => "Fila",
-                "SpotPage" => "Locais",
-                "PersonPage" => "Participantes",
-                "SpotFormPage" => "Cadastro de Local",
-                _ => "página"
-            };
+                return friendlyPage.FriendlyName;
+            }
+
+            return null;
         }
 
         private async Task ExecutePageBypass()
@@ -279,10 +282,16 @@ namespace MyVocaList.View.Behaviors
 
                 System.Diagnostics.Debug.WriteLine($"🛡️ SmartPageLifecycleBehavior: Executando bypass para {pageType}");
 
+                // ✅ Get friendly page name if page implements IFriendlyPageName
+                var friendlyPageName = GetFriendlyPageName();
+                var loadingMessage = friendlyPageName != null
+                    ? $"Loading {friendlyPageName}..."
+                    : LoadingMessage;
+
                 // ✅ LOADING CENTRALIZADO: Solicita loading com alta prioridade até navbar estar pronta
                 await GlobalLoadingOverlay.Instance.RequestShowAsync(
                     requesterId: requesterId,
-                    message: $"Carregando {GetFriendlyPageName(pageType)}...",
+                    message: loadingMessage,
                     priority: LoadingPriority.NavBarWait,
                     context: LoadingContext.ComponentLoading,
                     isPersistent: true // Mantém até explicitamente removido

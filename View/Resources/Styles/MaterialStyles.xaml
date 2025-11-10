@@ -168,6 +168,26 @@
         <Setter Property="Padding" Value="12,10" />
     </Style>
 
+	<Style x:Key="FilledDestructiveButton" TargetType="Button" BasedOn="{StaticResource FilledButton}">
+		<Setter Property="BackgroundColor" Value="{StaticResource Error}" />
+		<Setter Property="TextColor" Value="{StaticResource OnError}" />
+	</Style>
+	<Style x:Key="OutlinedIconButton" TargetType="Frame">
+		<Setter Property="BackgroundColor" Value="Transparent" />
+		<Setter Property="BorderColor" Value="{StaticResource Outline}" />
+		<Setter Property="CornerRadius" Value="24" />
+		<Setter Property="WidthRequest" Value="48" />
+		<Setter Property="HeightRequest" Value="48" />
+		<Setter Property="Padding" Value="0" />
+	</Style>
+	<Style x:Key="FilledTonalIconButton" TargetType="Frame">
+		<Setter Property="BackgroundColor" Value="{StaticResource SurfaceVariant}" />
+		<Setter Property="CornerRadius" Value="24" />
+		<Setter Property="WidthRequest" Value="48" />
+		<Setter Property="HeightRequest" Value="48" />
+		<Setter Property="Padding" Value="0" />
+	</Style>
+
     <!-- Elevated Button (with shadow) -->
     <Style x:Key="ElevatedButton" TargetType="Button">
         <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
@@ -181,6 +201,8 @@
             <Shadow Brush="{StaticResource Shadow}" Offset="0,1" Radius="3" Opacity="0.3" />
         </Setter>
     </Style>
+	
+	
 
     <!-- ============================================================================ -->
     <!-- CARD STYLES (Material Design 3)                                             -->
@@ -351,11 +373,6 @@
     <Style x:Key="SectionContainer" TargetType="VerticalStackLayout">
         <Setter Property="Spacing" Value="8" />
         <Setter Property="Margin" Value="0,0,0,24" />
-    </Style>
-
-    <Style x:Key="FilledDestructiveButton" TargetType="Button" BasedOn="{StaticResource FilledButton}">
-        <Setter Property="BackgroundColor" Value="{StaticResource Error}" />
-        <Setter Property="TextColor" Value="{StaticResource OnError}" />
     </Style>
 
 </ResourceDictionary>

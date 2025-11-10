@@ -227,8 +227,6 @@ MyVocaList.View.Components/
 
 **NEVER implement localization in MVP** - wait for post-MVP phase.
 
-**Strategy details:** See `tongues.pdf`
-
 ---
 
 ## 💼 Business Logic & Services
@@ -289,7 +287,7 @@ options.UseSqlite($"Data Source={dbPath}")
 - Spacing: Multiples of 8 (16, 24, 32)
 - Buttons: MaterialButtonFilled (primary), MaterialButtonOutlined (secondary)
 
-**Full MD3 guidelines:** See `MyVocaList_migration_material_design_guide.md`
+**Full MD3 guidelines:** See `Docs/Guides/MyVocaList_migration_material_design_guide.md`
 
 **Common mistakes to avoid:**
 ❌ BackgroundColor="#E91E63"  
@@ -300,8 +298,48 @@ options.UseSqlite($"Data Source={dbPath}")
 
 ---
 
-## 📋 Code Conventions
+## 📋 Code Conventions - CRITICAL
 
+### Language Standard: ENGLISH ONLY
+
+**ABSOLUTE REQUIREMENT - NO EXCEPTIONS:**
+- ✅ ALL variable names: English
+- ✅ ALL function/method names: English
+- ✅ ALL class/interface names: English
+- ✅ ALL comments: English
+- ✅ ALL UI strings: English
+- ✅ ALL database fields: English
+- ✅ ALL file names: English
+
+**Current Status:**
+- ❌ Legacy code is in Portuguese (being migrated)
+- ✅ NEW code must be 100% English
+- 🔄 When modifying existing Portuguese code, translate it to English
+
+**Before writing ANY code, ask yourself:**
+"Is this in English? If NO, rewrite in English."
+
+**Examples:**
+
+❌ WRONG (Portuguese):
+```csharp
+public void ValidarUsuario(string nomeUsuario)
+{
+    // Verifica se usuário existe
+    if (string.IsNullOrEmpty(nomeUsuario))
+        throw new Exception("Nome de usuário inválido");
+}
+```
+
+✅ CORRECT (English):
+```csharp
+public void ValidateUser(string username)
+{
+    // Check if user exists
+    if (string.IsNullOrEmpty(username))
+        throw new Exception("Invalid username");
+}
+```
 ### ServiceProvider Pattern (Critical!)
 
 ```csharp
@@ -333,6 +371,8 @@ public partial class MyPage : ContentPage
 **Avoid code duplication using Behaviors:**
 
 **SmartPageLifecycleBehavior** - Page lifecycle + loading + navbar
+
+
 ```xml
 <behaviors:SmartPageLifecycleBehavior 
     NavBar="{x:Reference CrudNavBar}"

@@ -20,11 +20,13 @@ namespace MyVocaList.View.Components
 
         public static readonly BindableProperty ActiveColorProperty =
             BindableProperty.Create(nameof(ActiveColor), typeof(Color), typeof(StatefulIcon),
-            defaultValueCreator: bindable => (Color)Application.Current.Resources["OnBackground"]);
+            defaultValueCreator: bindable => (Color)Application.Current.Resources["OnBackground"],
+            propertyChanged: OnStateChanged);
 
         public static readonly BindableProperty InactiveColorProperty =
             BindableProperty.Create(nameof(InactiveColor), typeof(Color), typeof(StatefulIcon),
-            defaultValueCreator: bindable => (Color)Application.Current.Resources["OnSurfaceVariant"]);
+            defaultValueCreator: bindable => (Color)Application.Current.Resources["OnSurfaceVariant"],
+            propertyChanged: OnStateChanged); 
 
         public static readonly BindableProperty SizeProperty =
             BindableProperty.Create(nameof(Size), typeof(StatefulIconSize), typeof(StatefulIcon),

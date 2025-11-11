@@ -286,8 +286,7 @@ namespace MyVocaList.View.Behaviors
             // Linha separadora
             var separator = new BoxView
             {
-                // ✅ Using MD3 Primary color from MaterialColors.xaml
-                BackgroundColor = Application.Current.Resources.TryGetValue("Primary", out var primaryColor) ? (Color)primaryColor : Color.FromArgb("#7F41AC"), // Fallback to Option 1 Primary if resource not found
+                BackgroundColor = GetMD3Color("Primary", "#7F41AC"),
                 HeightRequest = 1,
                 HorizontalOptions = LayoutOptions.Fill,
                 VerticalOptions = LayoutOptions.Start
@@ -324,10 +323,7 @@ namespace MyVocaList.View.Behaviors
                 {
                     // Fallback: estilo inline básico usando MD3 cores
                     frame.BackgroundColor = Colors.Black;
-                    // ✅ Using MD3 Primary color from MaterialColors.xaml
-                    frame.BorderColor = Application.Current.Resources.TryGetValue("Primary", out var primaryColor)
-                        ? (Color)primaryColor
-                        : Color.FromArgb("#7F41AC"); // Fallback to Option 1 Primary
+                    frame.BorderColor = GetMD3Color("Primary", "#7F41AC");
                     frame.CornerRadius = 0;
                     frame.Padding = 0;
                     frame.HasShadow = false;

@@ -58,7 +58,7 @@ artifacts/
 # Secret and credential files (essential for security)
 *.env
 *.pem
-*.key
+*.keycdcd
 **/secrets/
 **/credentials/
 
@@ -123,10 +123,6 @@ dotnet-tools.json
 **/TestData/**/*.xml
 **/TestData/**/*.csv
 
-
-# Hiding the .claudeignore file itself can sometimes be helpful for certain AI tools
-# .claudeignore
-
 # Metadata files (not needed by Claude Code)
 .gitignore              
 .gitattributes          
@@ -146,14 +142,23 @@ Console/**
 **/[Dd]ocs/[Cc]hangelog/[Aa]rchive/**
 **/[Dd]ocs/[Ss]ocial [Nn]etworks/**
 **/[Dd]ocs/[Gg]uides/**             
-![Dd]ocs/[Gg]uides/MyVocalist_migration_material_design_guide.md  # EXCETO este!
-**/[Vv]iew/Resources/AppIcon/*.resx
-**[Vv]iew/Resources/**/*.png
-**[Vv]iew/Resources/**/*.jpg
-**[Vv]iew/Resources/**/*.jpeg
-**[Vv]iew/Resources/**/*.gif
-**[Vv]iew/Resources/Fonts/**/*.ttf
-**[Vv]iew/Resources/Strings/**/*.resx
+!Docs/Guides/MyVocalist_migration_material_design_guide.md  # temporary needed guide
+**/[Vv]iew/[Rr]esources/AppIcon/*.resx
+**/[Vv]iew/[Rr]esources/**/*.png
+**/[Vv]iew/[Rr]esources/**/*.jpg
+**/[Vv]iew/[Rr]esources/**/*.jpeg
+**/[Vv]iew/[Rr]esources/**/*.gif
+**/[Vv]iew/[Rr]esources/[Ff]onts/**/*.ttf
+**/[Vv]iew/[Rr]esources/[Ss]trings/**/*.resx
+
+# SQLite database files are not needed to be read by Claude Code each session
+*.db
+*.db3
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*.db-journal
 
 # Batch files
 *.bat

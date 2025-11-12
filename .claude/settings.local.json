@@ -6,7 +6,11 @@
       "WebFetch(domain:fonts.google.com)",
       "WebSearch",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:material-icons.github.io)"
+      "WebFetch(domain:material-icons.github.io)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet sln add:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet add reference:*)"
     ],
     "deny": [],
     "ask": []

@@ -10,7 +10,15 @@
       "Bash(dotnet new:*)",
       "Bash(dotnet sln add:*)",
       "Bash(dotnet add:*)",
-      "Bash(dotnet add reference:*)"
+      "Bash(dotnet add reference:*)",
+      "Bash(dir \"C:\\Users\\helde\\source\\repos\\MyVocaList\\MyVocaList.Tests\" /b)",
+      "Bash(dotnet sln remove:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet build:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

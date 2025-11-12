@@ -75,6 +75,14 @@ namespace MyVocaList.Tests.Helpers
         }
 
         /// <summary>
+        /// Safely converts int color (from TonalPalette) to uint for HCT conversion
+        /// </summary>
+        public static uint IntToUint(int color)
+        {
+            return unchecked((uint)color);
+        }
+
+        /// <summary>
         /// Checks if two colors are visually similar (within tolerance)
         /// </summary>
         public static bool AreColorsSimilar(uint color1, uint color2, int tolerance = 5)

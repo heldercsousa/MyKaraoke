@@ -6,12 +6,15 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- Base colors must be loaded first -->
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/MaterialColors.xaml" />
+
+                <!-- Then styles that depend on colors -->
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/MaterialStyles.xaml" />
                 <ResourceDictionary Source="Resources/Styles/CardStyles.xaml" />
                 <ResourceDictionary Source="Resources/Styles/NavBarStyles.xaml" />
-                <ResourceDictionary Source="Resources/Styles/MaterialColors.xaml" />
-                <ResourceDictionary Source="Resources/Styles/MaterialStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -8,7 +8,7 @@
 			 xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
 			 x:Class="MyVocaList.View.SpotPage"
 			 x:DataType="local:SpotPage"
-			 BackgroundColor="{StaticResource Background}"
+			 Background="{StaticResource Background}"
 			 NavigationPage.HasNavigationBar="False">
 
     <ContentPage.Behaviors>

@@ -156,15 +156,22 @@
     <Color x:Key="ErrorContainer">#FFFFDAD6</Color>
     <Color x:Key="OnErrorContainer">#FF410003</Color>
 
-    <!-- Background & Surface -->
-    <Color x:Key="Background">#FFFFFBFF</Color>
+    <!-- Background & Surface - LIGHT MODE -->
+    <Color x:Key="Background">#FFF8EDF8</Color>
     <Color x:Key="OnBackground">#FF1D1B1E</Color>
-    <Color x:Key="Surface">#FFFFFBFF</Color>
+    <Color x:Key="Surface">#FFFFFFFF</Color>
     <Color x:Key="OnSurface">#FF1D1B1E</Color>
     <Color x:Key="SurfaceVariant">#FFEADFEA</Color>
     <Color x:Key="OnSurfaceVariant">#FF4B454D</Color>
-    <Color x:Key="SurfaceDim">#FFF8EDF8</Color>
+    <Color x:Key="SurfaceDim">#FFE7E1E5</Color>
     <Color x:Key="SurfaceBright">#FFFFFFFF</Color>
+
+    <!-- Surface Container Hierarchy (MD3 elevation tints) -->
+    <Color x:Key="SurfaceContainerLowest">#FFFFFFFF</Color>
+    <Color x:Key="SurfaceContainerLow">#FFFBF9FC</Color>
+    <Color x:Key="SurfaceContainer">#FFF6EFF3</Color>
+    <Color x:Key="SurfaceContainerHigh">#FFF0E9ED</Color>
+    <Color x:Key="SurfaceContainerHighest">#FFEAE3E7</Color>
 
     <!-- Outline & Borders -->
     <Color x:Key="Outline">#FF7C757E</Color>
@@ -180,45 +187,43 @@
     <Color x:Key="Shadow">#FF000000</Color>
 
     <!-- ============================================================================ -->
-    <!-- DARK MODE SEMANTIC TOKENS (Future)                                         -->
-    <!-- Uncomment when implementing dark mode                                      -->
+    <!-- GRADIENTS (Using Tonal Palette Values - Light Theme)                       -->
     <!-- ============================================================================ -->
 
-    <!-- Dark Mode (Future Implementation) -->
-    <!--
-    <Color x:Key="PrimaryDark">#FFE2B6FF</Color>
-    <Color x:Key="OnPrimaryDark">#FF4D017A</Color>
-    <Color x:Key="PrimaryContainerDark">#FF652692</Color>
-    <Color x:Key="OnPrimaryContainerDark">#FFF3DAFF</Color>
-    ...
-    -->
-
-    <!-- ============================================================================ -->
-    <!-- GRADIENTS (Using Tonal Palette Values)                                     -->
-    <!-- ============================================================================ -->
-
-    <!-- Primary Purple Gradient -->
-    <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#FF7F41AC" Offset="0.0" />
-        <GradientStop Color="#FF2F004D" Offset="1.0" />
+    <!-- Primary Purple Gradient (Light - for cards/highlights) -->
+    <LinearGradientBrush x:Key="PrimaryGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource Primary90}" Offset="0.0" />
+        <GradientStop Color="{StaticResource Primary80}" Offset="1.0" />
     </LinearGradientBrush>
 
-    <!-- Secondary Teal Gradient -->
-    <LinearGradientBrush x:Key="SecondaryGradient" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#FF006B5E" Offset="0.0" />
-        <GradientStop Color="#FF00201B" Offset="1.0" />
+    <!-- Secondary Teal Gradient (Light - for cards/highlights) -->
+    <LinearGradientBrush x:Key="SecondaryGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource Secondary90}" Offset="0.0" />
+        <GradientStop Color="{StaticResource Secondary80}" Offset="1.0" />
     </LinearGradientBrush>
 
-    <!-- Tertiary Orange Gradient -->
+    <!-- Tertiary Orange Gradient (for special actions/FAB) -->
     <LinearGradientBrush x:Key="TertiaryGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#FF964900" Offset="0.0" />
-        <GradientStop Color="#FF311300" Offset="1.0" />
+        <GradientStop Color="{StaticResource Tertiary70}" Offset="0.0" />
+        <GradientStop Color="{StaticResource Tertiary60}" Offset="1.0" />
     </LinearGradientBrush>
 
-    <!-- Background Gradient -->
-    <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#FFFFFBFF" Offset="0.0" />
-        <GradientStop Color="#FFF8EDF8" Offset="1.0" />
+    <!-- FAB Gradient (Orange accent - highly visible) -->
+    <LinearGradientBrush x:Key="FabGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource Tertiary70}" Offset="0.0" />
+        <GradientStop Color="{StaticResource Tertiary50}" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Card Background Gradient (Subtle purple tint) -->
+    <LinearGradientBrush x:Key="CardBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource PrimaryContainer}" Offset="0.0" />
+        <GradientStop Color="{StaticResource Surface}" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Background Gradient (Subtle page background) -->
+    <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource Background}" Offset="0.0" />
+        <GradientStop Color="{StaticResource SurfaceContainerLow}" Offset="1.0" />
     </LinearGradientBrush>
 
     <!-- ============================================================================ -->

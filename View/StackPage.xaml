@@ -41,159 +41,125 @@
                                            BadgeText="{Binding QueueStatusText}">
                 <components:CardWrapperComponent.CardContent>
                     <Grid RowDefinitions="*">
-                        <!-- Empty queue message -->
-                        <Frame x:Name="emptyQueueMessage" 
+                        <!-- Empty queue message - MD3 Light -->
+                        <Frame x:Name="emptyQueueMessage"
                                IsVisible="True"
                                VerticalOptions="Start"
-                               BackgroundColor="Transparent"
-                               BorderColor="Transparent"
-                               Padding="0"
-                               HasShadow="False">
+                               Style="{StaticResource FilledCard}"
+                               Padding="24"
+                               Margin="0,16">
 
-                            <!-- Frame com gradiente reutilizável -->
-                            <Frame Style="{StaticResource EmptyQueueFrameStyle}">
-                                <StackLayout Spacing="0" VerticalOptions="Start">
-                                    <!-- Título principal -->
-                                    <Label Text="Não há fila ativa" 
-                                           Style="{StaticResource EmptyQueueTitleStyle}" />
+                            <VerticalStackLayout Spacing="16">
+                                <!-- Title -->
+                                <Label Text="No active queue"
+                                       Style="{StaticResource TitleMedium}"
+                                       TextColor="{StaticResource OnSurfaceVariant}"
+                                       HorizontalOptions="Center" />
 
-                                    <!-- Instruções com espaçamento uniforme -->
-                                    <StackLayout Spacing="15">
-                                        <!-- Primeira instrução reformulada com quebra correta -->
-                                        <StackLayout Spacing="15" HorizontalOptions="Fill">
-                                            <!-- Linha com texto e ícone, quebra natural -->
-                                            <StackLayout Spacing="0">
-                                                <!-- Primeira parte: "• Toque no botão Nova Fila [ícone]" -->
-                                                <StackLayout Orientation="Horizontal" 
-                                                             Spacing="6" 
-                                                             HorizontalOptions="Start">
-                                                    <Label Text="• Toque no botão " 
-                                                           Style="{StaticResource EmptyQueueTextStyle}"
-                                                           VerticalOptions="Center" />
+                                <!-- Instructions -->
+                                <VerticalStackLayout Spacing="12">
+                                    <!-- Instruction 1 -->
+                                    <Label Style="{StaticResource BodyMedium}"
+                                           TextColor="{StaticResource OnSurfaceVariant}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="• Touch " />
+                                                <Span Text="New Queue" TextColor="{StaticResource Primary}" FontAttributes="Bold" />
+                                                <Span Text=" button to start adding singers to the karaoke" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
 
-                                                    <Label Text="Nova Fila" 
-                                                           TextColor="White" 
-                                                           FontAttributes="Bold"
-                                                           FontSize="14"
-                                                           VerticalOptions="Center" />
-
-                                                    <!-- 🎯 Ícone Nova Fila mais retangular -->
-                                                    <Frame BackgroundColor="Transparent"
-                                                           BorderColor="Transparent"
-                                                           Padding="1"
-                                                           HasShadow="False"
-                                                           VerticalOptions="Center"
-                                                           HeightRequest="14"
-                                                           WidthRequest="26"
-                                                           CornerRadius="4">
-
-                                                        <Frame.Background>
-                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                                <GradientStop Color="#FFB000" Offset="0.0" />
-                                                                <GradientStop Color="#FF8F00" Offset="1.0" />
-                                                            </LinearGradientBrush>
-                                                        </Frame.Background>
-
-                                                        <Label Text="+"
-                                                               TextColor="Black"
-                                                               FontSize="10"
-                                                               FontAttributes="Bold"
-                                                               HorizontalOptions="Center"
-                                                               VerticalOptions="Center"
-                                                               Margin="0" />
-                                                    </Frame>
-                                                </StackLayout>
-
-                                                <!-- Segunda parte: texto continuação sem truncar -->
-                                                <Label Text="para iniciar a inclusão dos cantores no karaokê" 
-                                                       Style="{StaticResource EmptyQueueTextStyle}"
-                                                       Margin="0,2,0,0" />
-                                            </StackLayout>
-                                        </StackLayout>
-
-                                        <!-- Segunda instrução -->
-                                        <Label Style="{StaticResource EmptyQueueTextStyle}">
-                                            <Label.FormattedText>
-                                                <FormattedString>
-                                                    <Span Text="• " />
-                                                    <Span Text="Reative" TextColor="White" FontAttributes="Bold" />
-                                                    <Span Text=" a última " />
-                                                    <Span Text="fila" TextColor="White" FontAttributes="Bold" />
-                                                    <Span Text=" entrando na opção " />
-                                                    <Span Text="Histórico" TextColor="White" FontAttributes="Bold" />
-                                                    <Span Text=" abaixo" />
-                                                </FormattedString>
-                                            </Label.FormattedText>
-                                        </Label>
-                                    </StackLayout>
-                                </StackLayout>
-                            </Frame>
+                                    <!-- Instruction 2 -->
+                                    <Label Style="{StaticResource BodyMedium}"
+                                           TextColor="{StaticResource OnSurfaceVariant}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="• " />
+                                                <Span Text="Reactivate" TextColor="{StaticResource Primary}" FontAttributes="Bold" />
+                                                <Span Text=" the last queue by entering the " />
+                                                <Span Text="History" TextColor="{StaticResource Primary}" FontAttributes="Bold" />
+                                                <Span Text=" option below" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
                         </Frame>
 
-                        <!-- Active queue content -->
+                        <!-- Active queue content - MD3 Light -->
                         <CollectionView x:Name="filaCollectionView"
                                         SelectionMode="None"
-                                        IsVisible="False">
+                                        IsVisible="False"
+                                        BackgroundColor="Transparent">
                             <CollectionView.ItemsLayout>
-                                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="{x:Null}">
-                                    <Grid Padding="10" 
-                                          ColumnDefinitions="*, Auto, Auto, Auto" 
-                                          RowDefinitions="Auto"
-                                          BackgroundColor="White"
-                                          Margin="5,2">
-                                        <StackLayout Grid.Column="0" VerticalOptions="CenterAndExpand">
-                                            <Label Text="{Binding NomeCompleto}"
-                                                   FontSize="18"
-                                                   FontAttributes="Bold"
-                                                   TextColor="Black"/>
-                                            <Label Text="{Binding NumeroParticipacoesAusencias}"
-                                                   FontSize="12"
-                                                   TextColor="Gray"/>
-                                        </StackLayout>
+                                    <Frame Style="{StaticResource ElevatedCard}"
+                                           Padding="16"
+                                           Margin="0,4">
+                                        <Grid ColumnDefinitions="*, Auto, Auto, Auto"
+                                              ColumnSpacing="8">
+                                            <!-- Singer Info -->
+                                            <VerticalStackLayout Grid.Column="0"
+                                                               VerticalOptions="Center"
+                                                               Spacing="4">
+                                                <Label Text="{Binding NomeCompleto}"
+                                                       Style="{StaticResource TitleMedium}"
+                                                       TextColor="{StaticResource OnSurface}"/>
+                                                <Label Text="{Binding NumeroParticipacoesAusencias}"
+                                                       Style="{StaticResource BodySmall}"
+                                                       TextColor="{StaticResource OnSurfaceVariant}"/>
+                                            </VerticalStackLayout>
 
-                                        <Button Text="OK"
-                                                Clicked="OnParticipouClicked"
-                                                CommandParameter="{Binding .}"
-                                                Grid.Column="1"
-                                                WidthRequest="45" 
-                                                HeightRequest="40" 
-                                                CornerRadius="20"
-                                                BackgroundColor="Green" 
-                                                TextColor="White"
-                                                FontSize="12"
-                                                VerticalOptions="Center" 
-                                                HorizontalOptions="Center" 
-                                                Margin="5,0"/>
+                                            <!-- Participated Button (Success) -->
+                                            <Button Text="✓"
+                                                    Clicked="OnParticipouClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    Grid.Column="1"
+                                                    WidthRequest="48"
+                                                    HeightRequest="48"
+                                                    CornerRadius="24"
+                                                    BackgroundColor="{StaticResource Success}"
+                                                    TextColor="{StaticResource OnSuccess}"
+                                                    FontSize="20"
+                                                    FontAttributes="Bold"
+                                                    VerticalOptions="Center"
+                                                    Padding="0"/>
 
-                                        <Button Text="X"
-                                                Clicked="OnAusenteClicked"
-                                                CommandParameter="{Binding .}"
-                                                Grid.Column="2"
-                                                WidthRequest="40" 
-                                                HeightRequest="40" 
-                                                CornerRadius="20"
-                                                BackgroundColor="Red" 
-                                                TextColor="White"
-                                                VerticalOptions="Center" 
-                                                HorizontalOptions="Center" 
-                                                Margin="5,0"/>
+                                            <!-- Absent Button (Error) -->
+                                            <Button Text="✕"
+                                                    Clicked="OnAusenteClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    Grid.Column="2"
+                                                    WidthRequest="48"
+                                                    HeightRequest="48"
+                                                    CornerRadius="24"
+                                                    BackgroundColor="{StaticResource Error}"
+                                                    TextColor="{StaticResource OnError}"
+                                                    FontSize="20"
+                                                    FontAttributes="Bold"
+                                                    VerticalOptions="Center"
+                                                    Padding="0"/>
 
-                                        <Button Text="v"
-                                                Clicked="OnMoveToBottomClicked"
-                                                CommandParameter="{Binding .}"
-                                                Grid.Column="3"
-                                                WidthRequest="40" 
-                                                HeightRequest="40" 
-                                                CornerRadius="20"
-                                                BackgroundColor="LightGray" 
-                                                TextColor="Black"
-                                                VerticalOptions="Center" 
-                                                HorizontalOptions="Center" 
-                                                Margin="5,0"/>
-                                    </Grid>
+                                            <!-- Move to Bottom Button (Tonal) -->
+                                            <Button Text="↓"
+                                                    Clicked="OnMoveToBottomClicked"
+                                                    CommandParameter="{Binding .}"
+                                                    Grid.Column="3"
+                                                    WidthRequest="48"
+                                                    HeightRequest="48"
+                                                    CornerRadius="24"
+                                                    BackgroundColor="{StaticResource SurfaceVariant}"
+                                                    TextColor="{StaticResource OnSurfaceVariant}"
+                                                    FontSize="20"
+                                                    FontAttributes="Bold"
+                                                    VerticalOptions="Center"
+                                                    Padding="0"/>
+                                        </Grid>
+                                    </Frame>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>

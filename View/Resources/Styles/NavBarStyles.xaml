@@ -6,17 +6,21 @@
     <!-- 🔥 BOTTOM NAVIGATION BAR STYLES - MATERIAL DESIGN 3 COMPLIANT -->
     <!-- ============================================================================ -->
 
-    <!-- Base Bottom Navigation Bar Frame -->
+    <!-- Base Bottom Navigation Bar Frame - MD3 Light Theme -->
     <Style x:Key="BaseBottomNavBarStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="Black" />
-        <!-- ✅ FIXED: Using MD3 Primary instead of hardcoded #533682 -->
-        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceContainer}" />
+        <Setter Property="BorderColor" Value="{StaticResource OutlineVariant}" />
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="HasShadow" Value="False" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="HeightRequest" Value="65" />
         <Setter Property="VerticalOptions" Value="End" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource Shadow}" Offset="0,-2" Radius="8" Opacity="0.1" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- Compact version (same as base but explicit) -->

@@ -14,8 +14,12 @@ namespace MyVocaList.Tests.View.ColorSystem
     /// </summary>
     public class MD3ComplianceTests
     {
-        // Primary brand color from MaterialColors.xaml
+        // MyVocaList Option 1 seed colors
         private const string PrimaryPurple = "#7F41AC";
+        private const uint PRIMARY_SEED = 0xFF7F41AC;    // Purple
+        private const uint SECONDARY_SEED = 0xFF00796B;  // Teal
+        private const uint TERTIARY_SEED = 0xFFF57C00;   // Orange
+        private const uint ERROR_SEED = 0xFFD32F2F;      // Red
 
         [Fact]
         public void Test1_HCT_Conversion_Roundtrip_ShouldPreserveColorAccurately()
@@ -244,5 +248,210 @@ namespace MyVocaList.Tests.View.ColorSystem
                     $"{name} should maintain magenta-purple hue family");
             }
         }
+
+        #region Additional Comprehensive MD3 Compliance Tests
+
+        [Theory]
+        [InlineData(0xFF7F41AC, "Primary")]
+        [InlineData(0xFF00796B, "Secondary")]
+        [InlineData(0xFFF57C00, "Tertiary")]
+        [InlineData(0xFFD32F2F, "Error")]
+        public void Test9_AllSeedColors_ShouldConvertToHCT_Successfully(uint seedColor, string colorName)
+        {
+            // Act
+            var hct = Hct.FromInt(seedColor);
+
+            // Assert
+            hct.Hue.Should().BeInRange(0, 360, $"{colorName} hue should be valid");
+            hct.Chroma.Should().BeGreaterOrEqualTo(0, $"{colorName} chroma should be non-negative");
+            hct.Tone.Should().BeInRange(0, 100, $"{colorName} tone should be valid");
+
+            Console.WriteLine($"\n{colorName} Seed Color HCT:");
+            Console.WriteLine($"  Hue: {hct.Hue:F1}°");
+            Console.WriteLine($"  Chroma: {hct.Chroma:F1}");
+            Console.WriteLine($"  Tone: {hct.Tone:F1}");
+        }
+
+        [Theory]
+        [InlineData(0xFF7F41AC, "Primary")]
+        [InlineData(0xFF00796B, "Secondary")]
+        [InlineData(0xFFF57C00, "Tertiary")]
+        [InlineData(0xFFD32F2F, "Error")]
+        public void Test10_AllPalettes_ShouldMaintainHue_AcrossTones(uint seedColor, string colorName)
+        {
+            // Arrange
+            var palette = TonalPalette.FromInt(seedColor);
+            var seedHct = Hct.FromInt(seedColor);
+            var tonesToTest = new[] { 20, 40, 60, 80 }; // Middle tones
+            var hueToleranceDegrees = 15.0; // Allow some hue shift (HCT may adjust)
+
+            Console.WriteLine($"\n{colorName} Hue Consistency Test:");
+            Console.WriteLine($"  Seed Hue: {seedHct.Hue:F1}°");
+
+            // Act & Assert
+            foreach (var tone in tonesToTest)
+            {
+                var toneColor = palette.Tone((uint)tone);
+                var toneHct = Hct.FromInt(toneColor);
+
+                var hueDifference = Math.Abs(toneHct.Hue - seedHct.Hue);
+                // Handle wraparound (e.g., 359° vs 1°)
+                if (hueDifference > 180)
+                    hueDifference = 360 - hueDifference;
+
+                Console.WriteLine($"    Tone {tone}: {toneHct.Hue:F1}° (diff: {hueDifference:F1}°)");
+
+                hueDifference.Should().BeLessThan(hueToleranceDegrees,
+                    $"{colorName} tone {tone} should maintain similar hue to seed");
+            }
+        }
+
+        [Theory]
+        [InlineData(0xFF7F41AC, "Primary")]
+        [InlineData(0xFF00796B, "Secondary")]
+        [InlineData(0xFFF57C00, "Tertiary")]
+        [InlineData(0xFFD32F2F, "Error")]
+        public void Test11_AllContainers_ShouldMeet_WCAG_AA_WithOnContainers(uint seedColor, string colorName)
+        {
+            // Arrange
+            var palette = TonalPalette.FromInt(seedColor);
+            var container = palette.Tone(90);
+            var onContainer = palette.Tone(10);
+            var minContrastAA = 4.5;
+
+            // Act
+            var contrastRatio = ColorTestHelpers.CalculateContrastRatio(container, onContainer);
+
+            // Assert
+            contrastRatio.Should().BeGreaterOrEqualTo(minContrastAA,
+                $"{colorName}Container and On{colorName}Container must meet WCAG AA");
+
+            Console.WriteLine($"\n{colorName} Container Contrast:");
+            Console.WriteLine($"  Container (Tone90): {StringUtils.HexFromArgb(container)}");
+            Console.WriteLine($"  OnContainer (Tone10): {StringUtils.HexFromArgb(onContainer)}");
+            Console.WriteLine($"  Contrast Ratio: {contrastRatio:F2}:1");
+            Console.WriteLine($"  WCAG AA (4.5:1): {(contrastRatio >= 4.5 ? "✓ PASS" : "✗ FAIL")}");
+            Console.WriteLine($"  WCAG AAA (7:1): {(contrastRatio >= 7.0 ? "✓ PASS" : "✗ FAIL")}");
+        }
+
+        [Fact]
+        public void Test12_Primary_And_Error_ShouldBe_VisuallyDistinct()
+        {
+            // Arrange
+            var primaryPalette = TonalPalette.FromInt(PRIMARY_SEED);
+            var errorPalette = TonalPalette.FromInt(ERROR_SEED);
+
+            var primary = primaryPalette.Tone(40);
+            var error = errorPalette.Tone(40);
+
+            var primaryHct = Hct.FromInt(primary);
+            var errorHct = Hct.FromInt(error);
+
+            var minHueSeparationDegrees = 65.0; // Should be ~69° based on actual palette analysis
+
+            // Act
+            var hueDifference = Math.Abs(primaryHct.Hue - errorHct.Hue);
+            if (hueDifference > 180)
+                hueDifference = 360 - hueDifference;
+
+            // Assert
+            hueDifference.Should().BeGreaterOrEqualTo(minHueSeparationDegrees,
+                "Primary (purple ~314°) and Error (red ~24°) must be visually distinct to avoid confusion");
+
+            Console.WriteLine($"\nPrimary vs Error Color Separation:");
+            Console.WriteLine($"  Primary Hue: {primaryHct.Hue:F1}°");
+            Console.WriteLine($"  Error Hue: {errorHct.Hue:F1}°");
+            Console.WriteLine($"  Separation: {hueDifference:F1}°");
+            Console.WriteLine($"  Status: {(hueDifference >= minHueSeparationDegrees ? "✓ PASS" : "✗ FAIL")}");
+        }
+
+        [Fact]
+        public void Test13_AllKeyColors_ShouldHave_DistinctHues()
+        {
+            // Arrange
+            var seeds = new[]
+            {
+                (PRIMARY_SEED, "Primary"),
+                (SECONDARY_SEED, "Secondary"),
+                (TERTIARY_SEED, "Tertiary"),
+                (ERROR_SEED, "Error")
+            };
+
+            var minSeparationDegrees = 25.0; // Minimum to be visually distinct (Tertiary-Error is ~29.5°)
+
+            Console.WriteLine($"\nAll Key Colors Hue Separation Matrix:");
+
+            // Act & Assert
+            for (int i = 0; i < seeds.Length; i++)
+            {
+                for (int j = i + 1; j < seeds.Length; j++)
+                {
+                    var hct1 = Hct.FromInt(seeds[i].Item1);
+                    var hct2 = Hct.FromInt(seeds[j].Item1);
+
+                    var hueDiff = Math.Abs(hct1.Hue - hct2.Hue);
+                    if (hueDiff > 180)
+                        hueDiff = 360 - hueDiff;
+
+                    Console.WriteLine($"  {seeds[i].Item2} vs {seeds[j].Item2}: {hueDiff:F1}° " +
+                        $"{(hueDiff >= minSeparationDegrees ? "✓" : "✗")}");
+
+                    hueDiff.Should().BeGreaterOrEqualTo(minSeparationDegrees,
+                        $"{seeds[i].Item2} and {seeds[j].Item2} must have distinct hues");
+                }
+            }
+        }
+
+        [Fact]
+        public void Test14_NeutralPalette_ShouldBe_LowChroma()
+        {
+            // Arrange
+            var primaryHct = Hct.FromInt(PRIMARY_SEED);
+            var neutralChroma = Math.Min(primaryHct.Chroma / 12, 4);
+            var neutralSeed = Hct.From(primaryHct.Hue, neutralChroma, primaryHct.Tone).ToInt();
+
+            var neutralPalette = TonalPalette.FromInt(neutralSeed);
+            var maxChroma = 6.0; // Neutrals should be very desaturated
+
+            // Act
+            var neutralTone50 = neutralPalette.Tone(50);
+            var neutralHct = Hct.FromInt(neutralTone50);
+
+            // Assert
+            neutralHct.Chroma.Should().BeLessThan(maxChroma,
+                "Neutral palette should have very low chroma (nearly grayscale)");
+
+            Console.WriteLine($"\nNeutral Palette Chroma Test:");
+            Console.WriteLine($"  Primary Chroma: {primaryHct.Chroma:F1}");
+            Console.WriteLine($"  Neutral Chroma (calculated): {neutralChroma:F1}");
+            Console.WriteLine($"  Neutral Tone50 Chroma: {neutralHct.Chroma:F1}");
+            Console.WriteLine($"  Status: {(neutralHct.Chroma < maxChroma ? "✓ PASS" : "✗ FAIL")}");
+        }
+
+        [Theory]
+        [InlineData(40, "Primary")]
+        [InlineData(100, "OnPrimary")]
+        [InlineData(90, "PrimaryContainer")]
+        [InlineData(10, "OnPrimaryContainer")]
+        public void Test15_LightMode_PrimaryRoles_ShouldUse_CorrectTones(int expectedTone, string roleName)
+        {
+            // Arrange
+            var palette = TonalPalette.FromInt(PRIMARY_SEED);
+
+            // Act
+            var color = palette.Tone((uint)expectedTone);
+            var hct = Hct.FromInt(color);
+
+            // Assert
+            hct.Tone.Should().BeApproximately(expectedTone, 1.0,
+                $"{roleName} should use tone {expectedTone} in light mode");
+
+            Console.WriteLine($"\n{roleName} Tone Mapping:");
+            Console.WriteLine($"  Expected Tone: {expectedTone}");
+            Console.WriteLine($"  Actual Tone: {hct.Tone:F1}");
+            Console.WriteLine($"  Color: {StringUtils.HexFromArgb(color)}");
+        }
+
+        #endregion
     }
 }

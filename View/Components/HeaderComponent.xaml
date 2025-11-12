@@ -6,6 +6,7 @@
              x:Name="HeaderRoot">
 
     <Grid ColumnDefinitions="Auto,*,Auto"
+          BackgroundColor="{StaticResource SurfaceContainer}"
           Padding="16,12,16,12"
           RowSpacing="0"
           ColumnSpacing="8">
@@ -33,8 +34,8 @@
             <!-- Cancel Text (Form Mode with Text) -->
             <Label x:Name="cancelTextLabel"
                    Text="Cancel"
+                   Style="{StaticResource LabelLarge}"
                    TextColor="{StaticResource OnSurfaceVariant}"
-                   FontSize="16"
                    VerticalOptions="Center"
                    HorizontalOptions="Center"
                    LineBreakMode="NoWrap"
@@ -52,12 +53,14 @@
 
 
 
+        <!-- Save Button (MD3 Filled Button) -->
         <Frame Grid.Column="2"
        x:Name="rightButtonStack"
        WidthRequest="48"
        HeightRequest="48"
        BackgroundColor="{StaticResource Primary}"
-       CornerRadius="24" Padding="0"
+       CornerRadius="24"
+       Padding="0"
        HasShadow="False"
        HorizontalOptions="End"
        VerticalOptions="Center"
@@ -67,17 +70,22 @@
                 <TapGestureRecognizer Tapped="OnSaveButtonClicked" />
             </Frame.GestureRecognizers>
 
+            <Frame.Shadow>
+                <Shadow Brush="{StaticResource Shadow}" Offset="0,2" Radius="4" Opacity="0.3" />
+            </Frame.Shadow>
+
             <Grid>
                 <components:StatefulIcon x:Name="saveIconImage"
                IconName="check"
-               InactiveColor="{StaticResource OnPrimary}" IsVisible="False"
+               InactiveColor="{StaticResource OnPrimary}"
+               IsVisible="False"
                VerticalOptions="Center"
                HorizontalOptions="Center" />
 
                 <Label x:Name="saveTextLabel"
                Text="Save"
-               TextColor="{StaticResource OnPrimary}" FontSize="16"
-               FontAttributes="Bold"
+               TextColor="{StaticResource OnPrimary}"
+               Style="{StaticResource LabelLarge}"
                VerticalOptions="Center"
                HorizontalOptions="Center"
                IsVisible="False" />

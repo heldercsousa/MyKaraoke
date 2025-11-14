@@ -1,27 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir /b \"C:\\Users\\helde\\source\\repos\\MyVocaList\\View\\Resources\\AppIcon\\*.svg\")",
-      "Bash(findstr:*)",
-      "WebFetch(domain:fonts.google.com)",
-      "WebSearch",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:material-icons.github.io)",
-      "Bash(dotnet new:*)",
-      "Bash(dotnet sln add:*)",
-      "Bash(dotnet add:*)",
-      "Bash(dotnet add reference:*)",
-      "Bash(dir \"C:\\Users\\helde\\source\\repos\\MyVocaList\\MyVocaList.Tests\" /b)",
-      "Bash(dotnet sln remove:*)",
       "Bash(dotnet test:*)",
-      "Bash(dotnet list:*)",
-      "Bash(dotnet clean:*)",
-      "Bash(dotnet build:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(been thrown by the target of an invocation.\"\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(Select-String -Pattern \"(Aprovado|Com falha|Total de testes)\" -Context 0,1)",
+      "Bash(dotnet build:*)"
     ],
     "deny": [],
     "ask": []

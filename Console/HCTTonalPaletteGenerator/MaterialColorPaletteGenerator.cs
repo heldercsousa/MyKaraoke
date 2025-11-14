@@ -8,16 +8,15 @@ using System.Text;
 namespace MyVocaList.Console.HCTTonalPaletteGenerator
 {
     /// <summary>
-    /// Generates Material Design 3 tonal palettes from seed colors
+    /// Generates Material Design 3 tonal palettes from seed colors (MyVocaList Brand: Pink/Purple/Gold)
     /// Outputs XAML ResourceDictionary with proper HCT-based color system
     /// </summary>
     public class MaterialColorPaletteGenerator
     {
-        // MyVocaList Option 1 Colors
-        private const uint PRIMARY_SEED = 0xFF7F41AC;    // Purple #7F41AC
-        private const uint SECONDARY_SEED = 0xFF00796B;  // Teal #00796B
-        private const uint TERTIARY_SEED = 0xFFF57C00;   // Orange #F57C00
-        private const uint ERROR_SEED = 0xFFD32F2F;      // Red #D32F2F
+        private const uint PRIMARY_SEED = 0xFFE91E63;    // Pink (your main brand color)
+        private const uint SECONDARY_SEED = 0xFF8B4CB8;  // Purple (your secondary)
+        private const uint TERTIARY_SEED = 0xFFFFD700;   // Gold (your FAB)
+        private const uint ERROR_SEED = 0xFFF44336;      // Red (standard error)
 
         /// <summary>
         /// Standard Material Design 3 tones for tonal palettes
@@ -39,36 +38,36 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
             sb.AppendLine();
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine("    <!-- MATERIAL DESIGN 3 COLOR SYSTEM - MyVocaList                                -->");
-            sb.AppendLine("    <!-- OPTION 1: Purple-Primary Professional (HCT-GENERATED)                      -->");
+            sb.AppendLine("    <!-- MyVocaList Brand Theme - Dark Mode (HCT-GENERATED)                         -->");
             sb.AppendLine("    <!-- Generated using MaterialColorUtilities library                             -->");
-            sb.AppendLine("    <!-- Split-Complementary Harmony: Purple + Teal + Orange                        -->");
+            sb.AppendLine("    <!-- Your Signature Colors: Pink + Purple + Gold                               -->");
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine();
 
             // Generate Primary Tonal Palette
             sb.AppendLine("    <!-- ============================================================================ -->");
-            sb.AppendLine("    <!-- PRIMARY TONAL PALETTE (Purple #7F41AC)                                     -->");
+            sb.AppendLine("    <!-- PRIMARY TONAL PALETTE (Pink #E91E63)                                      -->");
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine();
             AppendTonalPalette(sb, "Primary", PRIMARY_SEED);
 
             // Generate Secondary Tonal Palette
             sb.AppendLine("    <!-- ============================================================================ -->");
-            sb.AppendLine("    <!-- SECONDARY TONAL PALETTE (Teal #00796B)                                     -->");
+            sb.AppendLine("    <!-- SECONDARY TONAL PALETTE (Purple #8B4CB8)                                     -->");
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine();
             AppendTonalPalette(sb, "Secondary", SECONDARY_SEED);
 
             // Generate Tertiary Tonal Palette
             sb.AppendLine("    <!-- ============================================================================ -->");
-            sb.AppendLine("    <!-- TERTIARY TONAL PALETTE (Orange #F57C00)                                    -->");
+            sb.AppendLine("    <!-- TERTIARY TONAL PALETTE (Gold #FFD700)                                    -->");
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine();
             AppendTonalPalette(sb, "Tertiary", TERTIARY_SEED);
 
             // Generate Error Tonal Palette
             sb.AppendLine("    <!-- ============================================================================ -->");
-            sb.AppendLine("    <!-- ERROR TONAL PALETTE (Red #D32F2F)                                          -->");
+            sb.AppendLine("    <!-- ERROR TONAL PALETTE (Red #F44336)                                          -->");
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine();
             AppendTonalPalette(sb, "Error", ERROR_SEED);
@@ -87,22 +86,22 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
             uint neutralVariantSeed = Hct.From(hct.Hue, Math.Min(hct.Chroma / 6, 8), hct.Tone).ToInt();
             AppendTonalPalette(sb, "NeutralVariant", neutralVariantSeed);
 
-            // Light Mode Semantic Tokens
+            // Dark Mode Semantic Tokens (PRIMARY THEME)
             sb.AppendLine();
             sb.AppendLine("    <!-- ============================================================================ -->");
-            sb.AppendLine("    <!-- LIGHT MODE SEMANTIC TOKENS                                                 -->");
+            sb.AppendLine("    <!-- DARK MODE SEMANTIC TOKENS (Primary Theme)                                  -->");
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine();
-            AppendLightModeTokens(sb);
+            AppendDarkModeTokens(sb); 
 
-            // Dark Mode Semantic Tokens (commented out for future)
+            // Light Mode Semantic Tokens (FUTURE)
             sb.AppendLine();
             sb.AppendLine("    <!-- ============================================================================ -->");
-            sb.AppendLine("    <!-- DARK MODE SEMANTIC TOKENS (Future)                                         -->");
-            sb.AppendLine("    <!-- Uncomment when implementing dark mode                                      -->");
+            sb.AppendLine("    <!-- LIGHT MODE SEMANTIC TOKENS (Future v2.0)                                   -->");
+            sb.AppendLine("    <!-- Uncomment when implementing light mode                                     -->");
             sb.AppendLine("    <!-- ============================================================================ -->");
             sb.AppendLine();
-            AppendDarkModeTokens(sb);
+            AppendLightModeTokens(sb); 
 
             // Gradients
             sb.AppendLine();
@@ -148,6 +147,7 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
 
         private static void AppendLightModeTokens(StringBuilder sb)
         {
+            sb.AppendLine("    <!-- ");
             sb.AppendLine("    <!-- Primary Role Colors -->");
             sb.AppendLine("    <Color x:Key=\"Primary\">{StaticResource Primary40}</Color>");
             sb.AppendLine("    <Color x:Key=\"OnPrimary\">{StaticResource Primary100}</Color>");
@@ -201,47 +201,105 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
             sb.AppendLine("    <!-- Scrim & Shadow -->");
             sb.AppendLine("    <Color x:Key=\"Scrim\">{StaticResource Neutral0}</Color>");
             sb.AppendLine("    <Color x:Key=\"Shadow\">{StaticResource Neutral0}</Color>");
+            sb.AppendLine("    --> ");
         }
 
         private static void AppendDarkModeTokens(StringBuilder sb)
         {
-            sb.AppendLine("    <!-- Dark Mode (Future Implementation) -->");
-            sb.AppendLine("    <!--");
-            sb.AppendLine("    <Color x:Key=\"PrimaryDark\">{StaticResource Primary80}</Color>");
-            sb.AppendLine("    <Color x:Key=\"OnPrimaryDark\">{StaticResource Primary20}</Color>");
-            sb.AppendLine("    <Color x:Key=\"PrimaryContainerDark\">{StaticResource Primary30}</Color>");
-            sb.AppendLine("    <Color x:Key=\"OnPrimaryContainerDark\">{StaticResource Primary90}</Color>");
-            sb.AppendLine("    ...");
-            sb.AppendLine("    -->");
+            sb.AppendLine("    <!-- Primary Role Colors (DARK MODE - Bright on Dark) -->");
+            sb.AppendLine("    <Color x:Key=\"Primary\">{StaticResource Primary80}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnPrimary\">{StaticResource Primary20}</Color>");
+            sb.AppendLine("    <Color x:Key=\"PrimaryContainer\">{StaticResource Primary30}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnPrimaryContainer\">{StaticResource Primary90}</Color>");
+            sb.AppendLine();
+
+            sb.AppendLine("    <!-- Secondary Role Colors (DARK MODE) -->");
+            sb.AppendLine("    <Color x:Key=\"Secondary\">{StaticResource Secondary80}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnSecondary\">{StaticResource Secondary20}</Color>");
+            sb.AppendLine("    <Color x:Key=\"SecondaryContainer\">{StaticResource Secondary30}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnSecondaryContainer\">{StaticResource Secondary90}</Color>");
+            sb.AppendLine();
+
+            sb.AppendLine("    <!-- Tertiary Role Colors (DARK MODE) -->");
+            sb.AppendLine("    <Color x:Key=\"Tertiary\">{StaticResource Tertiary80}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnTertiary\">{StaticResource Tertiary20}</Color>");
+            sb.AppendLine("    <Color x:Key=\"TertiaryContainer\">{StaticResource Tertiary30}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnTertiaryContainer\">{StaticResource Tertiary90}</Color>");
+            sb.AppendLine();
+
+            sb.AppendLine("    <!-- Error Role Colors (DARK MODE) -->");
+            sb.AppendLine("    <Color x:Key=\"Error\">{StaticResource Error80}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnError\">{StaticResource Error20}</Color>");
+            sb.AppendLine("    <Color x:Key=\"ErrorContainer\">{StaticResource Error30}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnErrorContainer\">{StaticResource Error90}</Color>");
+            sb.AppendLine();
+
+            sb.AppendLine("    <!-- Background & Surface (DARK MODE - Very Dark) -->");
+            sb.AppendLine("    <Color x:Key=\"Background\">{StaticResource Neutral10}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnBackground\">{StaticResource Neutral90}</Color>");
+            sb.AppendLine("    <Color x:Key=\"Surface\">{StaticResource Neutral10}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnSurface\">{StaticResource Neutral90}</Color>");
+            sb.AppendLine("    <Color x:Key=\"SurfaceVariant\">{StaticResource NeutralVariant30}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnSurfaceVariant\">{StaticResource NeutralVariant80}</Color>");
+            sb.AppendLine("    <Color x:Key=\"SurfaceDim\">{StaticResource Neutral6}</Color>");
+            sb.AppendLine("    <Color x:Key=\"SurfaceBright\">{StaticResource Neutral24}</Color>");
+            sb.AppendLine();
+
+            sb.AppendLine("    <!-- Outline & Borders (DARK MODE) -->");
+            sb.AppendLine("    <Color x:Key=\"Outline\">{StaticResource NeutralVariant60}</Color>");
+            sb.AppendLine("    <Color x:Key=\"OutlineVariant\">{StaticResource NeutralVariant30}</Color>");
+            sb.AppendLine();
+
+            sb.AppendLine("    <!-- Inverse Colors (DARK MODE) -->");
+            sb.AppendLine("    <Color x:Key=\"InverseSurface\">{StaticResource Neutral90}</Color>");
+            sb.AppendLine("    <Color x:Key=\"InverseOnSurface\">{StaticResource Neutral20}</Color>");
+            sb.AppendLine("    <Color x:Key=\"InversePrimary\">{StaticResource Primary40}</Color>");
+            sb.AppendLine();
+
+            sb.AppendLine("    <!-- Scrim & Shadow -->");
+            sb.AppendLine("    <Color x:Key=\"Scrim\">{StaticResource Neutral0}</Color>");
+            sb.AppendLine("    <Color x:Key=\"Shadow\">{StaticResource Neutral0}</Color>");
         }
 
         private static void AppendGradients(StringBuilder sb)
         {
-            sb.AppendLine("    <!-- Primary Purple Gradient -->");
-            sb.AppendLine("    <LinearGradientBrush x:Key=\"PrimaryGradient\" StartPoint=\"0,0\" EndPoint=\"1,0\">");
-            sb.AppendLine("        <GradientStop Color=\"{StaticResource Primary40}\" Offset=\"0.0\" />");
+            // Background Gradient (Dark Purple - Your Signature)
+            sb.AppendLine("    <!-- App Background Gradient (Dark Purple) -->");
+            sb.AppendLine("    <LinearGradientBrush x:Key=\"AppBackgroundGradient\" StartPoint=\"0,0\" EndPoint=\"1,0\">");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Neutral10}\" Offset=\"0.0\" />");
             sb.AppendLine("        <GradientStop Color=\"{StaticResource Primary10}\" Offset=\"1.0\" />");
             sb.AppendLine("    </LinearGradientBrush>");
             sb.AppendLine();
 
-            sb.AppendLine("    <!-- Secondary Teal Gradient -->");
-            sb.AppendLine("    <LinearGradientBrush x:Key=\"SecondaryGradient\" StartPoint=\"0,0\" EndPoint=\"1,0\">");
-            sb.AppendLine("        <GradientStop Color=\"{StaticResource Secondary40}\" Offset=\"0.0\" />");
-            sb.AppendLine("        <GradientStop Color=\"{StaticResource Secondary10}\" Offset=\"1.0\" />");
+            // Card Gradient (Diagonal Purple)
+            sb.AppendLine("    <!-- Card Background Gradient (Diagonal Purple) -->");
+            sb.AppendLine("    <LinearGradientBrush x:Key=\"CardBackgroundGradient\" StartPoint=\"0,0\" EndPoint=\"1,1\">");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Primary20}\" Offset=\"0.0\" />");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Secondary30}\" Offset=\"1.0\" />");
             sb.AppendLine("    </LinearGradientBrush>");
             sb.AppendLine();
 
-            sb.AppendLine("    <!-- Tertiary Orange Gradient -->");
-            sb.AppendLine("    <LinearGradientBrush x:Key=\"TertiaryGradient\" StartPoint=\"0,0\" EndPoint=\"1,1\">");
-            sb.AppendLine("        <GradientStop Color=\"{StaticResource Tertiary40}\" Offset=\"0.0\" />");
-            sb.AppendLine("        <GradientStop Color=\"{StaticResource Tertiary10}\" Offset=\"1.0\" />");
+            // Selected Item Gradient (Pink to Purple)
+            sb.AppendLine("    <!-- Selected Item Gradient (Pink to Purple) -->");
+            sb.AppendLine("    <LinearGradientBrush x:Key=\"SelectedGradient\" StartPoint=\"0,0\" EndPoint=\"1,0\">");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Primary30}\" Offset=\"0.0\" />");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Secondary40}\" Offset=\"1.0\" />");
             sb.AppendLine("    </LinearGradientBrush>");
             sb.AppendLine();
 
-            sb.AppendLine("    <!-- Background Gradient -->");
-            sb.AppendLine("    <LinearGradientBrush x:Key=\"AppBackgroundGradient\" StartPoint=\"0,0\" EndPoint=\"1,0\">");
-            sb.AppendLine("        <GradientStop Color=\"{StaticResource Neutral99}\" Offset=\"0.0\" />");
-            sb.AppendLine("        <GradientStop Color=\"{StaticResource NeutralVariant95}\" Offset=\"1.0\" />");
+            // Button Gradient (Bright Pink to Purple)
+            sb.AppendLine("    <!-- Button Gradient (Bright Pink to Purple) -->");
+            sb.AppendLine("    <LinearGradientBrush x:Key=\"ButtonGradient\" StartPoint=\"0,0\" EndPoint=\"1,0\">");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Primary70}\" Offset=\"0.0\" />");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Secondary70}\" Offset=\"1.0\" />");
+            sb.AppendLine("    </LinearGradientBrush>");
+            sb.AppendLine();
+
+            // FAB Gradient (Gold to Pink - Your Signature)
+            sb.AppendLine("    <!-- FAB Gradient (Gold to Pink) -->");
+            sb.AppendLine("    <LinearGradientBrush x:Key=\"FabGradient\" StartPoint=\"0,0\" EndPoint=\"1,1\">");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Tertiary80}\" Offset=\"0.0\" />");
+            sb.AppendLine("        <GradientStop Color=\"{StaticResource Primary70}\" Offset=\"1.0\" />");
             sb.AppendLine("    </LinearGradientBrush>");
         }
 
@@ -254,7 +312,7 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
 
             sb.AppendLine("    <!-- Warning (for caution states) -->");
             sb.AppendLine("    <Color x:Key=\"Warning\">#FF9800</Color>");
-            sb.AppendLine("    <Color x:Key=\"OnWarning\">#000000</Color>");
+            sb.AppendLine("    <Color x:Key=\"OnWarning\">#FFFFFF</Color>");
             sb.AppendLine();
 
             sb.AppendLine("    <!-- Info (for informational elements) -->");

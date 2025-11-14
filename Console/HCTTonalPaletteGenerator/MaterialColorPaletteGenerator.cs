@@ -136,7 +136,7 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
 
             foreach (var tone in STANDARD_TONES)
             {
-                uint argb = palette.Tone((uint)tone);
+                uint argb = palette.Tone(tone);  // tone is already int, no cast needed
                 string hex = HexFromArgb(argb);
                 string toneName = $"{colorName}{tone}";
 
@@ -241,8 +241,8 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
             sb.AppendLine("    <Color x:Key=\"OnSurface\">{StaticResource Neutral90}</Color>");
             sb.AppendLine("    <Color x:Key=\"SurfaceVariant\">{StaticResource NeutralVariant30}</Color>");
             sb.AppendLine("    <Color x:Key=\"OnSurfaceVariant\">{StaticResource NeutralVariant80}</Color>");
-            sb.AppendLine("    <Color x:Key=\"SurfaceDim\">{StaticResource Neutral6}</Color>");
-            sb.AppendLine("    <Color x:Key=\"SurfaceBright\">{StaticResource Neutral24}</Color>");
+            sb.AppendLine("    <Color x:Key=\"SurfaceDim\">{StaticResource Neutral10}</Color>");  // MD3 standard tone (was Neutral6)
+            sb.AppendLine("    <Color x:Key=\"SurfaceBright\">{StaticResource Neutral20}</Color>");  // MD3 standard tone (was Neutral24)
             sb.AppendLine();
 
             sb.AppendLine("    <!-- Outline & Borders (DARK MODE) -->");
@@ -306,18 +306,18 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
         private static void AppendSemanticColors(StringBuilder sb)
         {
             sb.AppendLine("    <!-- Success (for positive feedback) -->");
-            sb.AppendLine("    <Color x:Key=\"Success\">#4CAF50</Color>");
-            sb.AppendLine("    <Color x:Key=\"OnSuccess\">#FFFFFF</Color>");
+            sb.AppendLine("    <Color x:Key=\"Success\">#FF4CAF50</Color>");  // Added FF alpha prefix
+            sb.AppendLine("    <Color x:Key=\"OnSuccess\">#FFFFFFFF</Color>");
             sb.AppendLine();
 
             sb.AppendLine("    <!-- Warning (for caution states) -->");
-            sb.AppendLine("    <Color x:Key=\"Warning\">#FF9800</Color>");
-            sb.AppendLine("    <Color x:Key=\"OnWarning\">#FFFFFF</Color>");
+            sb.AppendLine("    <Color x:Key=\"Warning\">#FFFF9800</Color>");  // Added FF alpha prefix
+            sb.AppendLine("    <Color x:Key=\"OnWarning\">#FFFFFFFF</Color>");
             sb.AppendLine();
 
             sb.AppendLine("    <!-- Info (for informational elements) -->");
-            sb.AppendLine("    <Color x:Key=\"Info\">#2196F3</Color>");
-            sb.AppendLine("    <Color x:Key=\"OnInfo\">#FFFFFF</Color>");
+            sb.AppendLine("    <Color x:Key=\"Info\">#FF2196F3</Color>");  // Added FF alpha prefix
+            sb.AppendLine("    <Color x:Key=\"OnInfo\">#FFFFFFFF</Color>");
         }
 
         // Helper to convert ARGB uint to hex string in #AARRGGBB format

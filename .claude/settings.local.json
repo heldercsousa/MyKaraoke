@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dotnet test:*)",
       "Bash(Select-String -Pattern \"(Aprovado|Com falha|Total de testes)\" -Context 0,1)",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(dotnet clean:*)"
     ],
     "deny": [],
     "ask": []

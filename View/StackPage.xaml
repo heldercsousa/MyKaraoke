@@ -41,11 +41,11 @@
                                            BadgeText="{Binding QueueStatusText}">
                 <components:CardWrapperComponent.CardContent>
                     <Grid RowDefinitions="*">
-                        <!-- Empty queue message - MD3 Light -->
+                        <!-- Empty queue message - MD3 Gradient (Vibrant nightlife aesthetic) -->
                         <Frame x:Name="emptyQueueMessage"
                                IsVisible="True"
                                VerticalOptions="Start"
-                               Style="{StaticResource FilledCard}"
+                               Style="{StaticResource GradientCard}"
                                Padding="24"
                                Margin="0,16">
 

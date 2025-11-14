@@ -94,36 +94,38 @@
     <!-- NEUTRAL TONAL PALETTES (Derived from Primary)                              -->
     <!-- ============================================================================ -->
 
-    <!-- Base: #FF807778 | Hue: 4,3° | Chroma: 3,9 | Tone: 50,8 -->
+    <!-- Base: Purple-tinted neutrals | Hue: 290° | Chroma: 6 | Tone: 50 -->
+    <!-- Derived from Secondary Purple for nightlife aesthetic -->
 
     <Color x:Key="Neutral0">#FF000000</Color>
-    <Color x:Key="Neutral10">#FF201A1B</Color>
-    <Color x:Key="Neutral20">#FF352F30</Color>
-    <Color x:Key="Neutral30">#FF4C4546</Color>
-    <Color x:Key="Neutral40">#FF655C5D</Color>
-    <Color x:Key="Neutral50">#FF7E7576</Color>
-    <Color x:Key="Neutral60">#FF988E8F</Color>
-    <Color x:Key="Neutral70">#FFB3A9AA</Color>
-    <Color x:Key="Neutral80">#FFCFC4C5</Color>
-    <Color x:Key="Neutral90">#FFECE0E1</Color>
-    <Color x:Key="Neutral95">#FFFAEEEF</Color>
+    <Color x:Key="Neutral10">#FF1C1621</Color>
+    <Color x:Key="Neutral20">#FF312A36</Color>
+    <Color x:Key="Neutral30">#FF47404D</Color>
+    <Color x:Key="Neutral40">#FF5F5765</Color>
+    <Color x:Key="Neutral50">#FF78707E</Color>
+    <Color x:Key="Neutral60">#FF938A98</Color>
+    <Color x:Key="Neutral70">#FFAEA5B3</Color>
+    <Color x:Key="Neutral80">#FFCAC1CE</Color>
+    <Color x:Key="Neutral90">#FFE6DDEA</Color>
+    <Color x:Key="Neutral95">#FFF4EBF5</Color>
     <Color x:Key="Neutral99">#FFFFFBFF</Color>
     <Color x:Key="Neutral100">#FFFFFFFF</Color>
 
 
-    <!-- Base: #FF867577 | Hue: 7,4° | Chroma: 7,8 | Tone: 50,8 -->
+    <!-- Base: Magenta-tinted variants | Hue: 300° | Chroma: 12 | Tone: 50 -->
+    <!-- Higher chroma for more vibrant surfaces -->
 
     <Color x:Key="NeutralVariant0">#FF000000</Color>
-    <Color x:Key="NeutralVariant10">#FF24191A</Color>
-    <Color x:Key="NeutralVariant20">#FF3A2D2F</Color>
-    <Color x:Key="NeutralVariant30">#FF514345</Color>
-    <Color x:Key="NeutralVariant40">#FF6A5B5C</Color>
-    <Color x:Key="NeutralVariant50">#FF847375</Color>
-    <Color x:Key="NeutralVariant60">#FF9E8C8E</Color>
-    <Color x:Key="NeutralVariant70">#FFBAA7A9</Color>
-    <Color x:Key="NeutralVariant80">#FFD6C2C4</Color>
-    <Color x:Key="NeutralVariant90">#FFF3DDDF</Color>
-    <Color x:Key="NeutralVariant95">#FFFFECEE</Color>
+    <Color x:Key="NeutralVariant10">#FF211525</Color>
+    <Color x:Key="NeutralVariant20">#FF372A3B</Color>
+    <Color x:Key="NeutralVariant30">#FF4E3F53</Color>
+    <Color x:Key="NeutralVariant40">#FF66576B</Color>
+    <Color x:Key="NeutralVariant50">#FF7F6F84</Color>
+    <Color x:Key="NeutralVariant60">#FF9A899F</Color>
+    <Color x:Key="NeutralVariant70">#FFB5A4BA</Color>
+    <Color x:Key="NeutralVariant80">#FFD1BFD6</Color>
+    <Color x:Key="NeutralVariant90">#FFEEDAF2</Color>
+    <Color x:Key="NeutralVariant95">#FFF9E8F9</Color>
     <Color x:Key="NeutralVariant99">#FFFFFBFF</Color>
     <Color x:Key="NeutralVariant100">#FFFFFFFF</Color>
 
@@ -173,36 +175,38 @@
     <!-- Error90 -->
 
     <!-- Background & Surface (DARK MODE - Very Dark) -->
-    <Color x:Key="Background">#FF201A1B</Color>
-    <!-- Neutral10 -->
-    <Color x:Key="OnBackground">#FFECE0E1</Color>
-    <!-- Neutral90 -->
-    <Color x:Key="Surface">#FF201A1B</Color>
-    <!-- Neutral10 -->
-    <Color x:Key="OnSurface">#FFECE0E1</Color>
-    <!-- Neutral90 -->
-    <Color x:Key="SurfaceVariant">#FF514345</Color>
-    <!-- NeutralVariant30 -->
-    <Color x:Key="OnSurfaceVariant">#FFD6C2C4</Color>
-    <!-- NeutralVariant80 -->
+    <Color x:Key="Background">#FF1C1621</Color>
+    <!-- NEW Neutral10 - Deep purple-black -->
+    <Color x:Key="OnBackground">#FFE6DDEA</Color>
+    <!-- NEW Neutral90 - Soft purple-white -->
+    <Color x:Key="Surface">#FF1C1621</Color>
+    <!-- NEW Neutral10 -->
+    <Color x:Key="OnSurface">#FFE6DDEA</Color>
+    <!-- NEW Neutral90 -->
+    <Color x:Key="SurfaceVariant">#FF4E3F53</Color>
+    <!-- NEW NeutralVariant30 - Deep purple-gray -->
+    <Color x:Key="OnSurfaceVariant">#FFD1BFD6</Color>
+    <!-- NEW NeutralVariant80 - Light purple-gray -->
+    <Color x:Key="SurfaceContainer">#FF312A36</Color>
+    <!-- NEW Neutral20 - for headers/elevated surfaces -->
     <Color x:Key="SurfaceDim">#FF000000</Color>
-    <!-- Neutral0 -->
-    <Color x:Key="SurfaceBright">#FF352F30</Color>
-    <!-- Neutral20 -->
+    <!-- Neutral0 - unchanged -->
+    <Color x:Key="SurfaceBright">#FF312A36</Color>
+    <!-- NEW Neutral20 -->
 
     <!-- Outline & Borders (DARK MODE) -->
-    <Color x:Key="Outline">#FF9E8C8E</Color>
-    <!-- NeutralVariant60 -->
-    <Color x:Key="OutlineVariant">#FF514345</Color>
-    <!-- NeutralVariant30 -->
+    <Color x:Key="Outline">#FF9A899F</Color>
+    <!-- NEW NeutralVariant60 -->
+    <Color x:Key="OutlineVariant">#FF4E3F53</Color>
+    <!-- NEW NeutralVariant30 -->
 
     <!-- Inverse Colors (DARK MODE) -->
-    <Color x:Key="InverseSurface">#FFECE0E1</Color>
-    <!-- Neutral90 -->
-    <Color x:Key="InverseOnSurface">#FF352F30</Color>
-    <!-- Neutral20 -->
+    <Color x:Key="InverseSurface">#FFE6DDEA</Color>
+    <!-- NEW Neutral90 -->
+    <Color x:Key="InverseOnSurface">#FF312A36</Color>
+    <!-- NEW Neutral20 -->
     <Color x:Key="InversePrimary">#FFBC004B</Color>
-    <!-- Primary40 -->
+    <!-- Primary40 - unchanged -->
 
     <!-- Scrim & Shadow -->
     <Color x:Key="Scrim">#FF000000</Color>

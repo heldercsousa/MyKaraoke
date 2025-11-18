@@ -288,7 +288,7 @@
     <!-- ============================================================================ -->
 
     <!-- Success (for positive feedback) -->
-    <Color x:Key="Success">#4CAF50</Color>
+    <Color x:Key="Success">#2E7D32</Color>
     <Color x:Key="OnSuccess">#FFFFFF</Color>
 
     <!-- Warning (for caution states) -->

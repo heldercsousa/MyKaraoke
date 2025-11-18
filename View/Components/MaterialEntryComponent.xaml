@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MyVocaList.View.Components.MaterialEntryComponent"
+             x:Name="this">
+
+	<VerticalStackLayout Spacing="0">
+
+		<Label Text="{Binding Title, Source={x:Reference this}}"
+               Style="{StaticResource FieldLabel}"
+               Margin="0,0,0,4" />
+
+		<Border StrokeThickness="0"
+                StrokeShape="RoundRectangle 4,4,0,0"
+                BackgroundColor="{StaticResource SurfaceVariant}"
+                HeightRequest="56">
+
+			<Grid>
+				<Entry x:Name="InnerEntry"
+                       Text="{Binding Text, Source={x:Reference this}}"
+                       Placeholder="{Binding Placeholder, Source={x:Reference this}}"
+                       MaxLength="{Binding MaxLength, Source={x:Reference this}}"
+                       Keyboard="{Binding Keyboard, Source={x:Reference this}}"
+                       Style="{StaticResource MaterialEntry}"
+                       Margin="16,0"
+                       VerticalTextAlignment="Center"
+                       BackgroundColor="Transparent"
+                       TextChanged="OnInnerTextChanged" />
+
+				<BoxView x:Name="ActiveIndicator"
+                         HeightRequest="1"
+                         VerticalOptions="End"
+                         Color="{StaticResource OnSurfaceVariant}">
+					<BoxView.Triggers>
+						<DataTrigger TargetType="BoxView"
+                                     Binding="{Binding Source={x:Reference InnerEntry}, Path=IsFocused}"
+                                     Value="True">
+							<Setter Property="Color" Value="{StaticResource Primary}" />
+							<Setter Property="HeightRequest" Value="2" />
+						</DataTrigger>
+					</BoxView.Triggers>
+				</BoxView>
+			</Grid>
+		</Border>
+
+		<Grid ColumnDefinitions="*, Auto" Margin="0,4,0,0">
+
+			<Label Text="{Binding ErrorText, Source={x:Reference this}}"
+                   Style="{StaticResource ErrorText}"
+                   IsVisible="{Binding HasError, Source={x:Reference this}}"
+                   HorizontalOptions="Start"
+                   Margin="0" />
+
+			<Label Text="{Binding HelperText, Source={x:Reference this}}"
+                   Style="{StaticResource HelperText}"
+                   IsVisible="{Binding ShowCounter, Source={x:Reference this}}"
+                   HorizontalOptions="End"
+                   Grid.Column="1"
+                   Margin="0" />
+		</Grid>
+
+	</VerticalStackLayout>
+</ContentView>

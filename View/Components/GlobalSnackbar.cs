@@ -1,13 +1,11 @@
-﻿using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls.Shapes;
+using MyVocaList.View.Animations; // Assuming you might use animations here, or standard Maui
+using MauiView = Microsoft.Maui.Controls.View;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyVocaList.View.Components
 {
-    /// <summary>
-    /// Snackbar global singleton que se injeta automaticamente na página atual
-    /// </summary>
     public class GlobalSnackbar
     {
         #region Singleton
@@ -17,70 +15,69 @@ namespace MyVocaList.View.Components
         private GlobalSnackbar() { }
         #endregion
 
-        private Frame _currentSnackbar;
+        private Border _currentSnackbar; // Changed from Frame to Border
         private ContentPage _currentPage;
 
-        /// <summary>
-        /// Mostra snackbar de sucesso
-        /// </summary>
+        // Helper to get colors from App.xaml
+        private Color GetResourceColor(string key)
+        {
+            if (Application.Current.Resources.TryGetValue(key, out var value))
+                return (Color)value;
+            return Colors.Black; // Fallback
+        }
+
         public static async Task ShowSuccessAsync(string message, int durationMs = 3000)
         {
-            await Instance.ShowAsync(message, "#2E7D32", durationMs);
+            // Use Theme Color "Success" (or InverseSurface for standard MD3 look)
+            await Instance.ShowAsync(message, "Success", durationMs);
         }
 
-        /// <summary>
-        /// Mostra snackbar de erro
-        /// </summary>
         public static async Task ShowErrorAsync(string message, int durationMs = 4000)
         {
-            await Instance.ShowAsync(message, "#D32F2F", durationMs);
+            await Instance.ShowAsync(message, "Error", durationMs);
         }
 
-        /// <summary>
-        /// Mostra snackbar de aviso
-        /// </summary>
         public static async Task ShowWarningAsync(string message, int durationMs = 3500)
         {
-            await Instance.ShowAsync(message, "#F57C00", durationMs);
+            await Instance.ShowAsync(message, "Warning", durationMs);
         }
 
-        private async Task ShowAsync(string message, string backgroundColor, int durationMs)
+        private async Task ShowAsync(string message, string colorKey, int durationMs)
         {
             try
             {
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
                     var currentPage = GetCurrentPage();
-                    if (currentPage == null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("GlobalSnackbar: Página atual não encontrada");
-                        return;
-                    }
+                    if (currentPage == null) return;
 
-                    // Remove snackbar anterior se existir
+                    // 1. Remove existing
                     if (_currentSnackbar != null && _currentPage != null)
                     {
                         RemoveSnackbarFromPage(_currentPage, _currentSnackbar);
                     }
 
-                    // Cria novo snackbar
-                    _currentSnackbar = CreateSnackbar(message, backgroundColor);
+                    // 2. Create & Inject
+                    _currentSnackbar = CreateSnackbar(message, colorKey);
                     _currentPage = currentPage;
-
-                    // Injeta na página
                     InjectSnackbarIntoPage(currentPage, _currentSnackbar);
 
-                    // Anima entrada (slide up)
-                    _currentSnackbar.TranslationY = 100;
-                    await _currentSnackbar.TranslateTo(0, 0, 250, Easing.CubicOut);
+                    // 3. Animate In (Slide Up + Fade)
+                    _currentSnackbar.TranslationY = 50;
+                    _currentSnackbar.Opacity = 0;
 
-                    // Aguarda duração
+                    await Task.WhenAll(
+                        _currentSnackbar.TranslateTo(0, 0, 250, Easing.CubicOut),
+                        _currentSnackbar.FadeTo(1, 250)
+                    );
+
+                    // 4. Wait
                     await Task.Delay(durationMs);
 
-                    // Anima saída (slide down)
-                    await _currentSnackbar.TranslateTo(0, 100, 200, Easing.CubicIn);
+                    // 5. Animate Out (Fade Out - cleaner than sliding down)
+                    await _currentSnackbar.FadeTo(0, 200);
 
-                    // Remove da página
+                    // 6. Cleanup
                     RemoveSnackbarFromPage(_currentPage, _currentSnackbar);
                     _currentSnackbar = null;
                     _currentPage = null;
@@ -88,36 +85,59 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar: Erro ao exibir: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar Error: {ex.Message}");
             }
         }
 
-        private Frame CreateSnackbar(string message, string backgroundColor)
+        private Border CreateSnackbar(string message, string colorKey)
         {
-            var snackbar = new Frame
+            var backgroundColor = GetResourceColor(colorKey);
+
+            // Determine Text Color based on background
+            // If background is "Success" (Green), Text should be "OnSuccess" (White)
+            var textColor = Colors.White;
+            if (colorKey == "Error") textColor = GetResourceColor("OnError");
+            if (colorKey == "Success") textColor = GetResourceColor("OnSuccess");
+            if (colorKey == "Warning") textColor = GetResourceColor("OnWarning");
+
+            // MD3 COMPLIANCE FIX: 
+            // 1. Use Border instead of Frame
+            // 2. CornerRadius = 4 (Extra Small)
+            // 3. No heavy shadow (optional Stroke)
+
+            var border = new Border
             {
-                BackgroundColor = Color.FromArgb(backgroundColor),
-                CornerRadius = 8,
-                Padding = new Thickness(16, 12),
-                Margin = new Thickness(16, 0, 16, 90),
-                HasShadow = true,
+                Stroke = Colors.Transparent,
+                StrokeThickness = 0,
+                StrokeShape = new RoundRectangle { CornerRadius = 4 }, // MD3 Standard
+                BackgroundColor = backgroundColor,
                 HorizontalOptions = LayoutOptions.Fill,
                 VerticalOptions = LayoutOptions.End,
+                Margin = new Thickness(16, 0, 16, 90), // Keeps clearance for FAB/Nav
+                Padding = new Thickness(16, 14), // Taller padding for better text breathing
                 ZIndex = 10000,
+                Shadow = new Shadow // Soft MD3-style shadow
+                {
+                    Brush = Colors.Black,
+                    Offset = new Point(0, 2),
+                    Radius = 4,
+                    Opacity = 0.25f
+                },
                 Content = new Label
                 {
                     Text = message,
-                    TextColor = Colors.White,
-                    FontSize = 14,
+                    TextColor = textColor,
+                    FontSize = 14, // Body Medium
+                    FontAttributes = FontAttributes.None, // MD3 regular weight
                     VerticalOptions = LayoutOptions.Center,
                     LineBreakMode = LineBreakMode.WordWrap
                 }
             };
 
-            return snackbar;
+            return border;
         }
 
-        private void InjectSnackbarIntoPage(ContentPage page, Frame snackbar)
+        private void InjectSnackbarIntoPage(ContentPage page, Border snackbar)
         {
             try
             {
@@ -132,7 +152,6 @@ namespace MyVocaList.View.Components
                 }
                 else
                 {
-                    // Se não é Grid, cria um wrapper
                     var wrapperGrid = new Grid();
                     page.Content = wrapperGrid;
                     wrapperGrid.Children.Add(content);
@@ -141,43 +160,40 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar: Erro ao injetar: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar Injection Error: {ex.Message}");
             }
         }
 
-        private void RemoveSnackbarFromPage(ContentPage page, Frame snackbar)
+        private void RemoveSnackbarFromPage(ContentPage page, Border snackbar)
         {
             try
             {
-                var content = page.Content;
-                if (content is Grid grid && grid.Children.Contains(snackbar))
+                if (page.Content is Grid grid && grid.Children.Contains(snackbar))
                 {
                     grid.Children.Remove(snackbar);
+                }
+                else if (page.Content is Grid wrapper && wrapper.Children.Count == 2 && wrapper.Children.Contains(snackbar))
+                {
+                    // Unwrap if we created a wrapper
+                    var originalContent = wrapper.Children[0] as MauiView;
+                    page.Content = originalContent;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar: Erro ao remover: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar Removal Error: {ex.Message}");
             }
         }
 
         private ContentPage GetCurrentPage()
         {
-            try
-            {
-                if (Application.Current?.MainPage is NavigationPage navPage)
-                    return navPage.CurrentPage as ContentPage;
-                if (Application.Current?.MainPage is ContentPage mainPage)
-                    return mainPage;
-                if (Shell.Current?.CurrentPage is ContentPage shellPage)
-                    return shellPage;
-                return null;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar: Erro ao obter página: {ex.Message}");
-                return null;
-            }
+            if (Application.Current?.MainPage is NavigationPage navPage)
+                return navPage.CurrentPage as ContentPage;
+            if (Application.Current?.MainPage is ContentPage mainPage)
+                return mainPage;
+            if (Shell.Current?.CurrentPage is ContentPage shellPage)
+                return shellPage;
+            return null;
         }
     }
 }

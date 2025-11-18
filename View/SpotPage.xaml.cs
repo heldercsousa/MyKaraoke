@@ -20,7 +20,6 @@ namespace MyVocaList.View
         private IEstabelecimentoService _estabelecimentoService;
         public ObservableCollection<EstabelecimentoListItemDto> Locais { get; }
 
-        // Propriedade que o CrudNavBarComponent observa
         private int _selectionCount;
         public int SelectionCount
         {
@@ -38,6 +37,7 @@ namespace MyVocaList.View
         #region IManipulableDataPage Members 
 
         public ICommand LoadDataCommand { get; private set; }
+        public ICommand DeleteSingleCommand { get; private set; } // ✅ NOVO: Comando para Swipe-to-Delete
         public string FriendlyName => "Venues";
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
@@ -49,23 +49,18 @@ namespace MyVocaList.View
 
         public SpotPage()
         {
-            // ✅ EXATAMENTE como StackPage: LoadDataCommand ANTES do InitializeComponent
+            // ✅ INICIALIZAÇÃO CRÍTICA: Comandos ANTES do InitializeComponent
             LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
+            DeleteSingleCommand = new Command<EstabelecimentoListItemDto>(OnDeleteSingleItem); // ✅ Inicializa comando de Swipe
 
-            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: LoadDataCommand criado ANTES do InitializeComponent: {LoadDataCommand != null}");
-
-            // ✅ Agora o binding encontrará LoadDataCommand disponível
             InitializeComponent();
 
-            // ✅ Resto da inicialização
             Locais = new ObservableCollection<EstabelecimentoListItemDto>();
             locaisCollectionView.ItemsSource = Locais;
             this.BindingContext = this;
             SelectionCount = 0;
 
             UpdateUIState();
-
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Construtor concluído - LoadDataCommand: {LoadDataCommand != null}");
         }
 
         protected override void OnHandlerChanged()
@@ -76,18 +71,12 @@ namespace MyVocaList.View
             {
                 try
                 {
-                    // ✅ VERIFICAÇÃO: LoadDataCommand ainda disponível
                     if (LoadDataCommand == null)
                     {
                         LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
                         OnPropertyChanged(nameof(LoadDataCommand));
-                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: LoadDataCommand recriado em OnHandlerChanged");
                     }
 
-                    // ✅ AUTO-DISCOVERY: NavBar is automatically discovered by SmartPageLifecycleBehavior
-                    // No manual wiring needed! CrudNavBarComponent self-registers via OnParentSet()
-
-                    // Resto da configuração do HeaderComponent...
                     var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
                     if (headerComponent != null)
                     {
@@ -109,20 +98,8 @@ namespace MyVocaList.View
             {
                 if (_estabelecimentoService == null && Handler != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Inicializando EstabelecimentoService...");
-
                     var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
                     _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
-
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage: EstabelecimentoService inicializado: {_estabelecimentoService != null}");
-
-                    // ✅ FORÇA: LoadDataCommand estar disponível para SmartPageLifecycleBehavior
-                    if (LoadDataCommand == null)
-                    {
-                        LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
-                        OnPropertyChanged(nameof(LoadDataCommand));
-                        System.Diagnostics.Debug.WriteLine($"✅ SpotPage: LoadDataCommand recriado após Handler disponível");
-                    }
                 }
             }
             catch (Exception ex)
@@ -131,163 +108,70 @@ namespace MyVocaList.View
             }
         }
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-        }
-
-        // ===== MÉTODO DE BYPASS PARA SMARTPAGELIFECYCLEBEHAVIOR =====
-
-        /// <summary>
-        /// 🎯 BYPASS: Método que o SmartPageLifecycleBehavior chamará automaticamente
-        /// 🛡️ ESPECÍFICO: Lógica específica da SpotPage para contornar problemas
-        /// </summary>
+        // ... (Preservado OnAppearingBypass e InitializeAndLoadDataAsync) ...
         private async Task OnAppearingBypass()
         {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: OnAppearingBypass executado - Hash: {this.GetHashCode()}");
-
-                // ✅ SIMPLES: Usa extension method específico para SpotPage
-                await this.ExecuteListPageBypass();
-
-                System.Diagnostics.Debug.WriteLine($"✅ SpotPage: OnAppearingBypass concluído com sucesso");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro no OnAppearingBypass: {ex.Message}");
-
-                // 🛡️ FALLBACK: Garante estado mínimo mesmo com erro
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    SelectionCount = 0;
-                });
-            }
+            await this.ExecuteListPageBypass();
         }
-
-        // ===== MÉTODOS ORIGINAIS PRESERVADOS =====
-
-        /// <summary>
-        /// ✅ ORIGINAL: Este método é chamado pelo SmartPageLifecycleBehavior ou OnAppearingBypass
-        /// </summary>
 
         private async Task InitializeAndLoadDataAsync()
         {
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): InitializeAndLoadDataAsync INICIADO");
-
             try
             {
-                // ✅ FORÇA SelectionCount=0 NO INÍCIO
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    SelectionCount = 0;
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no INÍCIO");
-                });
-
-                // ✅ AGUARDA: Handler estar disponível se ainda não estiver
+                MainThread.BeginInvokeOnMainThread(() => SelectionCount = 0);
                 await EnsureHandlerAndServiceAvailable();
-
-                // ✅ CARREGA: Dados do banco
                 await LoadLocaisAsync();
-
-                // ✅ FORÇA SelectionCount=0 NO FINAL
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    SelectionCount = 0;
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): SelectionCount=0 forçado no FINAL");
-                });
-
-                System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): InitializeAndLoadDataAsync CONCLUÍDO");
+                MainThread.BeginInvokeOnMainThread(() => SelectionCount = 0);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage ({this.GetHashCode()}): Erro em InitializeAndLoadDataAsync: {ex.Message}");
-
-                // ✅ FALLBACK: Mesmo com erro, garante que CrudNavBar tenha botão Adicionar
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    SelectionCount = 0;
-                    UpdateUIState();
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): Fallback - SelectionCount=0 definido");
-                });
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em InitializeAndLoadDataAsync: {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
         }
-
 
         private async Task EnsureHandlerAndServiceAvailable()
         {
             int attempts = 0;
-            const int maxAttempts = 20; // 20 x 100ms = 2 segundos
+            const int maxAttempts = 20;
 
             while (attempts < maxAttempts)
             {
-                if (Handler != null && _estabelecimentoService != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Handler e Service disponíveis após {attempts} tentativas");
-                    return;
-                }
-
+                if (Handler != null && _estabelecimentoService != null) return;
                 if (Handler != null && _estabelecimentoService == null)
                 {
                     try
                     {
                         var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
                         _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
-                        System.Diagnostics.Debug.WriteLine($"✅ SpotPage: EstabelecimentoService obtido na tentativa {attempts}");
-
-                        if (_estabelecimentoService != null)
-                        {
-                            return;
-                        }
+                        if (_estabelecimentoService != null) return;
                     }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao obter service na tentativa {attempts}: {ex.Message}");
-                    }
+                    catch (Exception) { }
                 }
-
-                System.Diagnostics.Debug.WriteLine($"🔄 SpotPage: Aguardando Handler/Service - tentativa {attempts + 1}/{maxAttempts}");
                 await Task.Delay(100);
                 attempts++;
             }
-
-            System.Diagnostics.Debug.WriteLine($"⚠️ SpotPage: Timeout aguardando Handler/Service - continuando mesmo assim");
         }
 
         private async Task LoadLocaisAsync()
         {
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): LoadLocaisAsync INICIADO");
-
-            if (_estabelecimentoService == null)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage ({this.GetHashCode()}): EstabelecimentoService é NULL!");
-                return;
-            }
-
+            if (_estabelecimentoService == null) return;
             try
             {
                 var locaisViewModels = await _estabelecimentoService.GetAllEstabelecimentosForListAsync();
-                System.Diagnostics.Debug.WriteLine($"🔍 LOAD RESULT: {locaisViewModels?.Count()} locais encontrados");
-
                 Locais.Clear();
                 if (locaisViewModels != null)
                 {
                     foreach (var localViewModel in locaisViewModels)
                     {
                         Locais.Add(localViewModel);
-                        System.Diagnostics.Debug.WriteLine($"🔍 ADDED: {localViewModel.Id} - '{localViewModel.Nome}' (HasEvents: {localViewModel.HasEvents})");
                     }
                 }
-
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    UpdateUIState();
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage ({this.GetHashCode()}): UpdateUIState chamado após carregar {Locais.Count} locais");
-                });
+                MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage ({this.GetHashCode()}): Erro ao carregar locais: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao carregar locais: {ex.Message}");
                 MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
         }
@@ -296,33 +180,20 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"========================================");
-                System.Diagnostics.Debug.WriteLine($"SpotPage: UpdateUIState triggered");
+                VisualElement emptyStateFrame = this.FindByName<VisualElement>("emptyStateFrame");
+                VisualElement addFab = this.FindByName<VisualElement>("addFab");
 
                 bool hasLocais = Locais.Any();
-                emptyStateFrame.IsVisible = !hasLocais;
+
+                if (emptyStateFrame != null) emptyStateFrame.IsVisible = !hasLocais;
                 locaisCollectionView.IsVisible = hasLocais;
 
-                // ✅ ALWAYS check current selection count, even when list is empty
                 var currentSelection = Locais.Count(x => x.IsSelected);
-                System.Diagnostics.Debug.WriteLine($"SpotPage: hasLocais={hasLocais}, currentSelection={currentSelection}, SelectionCount atual={SelectionCount}");
+                if (SelectionCount != currentSelection) SelectionCount = currentSelection;
 
-                if (SelectionCount != currentSelection)
-                {
-                    SelectionCount = currentSelection;
-                    System.Diagnostics.Debug.WriteLine($"SpotPage: SelectionCount updated to {currentSelection}");
-                }
-
-                // ✅ CONTROLE DE VISIBILIDADE DO FAB
+                // FAB Logic: Visible only when NO selection
                 bool shouldShowFab = SelectionCount == 0;
-
-                if (addFab != null)
-                {
-                    addFab.IsVisible = shouldShowFab;
-                    System.Diagnostics.Debug.WriteLine($"SpotPage: FAB IsVisible={shouldShowFab} (SelectionCount={SelectionCount})");
-                }
-
-                System.Diagnostics.Debug.WriteLine($"========================================");
+                if (addFab != null) addFab.IsVisible = shouldShowFab;
             }
             catch (Exception ex)
             {
@@ -330,40 +201,11 @@ namespace MyVocaList.View
             }
         }
 
+        #region Interaction Handlers
+
         private async void OnAddFabClicked(object sender, EventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("🎯 SpotPage: OnAddFabClicked RECEBIDO");
-            await OnAddFabClickedAsync();
-        }
-     
-        /// <summary>
-        /// 🎯 MÉTODO ESPECÍFICO: Chamado pelo FAB para adicionar novo local
-        /// ✅ USA SafeNavigationBehavior igual à CrudNavBar
-        /// </summary>
-        public async Task OnAddFabClickedAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("========================================");
-                System.Diagnostics.Debug.WriteLine("🎯 SpotPage: OnAddFabClickedAsync INICIADO");
-                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: Thread: {Thread.CurrentThread.ManagedThreadId}");
-                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: Navigation: {Navigation != null}");
-                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: Handler: {Handler != null}");
-                System.Diagnostics.Debug.WriteLine("========================================");
-
-                System.Diagnostics.Debug.WriteLine("🎯 SpotPage: FAB clicado - navegando para adicionar novo local");
-
-                await NavigateToSpotFormPageAsync(isEditing: false, editingLocal: null);
-
-                System.Diagnostics.Debug.WriteLine("✅ SpotPage: Navegação do FAB concluída");
-                System.Diagnostics.Debug.WriteLine("========================================");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na navegação do FAB: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-                System.Diagnostics.Debug.WriteLine("========================================");
-            }
+            await NavigateToSpotFormPageAsync(isEditing: false, editingLocal: null);
         }
 
         private void OnItemTapped(object sender, EventArgs e)
@@ -371,65 +213,78 @@ namespace MyVocaList.View
             if (sender is Frame frame && frame.BindingContext is EstabelecimentoListItemDto item)
             {
                 item.IsSelected = !item.IsSelected;
-                SelectionCount = Locais.Count(x => x.IsSelected);
+                OnPropertyChanged(nameof(Locais));
 
-                // Update UI to reflect selection changes (including FAB visibility)
+                SelectionCount = Locais.Count(x => x.IsSelected);
                 UpdateUIState();
             }
         }
 
         private async void OnCrudNavBarButtonClicked(object sender, CrudButtonType buttonType)
         {
-            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Botão {buttonType} clicado");
-
             var selectedItems = Locais.Where(x => x.IsSelected).ToList();
-            System.Diagnostics.Debug.WriteLine($"🔍 SpotPage: {selectedItems.Count} itens selecionados");
 
             switch (buttonType)
             {
-                case CrudButtonType.Adicionar:  // ✅ ADICIONAR ESTE CASE
-                    System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Iniciando navegação para adicionar novo local");
-                    try
-                    {
-                        await NavigateToSpotFormPageAsync(isEditing: false, editingLocal: null);
-                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Navegação para formulário concluída");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na navegação: {ex.Message}");
-                    }
-                    break;
                 case CrudButtonType.Editar:
                     if (selectedItems.Count == 1)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Iniciando edição de '{selectedItems.First().Nome}'");
-                        try
-                        {
-                            var entity = EstabelecimentoMapper.ToEntity(selectedItems.First());
-                            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Entity mapeada: {entity?.Nome}");
-
-                            await NavigateToSpotFormPageAsync(isEditing: true, editingLocal: entity);
-                            System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Navegação concluída");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na edição: {ex.Message}");
-                        }
+                        var entity = EstabelecimentoMapper.ToEntity(selectedItems.First());
+                        await NavigateToSpotFormPageAsync(isEditing: true, editingLocal: entity);
                     }
                     break;
 
                 case CrudButtonType.Excluir:
-                    System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Iniciando exclusão de {selectedItems.Count} itens");
-                    try
-                    {
-                        await ConfirmAndDeleteAsync(selectedItems);
-                        System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Exclusão concluída");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na exclusão: {ex.Message}");
-                    }
+                    await ConfirmAndDeleteAsync(selectedItems);
                     break;
+            }
+        }
+
+        // ✅ NOVO: Handler para o comando de Swipe (DeleteSingleCommand)
+        private async void OnDeleteSingleItem(EstabelecimentoListItemDto item)
+        {
+            if (item == null) return;
+
+            // 1. Confirmação usando MD3 Popup
+            string name = item.Nome;
+            var popup = new ConfirmationPopup("Confirm Deletion",
+                $"Are you sure you want to delete '{name}'?", "Delete", "Cancel");
+
+            var confirmed = await popup.ShowAsync();
+            if (!confirmed) return;
+
+            // 2. Executa a exclusão (reaproveitando a lógica central)
+            var list = new List<EstabelecimentoListItemDto> { item };
+            await ExecuteDeletionAsync(list);
+        }
+
+        #endregion
+
+        #region Deletion Logic (Refactored)
+
+        private async Task ExecuteDeletionAsync(List<EstabelecimentoListItemDto> items)
+        {
+            await GlobalLoadingOverlay.ShowLoadingAsync("Deleting...");
+            try
+            {
+                var ids = items.Select(x => x.Id);
+                var result = await _estabelecimentoService.DeleteEstabelecimentosAsync(ids);
+
+                await LoadLocaisAsync(); // Atualiza a lista
+
+                // Limpa o estado da seleção
+                foreach (var item in Locais) item.IsSelected = false;
+                SelectionCount = 0;
+
+                await GlobalLoadingOverlay.HideLoadingAsync();
+                await GlobalSnackbar.ShowSuccessAsync(result.message);
+
+                MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
+            }
+            catch (Exception ex)
+            {
+                await GlobalLoadingOverlay.HideLoadingAsync();
+                await GlobalSnackbar.ShowErrorAsync($"Error: {ex.Message}");
             }
         }
 
@@ -445,32 +300,15 @@ namespace MyVocaList.View
                 string confirmMessage;
                 string confirmTitle;
 
-                // ✅ MD3 PATTERN: Concise messages with counts, not names
-                if (itemsWithEvents.Any() && itemsWithoutEvents.Any())
+                if (itemsWithEvents.Any())
                 {
-                    // Mixed case: some can be deleted, some can't
-                    var canDelete = itemsWithoutEvents.Count;
-                    var cannotDelete = itemsWithEvents.Count;
-                    var total = itemsToDelete.Count;
-
-                    confirmTitle = "Confirm Partial Deletion";
-                    confirmMessage = $"{canDelete} of {total} selected venues will be deleted.\n\n" +
-                                   $"{cannotDelete} {(cannotDelete == 1 ? "venue has" : "venues have")} events and cannot be deleted.\n\n" +
-                                   $"Continue?";
-                }
-                else if (itemsWithEvents.Any())
-                {
-                    // All selected items have events - can't delete any (info popup, not confirmation)
                     var count = itemsWithEvents.Count;
                     var infoMessage = $"{(count == 1 ? "The selected venue has" : $"The {count} selected venues have")} registered events and cannot be deleted.";
-
-                    // Use DisplayAlert for info messages (not destructive actions)
                     await DisplayAlert("Deletion Blocked", infoMessage, "OK");
                     return;
                 }
                 else
                 {
-                    // All selected items can be deleted
                     var count = itemsWithoutEvents.Count;
                     confirmTitle = "Confirm Deletion";
                     confirmMessage = count == 1
@@ -478,223 +316,66 @@ namespace MyVocaList.View
                         : $"Are you sure you want to delete {count} selected venues?";
                 }
 
-                // ✅ MD3 PATTERN: Use ConfirmationPopup for destructive actions
                 var popup = new ConfirmationPopup(confirmTitle, confirmMessage, "Delete", "Cancel");
                 var confirmed = await popup.ShowAsync();
                 if (!confirmed) return;
 
-                SetLoading(true);
-
-                var idsToDelete = itemsToDelete.Select(vm => vm.Id);
-                var result = await _estabelecimentoService.DeleteEstabelecimentosAsync(idsToDelete);
-
-                // ✅ CORREÇÃO: Recarrega lista
-                await LoadLocaisAsync();
-
-                // ✅ CORREÇÃO PROBLEMA 4: Limpa seleção E força SelectionCount=0
-                await MainThread.InvokeOnMainThreadAsync(() =>
-                {
-                    // Clear IsSelected flag on all remaining items
-                    foreach (var item in Locais)
-                    {
-                        item.IsSelected = false;
-                    }
-
-                    locaisCollectionView.SelectedItems?.Clear();
-                    SelectionCount = 0; // FORÇA zero ANTES de UpdateUIState
-                    System.Diagnostics.Debug.WriteLine("✅ SpotPage: Seleção limpa e SelectionCount=0 após exclusão");
-
-                    // ✅ Atualiza UI após limpar
-                    UpdateUIState();
-                });
-
-                SetLoading(false);
-
-                // ✅ SNACKBAR: Mostra mensagem de sucesso (padrão igual a insert/update)
-                await Task.Delay(300); // Aguarda UI atualizar
-                await GlobalSnackbar.ShowSuccessAsync(result.message);
+                await ExecuteDeletionAsync(itemsWithoutEvents);
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", $"Error deleting venues: {ex.Message}", "OK");
+                await DisplayAlert("Error", $"Error confirming deletion: {ex.Message}", "OK");
             }
         }
 
-        // ===== NAVEGAÇÃO SEGURA COM SAFENAVIGATIONBEHAVIOR =====
+        #endregion
 
-        /// <summary>
-        /// 🎯 NAVEGAÇÃO SEGURA: Substitui NavigateToSpotFormPageAsync usando SafeNavigationBehavior
-        /// </summary>
+        #region Navigation Helpers
+
         private async Task NavigateToSpotFormPageAsync(bool isEditing, Estabelecimento editingLocal = null)
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 SpotPage: NavigateToSpotFormPageAsync - isEditing: {isEditing}");
-
-                // 🎯 BUSCA: SafeNavigationBehavior no XAML
                 var spotFormBehavior = this.Behaviors?.OfType<SafeNavigationBehavior>()
                     .FirstOrDefault(b => b.TargetPageType == typeof(SpotFormPage));
 
                 if (spotFormBehavior != null)
                 {
-                    // ✅ CONFIGURAÇÃO: Função customizada para SpotFormPage
                     spotFormBehavior.CreatePageFunc = () =>
                     {
                         var spotFormPage = new SpotFormPage();
-
-                        if (isEditing && editingLocal != null)
-                        {
-                            spotFormPage.ConfigureForEditing(editingLocal);
-                            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: SpotFormPage configurada para EDIÇÃO - {editingLocal.Nome}");
-                        }
-                        else
-                        {
-                            spotFormPage.ConfigureForAdding();
-                            System.Diagnostics.Debug.WriteLine($"✅ SpotPage: SpotFormPage configurada para ADIÇÃO");
-                        }
-
+                        if (isEditing && editingLocal != null) spotFormPage.ConfigureForEditing(editingLocal);
+                        else spotFormPage.ConfigureForAdding();
                         return spotFormPage;
                     };
 
-                    // 🚀 NAVEGAÇÃO SEGURA
                     await spotFormBehavior.NavigateToPageAsync();
-                    System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Navegação para SpotFormPage via SafeNavigationBehavior concluída");
                 }
                 else
                 {
-                    // 🛡️ FALLBACK: Navegação tradicional se behavior não disponível
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SpotPage: SafeNavigationBehavior não encontrado - usando navegação tradicional");
-                    await NavigateToSpotFormPageFallback(isEditing, editingLocal);
+                    // Fallback
+                    var spotFormPage = new SpotFormPage();
+                    if (isEditing && editingLocal != null) spotFormPage.ConfigureForEditing(editingLocal);
+                    else spotFormPage.ConfigureForAdding();
+                    await Navigation.PushAsync(spotFormPage);
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na navegação segura: {ex.Message}");
-
-                // 🛡️ FALLBACK: Tenta navegação tradicional em caso de erro
-                try
-                {
-                    await NavigateToSpotFormPageFallback(isEditing, editingLocal);
-                }
-                catch (Exception fallbackEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro no fallback de navegação: {fallbackEx.Message}");
-                }
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na navegação segura/fallback: {ex.Message}");
+                await DisplayAlert("Navigation Error", "Could not open form page.", "OK");
             }
         }
 
-        /// <summary>
-        /// 🛡️ FALLBACK: Navegação tradicional como backup
-        /// </summary>
-        private async Task NavigateToSpotFormPageFallback(bool isEditing, Estabelecimento editingLocal = null)
-        {
-            var spotFormPage = new SpotFormPage();
-            if (isEditing && editingLocal != null)
-            {
-                spotFormPage.ConfigureForEditing(editingLocal);
-            }
-            else
-            {
-                spotFormPage.ConfigureForAdding();
-            }
-            await Navigation.PushAsync(spotFormPage);
-        }
+        #endregion
 
         private void SetLoading(bool isLoading)
         {
+            // Note: Loading is primarily handled by GlobalLoadingOverlay, 
+            // but this method can be kept for local visual feedback if needed.
             locaisCollectionView.IsVisible = !isLoading && Locais.Any();
-            emptyStateFrame.IsVisible = !isLoading && !Locais.Any();
-        }
-
-        // ===== MÉTODOS DE DIAGNÓSTICO (OPCIONAL) =====
-
-        /// <summary>
-        /// 📊 DIAGNÓSTICO: Método para debug e monitoramento específico da SpotPage
-        /// </summary>
-        public void LogSpotPageDiagnostics()
-        {
-            try
-            {
-                var diagnostics = this.GetPageDiagnostics();
-
-                // Adiciona informações específicas da SpotPage
-                diagnostics["LocaisCount"] = Locais?.Count ?? 0;
-                diagnostics["SelectionCount"] = SelectionCount;
-                diagnostics["EstabelecimentoServiceAvailable"] = _estabelecimentoService != null;
-                diagnostics["EmptyStateVisible"] = emptyStateFrame?.IsVisible ?? false;
-                diagnostics["CollectionViewVisible"] = locaisCollectionView?.IsVisible ?? false;
-
-                System.Diagnostics.Debug.WriteLine($"📊 SpotPage: Diagnósticos específicos da página:");
-                foreach (var kvp in diagnostics)
-                {
-                    System.Diagnostics.Debug.WriteLine($"   {kvp.Key}: {kvp.Value}");
-                }
-
-                // Diagnósticos específicos da CrudNavBar
-                if (CrudNavBar != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"📊 SpotPage: CrudNavBar específico:");
-                    System.Diagnostics.Debug.WriteLine($"   CrudNavBar.IsVisible: {CrudNavBar.IsVisible}");
-                    System.Diagnostics.Debug.WriteLine($"   CrudNavBar.SelectionCount: {CrudNavBar.SelectionCount}");
-                    System.Diagnostics.Debug.WriteLine($"   CrudNavBar.Type: {CrudNavBar.GetType().Name}");
-
-                    if (CrudNavBar.NavBarBehavior != null)
-                    {
-                        var buttonCount = CrudNavBar.NavBarBehavior.Buttons?.Count ?? 0;
-                        System.Diagnostics.Debug.WriteLine($"   CrudNavBar.navBarBehavior.Buttons.Count: {buttonCount}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao obter diagnósticos específicos: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🔧 UTILITÁRIO: Força todas as correções conhecidas da SpotPage
-        /// </summary>
-        public async Task ApplySpotPageFixes()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 SpotPage: Aplicando correções específicas");
-
-                // 🔧 CORREÇÃO 1: Força SelectionCount = 0
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    SelectionCount = 0;
-                });
-
-                // 🔧 CORREÇÃO 2: Verifica e configura CrudNavBar
-                if (CrudNavBar != null)
-                {
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        CrudNavBar.SelectionCount = 0;
-                        CrudNavBar.IsVisible = true;
-                    });
-
-                    // Força ShowAsync se possível
-                    try
-                    {
-                        await CrudNavBar.ShowAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ SpotPage: Erro ao forçar ShowAsync: {ex.Message}");
-                    }
-                }
-
-                // 🔧 CORREÇÃO 3: Aplica todas as correções genéricas
-                await this.ApplyAllKnownFixes();
-
-                System.Diagnostics.Debug.WriteLine($"✅ SpotPage: Todas as correções específicas aplicadas");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao aplicar correções específicas: {ex.Message}");
-            }
+            VisualElement emptyStateFrame = this.FindByName<VisualElement>("emptyStateFrame");
+            if (emptyStateFrame != null) emptyStateFrame.IsVisible = !isLoading && !Locais.Any();
         }
 
     }

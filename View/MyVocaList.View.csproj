@@ -150,6 +150,8 @@
 		<MauiImage Include="Resources\AppIcon\delete_filled.svg">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
+		<MauiImage Include="Resources\AppIcon\edit_filled.svg" />
+		<MauiImage Include="Resources\AppIcon\edit_outlined.svg" />
 		<MauiImage Include="Resources\AppIcon\event_outlined.svg">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</MauiImage>
@@ -256,6 +258,8 @@
 		<None Remove="Resources\AppIcon\contrast_outlined.svg" />
 		<None Remove="Resources\AppIcon\delete.png" />
 		<None Remove="Resources\AppIcon\edit.png" />
+		<None Remove="Resources\AppIcon\edit_filled.svg" />
+		<None Remove="Resources\AppIcon\edit_outlined.svg" />
 		<None Remove="Resources\AppIcon\email.png" />
 		<None Remove="Resources\AppIcon\email_purple.png" />
 		<None Remove="Resources\AppIcon\event_filled.svg" />
@@ -500,6 +504,9 @@
 		<MauiXaml Update="Components\LoadingOverlayComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+		<MauiXaml Update="Components\MaterialEntryComponent.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Components\NavButtonComponent.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
@@ -522,9 +529,6 @@
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Resources\Styles\MaterialColors.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
-		<MauiXaml Update="Resources\Styles\MaterialColorsPriorHCT.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Resources\Styles\MaterialStyles.xaml">

@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:local="clr-namespace:MyVocaList.View"
-			 xmlns:contracts="clr-namespace:MyVocaList.Contracts.DTOs.List;assembly=MyVocaList.Contracts"
-			 xmlns:components="clr-namespace:MyVocaList.View.Components"
-			 xmlns:domain="clr-namespace:MyVocaList.Domain;assembly=MyVocaList.Domain"
-			 xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
-			 x:Class="MyVocaList.View.SpotPage"
-			 x:DataType="local:SpotPage"
-			 Background="{StaticResource Background}"
-			 NavigationPage.HasNavigationBar="False">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MyVocaList.View"
+             xmlns:contracts="clr-namespace:MyVocaList.Contracts.DTOs.List;assembly=MyVocaList.Contracts"
+             xmlns:components="clr-namespace:MyVocaList.View.Components"
+              xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
+             xmlns:converters="clr-namespace:MyVocaList.View.Converters"
+             x:Class="MyVocaList.View.SpotPage"
+             x:DataType="local:SpotPage"
+             Background="{StaticResource Background}"
+             NavigationPage.HasNavigationBar="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:IntToBoolConverter x:Key="IntToBool" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior
-		    x:Name="SmartPageBehavior"
-		    MainContent="{x:Reference mainContentGrid}"
-		    LoadDataCommand="{Binding LoadDataCommand}"
-		    EnableAutoBypass="True"
-		    MaxFailuresBeforeBypass="2" />
+            LoadDataCommand="{Binding LoadDataCommand}"
+            EnableAutoBypass="True"
+            MaxFailuresBeforeBypass="2" />
 
         <behaviors:SafeNavigationBehavior
             x:Name="SpotFormNavigationBehavior"
@@ -26,83 +30,118 @@
             DebounceMilliseconds="800" />
 
         <behaviors:SafeNavigationBehavior
-		    x:Name="BackNavigationBehavior"
-		    EnableSmartStackNavigation="True"
-		    DebounceMilliseconds="500" />
+            x:Name="BackNavigationBehavior"
+            EnableSmartStackNavigation="True"
+            DebounceMilliseconds="500" />
     </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*,Auto">
+
         <components:HeaderComponent Grid.Row="0" Title="Venues" />
 
-        <!-- MAIN CONTENT (Grid 1) -->
         <ScrollView Grid.Row="1">
-            <VerticalStackLayout x:Name="mainContentGrid" Style="{StaticResource PageContainer}">
+            <VerticalStackLayout x:Name="mainContentStack" Style="{StaticResource PageContainer}">
 
-                <!-- Venues List -->
+                <Label Text="{Binding Locais.Count, StringFormat='{0} Venues'}"
+                       Style="{StaticResource LabelMedium}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       Margin="16,8,16,8"
+                       IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}" />
+
                 <CollectionView x:Name="locaisCollectionView"
                                 ItemsSource="{Binding Locais}"
                                 SelectionMode="None"
-                                BackgroundColor="Transparent">
+                                BackgroundColor="Transparent"
+                                IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}">
+
+                    <CollectionView.Footer>
+                        <BoxView HeightRequest="88" Color="Transparent" />
+                    </CollectionView.Footer>
+
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="contracts:EstabelecimentoListItemDto">
-                            <Frame Style="{StaticResource ElevatedCard}"
-                                   Margin="0,4"
-                                   Padding="16">
-                                <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnItemTapped" />
-                                </Frame.GestureRecognizers>
+                            <SwipeView Threshold="100">
+                                <SwipeView.RightItems>
+                                    <SwipeItems Mode="Execute">
+                                        <SwipeItemView Command="{Binding Source={x:Reference locaisCollectionView}, Path=BindingContext.DeleteSingleCommand}"
+                                                       CommandParameter="{Binding .}">
+                                            <Frame BackgroundColor="{StaticResource Error}"
+                                                   CornerRadius="0"
+                                                   Padding="0"
+                                                   WidthRequest="80"
+                                                   HasShadow="False">
+                                                <components:StatefulIcon IconName="delete"
+                                                                       Size="Medium"
+                                                                       ActiveColor="{StaticResource OnError}"
+                                                                       InactiveColor="{StaticResource OnError}"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"/>
+                                            </Frame>
+                                        </SwipeItemView>
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
 
-                                <!-- Visual feedback for selected state -->
-                                <Frame.Triggers>
-                                    <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="BackgroundColor" Value="{StaticResource SecondaryContainer}" />
-                                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
-                                    </DataTrigger>
-                                </Frame.Triggers>
+                                <Frame Style="{StaticResource ElevatedCard}"
+                                       Margin="0,4"
+                                       Padding="16,12">
 
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                    <!-- Venue Name -->
-                                    <Label Grid.Column="0"
-                                           Text="{Binding Nome}"
-                                           Style="{StaticResource TitleMedium}"
-                                           VerticalOptions="Center"/>
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnItemTapped" />
+                                    </Frame.GestureRecognizers>
 
-                                    <!-- "HAS EVENTS" Badge -->
-                                    <Frame Grid.Column="1"
-                                           BackgroundColor="{StaticResource Tertiary}"
-                                           CornerRadius="8"
-                                           Padding="8,4"
-                                           IsVisible="{Binding HasEvents}"
-                                           HasShadow="False"
-                                           VerticalOptions="Center">
-                                        <Label Text="HAS EVENTS"
-                                               Style="{StaticResource LabelSmall}"
-                                               TextColor="{StaticResource OnError}"
-                                               FontAttributes="Bold"/>
-                                    </Frame>
-                                </Grid>
-                            </Frame>
+                                    <Frame.Triggers>
+                                        <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource SecondaryContainer}" />
+                                            <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                        </DataTrigger>
+                                    </Frame.Triggers>
+
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+
+                                        <components:StatefulIcon Grid.Column="0"
+                                                               IconName="nightlife"
+                                                               Size="Medium"
+                                                               ActiveColor="{StaticResource Primary}"
+                                                               InactiveColor="{StaticResource Primary}" 
+                                                               VerticalOptions="Center" />
+
+                                        <Label Grid.Column="1"
+                                               Text="{Binding Nome}"
+                                               Style="{StaticResource TitleMedium}"
+                                               VerticalOptions="Center"
+                                               LineBreakMode="TailTruncation" />
+
+                                        <Frame Grid.Column="2"
+                                               BackgroundColor="{StaticResource TertiaryContainer}"
+                                               CornerRadius="8"
+                                               Padding="8,4"
+                                               IsVisible="{Binding HasEvents}"
+                                               HasShadow="False"
+                                               BorderColor="Transparent"
+                                               VerticalOptions="Center">
+                                            <Label Text="EVENT"
+                                                   Style="{StaticResource LabelSmall}"
+                                                   TextColor="{StaticResource OnTertiaryContainer}"
+                                                   FontAttributes="Bold"/>
+                                        </Frame>
+                                    </Grid>
+                                </Frame>
+                            </SwipeView>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <!-- Empty State -->
                 <Frame x:Name="emptyStateFrame"
-                       IsVisible="False"
+                       IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}, ConverterParameter=Inverse}"
                        Style="{StaticResource FilledCard}"
                        Padding="24"
                        Margin="0,16">
                     <VerticalStackLayout Spacing="16">
-                        <components:StatefulIcon IconName="nightlife"
-                             Size="Large"
-                             InactiveColor="{StaticResource OnSurfaceVariant}"
-                             HorizontalOptions="Center" />
-                        <Label Text="No venue registered"
-                               Style="{StaticResource TitleMedium}"
-                               HorizontalOptions="Center" />
+                        <components:StatefulIcon IconName="nightlife" Size="Large" HorizontalOptions="Center" />
+                        <Label Text="No venue registered" Style="{StaticResource TitleMedium}" HorizontalOptions="Center" />
                         <Label HorizontalOptions="Center"
-                               HorizontalTextAlignment="Center"
-                               Style="{StaticResource BodyMedium}">
+                                   HorizontalTextAlignment="Center"
+                                   Style="{StaticResource BodyMedium}">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="• Touch button " />
@@ -117,48 +156,28 @@
             </VerticalStackLayout>
         </ScrollView>
 
+        <ImageButton x:Name="addFab"
+                     Grid.Row="1"
+                     Source="add_outlined.svg"
+                     BackgroundColor="{StaticResource TertiaryContainer}"
+                     CornerRadius="16"
+                     WidthRequest="56"
+                     HeightRequest="56"
+                     Padding="16"
+                     HorizontalOptions="End"
+                     VerticalOptions="End"
+                     Margin="0,0,16,16"
+                     Clicked="OnAddFabClicked"
+                     IsVisible="True"
+                     ZIndex="9999">
+            <ImageButton.Shadow>
+                <Shadow Brush="{StaticResource Shadow}" Offset="0,4" Radius="8" Opacity="0.4" />
+            </ImageButton.Shadow>
+        </ImageButton>
 
-        <!-- FAB comp - TODO: Fix Frame-based FAB not responding to taps -->
-        <!--<Frame Grid.Row="1"
-       x:Name="addFab"
-       Style="{StaticResource FabContainer}"
-       ZIndex="9999">
-            <Frame.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnAddFabClicked" />
-            </Frame.GestureRecognizers>
-            <components:StatefulIcon IconName="add"
-                             InactiveColor="{StaticResource OnTertiary}"/>
-        </Frame>-->
-
-        <!-- FAB (Simple Button approach - GUARANTEED to work) -->
-        <Button x:Name="addFab"
-                Grid.Row="1"
-                Text="+"
-                FontSize="32"
-                FontAttributes="Bold"
-                TextColor="{StaticResource OnTertiary}"
-                BackgroundColor="{StaticResource Tertiary}"
-                WidthRequest="56"
-                HeightRequest="56"
-                CornerRadius="28"
-                HorizontalOptions="End"
-                VerticalOptions="End"
-                Margin="0,0,16,16"
-                Clicked="OnAddFabClicked"
-                IsVisible="True"
-                ZIndex="9999">
-            <Button.Shadow>
-                <Shadow Brush="{StaticResource Tertiary}"
-                        Offset="0,4"
-                        Radius="8"
-                        Opacity="0.3" />
-            </Button.Shadow>
-        </Button>
-
-        <!-- NAVBAR -->
         <components:CrudNavBarComponent Grid.Row="2"
-                                        x:Name="CrudNavBar"
-                                        SelectionCount="{Binding SelectionCount}"
-                                        ButtonClicked="OnCrudNavBarButtonClicked"/>
+                                      x:Name="CrudNavBar"
+                                      SelectionCount="{Binding SelectionCount}"
+                                      ButtonClicked="OnCrudNavBarButtonClicked"/>
     </Grid>
 </ContentPage>

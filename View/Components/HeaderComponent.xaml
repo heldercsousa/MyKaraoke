@@ -9,9 +9,8 @@
           BackgroundColor="{StaticResource SurfaceContainer}"
           Padding="16,12,16,12"
           RowSpacing="0"
-          ColumnSpacing="8">
-
-        <!-- LEFT BUTTON CONTAINER (48x48dp MD3 Touch Target) -->
+          ColumnSpacing="8"
+          HeightRequest="64">
         <Grid Grid.Column="0"
               WidthRequest="48"
               HeightRequest="48"
@@ -21,17 +20,14 @@
                 <TapGestureRecognizer Tapped="OnLeftButtonClicked" />
             </Grid.GestureRecognizers>
 
-            <!-- Back Arrow (List Mode) -->
             <components:StatefulIcon x:Name="backArrowImage"
-                   IconName="arrow_back"
-                   IsVisible="True"/>
+                                   IconName="arrow_back"
+                                   IsVisible="True"/>
 
-            <!-- Cancel Icon (Form Mode with Icon) -->
             <components:StatefulIcon x:Name="cancelIconImage"
-                   IconName="close"
-                   IsVisible="False"/>
+                                   IconName="close"
+                                   IsVisible="False"/>
 
-            <!-- Cancel Text (Form Mode with Text) -->
             <Label x:Name="cancelTextLabel"
                    Text="Cancel"
                    Style="{StaticResource LabelLarge}"
@@ -42,58 +38,51 @@
                    IsVisible="False" />
         </Grid>
 
-        <!-- Title (Centered, No Icon - MD3 Recommended) -->
         <Label Grid.Column="1"
                x:Name="headerTitle"
                Text="{Binding Source={x:Reference HeaderRoot}, Path=Title}"
-               Style="{StaticResource HeadlineMedium}"
-               TextColor="{StaticResource OnBackground}"
+               Style="{StaticResource TitleLarge}"
+               TextColor="{StaticResource OnSurface}"
                HorizontalOptions="Center"
-               VerticalOptions="Center" />
+               VerticalOptions="Center"
+               LineBreakMode="TailTruncation" />
 
-
-
-        <!-- Save Button (MD3 Filled Button) -->
         <Frame Grid.Column="2"
-       x:Name="rightButtonStack"
-       WidthRequest="48"
-       HeightRequest="48"
-       BackgroundColor="{StaticResource Primary}"
-       CornerRadius="24"
-       Padding="0"
-       HasShadow="False"
-       HorizontalOptions="End"
-       VerticalOptions="Center"
-       IsVisible="False">
+               x:Name="rightButtonStack"
+               WidthRequest="40"
+               HeightRequest="40"
+               BackgroundColor="{StaticResource Primary}"
+               CornerRadius="20"
+               Padding="0"
+               HasShadow="False"
+               BorderColor="Transparent"
+               HorizontalOptions="End"
+               VerticalOptions="Center"
+               IsVisible="False">
 
             <Frame.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnSaveButtonClicked" />
             </Frame.GestureRecognizers>
 
-            <Frame.Shadow>
-                <Shadow Brush="{StaticResource Shadow}" Offset="0,2" Radius="4" Opacity="0.3" />
-            </Frame.Shadow>
-
             <Grid>
                 <components:StatefulIcon x:Name="saveIconImage"
-               IconName="check"
-               InactiveColor="{StaticResource OnPrimary}"
-               IsVisible="False"
-               VerticalOptions="Center"
-               HorizontalOptions="Center" />
+                                       IconName="check"
+                                       InactiveColor="{StaticResource OnPrimary}"
+                                       IsVisible="False"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="Center" />
 
                 <Label x:Name="saveTextLabel"
-               Text="Save"
-               TextColor="{StaticResource OnPrimary}"
-               Style="{StaticResource LabelLarge}"
-               VerticalOptions="Center"
-               HorizontalOptions="Center"
-               IsVisible="False" />
+                       Text="Save"
+                       TextColor="{StaticResource OnPrimary}"
+                       Style="{StaticResource LabelLarge}"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"
+                       IsVisible="False" />
             </Grid>
 
         </Frame>
 
-        <!-- SPACER (When no right button is shown) -->
         <ContentView Grid.Column="2"
                      x:Name="rightSpacer"
                      WidthRequest="48"

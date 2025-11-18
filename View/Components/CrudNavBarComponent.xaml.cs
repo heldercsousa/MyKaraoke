@@ -4,16 +4,13 @@ using System.Collections.ObjectModel;
 
 namespace MyVocaList.View.Components
 {
-    public enum CrudButtonType { Anterior, Adicionar, Editar, Excluir, Salvar, Proximo }
+    // ✅ CLEANED: Removed 'Adicionar' and 'Salvar'. 
+    // This component now focuses solely on List Item Actions (Edit/Delete) and Navigation (Prev/Next).
+    public enum CrudButtonType { Anterior, Editar, Excluir, Proximo }
 
-    /// <summary>
-    /// ✅ SIMPLIFICADO: Usa NavBarBehavior para eliminar duplicação
-    /// 🔧 DEBUG MELHORADO: Logs detalhados para identificar problema
-    /// </summary>
     public partial class CrudNavBarComponent : ContentView, IAnimatableNavBar
     {
         #region Bindable Properties
-
         public static readonly BindableProperty SelectionCountProperty =
             BindableProperty.Create(nameof(SelectionCount), typeof(int), typeof(CrudNavBarComponent), 0,
             propertyChanged: OnSelectionCountChanged);
@@ -33,191 +30,120 @@ namespace MyVocaList.View.Components
             get => (bool)GetValue(IsFormModeProperty);
             set => SetValue(IsFormModeProperty, value);
         }
-
         #endregion
-
-        #region Events
 
         public event EventHandler<CrudButtonType> ButtonClicked;
-
-        #endregion
-
-        /// <summary>
-        /// ✅ CORREÇÃO CS0122: Expõe navBarBehavior (gerado pelo XAML) como propriedade pública
-        /// </summary>
         public NavBarBehavior NavBarBehavior => navBarBehavior;
-
-        #region Private Fields
 
         private readonly Dictionary<CrudButtonType, NavButtonConfig> _buttonConfigs;
         private bool _isInitialized = false;
 
-        // 🎯 OTIMIZAÇÃO: Cache para evitar reconstruções desnecessárias
-        private int _lastProcessedSelectionCount = -1; // -1 = nunca processado
+        // Optimization Cache
+        private int _lastProcessedSelectionCount = -1;
         private bool _hasProcessedFirstUpdate = false;
-
-
-        #endregion
 
         public CrudNavBarComponent()
         {
             InitializeComponent();
             _buttonConfigs = InitializeButtonConfigs();
-
-            System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: Construtor chamado");
         }
-
-        // ✅ SELF-REGISTRATION: Handled automatically by NavBarBehavior!
-        // No OnParentSet() needed - NavBarBehavior registers navbar with page.
-
-        #region Initialization
 
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
-
-            System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: OnHandlerChanged - Handler={Handler != null}, Initialized={_isInitialized}");
-
             if (Handler != null && !_isInitialized)
             {
                 try
                 {
-                    // ✅ BEHAVIOR: Subscreve eventos do NavBarBehavior
                     navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
-
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: Eventos subscritos, SelectionCount={SelectionCount}");
-
-                    UpdateLayoutAndButtons(); // Configuração inicial
+                    UpdateLayoutAndButtons();
                     _isInitialized = true;
-
-                    System.Diagnostics.Debug.WriteLine("✅ CrudNavBarComponent inicializado com NavBarBehavior");
                 }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro na inicialização: {ex.Message}");
-                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
             }
         }
 
         private Dictionary<CrudButtonType, NavButtonConfig> InitializeButtonConfigs()
         {
+            // ✅ CLEANED CONFIG: Only Navigation and Selection actions remain.
             var configs = new Dictionary<CrudButtonType, NavButtonConfig>
             {
-                // MD3 SVG icons following iconography guideline
                 { CrudButtonType.Anterior, new NavButtonConfig { Text = "Previous", IconName = "arrow_back" } },
-                { CrudButtonType.Adicionar, new NavButtonConfig { Text = "Add", IconName = "add" } }, // ✅ ADD BUTTON
+                
+                // Removed: Adicionar (Handled by FAB)
+                
                 { CrudButtonType.Editar, new NavButtonConfig { Text = "Edit", IconName = "edit" } },
                 { CrudButtonType.Excluir, new NavButtonConfig { Text = "Delete", IconName = "delete" } },
-                { CrudButtonType.Salvar, new NavButtonConfig { Text = "Save", IconName = "check" } }, // ✅ NO Command
+                
+                // Removed: Salvar (Handled by Header)
+
                 { CrudButtonType.Proximo, new NavButtonConfig { Text = "Next", IconName = "arrow_forward" } },
             };
-
-            System.Diagnostics.Debug.WriteLine($"🔍 DEBUG: navBarBehavior._isShown: {navBarBehavior.GetType().GetField("_isShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(navBarBehavior)}");
-            System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {configs.Count} configurações de botão inicializadas");
             return configs;
         }
 
-        #endregion
-
-        #region Button Logic - CÉREBRO DO CRUD
+        #region Logic
 
         private static void OnSelectionCountChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            if (bindable is CrudNavBarComponent navBar)
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: SelectionCount mudou de {oldValue} para {newValue}");
-                navBar.UpdateLayoutAndButtons();
-            }
+            if (bindable is CrudNavBarComponent navBar) navBar.UpdateLayoutAndButtons();
         }
 
+        private static void OnModeChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is CrudNavBarComponent navBar) navBar.UpdateLayoutAndButtons();
+        }
 
-        /// <summary>
-        /// ✅ CÉREBRO OTIMIZADO: Decide quais botões mostrar baseado na seleção
-        /// 🎯 OTIMIZAÇÃO: Só reconstrói quando realmente necessário
-        /// </summary>
         private void UpdateLayoutAndButtons()
         {
             try
             {
+                if (navBarBehavior == null) return;
+
+                if (!_isInitialized && Handler != null)
+                {
+                    navBarBehavior.ButtonClicked -= OnNavBarButtonClicked;
+                    navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
+                    _isInitialized = true;
+                }
+
                 var currentCount = SelectionCount;
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: UpdateLayoutAndButtons iniciado - IsFormMode={IsFormMode}, SelectionCount={currentCount}");
-
-                if (!_isInitialized)
-                {
-                    if (Handler != null && navBarBehavior != null)
-                    {
-                        System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: Handler e navBarBehavior disponíveis - forçando inicialização inline");
-                        try
-                        {
-                            navBarBehavior.ButtonClicked -= OnNavBarButtonClicked;
-                            navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
-                            _isInitialized = true;
-                            System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: Inicialização inline bem-sucedida");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Erro na inicialização inline: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: Não inicializado - Handler={Handler != null}, navBarBehavior={navBarBehavior != null}");
-                        return;
-                    }
-                }
-
-                if (navBarBehavior == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("❌ CrudNavBarComponent: navBarBehavior é NULL!");
-                    return;
-                }
-
-                if (!ShouldRebuildButtons(currentCount))
-                {
-                    System.Diagnostics.Debug.WriteLine($"🛡️ CrudNavBarComponent: Reconstrução desnecessária evitada - SelectionCount={currentCount} (último processado: {_lastProcessedSelectionCount})");
-
-                    // ✅ CORREÇÃO PROBLEMA 1 e 4: Mesmo sem reconstruir, atualiza visibilidade
-                    UpdateNavBarVisibility(currentCount);
-                    return;
-                }
-
                 var visibleButtons = new List<NavButtonConfig>();
 
+                // FORM MODE: Hides Bar (Header handles actions)
                 if (IsFormMode)
                 {
-                    System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [FORM] Modo formulário - aguardando chamada explícita");
-                    return;
+                    visibleButtons.Clear();
                 }
                 else
                 {
-                    // 📋 MODO LISTA
+                    // LIST MODE
                     if (currentCount == 0)
                     {
-                        // ✅ CORREÇÃO: Lista sem seleção = NavBar ESCONDIDA (FAB será usado)
+                        // 0 Selection -> Hide NavBar (FAB handles Add)
                         visibleButtons.Clear();
-                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=0 - NavBar será ESCONDIDA (FAB disponível)");
                     }
                     else if (currentCount == 1)
                     {
+                        // 1 Selection -> Edit + Delete
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                        System.Diagnostics.Debug.WriteLine("🔧 CrudNavBarComponent: [LIST] SelectionCount=1 - Adicionando Editar e Excluir");
                     }
-                    else // > 1
+                    else
                     {
+                        // >1 Selection -> Delete Only
                         visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                        System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: [LIST] SelectionCount={currentCount} - Adicionando Excluir");
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: {visibleButtons.Count} botões preparados para exibição");
-
-                // Cria colunas dinâmicas
-                var columnDefinitions = new ColumnDefinitionCollection();
-                foreach (var _ in visibleButtons)
+                if (!ShouldRebuildButtons(currentCount) && !IsFormMode)
                 {
-                    columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+                    UpdateNavBarVisibility();
+                    return;
                 }
+
+                var columnDefinitions = new ColumnDefinitionCollection();
+                foreach (var _ in visibleButtons) columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
                 navBarBehavior.CustomColumnDefinitions = columnDefinitions;
                 navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
@@ -225,463 +151,65 @@ namespace MyVocaList.View.Components
                 _lastProcessedSelectionCount = currentCount;
                 _hasProcessedFirstUpdate = true;
 
-                // ✅ CORREÇÃO PROBLEMA 1 e 4: Atualiza visibilidade da NavBar
-                UpdateNavBarVisibility(currentCount);
+                UpdateNavBarVisibility();
 
-                // Força exibição apenas se há botões
                 if (visibleButtons.Count > 0)
                 {
-                    _ = Task.Run(async () =>
-                    {
-                        await Task.Delay(200);
-                        try
-                        {
-                            await navBarBehavior.ShowAsync();
-                            System.Diagnostics.Debug.WriteLine($"🎯 ShowAsync executado para {visibleButtons.Count} botões");
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"❌ Erro ao executar ShowAsync: {ex.Message}");
-                        }
-                    });
+                    _ = Task.Run(async () => await navBarBehavior.ShowAsync());
                 }
-
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: NavBarBehavior configurado com {visibleButtons.Count} botões");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em UpdateLayoutAndButtons: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"Error UpdateLayout: {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// ✅ NOVO MÉTODO: Atualiza visibilidade da NavBar baseado nos BOTÕES (não SelectionCount!)
-        /// </summary>
-        private void UpdateNavBarVisibility(int selectionCount)
+        private void UpdateNavBarVisibility()
         {
-            try
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    // ✅ CORREÇÃO: Baseado em BOTÕES, não em SelectionCount
-                    var hasButtons = navBarBehavior?.Buttons?.Count > 0;
-
-                    if (hasButtons)
-                    {
-                        // Mostra NavBar quando há botões
-                        this.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBar VISÍVEL ({navBarBehavior.Buttons.Count} botões, SelectionCount={selectionCount})");
-                    }
-                    else
-                    {
-                        // Esconde NavBar quando não há botões
-                        this.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: NavBar ESCONDIDA (sem botões)");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro ao atualizar visibilidade: {ex.Message}");
-            }
+                bool hasButtons = navBarBehavior?.Buttons?.Count > 0;
+                this.IsVisible = hasButtons;
+            });
         }
 
-        /// <summary>
-        /// 🎯 OTIMIZAÇÃO: Determina se precisa reconstruir botões baseado na sua dica
-        /// Só reconstrói nas transições: 0→1, 1→2, 2→1, 1→0
-        /// </summary>
         private bool ShouldRebuildButtons(int currentCount)
         {
-            // Primeira execução - sempre reconstrói
-            if (!_hasProcessedFirstUpdate)
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Primeira execução - forçando reconstrução");
-                return true;
-            }
-
-            var lastCount = _lastProcessedSelectionCount;
-
-            // 🎯 TRANSIÇÕES QUE REQUEREM RECONSTRUÇÃO (baseado na sua dica):
-            // 0 → 1: Adicionar → Editar+Excluir
-            // 1 → 0: Editar+Excluir → Adicionar  
-            // 1 → 2: Editar+Excluir → Excluir
-            // 2 → 1: Excluir → Editar+Excluir
-
-            bool needsRebuild = (lastCount == 0 && currentCount == 1) ||   // 0 → 1
-                                (lastCount == 1 && currentCount == 0) ||   // 1 → 0  
-                                (lastCount == 1 && currentCount == 2) ||   // 1 → 2
-                                (lastCount == 2 && currentCount == 1);     // 2 → 1
-
-            if (needsRebuild)
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Transição detectada {lastCount}→{currentCount} - RECONSTRUINDO");
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"🛡️ CrudNavBarComponent: Transição {lastCount}→{currentCount} não requer reconstrução");
-            }
-
-            return needsRebuild;
+            if (!_hasProcessedFirstUpdate) return true;
+            int last = _lastProcessedSelectionCount;
+            // Preserved optimization for transitions
+            return (last == 0 && currentCount == 1) ||
+                   (last == 1 && currentCount == 0) ||
+                   (last == 1 && currentCount == 2) ||
+                   (last == 2 && currentCount == 1);
         }
-
-        private static void OnModeChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable is CrudNavBarComponent navBar)
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: IsFormMode mudou de {oldValue} para {newValue}");
-                navBar.UpdateLayoutAndButtons();
-            }
-        }
-
-        #endregion
-
-        #region Event Handlers
 
         private void OnNavBarButtonClicked(object sender, NavBarButtonClickedEventArgs e)
         {
-            try
+            // ✅ CLEANED SWITCH: Removed Add and Save cases
+            var buttonType = e.ButtonConfig.Text switch
             {
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: Botão clicado - Texto: '{e.ButtonConfig.Text}'");
-
-                // Mapeia texto do botão para enum
-                var buttonType = e.ButtonConfig.Text switch
-                {
-                    "Previous" => CrudButtonType.Anterior,
-                    "Add" => CrudButtonType.Adicionar,
-                    "Edit" => CrudButtonType.Editar,
-                    "Delete" => CrudButtonType.Excluir,
-                    "Save" => CrudButtonType.Salvar,
-                    "Next" => CrudButtonType.Proximo,
-                    _ => throw new ArgumentException($"Unknown button: {e.ButtonConfig.Text}")
-                };
-
-                ButtonClicked?.Invoke(this, buttonType);
-                System.Diagnostics.Debug.WriteLine($"CrudNavBar: Evento ButtonClicked disparado para {buttonType}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro no clique do botão: {ex.Message}");
-            }
+                "Previous" => CrudButtonType.Anterior,
+                "Edit" => CrudButtonType.Editar,
+                "Delete" => CrudButtonType.Excluir,
+                "Next" => CrudButtonType.Proximo,
+                _ => CrudButtonType.Proximo
+            };
+            ButtonClicked?.Invoke(this, buttonType);
         }
 
         #endregion
 
-        #region IAnimatableNavBar - DELEGADO PARA BEHAVIOR
-
-        /// <summary>
-        /// ✅ DELEGADO: ShowAsync via NavBarBehavior
-        /// 🎯 CORREÇÃO: Garante configuração antes de mostrar
-        /// </summary>
         public async Task ShowAsync()
         {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: ShowAsync chamado - IsVisible={this.IsVisible}");
-
-                this.IsVisible = true;
-
-                // 🎯 CORREÇÃO CRÍTICA: Garante inicialização antes de mostrar
-                await EnsureProperInitialization();
-
-                if (navBarBehavior != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: Chamando navBarBehavior.ShowAsync() - Buttons.Count={navBarBehavior.Buttons?.Count ?? 0}");
-                    await navBarBehavior.ShowAsync();
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: navBarBehavior.ShowAsync() concluído");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: navBarBehavior é NULL - usando fallback");
-                    // ✅ FALLBACK: Usa extensão no navGrid se behavior não disponível
-                    await NavBarExtensions.ShowAsync(navGrid);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ShowAsync: {ex.Message}");
-            }
+            this.IsVisible = true;
+            if (navBarBehavior != null) await navBarBehavior.ShowAsync();
         }
 
-        /// <summary>
-        /// 🎯 NOVO: Garante que a inicialização foi feita antes de mostrar
-        /// </summary>
-        private async Task EnsureProperInitialization()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: EnsureProperInitialization - Initialized={_isInitialized}");
-
-                // Se já foi inicializado, não faz nada
-                if (_isInitialized)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Já inicializado - verificando botões");
-
-                    // Verifica se tem botões configurados
-                    var buttonCount = navBarBehavior?.Buttons?.Count ?? 0;
-                    if (buttonCount == 0)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Inicializado mas sem botões - reconfigurando");
-                        UpdateLayoutAndButtons();
-                    }
-                    return;
-                }
-
-                // 🎯 AGUARDA até 2 segundos para Handler estar disponível
-                int attempts = 0;
-                const int maxAttempts = 20; // 20 x 100ms = 2 segundos
-
-                while (attempts < maxAttempts && Handler == null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Aguardando Handler - tentativa {attempts + 1}/{maxAttempts}");
-                    await Task.Delay(100);
-                    attempts++;
-                }
-
-                if (Handler == null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: TIMEOUT aguardando Handler - forçando inicialização");
-                    await ForceInitialization();
-                    return;
-                }
-
-                // 🎯 FORÇA inicialização manual se OnHandlerChanged não foi chamado
-                if (!_isInitialized)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Handler disponível mas não inicializado - forçando");
-                    await ForceInitialization();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em EnsureProperInitialization: {ex.Message}");
-                // Fallback: força inicialização mesmo com erro
-                await ForceInitialization();
-            }
-        }
-
-        /// <summary>
-        /// 🎯 NOVO: Força inicialização manual quando OnHandlerChanged falha/atrasa
-        /// </summary>
-        private async Task ForceInitialization()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: ForceInitialization iniciada");
-
-                // Aguarda um pouco para garantir que navBarBehavior está disponível
-                await Task.Delay(50);
-
-                if (navBarBehavior != null)
-                {
-                    // ✅ BEHAVIOR: Subscreve eventos do NavBarBehavior (se não subscrito)
-                    try
-                    {
-                        navBarBehavior.ButtonClicked -= OnNavBarButtonClicked; // Remove se já existe
-                        navBarBehavior.ButtonClicked += OnNavBarButtonClicked; // Adiciona
-                        System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Eventos reconfigurados, SelectionCount={SelectionCount}");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Erro ao configurar eventos: {ex.Message}");
-                    }
-
-                    UpdateLayoutAndButtons(); // Configuração forçada
-                    _isInitialized = true;
-
-                    System.Diagnostics.Debug.WriteLine("🎯 CrudNavBarComponent: Inicialização FORÇADA concluída");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("❌ CrudNavBarComponent: navBarBehavior ainda NULL após ForceInitialization");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ForceInitialization: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// ✅ DELEGADO: HideAsync via NavBarBehavior
-        /// 🔧 DEBUG MELHORADO: Logs detalhados
-        /// </summary>
         public async Task HideAsync()
         {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: HideAsync chamado");
-
-                // ✅ CORREÇÃO: Usa o behavior diretamente em vez do navGrid
-                if (navBarBehavior != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: Chamando navBarBehavior.HideAsync()");
-                    await navBarBehavior.HideAsync();
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: navBarBehavior.HideAsync() concluído");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: navBarBehavior é NULL - usando fallback");
-                    // ✅ FALLBACK: Usa extensão no navGrid se behavior não disponível
-                    await NavBarExtensions.HideAsync(navGrid);
-                }
-
-                this.IsVisible = false;
-                System.Diagnostics.Debug.WriteLine($"🔧 CrudNavBarComponent: HideAsync concluído - IsVisible={this.IsVisible}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em HideAsync: {ex.Message}");
-            }
+            if (navBarBehavior != null) await navBarBehavior.HideAsync();
+            this.IsVisible = false;
         }
-
-        #endregion
-
-
-
-        #region Métodos Específicos para Modo Formulário
-
-        /// <summary>
-        /// 🎯 NOVO: Método específico para mostrar botão Salvar (modo formulário)
-        /// </summary>
-        public async Task ShowSaveButtonAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: ShowSaveButtonAsync chamado");
-
-                if (!IsFormMode)
-                {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ CrudNavBarComponent: ShowSaveButtonAsync ignorado - não está em modo formulário");
-                    return;
-                }
-
-                // 🎯 FORÇA: Cria botão Salvar se não existe
-                await ForceCreateSaveButton();
-
-                // 🎯 GARANTE: Botão fica visível
-                await ForceShowNavBar();
-
-                System.Diagnostics.Debug.WriteLine($"✅ CrudNavBarComponent: Botão Salvar exibido com sucesso");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ShowSaveButtonAsync: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🎯 NOVO: Método específico para esconder botão Salvar (modo formulário)
-        /// </summary>
-        public async Task HideSaveButtonAsync()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: HideSaveButtonAsync chamado");
-
-                if (!IsFormMode)
-                {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ CrudNavBarComponent: HideSaveButtonAsync ignorado - não está em modo formulário");
-                    return;
-                }
-
-                // 🎯 FORÇA: Remove botão Salvar
-                await ForceRemoveSaveButton();
-
-                System.Diagnostics.Debug.WriteLine($"✅ CrudNavBarComponent: Botão Salvar escondido com sucesso");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em HideSaveButtonAsync: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🎯 PRIVADO: Força criação do botão Salvar
-        /// </summary>
-        private async Task ForceCreateSaveButton()
-        {
-            try
-            {
-                var visibleButtons = new List<NavButtonConfig>
-                {
-                    _buttonConfigs[CrudButtonType.Salvar]
-                };
-
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Criando botão Salvar forçadamente");
-
-                // Cria colunas dinâmicas
-                var columnDefinitions = new ColumnDefinitionCollection();
-                foreach (var _ in visibleButtons)
-                {
-                    columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-                }
-
-                // ✅ BEHAVIOR: Configura através do NavBarBehavior
-                if (navBarBehavior != null)
-                {
-                    navBarBehavior.CustomColumnDefinitions = columnDefinitions;
-                    navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
-
-                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBarBehavior configurado com botão Salvar");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ForceCreateSaveButton: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🎯 PRIVADO: Força remoção do botão Salvar
-        /// </summary>
-        private async Task ForceRemoveSaveButton()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Removendo botão Salvar forçadamente");
-
-                // ✅ BEHAVIOR: Remove botões através do NavBarBehavior
-                if (navBarBehavior != null)
-                {
-                    navBarBehavior.CustomColumnDefinitions = new ColumnDefinitionCollection();
-                    navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>();
-
-                    // 🎯 ESCONDE: NavBar quando não há botões
-                    await navBarBehavior.HideAsync();
-
-                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: NavBarBehavior configurado sem botões");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ForceRemoveSaveButton: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// 🎯 PRIVADO: Força exibição da NavBar
-        /// </summary>
-        private async Task ForceShowNavBar()
-        {
-            try
-            {
-                if (navBarBehavior != null)
-                {
-                    // 🎯 CORREÇÃO CRÍTICA: Reseta flags para permitir nova exibição
-                    navBarBehavior.GetType().GetField("_isShown", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(navBarBehavior, false);
-                    navBarBehavior.GetType().GetField("_isAnimating", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(navBarBehavior, false);
-
-                    await navBarBehavior.ShowAsync();
-                    System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: ForceShowNavBar concluído");
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ CrudNavBarComponent: Erro em ForceShowNavBar: {ex.Message}");
-            }
-        }
-
-        #endregion
     }
 }

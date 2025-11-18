@@ -182,6 +182,11 @@ new NavButtonConfig
 - [**Download `delete_outlined.svg`**](https://fonts.gstatic.com/s/i/materialiconsoutlined/delete/24px.svg)
 - [**Download `delete_filled.svg`**](https://fonts.gstatic.com/s/i/materialicons/delete/24px.svg)
 
+### Edit
+- **Symbol Name:** `edit`
+- **Rationale:** Standard pencil icon for modifying data.
+- [**Download `edit_outlined.svg`**](https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/edit/materialsymbolsoutlined/edit_24px.svg)
+- [**Download `edit_filled.svg`**](https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/edit/materialsymbolsoutlined/edit_fill1_24px.svg)
 ---
 
 ## ⚙️ App Management & Miscellaneous

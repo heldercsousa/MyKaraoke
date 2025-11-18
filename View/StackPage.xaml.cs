@@ -200,8 +200,6 @@ namespace MyVocaList.View
             {
                 try
                 {
-                    UpdateHeaderTitle(false);
-
                     if (emptyQueueMessage != null)
                     {
                         emptyQueueMessage.IsVisible = true;
@@ -232,8 +230,6 @@ namespace MyVocaList.View
             {
                 try
                 {
-                    UpdateHeaderTitle(true);
-
                     if (emptyQueueMessage != null)
                     {
                         emptyQueueMessage.IsVisible = false;
@@ -351,25 +347,6 @@ namespace MyVocaList.View
                 }
             }
             return value;
-        }
-
-        private void UpdateHeaderTitle(bool hasActiveQueue)
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                try
-                {
-                    if (headerComponent != null)
-                    {
-                        headerComponent.Title = hasActiveQueue ? "Bandokê, Trend´s, 09 jul" : "My Karaoke";
-                        System.Diagnostics.Debug.WriteLine($"StackPage: Header title updated to: {headerComponent.Title}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"StackPage: UpdateHeaderTitle - Error: {ex.Message}");
-                }
-            });
         }
 
     }

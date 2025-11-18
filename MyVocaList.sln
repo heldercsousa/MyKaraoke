@@ -49,7 +49,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyVocaList.Console.HCTTonal
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Changelog", "Changelog", "{F21D371E-AC50-4B89-83AF-341A95F22F8C}"
 	ProjectSection(SolutionItems) = preProject
-		changelog.md = changelog.md
+		Docs\Changelog\changelog.md = Docs\Changelog\changelog.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Archive", "Archive", "{9FACFACF-1AC9-465C-BCF9-0CC87876F75B}"

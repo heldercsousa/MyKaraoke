@@ -9,16 +9,12 @@
              Background="{StaticResource Background}"
              NavigationPage.HasNavigationBar="False">
 
-    <!-- BEHAVIORS: SmartPageLifecycleBehavior + SafeNavigationBehavior -->
     <ContentPage.Behaviors>
         <behaviors:SmartPageLifecycleBehavior
-            NavBar="{x:Reference CrudNavBar}"
-            MainContent="{x:Reference mainContentStack}"
             LoadDataCommand="{Binding LoadDataCommand}"
             EnableAutoBypass="True"
             MaxFailuresBeforeBypass="2" />
 
-        <!-- SMART BACK NAVIGATION: Uses stack navigation -->
         <behaviors:SafeNavigationBehavior
             x:Name="BackNavigationBehavior"
             EnableSmartStackNavigation="True"
@@ -27,56 +23,30 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- Header Component - MD3 Migrated -->
         <components:HeaderComponent Grid.Row="0"
-                           x:Name="headerComponent"
-                           Title="New Venue"
-                           ShowCancelButton="True"
-                           ShowSaveButton="True"
-                           UseCancelIcon="True"
-                           UseSaveIcon="True"
-                           CancelClicked="OnCancelClicked"
-                           SaveClicked="OnSaveClicked"/>
+                                   x:Name="headerComponent"
+                                   Title="New Venue"
+                                   ShowCancelButton="True"
+                                   ShowSaveButton="True"
+                                   UseCancelIcon="True"
+                                   UseSaveIcon="True"
+                                   CancelClicked="OnCancelClicked"
+                                   SaveClicked="OnSaveClicked"/>
 
-        <!-- Main Content - MD3 PageContainer Pattern (No Card Wrapper!) -->
         <ScrollView Grid.Row="1">
             <VerticalStackLayout x:Name="mainContentStack"
-                                 Style="{StaticResource PageContainer}">
+                               Style="{StaticResource PageContainer}">
 
-                <!-- Venue Name Input -->
-                <Label Text="Venue name"
-                       Style="{StaticResource FieldLabel}" />
+                <components:MaterialEntryComponent 
+                    x:Name="nomeLocalInput"
+                    Title="Venue name"
+                    Placeholder="Enter venue name"
+                    MaxLength="30"
+                    TextChanged="OnNomeLocalTextChanged" />
 
-                <Entry x:Name="nomeLocalEntry"
-                       Placeholder="Enter venue name"
-                       Style="{StaticResource MaterialEntry}"
-                       MaxLength="30"
-                       TextChanged="OnNomeLocalTextChanged" />
-
-                <!-- Character Counter -->
-                <Label x:Name="characterCounterLabel"
-                       Text="0/30"
-                       Style="{StaticResource HelperText}"
-                       HorizontalOptions="End"
-                       IsVisible="False" />
-
-                <!-- Validation Error Message -->
-                <Label x:Name="validationMessageLabel"
-                       Text=""
-                       Style="{StaticResource ErrorText}"
-                       IsVisible="False" />
-
-                <!-- Success Message (Temporary - will be replaced by Snackbar) -->
-                <Label x:Name="successMessageLabel"
-                       Text=""
-                       FontSize="14"
-                       TextColor="{StaticResource Success}"
-                       Margin="0,8,0,0"
-                       IsVisible="False" />
 
             </VerticalStackLayout>
         </ScrollView>
 
     </Grid>
-
 </ContentPage>

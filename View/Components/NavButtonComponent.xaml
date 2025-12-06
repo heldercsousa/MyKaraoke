@@ -28,6 +28,9 @@
         <components:StatefulIcon x:Name="buttonIconMd3"
                                   IsVisible="False" />
 
-        <Label x:Name="buttonLabel" Style="{StaticResource NavButtonLabelStyle}" />
+        <Label x:Name="buttonLabel"
+               Text="{Binding Text, Source={RelativeSource AncestorType={x:Type components:NavButtonComponent}}}"
+               Style="{StaticResource NavButtonLabelStyle}"
+               IsVisible="True" />
     </StackLayout>
 </ContentView>

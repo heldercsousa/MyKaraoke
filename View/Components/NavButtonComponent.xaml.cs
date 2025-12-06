@@ -171,6 +171,12 @@ namespace MyVocaList.View.Components
                         if (button.buttonLabel != null)
                         {
                             button.buttonLabel.Text = text;
+                            button.buttonLabel.IsVisible = true; // ✅ FIX: Ensure label is visible
+                            System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: Label text set to '{text}', IsVisible={button.buttonLabel.IsVisible}, Opacity={button.buttonLabel.Opacity}, TextColor={button.buttonLabel.TextColor}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"❌ NavButtonComponent: buttonLabel is NULL when trying to set text '{text}'");
                         }
                     });
                 }
@@ -223,6 +229,8 @@ namespace MyVocaList.View.Components
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine($"🎯 NavButtonComponent: ApplyInitialProperties STARTED - Text='{Text}', IconName='{IconName}', IconSource='{IconSource}'");
+
                 // ✅ FIX: Manually apply the style from App Resources
                 if (buttonContainer != null)
                 {
@@ -244,18 +252,28 @@ namespace MyVocaList.View.Components
                     buttonIconMd3.IconName = IconName;
                     buttonIconMd3.IsVisible = true;
                     buttonIcon.IsVisible = false;
+                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: MD3 icon '{IconName}' configured");
                 }
                 else if (!string.IsNullOrEmpty(IconSource) && buttonIcon != null && buttonIconMd3 != null)
                 {
                     buttonIcon.Source = IconSource;
                     buttonIcon.IsVisible = true;
                     buttonIconMd3.IsVisible = false;
+                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: PNG icon '{IconSource}' configured");
                 }
 
                 if (buttonLabel != null && !string.IsNullOrEmpty(Text))
                 {
                     buttonLabel.Text = Text;
+                    buttonLabel.IsVisible = true; // ✅ FIX: Ensure label is visible
+                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: Label text '{Text}' configured, IsVisible={buttonLabel.IsVisible}, Opacity={buttonLabel.Opacity}");
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"⚠️ NavButtonComponent: Label NOT configured - buttonLabel={buttonLabel != null}, Text='{Text}'");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: ApplyInitialProperties COMPLETED");
             }
             catch (Exception ex)
             {

@@ -65,8 +65,8 @@ namespace MyVocaList.View
                 System.Environment.SetEnvironmentVariable("MONO_DEBUG", "disable_omit_fp");
 
                 // Força coleta de lixo inicial
-                System.GC.Collect();
-                System.GC.WaitForPendingFinalizers();
+                // System.GC.Collect();
+                // System.GC.WaitForPendingFinalizers();
 
                 System.Diagnostics.Debug.WriteLine("[App] Ambiente configurado com sucesso");
             }

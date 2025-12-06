@@ -41,8 +41,8 @@ public static class MauiProgram
             options.UseSqlite($"Data Source={dbPath}")
             .AddInterceptors(new DatabaseLoadingInterceptor());
 #if DEBUG
-            options.EnableSensitiveDataLogging();
-            options.LogTo(message => Console.WriteLine(message), LogLevel.Information);
+            // options.EnableSensitiveDataLogging();
+            // options.LogTo(message => Console.WriteLine(message), LogLevel.Information);
 #endif
         });
 

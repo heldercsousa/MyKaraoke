@@ -62,6 +62,19 @@ and the song lyrics are not available in local data, it will fetch the lyrics vi
 
 ---
 
+### Nice to Have & AI Roadmap (Future Vision)
+
+**AI Engineering Roadmap Summary:**
+A comprehensive roadmap for integrating AI features is detailed in `Docs/Guides/ai_engineering_roadmap.md`. Key areas include:
+- **Singer Performance**: AI Score (Pitch/Timing), Real-time Feedback, Note Visualization, Lyrics Sync.
+- **Host Efficiency**: Wait Time Prediction, Voice Commands, Intelligent Song Suggestions.
+- **Social Engagement**: AI Persona Generation, Audience Voting, Band Score Generation.
+- **Development**: MD3 Compliance Agents, Token Optimization.
+
+**Refer to `Docs/Guides/ai_engineering_roadmap.md` for the complete detailed roadmap.**
+
+---
+
 ## 👥 Development Team
 
 ### **Helder (Project Architect & Technical Auditor)**

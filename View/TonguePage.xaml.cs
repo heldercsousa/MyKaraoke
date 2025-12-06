@@ -107,9 +107,9 @@ namespace MyVocaList.View
                         }
                         else
                         {
-                            // Unselected state: use SurfaceContainerHighest
+                            // Unselected state: use Surface (same as ElevatedCard style)
                             object surfaceResource = null;
-                            if (Application.Current?.Resources.TryGetValue("SurfaceContainerHighest", out surfaceResource) == true)
+                            if (Application.Current?.Resources.TryGetValue("Surface", out surfaceResource) == true)
                                 frame.BackgroundColor = surfaceResource as Color;
 
                             frame.BorderColor = Colors.Transparent;

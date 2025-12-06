@@ -7,7 +7,7 @@
 
     <!-- MD3 FAB (Floating Action Button) -->
     <ImageButton x:Name="fabButton"
-                 Source="add_outlined.svg"
+                 Source="add_outlined"
                  BackgroundColor="{StaticResource PrimaryContainer}"
                  CornerRadius="16"
                  WidthRequest="56"

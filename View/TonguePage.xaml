@@ -1,73 +1,44 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:MyVocaList.View.Components"
+             xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
              xmlns:local="clr-namespace:MyVocaList.View"
              x:Class="MyVocaList.View.TonguePage"
+             x:DataType="local:TonguePage"
              Background="{StaticResource Background}"
              NavigationPage.HasNavigationBar="False">
 
-    <Grid Padding="0,0,0,15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ContentPage.Behaviors>
+        <behaviors:SmartPageLifecycleBehavior
+            LoadDataCommand="{Binding LoadDataCommand}"
+            EnableAutoBypass="True"
+            MaxFailuresBeforeBypass="2" />
+    </ContentPage.Behaviors>
 
-        <!-- Botão voltar padronizado -->
-        <Button Grid.Row="0" 
-                Style="{StaticResource CompactBackButtonStyle}"
-                Clicked="OnBackButtonClicked">
-            <Button.ImageSource>
-                <FileImageSource File="setaesquerda.png" />
-            </Button.ImageSource>
-        </Button>
+    <Grid RowDefinitions="Auto,*">
 
-        <!-- Card principal com borda "espessa" (usando frames aninhados) -->
-        <Frame Grid.Row="1" 
-               BorderColor="#533682"
-               Background="Transparent"
-               Padding="0"
-               CornerRadius="27"
-               Margin="15,10,15,0"
-               HasShadow="False">
+        <components:HeaderComponent Grid.Row="0"
+                                   x:Name="headerComponent"
+                                   Title="Language"
+                                   ShowCancelButton="True"
+                                   ShowSaveButton="True"
+                                   UseCancelIcon="True"
+                                   UseSaveIcon="True"
+                                   CancelClicked="OnCancelClicked"
+                                   SaveClicked="OnSaveClicked"/>
 
-            <Frame Background="{StaticResource CardBackgroundGradient}"
-                   CornerRadius="27"
-                   HasShadow="False"
-                   Padding="20,30,20,20"
-                   BorderColor="Transparent">
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="mainContentStack"
+                               Style="{StaticResource PageContainer}">
 
-                <!-- Conteúdo do card -->
-                <Grid RowDefinitions="Auto,*">
-                    <!-- Título do Card com ícone -->
-                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,15">
-                        <Frame BackgroundColor="#e91e63" 
-                               CornerRadius="20"
-                               HeightRequest="40"
-                               WidthRequest="40"
-                               Padding="10"
-                               HorizontalOptions="Start"
-                               VerticalOptions="Center"
-                               Grid.Column="0">
-                            <Image Source="globeorange128_128.png"
-                                   Aspect="AspectFit"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" />
-                        </Frame>
-                        <Label Grid.Column="1" 
-                               Text="Language" 
-                               x:Name="titleText"
-                               Style="{StaticResource CardTitleStyle}"
-                               VerticalOptions="Center" />
-                    </Grid>
+                <!-- Language selection list -->
+                <VerticalStackLayout x:Name="languagesContainer" Spacing="8">
+                    <!-- Language buttons will be added programmatically -->
+                </VerticalStackLayout>
 
-                    <!-- Container para os botões de idioma -->
-                    <ScrollView Grid.Row="1" x:Name="languageScrollView">
-                        <VerticalStackLayout x:Name="languagesContainer" Spacing="15">
-                            <!-- Botões de idioma serão adicionados programaticamente -->
-                        </VerticalStackLayout>
-                    </ScrollView>
-                </Grid>
-            </Frame>
-        </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+
     </Grid>
 </ContentPage>

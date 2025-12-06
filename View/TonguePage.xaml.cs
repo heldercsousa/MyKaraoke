@@ -1,8 +1,10 @@
 ﻿using Microsoft.Maui.Controls;
 using MyVocaList.Contracts.Models;
 using MyVocaList.Services;
+using MyVocaList.View.Components;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Input;
 
 namespace MyVocaList.View
 {
@@ -11,194 +13,183 @@ namespace MyVocaList.View
         private ObservableCollection<LanguageItem> languages;
         private ILanguageService? _languageService;
         private ServiceProvider? _serviceProvider;
-        private string selectedLanguage = "en"; // Idioma padrão
+        private string selectedLanguage = "en"; // Default language
+        private bool _isInitialized = false;
 
-        // Dicionário de traduções para a palavra "Language" em diferentes idiomas
-        private readonly Dictionary<string, string> languageTranslations = new Dictionary<string, string>
-        {
-            { "en", "Language" },
-            { "pt", "Língua" },
-            { "es", "Idioma" },
-            { "fr", "Langue" },
-            { "de", "Sprache" },
-            { "zh", "语言" },
-            { "ja", "言語" },
-            { "ko", "언어" },
-            { "ar", "اللغة" },
-            { "ru", "Язык" },
-            { "hi", "भाषा" }
-        };
+        // Lifecycle Command
+        public ICommand LoadDataCommand { get; }
 
         public TonguePage()
         {
+            LoadDataCommand = new Command(async () => await InitializeDataAsync());
             InitializeComponent();
+            this.BindingContext = this;
 
-            // Inicialização da lista de idiomas
+            // Initialize the list of languages - ONLY 6 SUPPORTED LANGUAGES
             languages = new ObservableCollection<LanguageItem>
             {
                 new LanguageItem { Code = "en", Name = "English", Countries = "United States / United Kingdom", Flag = "🇺🇸 🇬🇧", IsSelected = true },
                 new LanguageItem { Code = "pt", Name = "Português", Countries = "Brasil / Portugal", Flag = "🇧🇷 🇵🇹" },
                 new LanguageItem { Code = "es", Name = "Español", Countries = "España / América Latina", Flag = "🇪🇸 🇲🇽" },
                 new LanguageItem { Code = "fr", Name = "Français", Countries = "France / Canada", Flag = "🇫🇷 🇨🇦" },
-                new LanguageItem { Code = "de", Name = "Deutsch", Countries = "Deutschland / Österreich", Flag = "🇩🇪 🇦🇹" },
-                new LanguageItem { Code = "zh", Name = "简体中文", Countries = "中国大陆 / 新加坡", Flag = "🇨🇳 🇸🇬" },
                 new LanguageItem { Code = "ja", Name = "日本語", Countries = "日本", Flag = "🇯🇵" },
-                new LanguageItem { Code = "ko", Name = "한국어", Countries = "대한민국", Flag = "🇰🇷" },
-                new LanguageItem { Code = "ar", Name = "العربية", Countries = "السعودية / مصر", Flag = "🇸🇦 🇪🇬" },
-                new LanguageItem { Code = "ru", Name = "Русский", Countries = "Россия", Flag = "🇷🇺" },
-                new LanguageItem { Code = "hi", Name = "हिन्दी", Countries = "भारत", Flag = "🇮🇳" }
+                new LanguageItem { Code = "ko", Name = "한국어", Countries = "대한민국", Flag = "🇰🇷" }
             };
         }
 
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
-
-            if (Handler != null)
+            if (Handler != null && !_isInitialized)
             {
                 try
                 {
-                    // Inicializa o ServiceProvider quando o Handler estiver disponível
-                    _serviceProvider = ServiceProvider.FromPage(this);
-                    _languageService = _serviceProvider.GetService<ILanguageService>();
+                    var serviceProvider = MyVocaList.View.ServiceProvider.FromPage(this);
+                    _languageService = serviceProvider?.GetService<ILanguageService>();
+
+                    if (_languageService != null) _isInitialized = true;
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao inicializar serviços: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"TonguePage Error: {ex.Message}");
                 }
             }
         }
 
-        protected override async void OnAppearing()
+        protected override void OnAppearing()
         {
             base.OnAppearing();
-
-            // Aguarda um tempo para garantir que a UI esteja pronta
-            await Task.Delay(50);
-
-            // Carrega os botões de idioma quando a página aparece
+            // Load language buttons when page appears
             CreateLanguageButtons();
+        }
 
-            // Debug para verificar se os botões foram criados
-            System.Diagnostics.Debug.WriteLine($"Botões criados: {languagesContainer?.Children.Count ?? 0}");
+        // Called by SmartPageLifecycleBehavior via Command
+        private async Task InitializeDataAsync()
+        {
+            // Data init logic...
+            await Task.Delay(50);
         }
 
         private void CreateLanguageButtons()
         {
             try
             {
-                // Limpa os botões existentes
+                // Clear existing buttons
                 if (languagesContainer != null)
                 {
                     languagesContainer.Children.Clear();
-                    System.Diagnostics.Debug.WriteLine("Container limpo com sucesso");
 
-                    // Cria os botões de idioma
+                    // Create language buttons with Material Design styling
                     foreach (var language in languages)
                     {
-                        // Debug para verificar cada item sendo processado
-                        System.Diagnostics.Debug.WriteLine($"Criando botão para: {language.Name}, Bandeira: {language.Flag}");
-
                         var frame = new Frame
                         {
-                            HeightRequest = 55,
-                            CornerRadius = 40,
-                            Margin = new Thickness(0),
-                            Padding = new Thickness(30, 5, 30, 5),
-                            BorderColor = language.IsSelected ? Colors.Transparent : Color.FromArgb("#6c4794"),
-                            HasShadow = language.IsSelected
+                            Margin = new Thickness(0, 4),
+                            Padding = new Thickness(16, 12),
+                            HasShadow = false,
+                            CornerRadius = 12
                         };
 
-                        // Aplicar o background como SolidColorBrush ou o gradiente
+                        // Apply Material Design style based on selection
                         if (language.IsSelected)
                         {
-                            // Verificamos se o recurso existe antes de tentar acessá-lo
-                            object gradientResource = null;
-                            if (Application.Current != null && Application.Current.Resources.TryGetValue("SelectedButtonGradient", out gradientResource) && gradientResource is Brush)
-                            {
-                                frame.Background = gradientResource as Brush;
-                            }
+                            // Selected state: use SecondaryContainer and Primary border
+                            object secondaryContainerResource = null;
+                            object primaryResource = null;
+
+                            if (Application.Current?.Resources.TryGetValue("SecondaryContainer", out secondaryContainerResource) == true)
+                                frame.BackgroundColor = secondaryContainerResource as Color;
+
+                            if (Application.Current?.Resources.TryGetValue("Primary", out primaryResource) == true)
+                                frame.BorderColor = primaryResource as Color;
                             else
-                            {
-                                // Fallback se o recurso não existir
-                                frame.Background = new SolidColorBrush(Color.FromArgb("#e52067"));
-                            }
+                                frame.BorderColor = Colors.Transparent;
                         }
                         else
                         {
-                            frame.Background = new SolidColorBrush(Color.FromArgb("#4c426f"));
+                            // Unselected state: use SurfaceContainerHighest
+                            object surfaceResource = null;
+                            if (Application.Current?.Resources.TryGetValue("SurfaceContainerHighest", out surfaceResource) == true)
+                                frame.BackgroundColor = surfaceResource as Color;
+
+                            frame.BorderColor = Colors.Transparent;
                         }
 
                         var grid = new Grid
                         {
                             ColumnDefinitions =
                             {
+                                new ColumnDefinition { Width = GridLength.Auto },
                                 new ColumnDefinition { Width = GridLength.Star },
                                 new ColumnDefinition { Width = GridLength.Auto }
-                            }
+                            },
+                            ColumnSpacing = 16
                         };
 
-                        // Nome do idioma
-                        var nameLabel = new Label
-                        {
-                            Text = language.Name,
-                            FontAttributes = FontAttributes.Bold,
-                            FontSize = 18,
-                            TextColor = Colors.White,
-                            HorizontalOptions = LayoutOptions.Start,
-                            VerticalOptions = LayoutOptions.Center
-                        };
-
-                        // Para idiomas RTL (árabe), alinhamento à direita
-                        if (language.Code == "ar")
-                        {
-                            nameLabel.HorizontalOptions = LayoutOptions.End;
-                            nameLabel.FlowDirection = FlowDirection.RightToLeft;
-                        }
-
-                        // Bandeira do idioma
+                        // Flag icon (left)
                         var flagLabel = new Label
                         {
                             Text = language.Flag,
-                            FontSize = 20,
-                            TextColor = Colors.White,
-                            HorizontalOptions = LayoutOptions.End,
+                            FontSize = 24,
+                            HorizontalOptions = LayoutOptions.Center,
                             VerticalOptions = LayoutOptions.Center
                         };
 
-                        System.Diagnostics.Debug.WriteLine($"Texto do label: '{nameLabel.Text}', Bandeira: '{flagLabel.Text}'");
+                        // Language name (center)
+                        var nameLabel = new Label
+                        {
+                            Text = language.Name,
+                            HorizontalOptions = LayoutOptions.Start,
+                            VerticalOptions = LayoutOptions.Center,
+                            LineBreakMode = LineBreakMode.TailTruncation
+                        };
 
-                        // Adiciona os elementos ao grid usando a sintaxe correta para .NET MAUI
-                        grid.Add(nameLabel, 0, 0);
-                        grid.Add(flagLabel, 1, 0);
+                        // Apply TitleMedium style
+                        object titleMediumStyle = null;
+                        if (Application.Current?.Resources.TryGetValue("TitleMedium", out titleMediumStyle) == true && titleMediumStyle is Style style)
+                            nameLabel.Style = style;
 
-                        // Configura o frame com o grid
+                        // Selection indicator (right) - only shown when selected
+                        var checkLabel = new Label
+                        {
+                            Text = "✓",
+                            FontSize = 20,
+                            FontAttributes = FontAttributes.Bold,
+                            HorizontalOptions = LayoutOptions.Center,
+                            VerticalOptions = LayoutOptions.Center,
+                            IsVisible = language.IsSelected
+                        };
+
+                        // Apply Primary color to check
+                        object primaryColor = null;
+                        if (Application.Current?.Resources.TryGetValue("Primary", out primaryColor) == true)
+                            checkLabel.TextColor = primaryColor as Color;
+
+                        // Add elements to grid
+                        grid.Add(flagLabel, 0, 0);
+                        grid.Add(nameLabel, 1, 0);
+                        grid.Add(checkLabel, 2, 0);
+
+                        // Configure frame with grid
                         frame.Content = grid;
 
-                        // Adicionar tap recognizer
+                        // Add tap recognizer
                         var languageCode = language.Code;
                         var tapGesture = new TapGestureRecognizer();
-
                         tapGesture.Tapped += async (s, e) =>
                         {
                             await SelectLanguage(languageCode);
                         };
-
                         frame.GestureRecognizers.Add(tapGesture);
 
-                        // Adiciona o frame ao container
+                        // Add frame to container
                         languagesContainer.Children.Add(frame);
-                        System.Diagnostics.Debug.WriteLine($"Botão para {language.Name} adicionado com sucesso");
                     }
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("ERRO: languagesContainer é null!");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao criar botões de idioma: {ex.Message}\nStack: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"Error creating language buttons: {ex.Message}\nStack: {ex.StackTrace}");
             }
         }
 
@@ -206,7 +197,7 @@ namespace MyVocaList.View
         {
             try
             {
-                // Atualiza a seleção de idioma
+                // Update language selection
                 foreach (var language in languages)
                 {
                     language.IsSelected = (language.Code == languageCode);
@@ -216,43 +207,53 @@ namespace MyVocaList.View
                     }
                 }
 
-                // Recria os botões para refletir a nova seleção visual
+                // Recreate buttons to reflect the new visual selection
                 CreateLanguageButtons();
-
-                // Atualiza o título para mostrar a tradução (sem salvar no banco)
-                UpdateLanguageTitle(selectedLanguage);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao selecionar idioma: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error selecting language: {ex.Message}");
             }
         }
 
-        private void UpdateLanguageTitle(string languageCode)
+        #region Save/Cancel Handlers
+        private async void OnSaveClicked(object sender, EventArgs e)
+        {
+            await SaveLanguageAndNavigateAsync();
+        }
+
+        private async void OnCancelClicked(object sender, EventArgs e)
+        {
+            await CloseApplicationAsync();
+        }
+        #endregion
+
+        #region Saving Logic
+        private async Task SaveLanguageAndNavigateAsync()
         {
             try
             {
-                // Atualiza o texto do título com base no idioma selecionado
-                if (languageTranslations.TryGetValue(languageCode, out string translation))
-                {
-                    titleText.Text = translation;
+                // Show global loading
+                await GlobalLoadingOverlay.ShowLoadingAsync("Saving language...");
 
-                    // Configurações específicas para RTL (árabe)
-                    if (languageCode == "ar")
-                    {
-                        titleText.HorizontalOptions = LayoutOptions.End;
-                        titleText.FlowDirection = FlowDirection.RightToLeft;
-                    }
-                    else
-                    {
-                        titleText.HorizontalOptions = LayoutOptions.Start;
-                        titleText.FlowDirection = FlowDirection.LeftToRight;
-                    }
-                }
+                // Save the selected language
+                await SaveSelectedLanguageAsync(selectedLanguage);
+
+                // Navigate to StackPage
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    Application.Current.MainPage = new NavigationPage(new StackPage());
+                    System.Diagnostics.Debug.WriteLine("[SUCCESS] Navigation to StackPage completed");
+                });
+
+                // Hide loading
+                await GlobalLoadingOverlay.HideLoadingAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar título de idioma: {ex.Message}");
+                await GlobalLoadingOverlay.HideLoadingAsync();
+                System.Diagnostics.Debug.WriteLine($"[ERROR] Error saving language: {ex.Message}");
+                await DisplayAlert("Error", "Failed to save language selection", "OK");
             }
         }
 
@@ -260,129 +261,57 @@ namespace MyVocaList.View
         {
             try
             {
-                // Salva o idioma nas preferências do aplicativo
+                // Save language in app preferences
                 Preferences.Set("UserLanguage", languageCode);
 
-                // Usa o serviço de idioma para persistir a seleção
+                // Use language service to persist selection
                 if (_languageService != null)
                 {
                     await _languageService.SetUserLanguageAsync(languageCode);
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Serviço de idioma não disponível");
+                    System.Diagnostics.Debug.WriteLine("Language service not available");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao salvar idioma: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error saving language: {ex.Message}");
+                throw;
             }
         }
 
-        private void ApplyLanguageToApp(string languageCode)
-        {
-            // Aplica o idioma ao aplicativo
-            System.Diagnostics.Debug.WriteLine($"Idioma {languageCode} aplicado ao app");
-        }
-
-        // Botão voltar da UI - corrigido para usar NavigationPage
-        private async void OnBackButtonClicked(object sender, EventArgs e)
-        {
-            await NavigateToStackPage();
-        }
-
-        // Botão físico do Android - corrigido para usar NavigationPage
-        protected override bool OnBackButtonPressed()
-        {
-            MainThread.BeginInvokeOnMainThread(async () => {
-                await NavigateToStackPage();
-            });
-
-            return true; // Impede o comportamento padrão
-        }
-
-        // Método corrigido de navegação usando Application.Current.MainPage com NavigationPage
-        private async Task NavigateToStackPage()
+        private async Task CloseApplicationAsync()
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[DEBUG] TonguePage: Navegando para StackPage");
-
-                // Encontra o idioma selecionado
-                var selectedItem = languages.FirstOrDefault(l => l.IsSelected);
-                if (selectedItem == null) return;
-
-                // Encontra o nome traduzido do idioma
-                string languageDisplayName = selectedItem.Name;
-                string englishName = GetEnglishNameForLanguage(selectedItem.Code);
-
-                // Exibe diálogo de confirmação sempre em inglês
                 bool confirmed = await DisplayAlert(
-                    "Confirmation",
-                    $"Confirm {englishName} ({languageDisplayName}) language?",
-                    "Confirm",
-                    "Cancel"
+                    "Exit",
+                    "Are you sure you want to exit the application?",
+                    "Yes",
+                    "No"
                 );
 
                 if (confirmed)
                 {
-                    // Salva a preferência no banco de dados
-                    await SaveSelectedLanguageAsync(selectedLanguage);
-
-                    // Aplica o idioma
-                    ApplyLanguageToApp(selectedLanguage);
-
-                    // Usa Application.Current.MainPage com NavigationPage para corrigir navegação
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        Application.Current.MainPage = new NavigationPage(new StackPage());
-                        System.Diagnostics.Debug.WriteLine("[SUCCESS] Navegação para StackPage realizada");
-                    });
+                    // Close the application
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
                 }
-                // Se cancelar, permanece na página atual
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Erro ao navegar para StackPage: {ex.Message}");
-
-                // Fallback simples
-                try
-                {
-                    await MainThread.InvokeOnMainThreadAsync(() =>
-                    {
-                        Application.Current.MainPage = new StackPage();
-                    });
-                }
-                catch (Exception fallbackEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[ERROR] Fallback também falhou: {fallbackEx.Message}");
-                }
+                System.Diagnostics.Debug.WriteLine($"Error closing application: {ex.Message}");
             }
         }
+        #endregion
 
-        private string GetEnglishNameForLanguage(string languageCode)
+        #region Hardware Back Button
+        protected override bool OnBackButtonPressed()
         {
-            // Mapeia os códigos de idioma para nomes em inglês
-            Dictionary<string, string> englishNames = new Dictionary<string, string>
-            {
-                { "en", "English" },
-                { "pt", "Portuguese" },
-                { "es", "Spanish" },
-                { "fr", "French" },
-                { "de", "German" },
-                { "zh", "Chinese" },
-                { "ja", "Japanese" },
-                { "ko", "Korean" },
-                { "ar", "Arabic" },
-                { "ru", "Russian" },
-                { "hi", "Hindi" }
-            };
-
-            if (englishNames.TryGetValue(languageCode, out string name))
-                return name;
-
-            return languageCode; // fallback para o código se não encontrar nome
+            // Prevent hardware back button - user must use Cancel to exit
+            return true;
         }
+        #endregion
     }
 
     // Modelo para representar um item de idioma

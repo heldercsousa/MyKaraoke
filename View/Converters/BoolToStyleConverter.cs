@@ -18,22 +18,22 @@ namespace MyVocaList.View.Converters
                         
                         if (Application.Current?.Resources.TryGetValue(styleName, out var style) == true)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Style '{styleName}' found and applied");
+                            Console.WriteLine($"Style '{styleName}' found and applied");
                             return style;
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"Style '{styleName}' not found in resources");
+                            Console.WriteLine($"Style '{styleName}' not found in resources");
                         }
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"Invalid style parameter format: '{styleNames}'. Expected 'trueStyle,falseStyle'");
+                        Console.WriteLine($"Invalid style parameter format: '{styleNames}'. Expected 'trueStyle,falseStyle'");
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error in BoolToStyleConverter: {ex.Message}");
+                    Console.WriteLine($"Error in BoolToStyleConverter: {ex.Message}");
                 }
             }
             
@@ -55,13 +55,13 @@ namespace MyVocaList.View.Converters
                 if (value is bool isSelected)
                 {
                     var color = isSelected ? Colors.Transparent : Color.FromArgb("#6c4794");
-                    System.Diagnostics.Debug.WriteLine($"BoolToBorderColorConverter: returning {(isSelected ? "Transparent" : "#6c4794")}");
+                    Console.WriteLine($"BoolToBorderColorConverter: returning {(isSelected ? "Transparent" : "#6c4794")}");
                     return color;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in BoolToBorderColorConverter: {ex.Message}");
+                Console.WriteLine($"Error in BoolToBorderColorConverter: {ex.Message}");
             }
             
             return Color.FromArgb("#6c4794");
@@ -82,13 +82,13 @@ namespace MyVocaList.View.Converters
                 if (value is bool isSelected)
                 {
                     var color = isSelected ? Color.FromArgb("#d5528a") : Color.FromArgb("#4c426f");
-                    System.Diagnostics.Debug.WriteLine($"BoolToColorConverter: returning {(isSelected ? "#d5528a" : "#4c426f")}");
+                    Console.WriteLine($"BoolToColorConverter: returning {(isSelected ? "#d5528a" : "#4c426f")}");
                     return color;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in BoolToColorConverter: {ex.Message}");
+                Console.WriteLine($"Error in BoolToColorConverter: {ex.Message}");
             }
             
             return Color.FromArgb("#4c426f");

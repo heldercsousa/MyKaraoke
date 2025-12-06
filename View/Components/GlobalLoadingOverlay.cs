@@ -45,7 +45,7 @@ namespace MyVocaList.View.Components
                     // Adiciona/atualiza requisição
                     _activeRequests.AddOrUpdate(requesterId, request, (key, oldValue) => request);
 
-                    System.Diagnostics.Debug.WriteLine($"🎯 LoadingRequest: {requesterId} solicitou loading - Priority: {priority}, Context: {context}, Message: '{message}'");
+                    Console.WriteLine($"🎯 LoadingRequest: {requesterId} solicitou loading - Priority: {priority}, Context: {context}, Message: '{message}'");
                 }
 
                 // Avalia se deve mostrar este loading
@@ -63,7 +63,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro em RequestShowAsync: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro em RequestShowAsync: {ex.Message}");
             }
         }
 
@@ -84,19 +84,19 @@ namespace MyVocaList.View.Components
 
                 if (wasRemoved)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 LoadingRequest: {requesterId} removeu requisição de loading");
+                    Console.WriteLine($"🎯 LoadingRequest: {requesterId} removeu requisição de loading");
 
                     // Reavalia se deve continuar mostrando loading
                     await EvaluateAndShowLoading();
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ LoadingRequest: {requesterId} tentou remover requisição inexistente");
+                    Console.WriteLine($"⚠️ LoadingRequest: {requesterId} tentou remover requisição inexistente");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro em RequestHideAsync: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro em RequestHideAsync: {ex.Message}");
             }
         }
 
@@ -116,13 +116,13 @@ namespace MyVocaList.View.Components
 
                 if (requestsToRemove.Any())
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 LoadingRequest: Removidas {requestsToRemove.Count} requisições do contexto {context}");
+                    Console.WriteLine($"🎯 LoadingRequest: Removidas {requestsToRemove.Count} requisições do contexto {context}");
                     await EvaluateAndShowLoading();
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro em ClearContextAsync: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro em ClearContextAsync: {ex.Message}");
             }
         }
 
@@ -146,13 +146,13 @@ namespace MyVocaList.View.Components
 
                 if (requestsToRemove.Any())
                 {
-                    System.Diagnostics.Debug.WriteLine($"🧹 LoadingRequest: Removidas {requestsToRemove.Count} requisições expiradas");
+                    Console.WriteLine($"🧹 LoadingRequest: Removidas {requestsToRemove.Count} requisições expiradas");
                     await EvaluateAndShowLoading();
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro em CleanupAsync: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro em CleanupAsync: {ex.Message}");
             }
         }
 
@@ -189,7 +189,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro em EvaluateAndShowLoading: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro em EvaluateAndShowLoading: {ex.Message}");
             }
         }
 
@@ -266,12 +266,12 @@ namespace MyVocaList.View.Components
                     InjectOverlayIntoPage(currentPage, _currentOverlay);
                     _isPhysicallyShowing = true;
 
-                    System.Diagnostics.Debug.WriteLine($"🎯 LoadingOverlay: EXIBINDO '{request.Message}' para {request.RequesterId} na {currentPage.GetType().Name}");
+                    Console.WriteLine($"🎯 LoadingOverlay: EXIBINDO '{request.Message}' para {request.RequesterId} na {currentPage.GetType().Name}");
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro ao mostrar loading físico: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro ao mostrar loading físico: {ex.Message}");
             }
         }
 
@@ -289,7 +289,7 @@ namespace MyVocaList.View.Components
                     if (_currentOverlay != null && _currentPage != null)
                     {
                         RemoveOverlayFromPage(_currentPage, _currentOverlay);
-                        System.Diagnostics.Debug.WriteLine($"🎯 LoadingOverlay: ESCONDIDO da {_currentPage.GetType().Name}");
+                        Console.WriteLine($"🎯 LoadingOverlay: ESCONDIDO da {_currentPage.GetType().Name}");
 
                         _currentOverlay = null;
                         _currentPage = null;
@@ -300,7 +300,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro ao esconder loading físico: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro ao esconder loading físico: {ex.Message}");
             }
         }
 
@@ -363,7 +363,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro ao injetar overlay: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro ao injetar overlay: {ex.Message}");
             }
         }
 
@@ -383,7 +383,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro ao remover overlay: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro ao remover overlay: {ex.Message}");
             }
         }
 
@@ -421,7 +421,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ GlobalLoadingOverlay: Erro ao obter página atual: {ex.Message}");
+                Console.WriteLine($"❌ GlobalLoadingOverlay: Erro ao obter página atual: {ex.Message}");
                 return null;
             }
         }

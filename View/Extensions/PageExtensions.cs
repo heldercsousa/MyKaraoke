@@ -39,7 +39,7 @@ namespace MyVocaList.View.Extensions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro ao obter diagnósticos: {ex.Message}");
+                Console.WriteLine($"❌ PageExtensions: Erro ao obter diagnósticos: {ex.Message}");
                 return new Dictionary<string, object> { { "Error", ex.Message } };
             }
         }
@@ -56,7 +56,7 @@ namespace MyVocaList.View.Extensions
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ PageExtensions: ExecuteStandardBypass INICIADO para {page.GetType().Name}");
+                Console.WriteLine($"🛡️ PageExtensions: ExecuteStandardBypass INICIADO para {page.GetType().Name}");
 
                 // ✅ GARANTE: Estado básico da página
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -75,7 +75,7 @@ namespace MyVocaList.View.Extensions
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         selectionCountProp.SetValue(page, 0);
-                        System.Diagnostics.Debug.WriteLine($"✅ SelectionCount=0 definido para {page.GetType().Name}");
+                        Console.WriteLine($"✅ SelectionCount=0 definido para {page.GetType().Name}");
                     });
                 }
 
@@ -87,15 +87,15 @@ namespace MyVocaList.View.Extensions
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         updateMethod.Invoke(page, null);
-                        System.Diagnostics.Debug.WriteLine($"✅ UpdateUIState chamado para {page.GetType().Name}");
+                        Console.WriteLine($"✅ UpdateUIState chamado para {page.GetType().Name}");
                     });
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: ExecuteStandardBypass CONCLUÍDO para {page.GetType().Name}");
+                Console.WriteLine($"✅ PageExtensions: ExecuteStandardBypass CONCLUÍDO para {page.GetType().Name}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro no ExecuteStandardBypass: {ex.Message}");
+                Console.WriteLine($"❌ PageExtensions: Erro no ExecuteStandardBypass: {ex.Message}");
             }
         }
 
@@ -111,7 +111,7 @@ namespace MyVocaList.View.Extensions
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🔧 PageExtensions: Aplicando correções conhecidas para {page.GetType().Name}");
+                Console.WriteLine($"🔧 PageExtensions: Aplicando correções conhecidas para {page.GetType().Name}");
 
                 // ✅ CORREÇÃO 1: Força visibilidade e estado
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -126,7 +126,7 @@ namespace MyVocaList.View.Extensions
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         page.BindingContext = page;
-                        System.Diagnostics.Debug.WriteLine($"🔧 BindingContext corrigido para {page.GetType().Name}");
+                        Console.WriteLine($"🔧 BindingContext corrigido para {page.GetType().Name}");
                     });
                 }
 
@@ -146,19 +146,19 @@ namespace MyVocaList.View.Extensions
                         {
                             applyFixesMethod.Invoke(page, null);
                         }
-                        System.Diagnostics.Debug.WriteLine($"🔧 Método específico ApplyPageFixes executado para {page.GetType().Name}");
+                        Console.WriteLine($"🔧 Método específico ApplyPageFixes executado para {page.GetType().Name}");
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Erro ao executar ApplyPageFixes: {ex.Message}");
+                        Console.WriteLine($"❌ Erro ao executar ApplyPageFixes: {ex.Message}");
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: Todas as correções aplicadas para {page.GetType().Name}");
+                Console.WriteLine($"✅ PageExtensions: Todas as correções aplicadas para {page.GetType().Name}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro ao aplicar correções: {ex.Message}");
+                Console.WriteLine($"❌ PageExtensions: Erro ao aplicar correções: {ex.Message}");
             }
         }
 
@@ -174,7 +174,7 @@ namespace MyVocaList.View.Extensions
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 PageExtensions: ExecuteListPageBypass INICIADO para {listPage.GetType().Name}");
+                Console.WriteLine($"🎯 PageExtensions: ExecuteListPageBypass INICIADO para {listPage.GetType().Name}");
 
                 // ✅ DETECÇÃO AUTOMÁTICA: Encontra propriedades de coleção (Locais, Pessoas, etc.)
                 var collectionProperty = FindCollectionProperty(listPage);
@@ -195,7 +195,7 @@ namespace MyVocaList.View.Extensions
                             onPropertyChangedMethod?.Invoke(listPage, new object[] { "SelectionCount" });
                         }
 
-                        System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: {listPage.GetType().Name} - SelectionCount=0 definido");
+                        Console.WriteLine($"✅ PageExtensions: {listPage.GetType().Name} - SelectionCount=0 definido");
                     });
 
                     // ✅ ATUALIZA: Estado da UI baseado na coleção
@@ -203,17 +203,17 @@ namespace MyVocaList.View.Extensions
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ PageExtensions: Propriedades necessárias não encontradas em {listPage.GetType().Name}");
+                    Console.WriteLine($"⚠️ PageExtensions: Propriedades necessárias não encontradas em {listPage.GetType().Name}");
 
                     // 🛡️ FALLBACK: Executa bypass padrão
                     await listPage.ExecuteStandardBypass();
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: ExecuteListPageBypass CONCLUÍDO para {listPage.GetType().Name}");
+                Console.WriteLine($"✅ PageExtensions: ExecuteListPageBypass CONCLUÍDO para {listPage.GetType().Name}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro no ExecuteListPageBypass: {ex.Message}");
+                Console.WriteLine($"❌ PageExtensions: Erro no ExecuteListPageBypass: {ex.Message}");
 
                 // 🛡️ FALLBACK: Executa bypass padrão
                 await listPage.ExecuteStandardBypass();
@@ -228,7 +228,7 @@ namespace MyVocaList.View.Extensions
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 PageExtensions: ExecuteFormPageBypass INICIADO para {formPage.GetType().Name}");
+                Console.WriteLine($"🎯 PageExtensions: ExecuteFormPageBypass INICIADO para {formPage.GetType().Name}");
 
                 // ✅ DETECÇÃO AUTOMÁTICA: Encontra propriedades de controle de formulário
                 var hasTextProperty = FindFormControlProperty(formPage);
@@ -239,7 +239,7 @@ namespace MyVocaList.View.Extensions
                     {
                         // ✅ FORÇA: Estado inicial sem texto para salvar
                         hasTextProperty.SetValue(formPage, false);
-                        System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: {formPage.GetType().Name} - propriedade de controle=false definida");
+                        Console.WriteLine($"✅ PageExtensions: {formPage.GetType().Name} - propriedade de controle=false definida");
                     });
 
                     // ✅ ESPECÍFICO: Verifica se já tem texto nos campos de entrada (caso de edição)
@@ -247,17 +247,17 @@ namespace MyVocaList.View.Extensions
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ PageExtensions: Propriedade de controle não encontrada em {formPage.GetType().Name}");
+                    Console.WriteLine($"⚠️ PageExtensions: Propriedade de controle não encontrada em {formPage.GetType().Name}");
 
                     // 🛡️ FALLBACK: Executa bypass padrão
                     await formPage.ExecuteStandardBypass();
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: ExecuteFormPageBypass CONCLUÍDO para {formPage.GetType().Name}");
+                Console.WriteLine($"✅ PageExtensions: ExecuteFormPageBypass CONCLUÍDO para {formPage.GetType().Name}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ PageExtensions: Erro no ExecuteFormPageBypass: {ex.Message}");
+                Console.WriteLine($"❌ PageExtensions: Erro no ExecuteFormPageBypass: {ex.Message}");
 
                 // 🛡️ FALLBACK: Executa bypass padrão
                 await formPage.ExecuteStandardBypass();
@@ -282,7 +282,7 @@ namespace MyVocaList.View.Extensions
                 var prop = pageType.GetProperty(name);
                 if (prop != null && IsCollectionType(prop.PropertyType))
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔍 Coleção encontrada: {name}");
+                    Console.WriteLine($"🔍 Coleção encontrada: {name}");
                     return prop;
                 }
             }
@@ -293,7 +293,7 @@ namespace MyVocaList.View.Extensions
             {
                 if (IsCollectionType(prop.PropertyType) && prop.CanRead)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔍 Coleção detectada: {prop.Name}");
+                    Console.WriteLine($"🔍 Coleção detectada: {prop.Name}");
                     return prop;
                 }
             }
@@ -323,7 +323,7 @@ namespace MyVocaList.View.Extensions
                 var prop = pageType.GetProperty(name);
                 if (prop != null && prop.PropertyType == typeof(bool) && prop.CanWrite)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔍 Propriedade de controle encontrada: {name}");
+                    Console.WriteLine($"🔍 Propriedade de controle encontrada: {name}");
                     return prop;
                 }
             }
@@ -361,7 +361,7 @@ namespace MyVocaList.View.Extensions
                     if (updateUIStateMethod != null)
                     {
                         updateUIStateMethod.Invoke(listPage, null);
-                        System.Diagnostics.Debug.WriteLine($"✅ UpdateUIState chamado para {listPage.GetType().Name}");
+                        Console.WriteLine($"✅ UpdateUIState chamado para {listPage.GetType().Name}");
                     }
                     else
                     {
@@ -376,7 +376,7 @@ namespace MyVocaList.View.Extensions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao atualizar estado da UI: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao atualizar estado da UI: {ex.Message}");
             }
         }
 
@@ -404,12 +404,12 @@ namespace MyVocaList.View.Extensions
 
                     // ✅ ATUALIZA: Propriedade de controle baseado no conteúdo encontrado
                     hasTextProperty.SetValue(formPage, hasText);
-                    System.Diagnostics.Debug.WriteLine($"✅ PageExtensions: {formPage.GetType().Name} - hasText={hasText} detectado automaticamente");
+                    Console.WriteLine($"✅ PageExtensions: {formPage.GetType().Name} - hasText={hasText} detectado automaticamente");
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao verificar estado do formulário: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao verificar estado do formulário: {ex.Message}");
             }
         }
 
@@ -427,7 +427,7 @@ namespace MyVocaList.View.Extensions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao buscar Entry fields: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao buscar Entry fields: {ex.Message}");
             }
 
             return entries;
@@ -485,11 +485,11 @@ namespace MyVocaList.View.Extensions
                     collectionView.IsVisible = hasItems;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ UI básica atualizada - hasItems: {hasItems}");
+                Console.WriteLine($"✅ UI básica atualizada - hasItems: {hasItems}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao atualizar elementos de UI: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao atualizar elementos de UI: {ex.Message}");
             }
         }
 

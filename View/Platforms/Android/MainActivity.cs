@@ -34,7 +34,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnCreate iniciado");
+                Console.WriteLine("[MainActivity] OnCreate iniciado");
 
                 // Configurações de performance antes do base.OnCreate
                 OptimizeMemorySettings();
@@ -44,12 +44,12 @@ namespace MyVocaList.View
                 // NOVO: Inicia sistema preventivo anti-crash
                 InitializePreventiveCrashProtection();
 
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnCreate concluído com sucesso");
+                Console.WriteLine("[MainActivity] OnCreate concluído com sucesso");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnCreate: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] Stack trace: {ex.StackTrace}");
+                Console.WriteLine($"[MainActivity] ERRO OnCreate: {ex.Message}");
+                Console.WriteLine($"[MainActivity] Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -59,7 +59,7 @@ namespace MyVocaList.View
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] Inicializando proteção preventiva anti-crash");
+                Console.WriteLine("[MainActivity] Inicializando proteção preventiva anti-crash");
 
                 // Timer que força parada de animações a cada 30 segundos como prevenção
                 _preventiveStopTimer = new System.Timers.Timer(30000);
@@ -71,13 +71,13 @@ namespace MyVocaList.View
                         var threadCount = System.Diagnostics.Process.GetCurrentProcess().Threads.Count;
                         if (threadCount > 100) // Limite preventivo
                         {
-                            System.Diagnostics.Debug.WriteLine($"[MainActivity] ALERTA: {threadCount} threads ativas - acionando proteção preventiva");
+                            Console.WriteLine($"[MainActivity] ALERTA: {threadCount} threads ativas - acionando proteção preventiva");
                             StopAllAnimationsAndOperationsImmediate();
                         }
                     }
                     catch (System.Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro na proteção preventiva: {ex.Message}");
+                        Console.WriteLine($"[MainActivity] Erro na proteção preventiva: {ex.Message}");
                     }
                 };
                 _preventiveStopTimer.Start();
@@ -89,21 +89,21 @@ namespace MyVocaList.View
                     var appInstance = Microsoft.Maui.Controls.Application.Current;
                     if (appInstance != null)
                     {
-                        System.Diagnostics.Debug.WriteLine("[MainActivity] Application instance encontrada");
+                        Console.WriteLine("[MainActivity] Application instance encontrada");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao verificar Application: {ex.Message}");
+                    Console.WriteLine($"[MainActivity] Erro ao verificar Application: {ex.Message}");
                 }
 
                 _preventiveStopInitialized = true;
-                System.Diagnostics.Debug.WriteLine("[MainActivity] Proteção preventiva inicializada");
+                Console.WriteLine("[MainActivity] Proteção preventiva inicializada");
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnCreate: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] Stack trace: {ex.StackTrace}");
+                Console.WriteLine($"[MainActivity] ERRO OnCreate: {ex.Message}");
+                Console.WriteLine($"[MainActivity] Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -116,11 +116,11 @@ namespace MyVocaList.View
                 System.Environment.SetEnvironmentVariable("MONO_THREADS_PER_CPU", "4");
                 System.Environment.SetEnvironmentVariable("MONO_LOG_LEVEL", "info");
 
-                System.Diagnostics.Debug.WriteLine("[MainActivity] Configurações de memória aplicadas");
+                Console.WriteLine("[MainActivity] Configurações de memória aplicadas");
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao otimizar memória: {ex.Message}");
+                Console.WriteLine($"[MainActivity] Erro ao otimizar memória: {ex.Message}");
             }
         }
 
@@ -128,18 +128,18 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnStart iniciado");
+                Console.WriteLine("[MainActivity] OnStart iniciado");
 
                 if (!_isDestroying)
                 {
                     base.OnStart();
                 }
 
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnStart concluído");
+                Console.WriteLine("[MainActivity] OnStart concluído");
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnStart: {ex.Message}");
+                Console.WriteLine($"[MainActivity] ERRO OnStart: {ex.Message}");
                 if (!_isDestroying)
                 {
                     throw;
@@ -151,18 +151,18 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnResume iniciado");
+                Console.WriteLine("[MainActivity] OnResume iniciado");
 
                 if (!_isDestroying)
                 {
                     base.OnResume();
                 }
 
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnResume concluído");
+                Console.WriteLine("[MainActivity] OnResume concluído");
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnResume: {ex.Message}");
+                Console.WriteLine($"[MainActivity] ERRO OnResume: {ex.Message}");
                 if (!_isDestroying)
                 {
                     throw;
@@ -174,7 +174,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnPause iniciado - pausando operações");
+                Console.WriteLine("[MainActivity] OnPause iniciado - pausando operações");
 
                 // 🛡️ ATUALIZADO: Cleanup preventivo com SafeAppLifecycleManager
                 _ = Task.Run(async () =>
@@ -185,7 +185,7 @@ namespace MyVocaList.View
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro no cleanup preventivo: {ex.Message}");
+                        Console.WriteLine($"[MainActivity] Erro no cleanup preventivo: {ex.Message}");
                     }
                 });
 
@@ -200,18 +200,18 @@ namespace MyVocaList.View
                     base.OnPause();
                 }
 
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnPause concluído");
+                Console.WriteLine("[MainActivity] OnPause concluído");
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnPause: {ex.Message}");
+                Console.WriteLine($"[MainActivity] ERRO OnPause: {ex.Message}");
                 try
                 {
                     if (!_isDestroying) base.OnPause();
                 }
                 catch
                 {
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] base.OnPause() também falhou - ignorando");
+                    Console.WriteLine("[MainActivity] base.OnPause() também falhou - ignorando");
                 }
             }
         }
@@ -220,7 +220,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnStop iniciado - parando operações");
+                Console.WriteLine("[MainActivity] OnStop iniciado - parando operações");
 
                 // Para TODAS as operações imediatamente
                 StopAllAnimationsAndOperationsImmediate();
@@ -233,18 +233,18 @@ namespace MyVocaList.View
                     base.OnStop();
                 }
 
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnStop concluído");
+                Console.WriteLine("[MainActivity] OnStop concluído");
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnStop: {ex.Message}");
+                Console.WriteLine($"[MainActivity] ERRO OnStop: {ex.Message}");
                 try
                 {
                     if (!_isDestroying) base.OnStop();
                 }
                 catch
                 {
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] base.OnStop() também falhou - ignorando");
+                    Console.WriteLine("[MainActivity] base.OnStop() também falhou - ignorando");
                 }
             }
         }
@@ -255,13 +255,13 @@ namespace MyVocaList.View
             {
                 if (_isDestroying)
                 {
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] OnDestroy JÁ EXECUTANDO - ignorando chamada duplicada");
+                    Console.WriteLine("[MainActivity] OnDestroy JÁ EXECUTANDO - ignorando chamada duplicada");
                     return;
                 }
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] OnDestroy iniciado");
+                    Console.WriteLine("[MainActivity] OnDestroy iniciado");
                     _isDestroying = true;
 
                     // 🛡️ NOVO: Shutdown controlado com SafeAppLifecycleManager
@@ -273,7 +273,7 @@ namespace MyVocaList.View
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro no shutdown seguro: {ex.Message}");
+                            Console.WriteLine($"[MainActivity] Erro no shutdown seguro: {ex.Message}");
                         }
                     });
 
@@ -293,12 +293,12 @@ namespace MyVocaList.View
                     Thread.Sleep(200);
 
                     base.OnDestroy();
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] OnDestroy concluído");
+                    Console.WriteLine("[MainActivity] OnDestroy concluído");
                 }
                 catch (System.Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnDestroy: {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"[MainActivity] Stack trace: {ex.StackTrace}");
+                    Console.WriteLine($"[MainActivity] ERRO OnDestroy: {ex.Message}");
+                    Console.WriteLine($"[MainActivity] Stack trace: {ex.StackTrace}");
                     // NÃO chama base.OnDestroy() em caso de erro para evitar pthread_mutex crash
                 }
             }
@@ -310,13 +310,13 @@ namespace MyVocaList.View
             {
                 if (_animationsStopped)
                 {
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] Animações já foram paradas - ignorando");
+                    Console.WriteLine("[MainActivity] Animações já foram paradas - ignorando");
                     return;
                 }
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] PARANDO IMEDIATAMENTE todas as animações e operações");
+                    Console.WriteLine("[MainActivity] PARANDO IMEDIATAMENTE todas as animações e operações");
 
                     // Sinaliza para todas as animações pararem
                     _isDestroying = true;
@@ -335,7 +335,7 @@ namespace MyVocaList.View
                                 var app = Microsoft.Maui.Controls.Application.Current;
                                 if (app?.MainPage != null)
                                 {
-                                    System.Diagnostics.Debug.WriteLine("[MainActivity] Parando animações da página atual");
+                                    Console.WriteLine("[MainActivity] Parando animações da página atual");
 
                                     // Para todas as animações da view tree
                                     StopViewTreeAnimations(app.MainPage as Microsoft.Maui.Controls.VisualElement);
@@ -343,20 +343,20 @@ namespace MyVocaList.View
                             }
                             catch (System.Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao parar animações UI: {ex.Message}");
+                                Console.WriteLine($"[MainActivity] Erro ao parar animações UI: {ex.Message}");
                             }
                         });
                     }
                     catch (System.Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao acessar MainThread: {ex.Message}");
+                        Console.WriteLine($"[MainActivity] Erro ao acessar MainThread: {ex.Message}");
                     }
 
-                    System.Diagnostics.Debug.WriteLine("[MainActivity] Comando para parar animações enviado");
+                    Console.WriteLine("[MainActivity] Comando para parar animações enviado");
                 }
                 catch (System.Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO CRÍTICO ao parar animações: {ex.Message}");
+                    Console.WriteLine($"[MainActivity] ERRO CRÍTICO ao parar animações: {ex.Message}");
                 }
             }
         }
@@ -367,7 +367,7 @@ namespace MyVocaList.View
             {
                 if (element == null) return;
 
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] Parando animações do elemento: {element.GetType().Name}");
+                Console.WriteLine($"[MainActivity] Parando animações do elemento: {element.GetType().Name}");
 
                 // Para animações do elemento atual IMEDIATAMENTE
                 Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(element);
@@ -386,7 +386,7 @@ namespace MyVocaList.View
                 }
                 catch (System.Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao parar transformações: {ex.Message}");
+                    Console.WriteLine($"[MainActivity] Erro ao parar transformações: {ex.Message}");
                 }
 
                 // Para animações de elementos filhos recursivamente
@@ -411,7 +411,7 @@ namespace MyVocaList.View
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao parar animações de elemento: {ex.Message}");
+                Console.WriteLine($"[MainActivity] Erro ao parar animações de elemento: {ex.Message}");
             }
         }
 
@@ -419,7 +419,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] Forçando parada de threads de renderização");
+                Console.WriteLine("[MainActivity] Forçando parada de threads de renderização");
 
                 // Tenta forçar uma pausa nas threads de renderização
                 Android.Views.View rootView = Window?.DecorView?.RootView;
@@ -434,17 +434,17 @@ namespace MyVocaList.View
                         // Força parada de animações em nível de View Android
                         rootView.ClearAnimation();
 
-                        System.Diagnostics.Debug.WriteLine("[MainActivity] Operações de renderização finalizadas");
+                        Console.WriteLine("[MainActivity] Operações de renderização finalizadas");
                     }
                     catch (System.Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao finalizar renderização: {ex.Message}");
+                        Console.WriteLine($"[MainActivity] Erro ao finalizar renderização: {ex.Message}");
                     }
                 }
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao parar threads de renderização: {ex.Message}");
+                Console.WriteLine($"[MainActivity] Erro ao parar threads de renderização: {ex.Message}");
             }
         }
 
@@ -479,7 +479,7 @@ namespace MyVocaList.View
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] Erro ao parar animações de elemento: {ex.Message}");
+                Console.WriteLine($"[MainActivity] Erro ao parar animações de elemento: {ex.Message}");
             }
         }
 
@@ -487,7 +487,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] Iniciando limpeza forçada de recursos");
+                Console.WriteLine("[MainActivity] Iniciando limpeza forçada de recursos");
 
                 // Para operações de threading
                 try
@@ -519,11 +519,11 @@ namespace MyVocaList.View
                 }
                 catch { }
 
-                System.Diagnostics.Debug.WriteLine("[MainActivity] Limpeza de recursos concluída");
+                Console.WriteLine("[MainActivity] Limpeza de recursos concluída");
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO na limpeza de recursos: {ex.Message}");
+                Console.WriteLine($"[MainActivity] ERRO na limpeza de recursos: {ex.Message}");
             }
         }
 
@@ -531,13 +531,13 @@ namespace MyVocaList.View
         {
             if (_isDestroying)
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnTrimMemory ignorado - destruindo");
+                Console.WriteLine("[MainActivity] OnTrimMemory ignorado - destruindo");
                 return;
             }
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] OnTrimMemory: {level}");
+                Console.WriteLine($"[MainActivity] OnTrimMemory: {level}");
 
                 // Gerenciamento proativo de memória baseado no nível
                 switch (level)
@@ -556,7 +556,7 @@ namespace MyVocaList.View
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnTrimMemory: {ex.Message}");
+                Console.WriteLine($"[MainActivity] ERRO OnTrimMemory: {ex.Message}");
                 try
                 {
                     if (!_isDestroying) base.OnTrimMemory(level);
@@ -569,13 +569,13 @@ namespace MyVocaList.View
         {
             if (_isDestroying)
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnLowMemory ignorado - destruindo");
+                Console.WriteLine("[MainActivity] OnLowMemory ignorado - destruindo");
                 return;
             }
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[MainActivity] OnLowMemory - liberando recursos");
+                Console.WriteLine("[MainActivity] OnLowMemory - liberando recursos");
 
                 // Força limpeza agressiva de memória
                 System.GC.Collect();
@@ -586,7 +586,7 @@ namespace MyVocaList.View
             }
             catch (System.Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainActivity] ERRO OnLowMemory: {ex.Message}");
+                Console.WriteLine($"[MainActivity] ERRO OnLowMemory: {ex.Message}");
                 try
                 {
                     if (!_isDestroying) base.OnLowMemory();

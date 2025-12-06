@@ -115,15 +115,26 @@ namespace MyVocaList.View.Components
         private void UpdateIconState()
         {
             if (string.IsNullOrEmpty(IconName)) return;
-            string source = IsSelected ? $"{IconName}_filled.svg" : $"{IconName}_outlined.svg";
-            Color tintColor = IsSelected ? ActiveColor : InactiveColor;
-
-            TheIcon.Source = source;
-
-            // Set tint color via the IconTintColorBehavior
-            if (tintBehavior != null)
+            
+            try 
             {
-                tintBehavior.TintColor = tintColor;
+                string source = IsSelected ? $"{IconName}_filled" : $"{IconName}_outlined";
+                Color tintColor = IsSelected ? ActiveColor : InactiveColor;
+
+                // 🛡️ LOG: Help debug Release issues
+                Console.WriteLine($"[StatefulIcon] Setting source: {source} for {IconName} (Selected={IsSelected})");
+
+                TheIcon.Source = source;
+
+                // Set tint color via the IconTintColorBehavior
+                if (tintBehavior != null)
+                {
+                    tintBehavior.TintColor = tintColor;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[StatefulIcon] Error updating state: {ex.Message}");
             }
         }
 

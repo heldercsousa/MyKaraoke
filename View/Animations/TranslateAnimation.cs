@@ -53,7 +53,7 @@
             var optimizedConfig = HardwareDetector.SupportsAnimations ? _config : null;
             if (optimizedConfig == null)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 BYPASS ativado - hardware muito limitado, translate animation desabilitada");
+                Console.WriteLine("🚫 BYPASS ativado - hardware muito limitado, translate animation desabilitada");
 
                 // Para hardware limitado, aplica apenas o estado final sem animação
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -70,8 +70,8 @@
             _cancellationTokenSource = new CancellationTokenSource();
             _isRunning = true;
 
-            System.Diagnostics.Debug.WriteLine($"Iniciando TranslateAnimation no elemento: {_target.GetType().Name}");
-            System.Diagnostics.Debug.WriteLine($"🎯 Configuração: X({optimizedConfig.FromTranslationX} → {optimizedConfig.ToTranslationX}), Y({optimizedConfig.FromTranslationY} → {optimizedConfig.ToTranslationY}), Duration={optimizedConfig.Duration}ms");
+            Console.WriteLine($"Iniciando TranslateAnimation no elemento: {_target.GetType().Name}");
+            Console.WriteLine($"🎯 Configuração: X({optimizedConfig.FromTranslationX} → {optimizedConfig.ToTranslationX}), Y({optimizedConfig.FromTranslationY} → {optimizedConfig.ToTranslationY}), Duration={optimizedConfig.Duration}ms");
 
             AnimationStarted?.Invoke(this, EventArgs.Empty);
 
@@ -85,11 +85,11 @@
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine("TranslateAnimation cancelada");
+                Console.WriteLine("TranslateAnimation cancelada");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na TranslateAnimation: {ex.Message}");
+                Console.WriteLine($"Erro na TranslateAnimation: {ex.Message}");
             }
             finally
             {
@@ -119,7 +119,7 @@
                 if (!_shouldContinue())
                     return;
 
-                System.Diagnostics.Debug.WriteLine($"🚀 Translate: X({config.FromTranslationX} → {config.ToTranslationX}), Y({config.FromTranslationY} → {config.ToTranslationY}) em {config.Duration}ms");
+                Console.WriteLine($"🚀 Translate: X({config.FromTranslationX} → {config.ToTranslationX}), Y({config.FromTranslationY} → {config.ToTranslationY}) em {config.Duration}ms");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -145,7 +145,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no translate animation: {ex.Message}");
+                Console.WriteLine($"Erro no translate animation: {ex.Message}");
             }
         }
 
@@ -173,10 +173,10 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao restaurar posição: {ex.Message}");
+                Console.WriteLine($"Erro ao restaurar posição: {ex.Message}");
             }
 
-            System.Diagnostics.Debug.WriteLine("TranslateAnimation parada");
+            Console.WriteLine("TranslateAnimation parada");
             AnimationStopped?.Invoke(this, EventArgs.Empty);
         }
 
@@ -208,10 +208,10 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no dispose: {ex.Message}");
+                Console.WriteLine($"Erro no dispose: {ex.Message}");
             }
 
-            System.Diagnostics.Debug.WriteLine("TranslateAnimation disposed");
+            Console.WriteLine("TranslateAnimation disposed");
         }
 
         /// <summary>

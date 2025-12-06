@@ -42,7 +42,7 @@ public static class MauiProgram
             .AddInterceptors(new DatabaseLoadingInterceptor());
 #if DEBUG
             options.EnableSensitiveDataLogging();
-            options.LogTo(message => System.Diagnostics.Debug.WriteLine(message), LogLevel.Information);
+            options.LogTo(message => Console.WriteLine(message), LogLevel.Information);
 #endif
         });
 
@@ -75,13 +75,13 @@ public static class MauiProgram
             var app = builder.Build();
             Services = app.Services;
 
-            System.Diagnostics.Debug.WriteLine("[MauiProgram] Aplicação construída com interceptadores de loading automático");
+            Console.WriteLine("[MauiProgram] Aplicação construída com interceptadores de loading automático");
             return app;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MauiProgram] ERRO ao construir aplicação: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"[MauiProgram] Stack trace: {ex.StackTrace}");
+            Console.WriteLine($"[MauiProgram] ERRO ao construir aplicação: {ex.Message}");
+            Console.WriteLine($"[MauiProgram] Stack trace: {ex.StackTrace}");
             throw;
         }
     }

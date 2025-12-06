@@ -53,18 +53,18 @@
             var optimizedConfig = HardwareDetector.GetOptimalConfig(_config);
             if (optimizedConfig == null)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 BYPASS ativado - hardware muito limitado, animação desabilitada para economia de recursos");
+                Console.WriteLine("🚫 BYPASS ativado - hardware muito limitado, animação desabilitada para economia de recursos");
                 return;
             }
 
             // ✅ Para hardware adequado (Pixel 5, etc.), usa configuração ORIGINAL
-            System.Diagnostics.Debug.WriteLine($"✅ Hardware adequado - usando configuração original: ToScale={optimizedConfig.ToScale}");
+            Console.WriteLine($"✅ Hardware adequado - usando configuração original: ToScale={optimizedConfig.ToScale}");
 
             _cancellationTokenSource = new CancellationTokenSource();
             _isRunning = true;
 
-            System.Diagnostics.Debug.WriteLine($"Iniciando PulseAnimation no elemento: {_target.GetType().Name}");
-            System.Diagnostics.Debug.WriteLine($"🎯 Configuração: FromScale={optimizedConfig.FromScale}, ToScale={optimizedConfig.ToScale}, Duration={optimizedConfig.PulseDuration}ms");
+            Console.WriteLine($"Iniciando PulseAnimation no elemento: {_target.GetType().Name}");
+            Console.WriteLine($"🎯 Configuração: FromScale={optimizedConfig.FromScale}, ToScale={optimizedConfig.ToScale}, Duration={optimizedConfig.PulseDuration}ms");
 
             AnimationStarted?.Invoke(this, EventArgs.Empty);
 
@@ -91,11 +91,11 @@
             catch (OperationCanceledException)
             {
                 // Operação cancelada - comportamento normal
-                System.Diagnostics.Debug.WriteLine("PulseAnimation cancelada");
+                Console.WriteLine("PulseAnimation cancelada");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na PulseAnimation: {ex.Message}");
+                Console.WriteLine($"Erro na PulseAnimation: {ex.Message}");
             }
             finally
             {
@@ -111,7 +111,7 @@
             if (!_isRunning)
                 return;
 
-            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation.StopAsync() chamado - PARANDO IMEDIATAMENTE");
+            Console.WriteLine("🛑 PulseAnimation.StopAsync() chamado - PARANDO IMEDIATAMENTE");
 
             // ✅ FORÇA parada imediata
             _isRunning = false;
@@ -137,11 +137,11 @@
                     // ✅ VERIFICAÇÃO TRIPLA para parar imediatamente
                     if (_disposed || _cancellationTokenSource.Token.IsCancellationRequested || !_isRunning || !_shouldContinue())
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛑 Pulse interrompido no ciclo {i + 1}");
+                        Console.WriteLine($"🛑 Pulse interrompido no ciclo {i + 1}");
                         break;
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"🔥 Pulse {i + 1}/{config.PulseCount}: {config.FromScale} → {config.ToScale} em {config.PulseDuration}ms");
+                    Console.WriteLine($"🔥 Pulse {i + 1}/{config.PulseCount}: {config.FromScale} → {config.ToScale} em {config.PulseDuration}ms");
 
                     // Pulse: expand → contract
                     await MainThread.InvokeOnMainThreadAsync(async () =>
@@ -151,23 +151,23 @@
                             try
                             {
                                 // Expansão
-                                System.Diagnostics.Debug.WriteLine($"⬆️ Expandindo para {config.ToScale}");
+                                Console.WriteLine($"⬆️ Expandindo para {config.ToScale}");
                                 await _target.ScaleTo(config.ToScale, config.PulseDuration, config.ExpandEasing);
 
                                 // ✅ VERIFICAÇÃO antes da contração
                                 if (_isRunning && !_cancellationTokenSource.Token.IsCancellationRequested)
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"⬇️ Contraindo para {config.FromScale}");
+                                    Console.WriteLine($"⬇️ Contraindo para {config.FromScale}");
                                     await _target.ScaleTo(config.FromScale, config.PulseDuration, config.ContractEasing);
                                 }
                                 else
                                 {
-                                    System.Diagnostics.Debug.WriteLine("🛑 Pulse interrompido antes da contração");
+                                    Console.WriteLine("🛑 Pulse interrompido antes da contração");
                                 }
                             }
                             catch (Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine($"Erro durante pulse: {ex.Message}");
+                                Console.WriteLine($"Erro durante pulse: {ex.Message}");
                             }
                         }
                     });
@@ -181,11 +181,11 @@
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine("🛑 PerformPulseCycle cancelado");
+                Console.WriteLine("🛑 PerformPulseCycle cancelado");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no ciclo de pulse: {ex.Message}");
+                Console.WriteLine($"Erro no ciclo de pulse: {ex.Message}");
             }
         }
 
@@ -200,7 +200,7 @@
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation.StopInternal() - parando e restaurando escala");
+            Console.WriteLine("🛑 PulseAnimation.StopInternal() - parando e restaurando escala");
 
             _isRunning = false;
             _cancellationTokenSource?.Cancel();
@@ -218,13 +218,13 @@
                         // ✅ Restaura escala rapidamente
                         await _target.ScaleTo(_config.FromScale, 100, Easing.Linear);
 
-                        System.Diagnostics.Debug.WriteLine($"🛑 Escala restaurada para {_config.FromScale}");
+                        Console.WriteLine($"🛑 Escala restaurada para {_config.FromScale}");
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao restaurar escala: {ex.Message}");
+                Console.WriteLine($"Erro ao restaurar escala: {ex.Message}");
 
                 // ✅ FALLBACK: Força escala diretamente
                 try
@@ -240,7 +240,7 @@
                 catch { }
             }
 
-            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation COMPLETAMENTE parada");
+            Console.WriteLine("🛑 PulseAnimation COMPLETAMENTE parada");
             AnimationStopped?.Invoke(this, EventArgs.Empty);
         }
 
@@ -252,7 +252,7 @@
             if (_disposed)
                 return;
 
-            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation.Dispose() iniciado");
+            Console.WriteLine("🛑 PulseAnimation.Dispose() iniciado");
 
             _disposed = true;
             _isRunning = false;
@@ -274,10 +274,10 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no dispose: {ex.Message}");
+                Console.WriteLine($"Erro no dispose: {ex.Message}");
             }
 
-            System.Diagnostics.Debug.WriteLine("🛑 PulseAnimation disposed");
+            Console.WriteLine("🛑 PulseAnimation disposed");
         }
 
         /// <summary>

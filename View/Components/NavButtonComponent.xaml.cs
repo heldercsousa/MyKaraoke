@@ -219,10 +219,25 @@ namespace MyVocaList.View.Components
 
         #region Private Methods - ESPECÍFICOS DO NAVBUTTON
 
-        private void ApplyInitialProperties()
+        private void    ApplyInitialProperties()
         {
             try
             {
+                // ✅ FIX: Manually apply the style from App Resources
+                if (buttonContainer != null)
+                {
+                    if (Application.Current.Resources.TryGetValue("BaseNavButtonStyle", out var styleObj) && styleObj is Style navStyle)
+                    {
+                        buttonContainer.Style = navStyle;
+                    }
+                    else
+                    {
+                        // Fallback if style is missing (Safety net)
+                        buttonContainer.Orientation = StackOrientation.Vertical;
+                        buttonContainer.HorizontalOptions = LayoutOptions.Center;
+                        buttonContainer.Spacing = 1;
+                    }
+                }
                 // MD3 icons have priority over PNG
                 if (!string.IsNullOrEmpty(IconName) && buttonIconMd3 != null && buttonIcon != null)
                 {

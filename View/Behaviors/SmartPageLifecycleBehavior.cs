@@ -86,14 +86,14 @@ namespace MyVocaList.View.Behaviors
                 NavBar = AutoDiscoverNavBar(page);
                 if (NavBar != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar auto-discovered: {NavBar.GetType().Name}");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar auto-discovered: {NavBar.GetType().Name}");
                 }
             }
 
             _associatedPage.Appearing += OnPageAppearing;
             _associatedPage.Disappearing += OnPageDisappearing;
 
-            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Anexado à {page.GetType().Name} (Hash: {page.GetHashCode()}) - UseGlobalLoading: {UseGlobalLoading}, NavBar: {NavBar?.GetType().Name ?? "NULL"}");
+            Console.WriteLine($"✅ SmartPageLifecycleBehavior: Anexado à {page.GetType().Name} (Hash: {page.GetHashCode()}) - UseGlobalLoading: {UseGlobalLoading}, NavBar: {NavBar?.GetType().Name ?? "NULL"}");
         }
 
         protected override void OnDetachingFrom(ContentPage page)
@@ -114,7 +114,7 @@ namespace MyVocaList.View.Behaviors
             base.OnDetachingFrom(page);
             _associatedPage = null;
 
-            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Removido de {page.GetType().Name}");
+            Console.WriteLine($"✅ SmartPageLifecycleBehavior: Removido de {page.GetType().Name}");
         }
 
         #endregion
@@ -142,14 +142,14 @@ namespace MyVocaList.View.Behaviors
 
                 if (!shouldProcess)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Já processando - ignorando");
+                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Já processando - ignorando");
                     return;
                 }
 
                 // 🎯 BYPASS: Verifica se deve fazer bypass
                 if (ShouldBypassBehavior())
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Bypass detectado - delegando para página");
+                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Bypass detectado - delegando para página");
                     await ExecutePageBypass();
                     return;
                 }
@@ -160,17 +160,17 @@ namespace MyVocaList.View.Behaviors
                 if (!success)
                 {
                     _failureCount++;
-                    System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Falha #{_failureCount} detectada");
+                    Console.WriteLine($"❌ SmartPageLifecycleBehavior: Falha #{_failureCount} detectada");
 
                     if (EnableAutoBypass && _failureCount >= MaxFailuresBeforeBypass)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛡️ SmartPageLifecycleBehavior: AUTO-BYPASS ativado após {_failureCount} falhas");
+                        Console.WriteLine($"🛡️ SmartPageLifecycleBehavior: AUTO-BYPASS ativado após {_failureCount} falhas");
                         await ExecutePageBypass();
                         return;
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Falha detectada - FORÇANDO exibição da NavBar");
+                        Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Falha detectada - FORÇANDO exibição da NavBar");
                         await ForceShowNavBarAfterFailure();
                     }
                 }
@@ -178,12 +178,12 @@ namespace MyVocaList.View.Behaviors
                 {
                     _hasExecutedSuccessfully = true;
                     _failureCount = 0;
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal executado com sucesso");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal executado com sucesso");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageAppearing: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageAppearing: {ex.Message}");
                 await ForceShowNavBarAfterFailure();
             }
             finally
@@ -202,13 +202,13 @@ namespace MyVocaList.View.Behaviors
                 var pageType = _associatedPage.GetType().Name;
                 var requesterId = $"NormalCycle_{pageType}_{_associatedPage.GetHashCode()}";
 
-                System.Diagnostics.Debug.WriteLine($"🧠 SmartPageLifecycleBehavior: Tentando ciclo normal - UseGlobalLoading: {UseGlobalLoading}");
+                Console.WriteLine($"🧠 SmartPageLifecycleBehavior: Tentando ciclo normal - UseGlobalLoading: {UseGlobalLoading}");
 
                 // ETAPA 1: Aguarda navbar estar pronta
                 var navBarReady = await WaitForNavBarReady();
                 if (!navBarReady)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta");
+                    Console.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta");
                 }
 
                 // ETAPA 2: ✅ LOADING CENTRALIZADO - Solicita com prioridade de navegação
@@ -220,7 +220,7 @@ namespace MyVocaList.View.Behaviors
                         priority: LoadingPriority.Navigation,
                         context: LoadingContext.PageNavigation
                     );
-                    System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading solicitado via sistema centralizado");
+                    Console.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading solicitado via sistema centralizado");
                 }
 
                 try
@@ -229,17 +229,17 @@ namespace MyVocaList.View.Behaviors
                     var dataLoaded = await TryExecuteLoadDataCommand();
                     if (!dataLoaded)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: LoadDataCommand falhou");
+                        Console.WriteLine($"❌ SmartPageLifecycleBehavior: LoadDataCommand falhou");
                     }
 
                     // ETAPA 4: Aguarda navbar estar COMPLETAMENTE pronta após carregamento de dados
                     var navBarFullyReady = await WaitForNavBarFullyReady();
                     if (!navBarFullyReady)
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta - continuando");
+                        Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta - continuando");
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal concluído");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal concluído");
                     return true;
                 }
                 finally
@@ -248,13 +248,13 @@ namespace MyVocaList.View.Behaviors
                     if (UseGlobalLoading)
                     {
                         await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
-                        System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading removido via sistema centralizado");
+                        Console.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading removido via sistema centralizado");
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no ciclo normal: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no ciclo normal: {ex.Message}");
                 return false;
             }
         }
@@ -280,7 +280,7 @@ namespace MyVocaList.View.Behaviors
                 var pageType = _associatedPage.GetType().Name;
                 var requesterId = $"PageBypass_{pageType}_{_associatedPage.GetHashCode()}";
 
-                System.Diagnostics.Debug.WriteLine($"🛡️ SmartPageLifecycleBehavior: Executando bypass para {pageType}");
+                Console.WriteLine($"🛡️ SmartPageLifecycleBehavior: Executando bypass para {pageType}");
 
                 // ✅ Get friendly page name if page implements IFriendlyPageName
                 var friendlyPageName = GetFriendlyPageName();
@@ -303,7 +303,7 @@ namespace MyVocaList.View.Behaviors
                     var navBarReady = await WaitForNavBarReady();
                     if (!navBarReady)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta no bypass");
+                        Console.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta no bypass");
                     }
 
                     // ✅ EXECUTA: LoadDataCommand (DatabaseInterceptor pode mostrar seu próprio loading)
@@ -315,7 +315,7 @@ namespace MyVocaList.View.Behaviors
 
                     if (bypassMethod != null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Chamando {pageTypeClass.Name}.OnAppearingBypass()");
+                        Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Chamando {pageTypeClass.Name}.OnAppearingBypass()");
 
                         if (bypassMethod.ReturnType == typeof(Task))
                         {
@@ -328,7 +328,7 @@ namespace MyVocaList.View.Behaviors
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Método OnAppearingBypass não encontrado em {pageTypeClass.Name} - usando fallback padrão");
+                        Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Método OnAppearingBypass não encontrado em {pageTypeClass.Name} - usando fallback padrão");
                         await _associatedPage.ExecuteStandardBypass();
                     }
 
@@ -337,18 +337,18 @@ namespace MyVocaList.View.Behaviors
 
                     _hasExecutedSuccessfully = true;
                     _failureCount = 0;
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Bypass executado com sucesso");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Bypass executado com sucesso");
                 }
                 finally
                 {
                     // ✅ SEMPRE: Remove a requisição de loading persistente
                     await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Loading de bypass removido para {pageType}");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Loading de bypass removido para {pageType}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
             }
         }
 
@@ -356,7 +356,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🔄 SmartPageLifecycleBehavior: OnPageDisappearing para {_associatedPage.GetType().Name}");
+                Console.WriteLine($"🔄 SmartPageLifecycleBehavior: OnPageDisappearing para {_associatedPage.GetType().Name}");
 
                 // ✅ LOADING SINGLETON: Esconde loading se página está saindo
                 if (UseGlobalLoading)
@@ -374,22 +374,22 @@ namespace MyVocaList.View.Behaviors
 
                         if (completedTask == timeoutTask)
                         {
-                            System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao esconder NavBar");
+                            Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao esconder NavBar");
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar escondida com sucesso");
+                            Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar escondida com sucesso");
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao esconder NavBar: {ex.Message}");
+                        Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao esconder NavBar: {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageDisappearing: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageDisappearing: {ex.Message}");
             }
         }
 
@@ -404,13 +404,13 @@ namespace MyVocaList.View.Behaviors
                 var styleId = _associatedPage.StyleId;
                 if (styleId == "BYPASS_PAGELIFECYCLE")
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Página marcada para bypass via StyleId");
+                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Página marcada para bypass via StyleId");
                     return true;
                 }
 
                 if (LoadDataCommand == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: {_associatedPage.GetType().Name} com LoadDataCommand NULL - forçando bypass");
+                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: {_associatedPage.GetType().Name} com LoadDataCommand NULL - forçando bypass");
                     return true;
                 }
                 
@@ -418,7 +418,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em ShouldBypassBehavior: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em ShouldBypassBehavior: {ex.Message}");
                 return false;
             }
         }
@@ -430,7 +430,7 @@ namespace MyVocaList.View.Behaviors
         {
             if (NavBar == null)
             {
-                System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: Sem NavBar - considerando pronta");
+                Console.WriteLine($"✅ SmartPageLifecycleBehavior: Sem NavBar - considerando pronta");
                 return true;
             }
 
@@ -439,7 +439,7 @@ namespace MyVocaList.View.Behaviors
                 int attempts = 0;
                 const int maxAttempts = 30; // 3 segundos
 
-                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar ficar COMPLETAMENTE pronta...");
+                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar ficar COMPLETAMENTE pronta...");
 
                 while (attempts < maxAttempts)
                 {
@@ -450,23 +450,23 @@ namespace MyVocaList.View.Behaviors
 
                     if (isFullyReady)
                     {
-                        System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar COMPLETAMENTE pronta após {attempts} tentativas");
+                        Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar COMPLETAMENTE pronta após {attempts} tentativas");
                         return true;
                     }
 
                     // 🎯 DEBUG: Log a cada 5 tentativas
                     if (attempts % 5 == 0)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar... tentativa {attempts}/{maxAttempts}");
+                        Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar... tentativa {attempts}/{maxAttempts}");
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout aguardando NavBar ficar completamente pronta");
+                Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout aguardando NavBar ficar completamente pronta");
                 return false;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro aguardando NavBar completamente pronta: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro aguardando NavBar completamente pronta: {ex.Message}");
                 return false;
             }
         }
@@ -495,7 +495,7 @@ namespace MyVocaList.View.Behaviors
 
                             if (!isReady)
                             {
-                                System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: Init={isInitialized}, Buttons={buttonCount}, Behavior={hasNavBarBehavior}");
+                                Console.WriteLine($"🎯 InactiveQueueBottomNav: Init={isInitialized}, Buttons={buttonCount}, Behavior={hasNavBarBehavior}");
                             }
 
                             return isReady;
@@ -511,7 +511,7 @@ namespace MyVocaList.View.Behaviors
                                 return true;
                             }
 
-                            System.Diagnostics.Debug.WriteLine($"🎯 CrudNavBarComponent: Buttons={navBarBehavior?.Buttons?.Count ?? 0}");
+                            Console.WriteLine($"🎯 CrudNavBarComponent: Buttons={navBarBehavior?.Buttons?.Count ?? 0}");
                             return false;
                         }
 
@@ -535,14 +535,14 @@ namespace MyVocaList.View.Behaviors
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"❌ Erro ao verificar se NavBar está pronta: {ex.Message}");
+                        Console.WriteLine($"❌ Erro ao verificar se NavBar está pronta: {ex.Message}");
                         return false;
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao verificar NavBar: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao verificar NavBar: {ex.Message}");
                 return false;
             }
         }
@@ -581,18 +581,18 @@ namespace MyVocaList.View.Behaviors
 
                         if (hasContent)
                         {
-                            System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar pronta após {attempts} tentativas");
+                            Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar pronta após {attempts} tentativas");
                             return true;
                         }
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout aguardando NavBar");
+                Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout aguardando NavBar");
                 return false;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro aguardando NavBar: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro aguardando NavBar: {ex.Message}");
                 return false;
             }
         }
@@ -605,7 +605,7 @@ namespace MyVocaList.View.Behaviors
 
                 if (commandToExecute == null && _associatedPage != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🔍 SmartPageLifecycleBehavior: LoadDataCommand NULL - buscando via reflexão");
+                    Console.WriteLine($"🔍 SmartPageLifecycleBehavior: LoadDataCommand NULL - buscando via reflexão");
 
                     var pageType = _associatedPage.GetType();
                     var loadCommandProperty = pageType.GetProperty("LoadDataCommand");
@@ -613,39 +613,39 @@ namespace MyVocaList.View.Behaviors
                     if (loadCommandProperty != null)
                     {
                         commandToExecute = loadCommandProperty.GetValue(_associatedPage) as ICommand;
-                        System.Diagnostics.Debug.WriteLine($"🔍 SmartPageLifecycleBehavior: LoadDataCommand encontrado via reflexão: {commandToExecute != null}");
+                        Console.WriteLine($"🔍 SmartPageLifecycleBehavior: LoadDataCommand encontrado via reflexão: {commandToExecute != null}");
                     }
                 }
 
                 if (commandToExecute == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand não encontrado - continuando sem erro");
+                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand não encontrado - continuando sem erro");
                     return true;
                 }
 
                 if (!commandToExecute.CanExecute(null))
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand.CanExecute = false - continuando sem erro");
+                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand.CanExecute = false - continuando sem erro");
                     return true;
                 }
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Executando LoadDataCommand");
+                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Executando LoadDataCommand");
                     commandToExecute.Execute(null);
                     await Task.Delay(500); // Aguarda operações assíncronas internas
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: LoadDataCommand executado");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: LoadDataCommand executado");
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro executando LoadDataCommand: {ex.Message}");
+                    Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro executando LoadDataCommand: {ex.Message}");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em TryExecuteLoadDataCommand: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em TryExecuteLoadDataCommand: {ex.Message}");
                 return false;
             }
         }
@@ -656,7 +656,7 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: Tentando mostrar NavBar");
+                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Tentando mostrar NavBar");
 
                 var showTask = NavBar.ShowAsync();
                 var timeoutTask = Task.Delay(5000);
@@ -664,16 +664,16 @@ namespace MyVocaList.View.Behaviors
 
                 if (completedTask == timeoutTask)
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao mostrar NavBar");
+                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao mostrar NavBar");
                     return false;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar mostrada com sucesso");
+                Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar mostrada com sucesso");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar: {ex.Message}");
                 return false;
             }
         }
@@ -684,7 +684,7 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: FORÇA - Chamando NavBar.ShowAsync() após falha");
+                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: FORÇA - Chamando NavBar.ShowAsync() após falha");
 
                 var showTask = NavBar.ShowAsync();
                 var timeoutTask = Task.Delay(5000);
@@ -692,16 +692,16 @@ namespace MyVocaList.View.Behaviors
 
                 if (completedTask == timeoutTask)
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após falha");
+                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após falha");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após falha");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após falha");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após falha: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após falha: {ex.Message}");
             }
         }
 
@@ -711,14 +711,14 @@ namespace MyVocaList.View.Behaviors
             var navBarFullyReady = await WaitForNavBarFullyReady();
             if (!navBarFullyReady)
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta no bypass");
+                Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta no bypass");
             }
 
             if (NavBar == null) return;
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 SmartPageLifecycleBehavior: BYPASS - Chamando NavBar.ShowAsync()");
+                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: BYPASS - Chamando NavBar.ShowAsync()");
 
                 var showTask = NavBar.ShowAsync();
                 var timeoutTask = Task.Delay(5000);
@@ -726,16 +726,16 @@ namespace MyVocaList.View.Behaviors
 
                 if (completedTask == timeoutTask)
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após bypass");
+                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após bypass");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após bypass");
+                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após bypass");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após bypass: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após bypass: {ex.Message}");
             }
         }
 
@@ -754,7 +754,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao definir loading state: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao definir loading state: {ex.Message}");
             }
         }
 
@@ -771,7 +771,7 @@ namespace MyVocaList.View.Behaviors
                 var navBar = MyVocaList.View.Extensions.NavBarExtensions.GetPageNavBar(page);
                 if (navBar != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ NavBar found via self-registration: {navBar.GetType().Name}");
+                    Console.WriteLine($"✅ NavBar found via self-registration: {navBar.GetType().Name}");
                     return navBar;
                 }
 
@@ -779,18 +779,18 @@ namespace MyVocaList.View.Behaviors
                 navBar = FindNavBarInVisualTree(page);
                 if (navBar != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ NavBar found via visual tree search: {navBar.GetType().Name}");
+                    Console.WriteLine($"✅ NavBar found via visual tree search: {navBar.GetType().Name}");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ No NavBar found in {page.GetType().Name}");
+                    Console.WriteLine($"⚠️ No NavBar found in {page.GetType().Name}");
                 }
 
                 return navBar;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SmartPageLifecycleBehavior: Error in AutoDiscoverNavBar: {ex.Message}");
+                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Error in AutoDiscoverNavBar: {ex.Message}");
                 return null;
             }
         }

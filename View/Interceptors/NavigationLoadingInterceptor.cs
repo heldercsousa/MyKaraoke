@@ -26,7 +26,7 @@ namespace MyVocaList.View.Interceptors
             {
                 if (_isInitialized)
                 {
-                    System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: Já inicializado - ignorando");
+                    Console.WriteLine($"✅ NavigationInterceptor: Já inicializado - ignorando");
                     return;
                 }
 
@@ -36,11 +36,11 @@ namespace MyVocaList.View.Interceptors
                     InterceptApplicationNavigation();
 
                     _isInitialized = true;
-                    System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: Inicializado com sucesso");
+                    Console.WriteLine($"✅ NavigationInterceptor: Inicializado com sucesso");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro na inicialização: {ex.Message}");
+                    Console.WriteLine($"❌ NavigationInterceptor: Erro na inicialização: {ex.Message}");
                 }
             }
         }
@@ -60,14 +60,14 @@ namespace MyVocaList.View.Interceptors
                 if (Application.Current != null)
                 {
                     Application.Current.PropertyChanged += OnApplicationMainPageChanged;
-                    System.Diagnostics.Debug.WriteLine($"🎯 NavigationInterceptor: Hook adicionado ao Application.Current");
+                    Console.WriteLine($"🎯 NavigationInterceptor: Hook adicionado ao Application.Current");
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: Hooks de aplicação configurados");
+                Console.WriteLine($"✅ NavigationInterceptor: Hooks de aplicação configurados");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro ao configurar hooks: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro ao configurar hooks: {ex.Message}");
             }
         }
 
@@ -78,7 +78,7 @@ namespace MyVocaList.View.Interceptors
         {
             if (e.PropertyName == nameof(Application.MainPage))
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 NavigationInterceptor: MainPage mudou - configurando interceptação");
+                Console.WriteLine($"🎯 NavigationInterceptor: MainPage mudou - configurando interceptação");
                 ConfigurePageInterception(Application.Current?.MainPage);
             }
         }
@@ -114,11 +114,11 @@ namespace MyVocaList.View.Interceptors
                     InterceptShell(shell);
                 }
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: Configurado para {page.GetType().Name}");
+                Console.WriteLine($"✅ NavigationInterceptor: Configurado para {page.GetType().Name}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro ao configurar página: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro ao configurar página: {ex.Message}");
             }
         }
 
@@ -134,11 +134,11 @@ namespace MyVocaList.View.Interceptors
                 navPage.Popped += OnPagePopped;
                 navPage.PoppedToRoot += OnPoppedToRoot;
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: NavigationPage interceptada");
+                Console.WriteLine($"✅ NavigationInterceptor: NavigationPage interceptada");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro ao interceptar NavigationPage: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro ao interceptar NavigationPage: {ex.Message}");
             }
         }
 
@@ -153,11 +153,11 @@ namespace MyVocaList.View.Interceptors
                 contentPage.Appearing += OnPageAppearing;
                 contentPage.Disappearing += OnPageDisappearing;
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: ContentPage {contentPage.GetType().Name} interceptada");
+                Console.WriteLine($"✅ NavigationInterceptor: ContentPage {contentPage.GetType().Name} interceptada");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro ao interceptar ContentPage: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro ao interceptar ContentPage: {ex.Message}");
             }
         }
 
@@ -172,11 +172,11 @@ namespace MyVocaList.View.Interceptors
                 shell.Navigating += OnShellNavigating;
                 shell.Navigated += OnShellNavigated;
 
-                System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: Shell interceptado");
+                Console.WriteLine($"✅ NavigationInterceptor: Shell interceptado");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro ao interceptar Shell: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro ao interceptar Shell: {ex.Message}");
             }
         }
 
@@ -194,7 +194,7 @@ namespace MyVocaList.View.Interceptors
                 var targetPageName = e.Page?.GetType().Name ?? "Desconhecida";
                 var requesterId = $"Navigation_Push_{targetPageName}_{DateTime.Now.Ticks}";
 
-                System.Diagnostics.Debug.WriteLine($"🚀 NavigationInterceptor: PUSH para {targetPageName}");
+                Console.WriteLine($"🚀 NavigationInterceptor: PUSH para {targetPageName}");
 
                 // ✅ SISTEMA CENTRALIZADO: Solicita loading de navegação
                 await GlobalLoadingOverlay.Instance.RequestShowAsync(
@@ -214,7 +214,7 @@ namespace MyVocaList.View.Interceptors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no PUSH: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no PUSH: {ex.Message}");
             }
         }
 
@@ -228,7 +228,7 @@ namespace MyVocaList.View.Interceptors
                 var sourcePage = e.Page?.GetType().Name ?? "Desconhecida";
                 var requesterId = $"Navigation_Pop_{sourcePage}_{DateTime.Now.Ticks}";
 
-                System.Diagnostics.Debug.WriteLine($"🔙 NavigationInterceptor: POP de {sourcePage}");
+                Console.WriteLine($"🔙 NavigationInterceptor: POP de {sourcePage}");
 
                 // ✅ SISTEMA CENTRALIZADO: Solicita loading de volta
                 await GlobalLoadingOverlay.Instance.RequestShowAsync(
@@ -248,7 +248,7 @@ namespace MyVocaList.View.Interceptors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no POP: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no POP: {ex.Message}");
             }
         }
 
@@ -259,7 +259,7 @@ namespace MyVocaList.View.Interceptors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🏠 NavigationInterceptor: POP TO ROOT");
+                Console.WriteLine($"🏠 NavigationInterceptor: POP TO ROOT");
 
                 await GlobalLoadingOverlay.ShowLoadingAsync("Voltando ao início...");
                 await Task.Delay(300);
@@ -267,7 +267,7 @@ namespace MyVocaList.View.Interceptors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no POP TO ROOT: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no POP TO ROOT: {ex.Message}");
                 await GlobalLoadingOverlay.HideLoadingAsync();
             }
         }
@@ -282,7 +282,7 @@ namespace MyVocaList.View.Interceptors
                 if (sender is ContentPage page)
                 {
                     var pageName = page.GetType().Name;
-                    System.Diagnostics.Debug.WriteLine($"📄 NavigationInterceptor: APPEARING {pageName}");
+                    Console.WriteLine($"📄 NavigationInterceptor: APPEARING {pageName}");
 
                     // 🎯 LOADING: Apenas se não houver loading já ativo
                     // O SmartPageLifecycleBehavior pode já estar gerenciando
@@ -291,7 +291,7 @@ namespace MyVocaList.View.Interceptors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no APPEARING: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no APPEARING: {ex.Message}");
             }
         }
 
@@ -305,12 +305,12 @@ namespace MyVocaList.View.Interceptors
                 if (sender is ContentPage page)
                 {
                     var pageName = page.GetType().Name;
-                    System.Diagnostics.Debug.WriteLine($"📄 NavigationInterceptor: DISAPPEARING {pageName}");
+                    Console.WriteLine($"📄 NavigationInterceptor: DISAPPEARING {pageName}");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no DISAPPEARING: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no DISAPPEARING: {ex.Message}");
             }
         }
 
@@ -321,12 +321,12 @@ namespace MyVocaList.View.Interceptors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🚀 NavigationInterceptor: SHELL NAVIGATING para {e.Target}");
+                Console.WriteLine($"🚀 NavigationInterceptor: SHELL NAVIGATING para {e.Target}");
                 await GlobalLoadingOverlay.ShowLoadingAsync("Navegando...");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no SHELL NAVIGATING: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no SHELL NAVIGATING: {ex.Message}");
             }
         }
 
@@ -337,13 +337,13 @@ namespace MyVocaList.View.Interceptors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"✅ NavigationInterceptor: SHELL NAVIGATED para {e.Current}");
+                Console.WriteLine($"✅ NavigationInterceptor: SHELL NAVIGATED para {e.Current}");
                 await Task.Delay(200);
                 await GlobalLoadingOverlay.HideLoadingAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no SHELL NAVIGATED: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no SHELL NAVIGATED: {ex.Message}");
                 await GlobalLoadingOverlay.HideLoadingAsync();
             }
         }
@@ -384,11 +384,11 @@ namespace MyVocaList.View.Interceptors
                 }
 
                 _isInitialized = false;
-                System.Diagnostics.Debug.WriteLine($"🧹 NavigationInterceptor: Cleanup realizado");
+                Console.WriteLine($"🧹 NavigationInterceptor: Cleanup realizado");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavigationInterceptor: Erro no cleanup: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Erro no cleanup: {ex.Message}");
             }
         }
 

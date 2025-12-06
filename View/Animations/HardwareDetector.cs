@@ -47,7 +47,7 @@
                     // BYPASS (sem animação) apenas para hardware MUITO limitado
                     if (veryLowResolution || veryLowDensity || terribleCombo)
                     {
-                        System.Diagnostics.Debug.WriteLine("🚫 Hardware muito limitado - animações desabilitadas para economia de recursos");
+                        Console.WriteLine("🚫 Hardware muito limitado - animações desabilitadas para economia de recursos");
                         return false;
                     }
 
@@ -61,7 +61,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na detecção de hardware: {ex.Message}");
+                Console.WriteLine($"Erro na detecção de hardware: {ex.Message}");
                 // Em caso de erro, assume hardware limitado por segurança
                 return false;
             }
@@ -89,7 +89,7 @@
 
                 if (isVeryLowEndHardware)
                 {
-                    System.Diagnostics.Debug.WriteLine("🚫 Hardware MUITO ruim detectado - BYPASS ativado (sem animação)");
+                    Console.WriteLine("🚫 Hardware MUITO ruim detectado - BYPASS ativado (sem animação)");
                     return null; // BYPASS = sem animação para economizar recursos
                 }
 
@@ -99,16 +99,16 @@
                 // - Hardware BOM (Pixel 5, maioria dos smartphones modernos)  
                 // - Hardware MÉDIO (smartphones de 2-3 anos atrás)
 
-                System.Diagnostics.Debug.WriteLine("✅ Hardware adequado detectado - usando configuração ORIGINAL");
-                System.Diagnostics.Debug.WriteLine($"   Resolução: {displayInfo.Width}x{displayInfo.Height}");
-                System.Diagnostics.Debug.WriteLine($"   Densidade: {displayInfo.Density}");
-                System.Diagnostics.Debug.WriteLine($"   Classificação: {GetHardwareClass()}");
+                Console.WriteLine("✅ Hardware adequado detectado - usando configuração ORIGINAL");
+                Console.WriteLine($"   Resolução: {displayInfo.Width}x{displayInfo.Height}");
+                Console.WriteLine($"   Densidade: {displayInfo.Density}");
+                Console.WriteLine($"   Classificação: {GetHardwareClass()}");
 
                 return requestedConfig; // 🎯 Usa EXATAMENTE sua configuração!
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na detecção de hardware: {ex.Message}");
+                Console.WriteLine($"Erro na detecção de hardware: {ex.Message}");
                 // Em caso de erro, assume hardware limitado e ativa BYPASS
                 return null;
             }
@@ -158,19 +158,19 @@
             try
             {
                 var displayInfo = DeviceDisplay.MainDisplayInfo;
-                System.Diagnostics.Debug.WriteLine($"=== HARDWARE INFO ===");
-                System.Diagnostics.Debug.WriteLine($"Idiom: {DeviceInfo.Idiom}");
-                System.Diagnostics.Debug.WriteLine($"Platform: {DeviceInfo.Platform}");
-                System.Diagnostics.Debug.WriteLine($"Density: {displayInfo.Density}");
-                System.Diagnostics.Debug.WriteLine($"Width: {displayInfo.Width}px");
-                System.Diagnostics.Debug.WriteLine($"Height: {displayInfo.Height}px");
-                System.Diagnostics.Debug.WriteLine($"Animations Supported: {SupportsAnimations}");
-                System.Diagnostics.Debug.WriteLine($"Hardware Class: {GetHardwareClass()}");
-                System.Diagnostics.Debug.WriteLine($"===================");
+                Console.WriteLine($"=== HARDWARE INFO ===");
+                Console.WriteLine($"Idiom: {DeviceInfo.Idiom}");
+                Console.WriteLine($"Platform: {DeviceInfo.Platform}");
+                Console.WriteLine($"Density: {displayInfo.Density}");
+                Console.WriteLine($"Width: {displayInfo.Width}px");
+                Console.WriteLine($"Height: {displayInfo.Height}px");
+                Console.WriteLine($"Animations Supported: {SupportsAnimations}");
+                Console.WriteLine($"Hardware Class: {GetHardwareClass()}");
+                Console.WriteLine($"===================");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao logar hardware: {ex.Message}");
+                Console.WriteLine($"Erro ao logar hardware: {ex.Message}");
             }
         }
     }

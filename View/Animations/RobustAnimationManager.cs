@@ -67,7 +67,7 @@ namespace MyVocaList.View.Animations
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao parar animações nativas: {ex.Message}");
+                Console.WriteLine($"Erro ao parar animações nativas: {ex.Message}");
             }
         }
 
@@ -95,7 +95,7 @@ namespace MyVocaList.View.Animations
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Erro ao parar animação: {ex.Message}");
+                            Console.WriteLine($"Erro ao parar animação: {ex.Message}");
                         }
                     }
                 });
@@ -132,7 +132,7 @@ namespace MyVocaList.View.Animations
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro durante DisposeAsync: {ex.Message}");
+                Console.WriteLine($"Erro durante DisposeAsync: {ex.Message}");
             }
         }
 

@@ -221,40 +221,40 @@ namespace MyVocaList.Services
 
         public async Task<IEnumerable<Estabelecimento>> GetAllEstabelecimentosAsync()
         {
-            System.Diagnostics.Debug.WriteLine("📋 === GetAllEstabelecimentosAsync INICIADO ===");
+            Console.WriteLine("📋 === GetAllEstabelecimentosAsync INICIADO ===");
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"📋 Repository disponível: {_estabelecimentoRepository != null}");
+                Console.WriteLine($"📋 Repository disponível: {_estabelecimentoRepository != null}");
 
                 if (_estabelecimentoRepository == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ Repository é NULL!");
+                    Console.WriteLine("❌ Repository é NULL!");
                     return new List<Estabelecimento>();
                 }
 
-                System.Diagnostics.Debug.WriteLine("📋 Chamando GetAllAsync...");
+                Console.WriteLine("📋 Chamando GetAllAsync...");
                 var estabelecimentos = await _estabelecimentoRepository.GetAllAsync();
 
                 var list = estabelecimentos?.ToList() ?? new List<Estabelecimento>();
-                System.Diagnostics.Debug.WriteLine($"📋 Estabelecimentos encontrados: {list.Count}");
+                Console.WriteLine($"📋 Estabelecimentos encontrados: {list.Count}");
 
                 foreach (var est in list)
                 {
-                    System.Diagnostics.Debug.WriteLine($"📋 Encontrado: {est.Id} - '{est.Nome}'");
+                    Console.WriteLine($"📋 Encontrado: {est.Id} - '{est.Nome}'");
                 }
 
                 return list;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao buscar estabelecimentos: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+                Console.WriteLine($"❌ Erro ao buscar estabelecimentos: {ex.Message}");
+                Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
                 return new List<Estabelecimento>();
             }
             finally
             {
-                System.Diagnostics.Debug.WriteLine("📋 === GetAllEstabelecimentosAsync FINALIZADO ===");
+                Console.WriteLine("📋 === GetAllEstabelecimentosAsync FINALIZADO ===");
             }
         }
 
@@ -266,7 +266,7 @@ namespace MyVocaList.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao buscar estabelecimento: {ex.Message}");
+                Console.WriteLine($"Erro ao buscar estabelecimento: {ex.Message}");
                 return null;
             }
         }
@@ -277,24 +277,24 @@ namespace MyVocaList.Services
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("📋 === GetAllEstabelecimentosForListAsync INICIADO ===");
+                Console.WriteLine("📋 === GetAllEstabelecimentosForListAsync INICIADO ===");
 
                 var estabelecimentosWithEvents = await _estabelecimentoRepository.GetAllWithHasEventsAsync();
 
                 var result = estabelecimentosWithEvents.Select(x =>
                     EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
 
-                System.Diagnostics.Debug.WriteLine($"📋 Total mapeados: {result.Count}");
+                Console.WriteLine($"📋 Total mapeados: {result.Count}");
                 foreach (var item in result)
                 {
-                    System.Diagnostics.Debug.WriteLine($"📋 Mapeado: {item.Id} - '{item.Nome}' (HasEvents: {item.HasEvents})");
+                    Console.WriteLine($"📋 Mapeado: {item.Id} - '{item.Nome}' (HasEvents: {item.HasEvents})");
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao buscar estabelecimentos para lista: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao buscar estabelecimentos para lista: {ex.Message}");
                 return new List<EstabelecimentoListItemDto>();
             }
         }

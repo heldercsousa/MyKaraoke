@@ -119,7 +119,7 @@ namespace MyVocaList.View.Behaviors
             // ✅ ADICIONA MÉTODOS ao objeto
             AddAnimationMethods();
 
-            System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior anexado a {bindable.GetType().Name} com RobustAnimationManager");
+            Console.WriteLine($"🚀 AnimatedButtonBehavior anexado a {bindable.GetType().Name} com RobustAnimationManager");
         }
 
         protected override void OnDetachingFrom(ContentView bindable)
@@ -136,13 +136,13 @@ namespace MyVocaList.View.Behaviors
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🛡️ Erro ao disposed RobustAnimationManager: {ex.Message}");
+                    Console.WriteLine($"🛡️ Erro ao disposed RobustAnimationManager: {ex.Message}");
                 }
             });
 
             _associatedObject = null;
 
-            System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior removido de {bindable.GetType().Name}");
+            Console.WriteLine($"🚀 AnimatedButtonBehavior removido de {bindable.GetType().Name}");
         }
 
         /// <summary>
@@ -167,18 +167,18 @@ namespace MyVocaList.View.Behaviors
                 if (currentPage != null)
                 {
                     var pageId = $"{currentPage.GetType().Name}_{currentPage.GetHashCode()}";
-                    System.Diagnostics.Debug.WriteLine($"🎯 AnimatedButtonBehavior: GetPageIdentifier (atual) = {pageId}");
+                    Console.WriteLine($"🎯 AnimatedButtonBehavior: GetPageIdentifier (atual) = {pageId}");
                     return pageId;
                 }
 
                 // 🛡️ FALLBACK: Se não conseguir obter página atual
                 var fallbackId = $"{element.GetType().Name}_{element.GetHashCode()}";
-                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: GetPageIdentifier FALLBACK = {fallbackId}");
+                Console.WriteLine($"🛡️ AnimatedButtonBehavior: GetPageIdentifier FALLBACK = {fallbackId}");
                 return fallbackId;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao obter identificador da página: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao obter identificador da página: {ex.Message}");
                 return $"Error_{DateTime.Now.Ticks}";
             }
         }
@@ -194,15 +194,28 @@ namespace MyVocaList.View.Behaviors
                 if (_associatedObject != null)
                 {
                     _associatedObject.IsVisible = true;
-                    _associatedObject.Opacity = 0.0;
-                    _associatedObject.TranslationY = 60;
 
-                    System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Estado inicial aplicado");
+                    // ✅ FIX: Check the global disable flag!
+                    // If animations are disabled, start fully visible (Opacity 1.0)
+                    // This prevents the button from "hiding itself" after the parent tries to show it.
+                    if (DISABLE_NAVBAR_ANIMATIONS)
+                    {
+                        _associatedObject.Opacity = 1.0;
+                        _associatedObject.TranslationY = 0;
+                        Console.WriteLine($"AnimatedButtonBehavior: Estado inicial VISÍVEL (Animações Desabilitadas)");
+                    }
+                    else
+                    {
+                        // Only hide if we actually plan to animate it in
+                        _associatedObject.Opacity = 0.0;
+                        _associatedObject.TranslationY = 60;
+                        Console.WriteLine($"AnimatedButtonBehavior: Estado inicial OCULTO (Para Animação)");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar estado inicial: {ex.Message}");
+                Console.WriteLine($"Erro ao aplicar estado inicial: {ex.Message}");
             }
         }
 
@@ -217,12 +230,12 @@ namespace MyVocaList.View.Behaviors
                 if (_associatedObject?.Handler != null)
                 {
                     ApplyInitialState();
-                    System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Handler disponível - estado inicial reaplicado");
+                    Console.WriteLine($"AnimatedButtonBehavior: Handler disponível - estado inicial reaplicado");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro em HandleHandlerChanged: {ex.Message}");
+                Console.WriteLine($"Erro em HandleHandlerChanged: {ex.Message}");
             }
         }
 
@@ -237,7 +250,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro em HandleBindingContextChanged: {ex.Message}");
+                Console.WriteLine($"Erro em HandleBindingContextChanged: {ex.Message}");
             }
         }
 
@@ -260,7 +273,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no efeito de tap: {ex.Message}");
+                Console.WriteLine($"Erro no efeito de tap: {ex.Message}");
             }
         }
 
@@ -313,7 +326,7 @@ namespace MyVocaList.View.Behaviors
                     }
                 });
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine("🚫 AnimatedButtonBehavior: ShowAsync SEM ANIMAÇÕES (desabilitadas globalmente)");
+                Console.WriteLine("🚫 AnimatedButtonBehavior: ShowAsync SEM ANIMAÇÕES (desabilitadas globalmente)");
                 return;
             }
 
@@ -322,7 +335,7 @@ namespace MyVocaList.View.Behaviors
             {
                 if (_isShowInProgress || _isShown || _associatedObject == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: ShowAsync IGNORADO - já em progresso ou mostrado");
+                    Console.WriteLine("🛡️ AnimatedButtonBehavior: ShowAsync IGNORADO - já em progresso ou mostrado");
                     return;
                 }
                 _isShowInProgress = true;
@@ -330,7 +343,7 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Iniciando ShowAsync com RobustAnimationManager");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: Iniciando ShowAsync com RobustAnimationManager");
 
                 // ✅ FORÇA estado inicial no MainThread ANTES de qualquer delay
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -338,39 +351,39 @@ namespace MyVocaList.View.Behaviors
                     _associatedObject.IsVisible = true;
                     _associatedObject.Opacity = 0.0;        // GARANTIA: Completamente transparente para fade in
                     _associatedObject.TranslationY = 60;     // GARANTIA: 60px abaixo da posição final para translate up
-                    System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Estado inicial FORÇADO (Opacity={_associatedObject.Opacity}, TranslationY={_associatedObject.TranslationY})");
+                    Console.WriteLine($"AnimatedButtonBehavior: Estado inicial FORÇADO (Opacity={_associatedObject.Opacity}, TranslationY={_associatedObject.TranslationY})");
                 });
 
                 // ✅ Aplica delay se configurado
                 if (ShowDelay > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Aguardando delay de {ShowDelay}ms");
+                    Console.WriteLine($"AnimatedButtonBehavior: Aguardando delay de {ShowDelay}ms");
                     await Task.Delay(ShowDelay);
                 }
 
                 if (IsAnimated && HardwareDetector.SupportsAnimations)
                 {
-                    System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: Condições atendidas - executando animações");
+                    Console.WriteLine("AnimatedButtonBehavior: Condições atendidas - executando animações");
 
                     // ✅ Executa múltiplas animações simultaneamente usando Task.WhenAll
                     var animationTasks = new List<Task>();
 
                     if (HasFadeAnimation)
                     {
-                        System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: Adicionando Fade à lista de animações");
+                        Console.WriteLine("AnimatedButtonBehavior: Adicionando Fade à lista de animações");
                         animationTasks.Add(StartFadeInAsync());
                     }
 
                     if (HasTranslateAnimation)
                     {
-                        System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: Adicionando Translate à lista de animações");
+                        Console.WriteLine("AnimatedButtonBehavior: Adicionando Translate à lista de animações");
                         animationTasks.Add(StartSlideUpAsync());
                     }
 
                     // ✅ Executa todas as animações SIMULTANEAMENTE
                     if (animationTasks.Any())
                     {
-                        System.Diagnostics.Debug.WriteLine($"AnimatedButtonBehavior: Executando {animationTasks.Count} animações simultaneamente");
+                        Console.WriteLine($"AnimatedButtonBehavior: Executando {animationTasks.Count} animações simultaneamente");
 
                         // 🛡️ PROTEÇÃO: Timeout para animações (evita travamento)
                         var allAnimationsTask = Task.WhenAll(animationTasks);
@@ -380,7 +393,7 @@ namespace MyVocaList.View.Behaviors
 
                         if (completedTask == timeoutTask)
                         {
-                            System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT nas animações - aplicando estado final");
+                            Console.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT nas animações - aplicando estado final");
                             await MainThread.InvokeOnMainThreadAsync(() =>
                             {
                                 _associatedObject.Opacity = 1;
@@ -389,12 +402,12 @@ namespace MyVocaList.View.Behaviors
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Todas as {animationTasks.Count} animações concluídas com RobustAnimationManager");
+                            Console.WriteLine($"🚀 AnimatedButtonBehavior: Todas as {animationTasks.Count} animações concluídas com RobustAnimationManager");
                         }
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: Nenhuma animação configurada para execução");
+                        Console.WriteLine("AnimatedButtonBehavior: Nenhuma animação configurada para execução");
                     }
                 }
                 else
@@ -405,15 +418,15 @@ namespace MyVocaList.View.Behaviors
                         _associatedObject.Opacity = 1;
                         _associatedObject.TranslationY = 0;
                     });
-                    System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior: Hardware limitado ou animações desabilitadas - aplicando estado final direto");
+                    Console.WriteLine("AnimatedButtonBehavior: Hardware limitado ou animações desabilitadas - aplicando estado final direto");
                 }
 
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: ShowAsync concluído com sucesso usando RobustAnimationManager");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: ShowAsync concluído com sucesso usando RobustAnimationManager");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro em ShowAsync: {ex.Message}");
+                Console.WriteLine($"🛡️ AnimatedButtonBehavior: Erro em ShowAsync: {ex.Message}");
                 // ✅ Fallback
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
@@ -445,7 +458,7 @@ namespace MyVocaList.View.Behaviors
                     }
                 });
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine("🚫 AnimatedButtonBehavior: HideAsync SEM ANIMAÇÕES (desabilitadas globalmente)");
+                Console.WriteLine("🚫 AnimatedButtonBehavior: HideAsync SEM ANIMAÇÕES (desabilitadas globalmente)");
                 return;
             }
 
@@ -454,7 +467,7 @@ namespace MyVocaList.View.Behaviors
             {
                 if (_isHideInProgress || !_isShown || _associatedObject == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: HideAsync IGNORADO - já em progresso ou escondido");
+                    Console.WriteLine("🛡️ AnimatedButtonBehavior: HideAsync IGNORADO - já em progresso ou escondido");
                     return;
                 }
                 _isHideInProgress = true;
@@ -462,7 +475,7 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Iniciando HideAsync com RobustAnimationManager");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: Iniciando HideAsync com RobustAnimationManager");
 
                 // 🚀 MIGRAÇÃO CONSISTENTE: Para TODAS as animações via RobustAnimationManager primeiro
                 if (_robustAnimationManager != null)
@@ -499,7 +512,7 @@ namespace MyVocaList.View.Behaviors
 
                         if (completedTask == timeoutTask)
                         {
-                            System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT nas animações de saída - aplicando estado final");
+                            Console.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT nas animações de saída - aplicando estado final");
                         }
                     }
                 }
@@ -514,11 +527,11 @@ namespace MyVocaList.View.Behaviors
 
                 _associatedObject.IsVisible = false;
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: HideAsync concluído com RobustAnimationManager");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: HideAsync concluído com RobustAnimationManager");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro ao esconder: {ex.Message}");
+                Console.WriteLine($"🛡️ AnimatedButtonBehavior: Erro ao esconder: {ex.Message}");
                 _associatedObject.Opacity = 0;
                 _associatedObject.IsVisible = false;
                 _isShown = false;
@@ -545,7 +558,7 @@ namespace MyVocaList.View.Behaviors
             {
                 if (_isSpecialAnimationInProgress || !IsAnimated || !HardwareDetector.SupportsAnimations || !HasPulseAnimation)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: StartSpecialAnimationAsync IGNORADO");
+                    Console.WriteLine("🛡️ AnimatedButtonBehavior: StartSpecialAnimationAsync IGNORADO");
                     return;
                 }
                 _isSpecialAnimationInProgress = true;
@@ -556,7 +569,7 @@ namespace MyVocaList.View.Behaviors
                 var target = AnimationContainer ?? _associatedObject;
                 if (target == null) return;
 
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Iniciando animação especial com RobustAnimationManager");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: Iniciando animação especial com RobustAnimationManager");
 
                 switch (PulseType)
                 {
@@ -569,11 +582,11 @@ namespace MyVocaList.View.Behaviors
                         break;
                 }
 
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Animação especial concluída com RobustAnimationManager");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: Animação especial concluída com RobustAnimationManager");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro na animação especial: {ex.Message}");
+                Console.WriteLine($"🛡️ AnimatedButtonBehavior: Erro na animação especial: {ex.Message}");
             }
             finally
             {
@@ -600,7 +613,7 @@ namespace MyVocaList.View.Behaviors
                     _isSpecialAnimationInProgress = false;
                 }
 
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Parando todas as animações via RobustAnimationManager");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: Parando todas as animações via RobustAnimationManager");
 
                 // 🚀 MIGRAÇÃO CONSISTENTE: Para RobustAnimationManager primeiro como NavBarBehavior
                 if (_robustAnimationManager != null)
@@ -612,11 +625,11 @@ namespace MyVocaList.View.Behaviors
 
                     if (completedTask == timeoutTask)
                     {
-                        System.Diagnostics.Debug.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT ao parar RobustAnimationManager");
+                        Console.WriteLine("🛡️ AnimatedButtonBehavior: TIMEOUT ao parar RobustAnimationManager");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: RobustAnimationManager parado com sucesso");
+                        Console.WriteLine("🚀 AnimatedButtonBehavior: RobustAnimationManager parado com sucesso");
                     }
                 }
 
@@ -631,7 +644,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ AnimatedButtonBehavior: Erro ao parar animações: {ex.Message}");
+                Console.WriteLine($"🛡️ AnimatedButtonBehavior: Erro ao parar animações: {ex.Message}");
             }
         }
 
@@ -646,7 +659,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Fade In PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Fade In PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -657,11 +670,11 @@ namespace MyVocaList.View.Behaviors
                     await _associatedObject.FadeTo(1.0, 500, Easing.CubicOut);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Fade In PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Fade In PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no Fade In: {ex.Message}");
+                Console.WriteLine($"Erro no Fade In: {ex.Message}");
             }
         }
 
@@ -672,7 +685,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Fade Out PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Fade Out PARALELO - Estado atual: Opacity={_associatedObject.Opacity}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -680,11 +693,11 @@ namespace MyVocaList.View.Behaviors
                     await _associatedObject.FadeTo(0.0, 500, Easing.CubicIn);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Fade Out PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Fade Out PARALELO concluído - Estado final: Opacity={_associatedObject.Opacity}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no Fade Out: {ex.Message}");
+                Console.WriteLine($"Erro no Fade Out: {ex.Message}");
             }
         }
 
@@ -695,7 +708,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Slide Up PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Slide Up PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -706,11 +719,11 @@ namespace MyVocaList.View.Behaviors
                     await _associatedObject.TranslateTo(0, 0, 500, Easing.CubicOut);
                 });
 
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Slide Up PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Slide Up PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no Slide Up: {ex.Message}");
+                Console.WriteLine($"Erro no Slide Up: {ex.Message}");
             }
         }
 
@@ -721,7 +734,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Slide Down PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Iniciando Slide Down PARALELO - Estado atual: TranslationY={_associatedObject.TranslationY}");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -729,11 +742,11 @@ namespace MyVocaList.View.Behaviors
                     await _associatedObject.TranslateTo(0, 60, 500, Easing.CubicIn); // Move para 60px abaixo
                 });
 
-                System.Diagnostics.Debug.WriteLine($"🚀 AnimatedButtonBehavior: Slide Down PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
+                Console.WriteLine($"🚀 AnimatedButtonBehavior: Slide Down PARALELO concluído - Estado final: TranslationY={_associatedObject.TranslationY}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no Slide Down: {ex.Message}");
+                Console.WriteLine($"Erro no Slide Down: {ex.Message}");
             }
         }
 
@@ -747,11 +760,11 @@ namespace MyVocaList.View.Behaviors
                     await target.ScaleTo(1.0, 150, Easing.BounceIn);
                 });
 
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Pulse padrão concluído");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: Pulse padrão concluído");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no pulse padrão: {ex.Message}");
+                Console.WriteLine($"Erro no pulse padrão: {ex.Message}");
             }
         }
 
@@ -773,11 +786,11 @@ namespace MyVocaList.View.Behaviors
                     }
                 });
 
-                System.Diagnostics.Debug.WriteLine("🚀 AnimatedButtonBehavior: Pulse especial concluído");
+                Console.WriteLine("🚀 AnimatedButtonBehavior: Pulse especial concluído");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no pulse especial: {ex.Message}");
+                Console.WriteLine($"Erro no pulse especial: {ex.Message}");
             }
         }
 
@@ -832,7 +845,7 @@ namespace MyVocaList.View.Behaviors
             if (behavior != null)
                 await behavior.AnimateTapEffect();
             else
-                System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior não encontrado para AnimateTapEffect");
+                Console.WriteLine("AnimatedButtonBehavior não encontrado para AnimateTapEffect");
         }
 
         public static void HandleHandlerChanged(this ContentView view)
@@ -844,7 +857,7 @@ namespace MyVocaList.View.Behaviors
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior não encontrado para HandleHandlerChanged");
+                Console.WriteLine("AnimatedButtonBehavior não encontrado para HandleHandlerChanged");
             }
         }
 
@@ -857,7 +870,7 @@ namespace MyVocaList.View.Behaviors
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("AnimatedButtonBehavior não encontrado para HandleBindingContextChanged");
+                Console.WriteLine("AnimatedButtonBehavior não encontrado para HandleBindingContextChanged");
             }
         }
 
@@ -871,7 +884,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao obter AnimatedButtonBehavior: {ex.Message}");
+                Console.WriteLine($"Erro ao obter AnimatedButtonBehavior: {ex.Message}");
                 return null;
             }
         }

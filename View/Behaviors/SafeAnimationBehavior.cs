@@ -74,7 +74,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na animação: {ex.Message}");
+                Console.WriteLine($"Erro na animação: {ex.Message}");
             }
         }
 

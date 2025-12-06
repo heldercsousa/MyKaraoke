@@ -60,7 +60,7 @@ namespace MyVocaList.View
             catch (System.Exception ex)
             {
                 // Log error mas continue com shutdown
-                System.Diagnostics.Debug.WriteLine($"Erro durante cleanup: {ex.Message}");
+                Console.WriteLine($"Erro durante cleanup: {ex.Message}");
             }
         }
     }

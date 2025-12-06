@@ -5,51 +5,53 @@
                x:Class="MyVocaList.View.Components.ConfirmationPopup"
                Color="Transparent">
 
-    <!-- MD3 Dialog Container -->
-    <Frame Style="{StaticResource ElevatedCard}"
-           WidthRequest="300"
-           Padding="24"
-           CornerRadius="28"
-           HasShadow="True">
+    <Grid RowDefinitions="Auto"
+          ColumnDefinitions="Auto"
+          VerticalOptions="Center"
+          HorizontalOptions="Center">
 
-        <VerticalStackLayout Spacing="16">
+        <Frame Style="{StaticResource ElevatedCard}"
+               WidthRequest="300"
+               Padding="24"
+               CornerRadius="28"
+               HasShadow="True"
+               VerticalOptions="Start"
+               HorizontalOptions="Center">
 
-            <!-- Title (MD3 HeadlineSmall) -->
-            <Label x:Name="titleLabel"
-                   Style="{StaticResource HeadlineSmall}"
-                   TextColor="{StaticResource OnSurface}"
-                   HorizontalOptions="Start" />
+            <VerticalStackLayout Spacing="16">
 
-            <!-- Message (MD3 BodyMedium) -->
-            <Label x:Name="messageLabel"
-                   Style="{StaticResource BodyMedium}"
-                   TextColor="{StaticResource OnSurfaceVariant}"
-                   HorizontalOptions="Start"
-                   LineBreakMode="WordWrap" />
+                <Label x:Name="titleLabel"
+                       Style="{StaticResource HeadlineSmall}"
+                       TextColor="{StaticResource OnSurface}"
+                       HorizontalOptions="Start" />
 
-            <!-- Button Container (MD3 pattern: right-aligned, secondary then primary) -->
-            <HorizontalStackLayout Spacing="12"
-                                   HorizontalOptions="End"
-                                   Margin="0,8,0,0">
+                <Label x:Name="messageLabel"
+                       Style="{StaticResource BodyMedium}"
+                       TextColor="{StaticResource OnSurfaceVariant}"
+                       HorizontalOptions="Start"
+                       LineBreakMode="WordWrap" />
 
-                <!-- Cancel Button (TextButton - MD3 secondary action) -->
-                <Button x:Name="cancelButton"
-                        Text="Cancel"
-                        Style="{StaticResource TextButton}"
-                        Clicked="OnCancelClicked"
-                        MinimumWidthRequest="80" />
+                <HorizontalStackLayout Spacing="12"
+                                       HorizontalOptions="End"
+                                       Margin="0,8,0,0">
 
-                <!-- Confirm Button (FilledButton - MD3 primary/destructive action) -->
-                <Button x:Name="confirmButton"
-                        Text="Confirm"
-                        Style="{StaticResource FilledDestructiveButton}"
-                        Clicked="OnConfirmClicked"
-                        MinimumWidthRequest="80" />
+                    <Button x:Name="cancelButton"
+                            Text="Cancel"
+                            Style="{StaticResource TextButton}"
+                            Clicked="OnCancelClicked"
+                            MinimumWidthRequest="80" />
 
-            </HorizontalStackLayout>
+                    <Button x:Name="confirmButton"
+                            Text="Confirm"
+                            Style="{StaticResource FilledDestructiveButton}"
+                            Clicked="OnConfirmClicked"
+                            MinimumWidthRequest="80" />
 
-        </VerticalStackLayout>
+                </HorizontalStackLayout>
 
-    </Frame>
+            </VerticalStackLayout>
+
+        </Frame>
+    </Grid>
 
 </toolkit:Popup>

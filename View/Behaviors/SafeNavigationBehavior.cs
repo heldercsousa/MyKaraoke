@@ -80,7 +80,7 @@ namespace MyVocaList.View.Behaviors
             _associatedElement = bindable;
             AttachToAppropriateEvent();
 
-            System.Diagnostics.Debug.WriteLine($"✅ SafeNavigationBehavior anexado a {bindable.GetType().Name}");
+            Console.WriteLine($"✅ SafeNavigationBehavior anexado a {bindable.GetType().Name}");
         }
 
         protected override void OnDetachingFrom(VisualElement bindable)
@@ -147,7 +147,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Navegação solicitada");
+                Console.WriteLine($"🎯 SafeNavigationBehavior: Navegação solicitada");
 
                 // 🛡️ DEBOUNCE SIMPLES: Proteção contra cliques múltiplos
                 var now = DateTime.Now;
@@ -155,7 +155,7 @@ namespace MyVocaList.View.Behaviors
 
                 if (timeSinceLastNavigation.TotalMilliseconds < DebounceMilliseconds)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🚫 SafeNavigationBehavior: Navegação BLOQUEADA por debounce (gap: {timeSinceLastNavigation.TotalMilliseconds}ms)");
+                    Console.WriteLine($"🚫 SafeNavigationBehavior: Navegação BLOQUEADA por debounce (gap: {timeSinceLastNavigation.TotalMilliseconds}ms)");
                     return;
                 }
 
@@ -164,7 +164,7 @@ namespace MyVocaList.View.Behaviors
                 // 🎯 PRIORIDADE 1: Comando customizado
                 if (NavigationCommand != null && NavigationCommand.CanExecute(null))
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Executando comando customizado");
+                    Console.WriteLine($"🎯 SafeNavigationBehavior: Executando comando customizado");
                     NavigationCommand.Execute(null);
                     return;
                 }
@@ -183,11 +183,11 @@ namespace MyVocaList.View.Behaviors
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"⚠️ SafeNavigationBehavior: Nenhuma estratégia de navegação aplicável");
+                Console.WriteLine($"⚠️ SafeNavigationBehavior: Nenhuma estratégia de navegação aplicável");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação: {ex.Message}");
+                Console.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação: {ex.Message}");
             }
         }
 
@@ -195,7 +195,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 SafeNavigationBehavior: Navegando para {TargetPageType.Name}");
+                Console.WriteLine($"🎯 SafeNavigationBehavior: Navegando para {TargetPageType.Name}");
 
                 ContentPage targetPage;
                 if (CreatePageFunc != null)
@@ -209,11 +209,11 @@ namespace MyVocaList.View.Behaviors
 
                 await ExecuteSafeNavigation(targetPage);
 
-                System.Diagnostics.Debug.WriteLine($"✅ SafeNavigationBehavior: Navegação concluída para {TargetPageType.Name}");
+                Console.WriteLine($"✅ SafeNavigationBehavior: Navegação concluída para {TargetPageType.Name}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação específica: {ex.Message}");
+                Console.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação específica: {ex.Message}");
                 throw;
             }
         }
@@ -222,12 +222,12 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🧠 SafeNavigationBehavior: Executando navegação inteligente por stack");
+                Console.WriteLine($"🧠 SafeNavigationBehavior: Executando navegação inteligente por stack");
 
                 var currentPage = GetCurrentPage();
                 if (currentPage == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Página atual não encontrada");
+                    Console.WriteLine($"❌ SafeNavigationBehavior: Página atual não encontrada");
                     return;
                 }
 
@@ -236,17 +236,17 @@ namespace MyVocaList.View.Behaviors
 
                 if (navigationStack == null || navigationStack.Count <= 1)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🚪 SafeNavigationBehavior: Sem stack de navegação - não há para onde voltar");
+                    Console.WriteLine($"🚪 SafeNavigationBehavior: Sem stack de navegação - não há para onde voltar");
                     return;
                 }
 
                 // 🎯 SIMPLES: PopAsync é suficiente para maioria dos casos
                 await navigation.PopAsync();
-                System.Diagnostics.Debug.WriteLine($"✅ SafeNavigationBehavior: Navegação de volta concluída");
+                Console.WriteLine($"✅ SafeNavigationBehavior: Navegação de volta concluída");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação inteligente: {ex.Message}");
+                Console.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação inteligente: {ex.Message}");
             }
         }
 
@@ -273,11 +273,11 @@ namespace MyVocaList.View.Behaviors
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine("❌ SafeNavigationBehavior: Nenhuma estratégia de navegação funcionou");
+                Console.WriteLine("❌ SafeNavigationBehavior: Nenhuma estratégia de navegação funcionou");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro ao executar navegação: {ex.Message}");
+                Console.WriteLine($"❌ SafeNavigationBehavior: Erro ao executar navegação: {ex.Message}");
                 throw;
             }
         }
@@ -307,7 +307,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SafeNavigationBehavior: Erro ao obter página atual: {ex.Message}");
+                Console.WriteLine($"❌ SafeNavigationBehavior: Erro ao obter página atual: {ex.Message}");
                 return null;
             }
         }

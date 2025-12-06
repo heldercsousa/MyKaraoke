@@ -157,19 +157,18 @@
         </ScrollView>
 
         <ImageButton x:Name="addFab"
-                     Grid.Row="1"
-                     Source="add_outlined.svg"
-                     BackgroundColor="{StaticResource TertiaryContainer}"
-                     CornerRadius="16"
-                     WidthRequest="56"
-                     HeightRequest="56"
-                     Padding="16"
-                     HorizontalOptions="End"
-                     VerticalOptions="End"
-                     Margin="0,0,16,16"
-                     Clicked="OnAddFabClicked"
-                     IsVisible="True"
-                     ZIndex="9999">
+             Grid.Row="1"
+             Source="add_outlined"  BackgroundColor="{StaticResource TertiaryContainer}"
+             CornerRadius="16"
+             WidthRequest="56"
+             HeightRequest="56"
+             Padding="16"
+             HorizontalOptions="End"
+             VerticalOptions="End"
+             Margin="0,0,16,16"
+             Clicked="OnAddFabClicked"
+             IsVisible="True"
+             ZIndex="9999">
             <ImageButton.Shadow>
                 <Shadow Brush="{StaticResource Shadow}" Offset="0,4" Radius="8" Opacity="0.4" />
             </ImageButton.Shadow>

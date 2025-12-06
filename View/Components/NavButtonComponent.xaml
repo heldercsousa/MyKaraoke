@@ -14,7 +14,7 @@
             AnimationContainer="{x:Reference buttonContainer}" />
     </ContentView.Behaviors>
 
-    <StackLayout x:Name="buttonContainer" Style="{StaticResource BaseNavButtonStyle}">
+    <StackLayout x:Name="buttonContainer" MinimumHeightRequest="50"  MinimumWidthRequest="60">
         <StackLayout.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnButtonTapped" />
         </StackLayout.GestureRecognizers>

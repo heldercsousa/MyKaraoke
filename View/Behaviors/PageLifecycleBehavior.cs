@@ -100,14 +100,14 @@ namespace MyVocaList.View.Behaviors
                     // 🎯 REDUZIDO: Cooldown menor (1 segundo) e só bloqueia se muito próximo
                     if (timeSinceLastInstance < TimeSpan.FromMilliseconds(800))
                     {
-                        System.Diagnostics.Debug.WriteLine($"🚫 [PageLifecycleBehavior] INSTÂNCIA DUPLICADA: {pageType} - IGNORANDO (gap: {timeSinceLastInstance.TotalMilliseconds}ms)");
+                        Console.WriteLine($"🚫 [PageLifecycleBehavior] INSTÂNCIA DUPLICADA: {pageType} - IGNORANDO (gap: {timeSinceLastInstance.TotalMilliseconds}ms)");
                         return; // NÃO anexa events para duplicatas muito próximas
                     }
                 }
 
                 // Sempre atualiza o timestamp da última instância
                 _globalPageInstances[pageType] = currentTime;
-                System.Diagnostics.Debug.WriteLine($"🚫 [PageLifecycleBehavior] Instância REGISTRADA: {pageType} em {currentTime:HH:mm:ss.fff}");
+                Console.WriteLine($"🚫 [PageLifecycleBehavior] Instância REGISTRADA: {pageType} em {currentTime:HH:mm:ss.fff}");
             }
 
             _associatedPage = page;
@@ -121,10 +121,10 @@ namespace MyVocaList.View.Behaviors
                 _navBarAlreadyShown = false;
                 _lastPageId = currentPageId;
                 _lastNavBarSignature = string.Empty;
-                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] Nova página: {currentPageId} - resetando controle navbar");
+                Console.WriteLine($"🔧 [PageLifecycleBehavior] Nova página: {currentPageId} - resetando controle navbar");
             }
 
-            System.Diagnostics.Debug.WriteLine($"🛡️ PageLifecycleBehavior: Anexado à {page.GetType().Name}");
+            Console.WriteLine($"🛡️ PageLifecycleBehavior: Anexado à {page.GetType().Name}");
         }
 
         /// <summary>
@@ -160,14 +160,14 @@ namespace MyVocaList.View.Behaviors
                 if (_globalPageInstances.ContainsKey(pageType))
                 {
                     _globalPageInstances.Remove(pageType);
-                    System.Diagnostics.Debug.WriteLine($"🚫 [PageLifecycleBehavior] Registro de instância REMOVIDO: {pageType}");
+                    Console.WriteLine($"🚫 [PageLifecycleBehavior] Registro de instância REMOVIDO: {pageType}");
                 }
             }
 
             base.OnDetachingFrom(page);
             _associatedPage = null;
 
-            System.Diagnostics.Debug.WriteLine($"🛡️ PageLifecycleBehavior: Removido de {page.GetType().Name}");
+            Console.WriteLine($"🛡️ PageLifecycleBehavior: Removido de {page.GetType().Name}");
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace MyVocaList.View.Behaviors
             {
                 if (_isAppearingInProgress)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] OnPageAppearing IGNORADO - já em progresso");
+                    Console.WriteLine("🛡️ [PageLifecycleBehavior] OnPageAppearing IGNORADO - já em progresso");
                     return;
                 }
                 _isAppearingInProgress = true;
@@ -188,7 +188,7 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] OnPageAppearing iniciado");
+                Console.WriteLine("[PageLifecycleBehavior] OnPageAppearing iniciado");
 
                 // 🛡️ PROTEÇÃO 2: Aguarda navbar estar pronta PRIMEIRO
                 await EnsureNavBarIsReadyWithProtection();
@@ -200,11 +200,11 @@ namespace MyVocaList.View.Behaviors
                 await ShowNavBarWithIntelligentProtection();
 
                 _hasInitializedOnce = true;
-                System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] OnPageAppearing concluído com sucesso");
+                Console.WriteLine("🛡️ [PageLifecycleBehavior] OnPageAppearing concluído com sucesso");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro em OnPageAppearing: {ex.Message}");
+                Console.WriteLine($"🛡️ [PageLifecycleBehavior] Erro em OnPageAppearing: {ex.Message}");
             }
             finally
             {
@@ -222,7 +222,7 @@ namespace MyVocaList.View.Behaviors
         {
             if (NavBar == null)
             {
-                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Nenhuma navbar configurada");
+                Console.WriteLine("[PageLifecycleBehavior] Nenhuma navbar configurada");
                 return;
             }
 
@@ -231,7 +231,7 @@ namespace MyVocaList.View.Behaviors
             {
                 if (_isNavBarReadyCheckInProgress)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] EnsureNavBarIsReady IGNORADO - já verificando");
+                    Console.WriteLine("🛡️ [PageLifecycleBehavior] EnsureNavBarIsReady IGNORADO - já verificando");
                     return;
                 }
                 _isNavBarReadyCheckInProgress = true;
@@ -239,12 +239,12 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] Aguardando navbar estar pronta...");
+                Console.WriteLine("[PageLifecycleBehavior] Aguardando navbar estar pronta...");
 
                 // 🛡️ PROTEÇÃO: Cache de verificação (não verifica mais que 1x por 500ms)
                 if ((DateTime.Now - _lastNavBarCheck).TotalMilliseconds < 500)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] NavBar verificada recentemente - pulando");
+                    Console.WriteLine("🛡️ [PageLifecycleBehavior] NavBar verificada recentemente - pulando");
                     return;
                 }
 
@@ -260,15 +260,15 @@ namespace MyVocaList.View.Behaviors
                     // 🛡️ VERIFICAÇÃO: Tenta verificar se navbar tem botões
                     if (await IsNavBarReadyWithProtection())
                     {
-                        System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] ✅ Navbar pronta após {attempts} tentativas");
+                        Console.WriteLine($"[PageLifecycleBehavior] ✅ Navbar pronta após {attempts} tentativas");
                         _lastNavBarCheck = DateTime.Now;
                         return;
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] Tentativa {attempts}/{maxAttempts} aguardando navbar");
+                    Console.WriteLine($"[PageLifecycleBehavior] Tentativa {attempts}/{maxAttempts} aguardando navbar");
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] ⚠️ Timeout aguardando navbar - continuando mesmo assim");
+                Console.WriteLine($"[PageLifecycleBehavior] ⚠️ Timeout aguardando navbar - continuando mesmo assim");
                 _lastNavBarCheck = DateTime.Now;
             }
             finally
@@ -305,7 +305,7 @@ namespace MyVocaList.View.Behaviors
                                 bool hasChildren = grid.Children.Count > 0;
                                 if (hasChildren)
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] NavBar pronta - {grid.Children.Count} filhos encontrados");
+                                    Console.WriteLine($"🛡️ [PageLifecycleBehavior] NavBar pronta - {grid.Children.Count} filhos encontrados");
                                 }
                                 return hasChildren;
                             }
@@ -313,25 +313,25 @@ namespace MyVocaList.View.Behaviors
                             bool hasContent = navContentView.Content != null;
                             if (hasContent)
                             {
-                                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] NavBar pronta - conteúdo {navContentView.Content.GetType().Name} encontrado");
+                                Console.WriteLine($"🛡️ [PageLifecycleBehavior] NavBar pronta - conteúdo {navContentView.Content.GetType().Name} encontrado");
                             }
                             return hasContent;
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao verificar navbar: {ex.Message}");
+                            Console.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao verificar navbar: {ex.Message}");
                             return false;
                         }
                     });
                 }
 
                 // Para outros tipos de navbar, assume que está pronto após um delay
-                System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] NavBar não é ContentView - assumindo pronta");
+                Console.WriteLine("🛡️ [PageLifecycleBehavior] NavBar não é ContentView - assumindo pronta");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro verificando navbar: {ex.Message}");
+                Console.WriteLine($"🛡️ [PageLifecycleBehavior] Erro verificando navbar: {ex.Message}");
                 return false;
             }
         }
@@ -346,7 +346,7 @@ namespace MyVocaList.View.Behaviors
             {
                 if (_isLoadingDataInProgress)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] ExecuteLoadData IGNORADO - já carregando");
+                    Console.WriteLine("🛡️ [PageLifecycleBehavior] ExecuteLoadData IGNORADO - já carregando");
                     return;
                 }
                 _isLoadingDataInProgress = true;
@@ -356,13 +356,13 @@ namespace MyVocaList.View.Behaviors
             {
                 if (LoadDataCommand == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand é NULL");
+                    Console.WriteLine("[PageLifecycleBehavior] LoadDataCommand é NULL");
                     return;
                 }
 
                 if (!LoadDataCommand.CanExecute(null))
                 {
-                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand.CanExecute retornou FALSE");
+                    Console.WriteLine("[PageLifecycleBehavior] LoadDataCommand.CanExecute retornou FALSE");
                     return;
                 }
 
@@ -370,7 +370,7 @@ namespace MyVocaList.View.Behaviors
 
                 try
                 {
-                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] ⚡ EXECUTANDO LoadDataCommand");
+                    Console.WriteLine("[PageLifecycleBehavior] ⚡ EXECUTANDO LoadDataCommand");
 
                     // 🔧 CORREÇÃO CRÍTICA: Detecta se é Command assíncrono e aguarda adequadamente
                     if (LoadDataCommand is Command asyncCommand)
@@ -380,21 +380,21 @@ namespace MyVocaList.View.Behaviors
 
                         // 🛡️ AGUARDA um tempo para operação assíncrona interna completar
                         await Task.Delay(500);
-                        System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] ✅ Command executado (com delay para async)");
+                        Console.WriteLine("[PageLifecycleBehavior] ✅ Command executado (com delay para async)");
                     }
                     else
                     {
                         // Para outros tipos de comando, usa abordagem original
                         await Task.Run(() => LoadDataCommand.Execute(null));
-                        System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] ✅ Command executado (Task.Run)");
+                        Console.WriteLine("[PageLifecycleBehavior] ✅ Command executado (Task.Run)");
                     }
 
-                    System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] LoadDataCommand concluído");
+                    Console.WriteLine("[PageLifecycleBehavior] LoadDataCommand concluído");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] ❌ ERRO ao executar LoadDataCommand: {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"[PageLifecycleBehavior] StackTrace: {ex.StackTrace}");
+                    Console.WriteLine($"[PageLifecycleBehavior] ❌ ERRO ao executar LoadDataCommand: {ex.Message}");
+                    Console.WriteLine($"[PageLifecycleBehavior] StackTrace: {ex.StackTrace}");
                 }
                 finally
                 {
@@ -417,7 +417,7 @@ namespace MyVocaList.View.Behaviors
         {
             if (NavBar == null)
             {
-                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] NavBar nula - pulando animação");
+                Console.WriteLine("[PageLifecycleBehavior] NavBar nula - pulando animação");
                 return;
             }
 
@@ -430,28 +430,28 @@ namespace MyVocaList.View.Behaviors
 
             if (!isFirstShowOnThisPage && !hasNavBarConfigurationChanged)
             {
-                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] ⏭️ NavBar JÁ MOSTRADA - EVITANDO RECARREGAMENTO");
-                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] Atual: {currentNavBarSignature}");
-                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] Anterior: {_lastNavBarSignature}");
+                Console.WriteLine($"🔧 [PageLifecycleBehavior] ⏭️ NavBar JÁ MOSTRADA - EVITANDO RECARREGAMENTO");
+                Console.WriteLine($"🔧 [PageLifecycleBehavior] Atual: {currentNavBarSignature}");
+                Console.WriteLine($"🔧 [PageLifecycleBehavior] Anterior: {_lastNavBarSignature}");
                 return;
             }
 
             // 🎯 RESTAURADO: Exibição com detecção de mudança
             if (hasNavBarConfigurationChanged)
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] 🔄 MUDANÇA DETECTADA - ShowAsync()");
-                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] De: {_lastNavBarSignature}");
-                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] Para: {currentNavBarSignature}");
+                Console.WriteLine($"🎯 [PageLifecycleBehavior] 🔄 MUDANÇA DETECTADA - ShowAsync()");
+                Console.WriteLine($"🎯 [PageLifecycleBehavior] De: {_lastNavBarSignature}");
+                Console.WriteLine($"🎯 [PageLifecycleBehavior] Para: {currentNavBarSignature}");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] 🎬 PRIMEIRA EXIBIÇÃO - ShowAsync()");
+                Console.WriteLine($"🔧 [PageLifecycleBehavior] 🎬 PRIMEIRA EXIBIÇÃO - ShowAsync()");
             }
 
             try
             {
                 // 🛡️ EXECUÇÃO: ShowAsync com timeout
-                System.Diagnostics.Debug.WriteLine($"🎯 [PageLifecycleBehavior] ⚡ INICIANDO NavBar.ShowAsync()");
+                Console.WriteLine($"🎯 [PageLifecycleBehavior] ⚡ INICIANDO NavBar.ShowAsync()");
 
                 var showTask = NavBar.ShowAsync();
                 var timeoutTask = Task.Delay(5000);
@@ -460,19 +460,19 @@ namespace MyVocaList.View.Behaviors
 
                 if (completedTask == timeoutTask)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] ⚠️ TIMEOUT ao mostrar navbar");
+                    Console.WriteLine("🛡️ [PageLifecycleBehavior] ⚠️ TIMEOUT ao mostrar navbar");
                 }
                 else
                 {
                     // 🎯 RESTAURADO: Sucesso - atualiza cache
                     _navBarAlreadyShown = true;
                     _lastNavBarSignature = currentNavBarSignature;
-                    System.Diagnostics.Debug.WriteLine($"🔧 [PageLifecycleBehavior] ✅ ShowAsync() CONCLUÍDO - cache atualizado");
+                    Console.WriteLine($"🔧 [PageLifecycleBehavior] ✅ ShowAsync() CONCLUÍDO - cache atualizado");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] ❌ ERRO ao mostrar navbar: {ex.Message}");
+                Console.WriteLine($"🛡️ [PageLifecycleBehavior] ❌ ERRO ao mostrar navbar: {ex.Message}");
             }
         }
 
@@ -502,7 +502,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao calcular signature: {ex.Message}");
+                Console.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao calcular signature: {ex.Message}");
                 return $"ERROR_{DateTime.Now.Ticks}";
             }
         }
@@ -517,7 +517,7 @@ namespace MyVocaList.View.Behaviors
             {
                 if (_isDisappearingInProgress)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] OnPageDisappearing IGNORADO - já em progresso");
+                    Console.WriteLine("🛡️ [PageLifecycleBehavior] OnPageDisappearing IGNORADO - já em progresso");
                     return;
                 }
                 _isDisappearingInProgress = true;
@@ -525,12 +525,12 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] OnPageDisappearing iniciado");
+                Console.WriteLine("[PageLifecycleBehavior] OnPageDisappearing iniciado");
 
                 // 🔧 RESTAURADO: Reset para próxima página da versão anterior
                 _navBarAlreadyShown = false;
                 _lastNavBarSignature = string.Empty; // Reset signature também
-                System.Diagnostics.Debug.WriteLine("🔧 [PageLifecycleBehavior] Reset navbar state para próxima página");
+                Console.WriteLine("🔧 [PageLifecycleBehavior] Reset navbar state para próxima página");
 
                 if (NavBar != null)
                 {
@@ -544,22 +544,22 @@ namespace MyVocaList.View.Behaviors
 
                         if (completedTask == timeoutTask)
                         {
-                            System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] TIMEOUT ao esconder navbar - continuando");
+                            Console.WriteLine("🛡️ [PageLifecycleBehavior] TIMEOUT ao esconder navbar - continuando");
                         }
                         else
                         {
                             // 🛡️ AGUARDA mais tempo para garantir que parou
                             await Task.Delay(100);
-                            System.Diagnostics.Debug.WriteLine("[PageLifecycleBehavior] NavBar.HideAsync() concluído completamente");
+                            Console.WriteLine("[PageLifecycleBehavior] NavBar.HideAsync() concluído completamente");
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao esconder navbar: {ex.Message}");
+                        Console.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao esconder navbar: {ex.Message}");
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine("🛡️ [PageLifecycleBehavior] OnPageDisappearing concluído");
+                Console.WriteLine("🛡️ [PageLifecycleBehavior] OnPageDisappearing concluído");
             }
             finally
             {
@@ -588,7 +588,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao definir loading state: {ex.Message}");
+                Console.WriteLine($"🛡️ [PageLifecycleBehavior] Erro ao definir loading state: {ex.Message}");
             }
         }
     }

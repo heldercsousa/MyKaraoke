@@ -28,7 +28,7 @@ namespace MyVocaList.Infra.Data.Repositories
             // Normaliza o termo de busca usando o utilitário
             var normalizedSearch = _textNormalizer.NormalizeName(searchTerm); // 🔄 MUDANÇA
 
-            System.Diagnostics.Debug.WriteLine($"Buscando: '{searchTerm}' → normalizado: '{normalizedSearch}'");
+            Console.WriteLine($"Buscando: '{searchTerm}' → normalizado: '{normalizedSearch}'");
 
             // Busca SUPER otimizada usando índice da coluna normalizada
             var results = await _dbSet
@@ -37,7 +37,7 @@ namespace MyVocaList.Infra.Data.Repositories
                 .Take(maxResults)
                 .ToListAsync();
 
-            System.Diagnostics.Debug.WriteLine($"Encontrados {results.Count} resultados");
+            Console.WriteLine($"Encontrados {results.Count} resultados");
 
             return results;
         }

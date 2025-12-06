@@ -30,7 +30,7 @@
         public AnimationManager(string viewName = "UnknownView")
         {
             _viewName = viewName;
-            System.Diagnostics.Debug.WriteLine($"AnimationManager criado para: {_viewName}");
+            Console.WriteLine($"AnimationManager criado para: {_viewName}");
         }
 
         #region Pulse Animations
@@ -62,13 +62,13 @@
                 // Event handlers
                 animation.AnimationStarted += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Pulse '{animationKey}' iniciada");
+                    Console.WriteLine($"[{_viewName}] Pulse '{animationKey}' iniciada");
                     AnimationStarted?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
                 animation.AnimationStopped += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Pulse '{animationKey}' parada");
+                    Console.WriteLine($"[{_viewName}] Pulse '{animationKey}' parada");
                     AnimationStopped?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
@@ -80,7 +80,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao iniciar pulse '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao iniciar pulse '{animationKey}': {ex.Message}");
             }
         }
 
@@ -94,7 +94,7 @@
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Parando pulse '{animationKey}'");
+                Console.WriteLine($"🛑 [{_viewName}] Parando pulse '{animationKey}'");
 
                 var animation = _pulseAnimations[animationKey];
 
@@ -105,11 +105,11 @@
                 animation.Dispose();
                 _pulseAnimations.Remove(animationKey);
 
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Pulse '{animationKey}' COMPLETAMENTE removida");
+                Console.WriteLine($"🛑 [{_viewName}] Pulse '{animationKey}' COMPLETAMENTE removida");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Erro ao parar pulse '{animationKey}': {ex.Message}");
+                Console.WriteLine($"🛑 [{_viewName}] Erro ao parar pulse '{animationKey}': {ex.Message}");
 
                 // ✅ Remove mesmo com erro
                 if (_pulseAnimations.ContainsKey(animationKey))
@@ -146,13 +146,13 @@
                 // Event handlers
                 animation.AnimationStarted += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Fade In '{animationKey}' iniciada");
+                    Console.WriteLine($"[{_viewName}] Fade In '{animationKey}' iniciada");
                     AnimationStarted?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
                 animation.AnimationStopped += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Fade In '{animationKey}' parada");
+                    Console.WriteLine($"[{_viewName}] Fade In '{animationKey}' parada");
                     AnimationStopped?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
@@ -164,7 +164,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao iniciar fade in '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao iniciar fade in '{animationKey}': {ex.Message}");
             }
         }
 
@@ -191,13 +191,13 @@
                 // Event handlers
                 animation.AnimationStarted += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Fade Out '{animationKey}' iniciada");
+                    Console.WriteLine($"[{_viewName}] Fade Out '{animationKey}' iniciada");
                     AnimationStarted?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
                 animation.AnimationStopped += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Fade Out '{animationKey}' parada");
+                    Console.WriteLine($"[{_viewName}] Fade Out '{animationKey}' parada");
                     AnimationStopped?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
@@ -209,7 +209,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao iniciar fade out '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao iniciar fade out '{animationKey}': {ex.Message}");
             }
         }
 
@@ -229,11 +229,11 @@
                 animation.Dispose();
                 _fadeAnimations.Remove(animationKey);
 
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Fade '{animationKey}' removida");
+                Console.WriteLine($"[{_viewName}] Fade '{animationKey}' removida");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao parar fade '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao parar fade '{animationKey}': {ex.Message}");
             }
         }
 
@@ -265,13 +265,13 @@
                 // Event handlers
                 animation.AnimationStarted += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Slide Up '{animationKey}' iniciada");
+                    Console.WriteLine($"[{_viewName}] Slide Up '{animationKey}' iniciada");
                     AnimationStarted?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
                 animation.AnimationStopped += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Slide Up '{animationKey}' parada");
+                    Console.WriteLine($"[{_viewName}] Slide Up '{animationKey}' parada");
                     AnimationStopped?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
@@ -283,7 +283,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao iniciar slide up '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao iniciar slide up '{animationKey}': {ex.Message}");
             }
         }
 
@@ -311,13 +311,13 @@
                 // Event handlers
                 animation.AnimationStarted += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Slide Down '{animationKey}' iniciada");
+                    Console.WriteLine($"[{_viewName}] Slide Down '{animationKey}' iniciada");
                     AnimationStarted?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
                 animation.AnimationStopped += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Slide Down '{animationKey}' parada");
+                    Console.WriteLine($"[{_viewName}] Slide Down '{animationKey}' parada");
                     AnimationStopped?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
@@ -329,7 +329,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao iniciar slide down '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao iniciar slide down '{animationKey}': {ex.Message}");
             }
         }
 
@@ -357,13 +357,13 @@
                 // Event handlers
                 animation.AnimationStarted += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Shake '{animationKey}' iniciada");
+                    Console.WriteLine($"[{_viewName}] Shake '{animationKey}' iniciada");
                     AnimationStarted?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
                 animation.AnimationStopped += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[{_viewName}] Shake '{animationKey}' parada");
+                    Console.WriteLine($"[{_viewName}] Shake '{animationKey}' parada");
                     AnimationStopped?.Invoke(this, new AnimationEventArgs(animationKey, target));
                 };
 
@@ -375,7 +375,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao iniciar shake '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao iniciar shake '{animationKey}': {ex.Message}");
             }
         }
 
@@ -395,11 +395,11 @@
                 animation.Dispose();
                 _translateAnimations.Remove(animationKey);
 
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Translate '{animationKey}' removida");
+                Console.WriteLine($"[{_viewName}] Translate '{animationKey}' removida");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro ao parar translate '{animationKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro ao parar translate '{animationKey}': {ex.Message}");
             }
         }
 
@@ -428,7 +428,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro na animação combinada show '{baseKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro na animação combinada show '{baseKey}': {ex.Message}");
             }
         }
 
@@ -453,7 +453,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[{_viewName}] Erro na animação combinada hide '{baseKey}': {ex.Message}");
+                Console.WriteLine($"[{_viewName}] Erro na animação combinada hide '{baseKey}': {ex.Message}");
             }
         }
 
@@ -491,7 +491,7 @@
             if (_disposed)
                 return;
 
-            System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] StopAllAnimationsAsync - PARANDO TODAS AS ANIMAÇÕES");
+            Console.WriteLine($"🛑 [{_viewName}] StopAllAnimationsAsync - PARANDO TODAS AS ANIMAÇÕES");
 
             var stopTasks = new List<Task>();
 
@@ -524,11 +524,11 @@
                     await Task.WhenAll(stopTasks);
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] TODAS as {stopTasks.Count} animações paradas");
+                Console.WriteLine($"🛑 [{_viewName}] TODAS as {stopTasks.Count} animações paradas");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Erro ao parar animações: {ex.Message}");
+                Console.WriteLine($"🛑 [{_viewName}] Erro ao parar animações: {ex.Message}");
             }
         }
 
@@ -596,7 +596,7 @@
             // Auto-cleanup quando a view desaparecer
             view.Disappearing += async (s, e) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Auto-cleanup de animações para {view.GetType().Name}");
+                Console.WriteLine($"Auto-cleanup de animações para {view.GetType().Name}");
                 await manager.StopAllAnimationsAsync();
             };
 
@@ -615,7 +615,7 @@
             {
                 if (component.Handler == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Auto-cleanup de animações para {component.GetType().Name}");
+                    Console.WriteLine($"Auto-cleanup de animações para {component.GetType().Name}");
                     await manager.StopAllAnimationsAsync();
                 }
             };
@@ -635,7 +635,7 @@
             if (_disposed)
                 return;
 
-            System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] AnimationManager.Dispose() iniciado");
+            Console.WriteLine($"🛑 [{_viewName}] AnimationManager.Dispose() iniciado");
 
             _disposed = true;
 
@@ -650,19 +650,19 @@
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animações no dispose: {ex.Message}");
+                        Console.WriteLine($"🛑 Erro ao parar animações no dispose: {ex.Message}");
                     }
                 });
 
                 // ✅ Aguarda até 500ms para parar graciosamente
                 if (!stopAllTask.Wait(500))
                 {
-                    System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Timeout no StopAllAnimationsAsync - forçando dispose");
+                    Console.WriteLine($"🛑 [{_viewName}] Timeout no StopAllAnimationsAsync - forçando dispose");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] Erro no dispose gracioso: {ex.Message}");
+                Console.WriteLine($"🛑 [{_viewName}] Erro no dispose gracioso: {ex.Message}");
             }
 
             // ✅ FORÇA dispose de todas as animações diretamente
@@ -676,7 +676,7 @@
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛑 Erro no dispose da pulse animation: {ex.Message}");
+                        Console.WriteLine($"🛑 Erro no dispose da pulse animation: {ex.Message}");
                     }
                 }
 
@@ -688,7 +688,7 @@
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛑 Erro no dispose da fade animation: {ex.Message}");
+                        Console.WriteLine($"🛑 Erro no dispose da fade animation: {ex.Message}");
                     }
                 }
 
@@ -700,7 +700,7 @@
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛑 Erro no dispose da translate animation: {ex.Message}");
+                        Console.WriteLine($"🛑 Erro no dispose da translate animation: {ex.Message}");
                     }
                 }
 
@@ -708,11 +708,11 @@
                 _fadeAnimations.Clear();
                 _translateAnimations.Clear();
 
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] AnimationManager disposed completamente");
+                Console.WriteLine($"🛑 [{_viewName}] AnimationManager disposed completamente");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 [{_viewName}] ERRO CRÍTICO no dispose: {ex.Message}");
+                Console.WriteLine($"🛑 [{_viewName}] ERRO CRÍTICO no dispose: {ex.Message}");
             }
         }
         #endregion

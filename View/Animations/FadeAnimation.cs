@@ -53,7 +53,7 @@
             var optimizedConfig = HardwareDetector.SupportsAnimations ? _config : null;
             if (optimizedConfig == null)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 BYPASS ativado - hardware muito limitado, fade animation desabilitada");
+                Console.WriteLine("🚫 BYPASS ativado - hardware muito limitado, fade animation desabilitada");
 
                 // Para hardware limitado, aplica apenas o estado final sem animação
                 await MainThread.InvokeOnMainThreadAsync(() =>
@@ -70,8 +70,8 @@
             _cancellationTokenSource = new CancellationTokenSource();
             _isRunning = true;
 
-            System.Diagnostics.Debug.WriteLine($"Iniciando FadeAnimation no elemento: {_target.GetType().Name}");
-            System.Diagnostics.Debug.WriteLine($"🎯 Configuração: FromOpacity={optimizedConfig.FromOpacity}, ToOpacity={optimizedConfig.ToOpacity}, Duration={optimizedConfig.Duration}ms");
+            Console.WriteLine($"Iniciando FadeAnimation no elemento: {_target.GetType().Name}");
+            Console.WriteLine($"🎯 Configuração: FromOpacity={optimizedConfig.FromOpacity}, ToOpacity={optimizedConfig.ToOpacity}, Duration={optimizedConfig.Duration}ms");
 
             AnimationStarted?.Invoke(this, EventArgs.Empty);
 
@@ -85,11 +85,11 @@
             }
             catch (OperationCanceledException)
             {
-                System.Diagnostics.Debug.WriteLine("FadeAnimation cancelada");
+                Console.WriteLine("FadeAnimation cancelada");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na FadeAnimation: {ex.Message}");
+                Console.WriteLine($"Erro na FadeAnimation: {ex.Message}");
             }
             finally
             {
@@ -119,7 +119,7 @@
                 if (!_shouldContinue())
                     return;
 
-                System.Diagnostics.Debug.WriteLine($"🌟 Fade: {config.FromOpacity} → {config.ToOpacity} em {config.Duration}ms");
+                Console.WriteLine($"🌟 Fade: {config.FromOpacity} → {config.ToOpacity} em {config.Duration}ms");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -146,7 +146,7 @@
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no fade animation: {ex.Message}");
+                Console.WriteLine($"Erro no fade animation: {ex.Message}");
             }
         }
 
@@ -161,7 +161,7 @@
             _isRunning = false;
             _cancellationTokenSource?.Cancel();
 
-            System.Diagnostics.Debug.WriteLine("FadeAnimation parada");
+            Console.WriteLine("FadeAnimation parada");
             AnimationStopped?.Invoke(this, EventArgs.Empty);
         }
 
@@ -179,7 +179,7 @@
             _cancellationTokenSource?.Cancel();
             _cancellationTokenSource?.Dispose();
 
-            System.Diagnostics.Debug.WriteLine("FadeAnimation disposed");
+            Console.WriteLine("FadeAnimation disposed");
         }
 
         /// <summary>

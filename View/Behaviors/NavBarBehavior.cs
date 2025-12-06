@@ -117,7 +117,7 @@ namespace MyVocaList.View.Behaviors
             // ✅ ADICIONA MÉTODOS ao objeto
             AddNavBarMethods();
 
-            System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior anexado com ID: {pageId}");
+            Console.WriteLine($"🚀 NavBarBehavior anexado com ID: {pageId}");
         }
 
         protected override void OnDetachingFrom(Grid bindable)
@@ -134,7 +134,7 @@ namespace MyVocaList.View.Behaviors
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🛡️ Erro ao disposed RobustAnimationManager: {ex.Message}");
+                    Console.WriteLine($"🛡️ Erro ao disposed RobustAnimationManager: {ex.Message}");
                 }
             });
 
@@ -150,7 +150,7 @@ namespace MyVocaList.View.Behaviors
             _associatedGrid = null;
             _ownerPageId = null;
 
-            System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior removido de {bindable.GetType().Name}");
+            Console.WriteLine($"🚀 NavBarBehavior removido de {bindable.GetType().Name}");
         }
 
         /// <summary>
@@ -175,18 +175,18 @@ namespace MyVocaList.View.Behaviors
                 if (currentPage != null)
                 {
                     var pageId = $"{currentPage.GetType().Name}_{currentPage.GetHashCode()}";
-                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: GetPageIdentifier (atual) = {pageId}");
+                    Console.WriteLine($"🎯 NavBarBehavior: GetPageIdentifier (atual) = {pageId}");
                     return pageId;
                 }
 
                 // 🛡️ FALLBACK: Se não conseguir obter página atual
                 var fallbackId = $"{element.GetType().Name}_{element.GetHashCode()}";
-                System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: GetPageIdentifier FALLBACK = {fallbackId}");
+                Console.WriteLine($"🛡️ NavBarBehavior: GetPageIdentifier FALLBACK = {fallbackId}");
                 return fallbackId;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao obter identificador da página: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao obter identificador da página: {ex.Message}");
                 return $"Error_{DateTime.Now.Ticks}";
             }
         }
@@ -208,21 +208,21 @@ namespace MyVocaList.View.Behaviors
                     if (page != null)
                     {
                         MyVocaList.View.Extensions.NavBarExtensions.SetPageNavBar(page, animatableNavBar);
-                        System.Diagnostics.Debug.WriteLine($"✅ NavBarBehavior: Auto-registered {navbar.GetType().Name} with {page.GetType().Name}");
+                        Console.WriteLine($"✅ NavBarBehavior: Auto-registered {navbar.GetType().Name} with {page.GetType().Name}");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"⚠️ NavBarBehavior: Could not find parent ContentPage for {navbar.GetType().Name}");
+                        Console.WriteLine($"⚠️ NavBarBehavior: Could not find parent ContentPage for {navbar.GetType().Name}");
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ NavBarBehavior: Parent is not IAnimatableNavBar (type: {navbar?.GetType().Name ?? "null"})");
+                    Console.WriteLine($"⚠️ NavBarBehavior: Parent is not IAnimatableNavBar (type: {navbar?.GetType().Name ?? "null"})");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavBarBehavior: Error in RegisterNavBarWithPage: {ex.Message}");
+                Console.WriteLine($"❌ NavBarBehavior: Error in RegisterNavBarWithPage: {ex.Message}");
             }
         }
 
@@ -253,12 +253,12 @@ namespace MyVocaList.View.Behaviors
                     _associatedGrid.IsVisible = true;
                     CreateNavBarStructure();
 
-                    System.Diagnostics.Debug.WriteLine($"NavBarBehavior: Estado inicial aplicado");
+                    Console.WriteLine($"NavBarBehavior: Estado inicial aplicado");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar estado inicial: {ex.Message}");
+                Console.WriteLine($"Erro ao aplicar estado inicial: {ex.Message}");
             }
         }
 
@@ -333,7 +333,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar estilo do frame: {ex.Message}");
+                Console.WriteLine($"Erro ao aplicar estilo do frame: {ex.Message}");
             }
         }
 
@@ -377,14 +377,14 @@ namespace MyVocaList.View.Behaviors
                 // 🛡️ PROTEÇÃO: Evita processamento simultâneo
                 if (behavior._isProcessingButtonsChange)
                 {
-                    System.Diagnostics.Debug.WriteLine("🛡️ NavBarBehavior: OnButtonsChanged IGNORADO - já processando");
+                    Console.WriteLine("🛡️ NavBarBehavior: OnButtonsChanged IGNORADO - já processando");
                     return;
                 }
 
                 // 🎯 NOVA PROTEÇÃO: Evita reconstrução durante ShowAsync
                 if (behavior._isAnimating)
                 {
-                    System.Diagnostics.Debug.WriteLine("🎯 NavBarBehavior: OnButtonsChanged IGNORADO - animação em progresso");
+                    Console.WriteLine("🎯 NavBarBehavior: OnButtonsChanged IGNORADO - animação em progresso");
                     return;
                 }
 
@@ -412,13 +412,13 @@ namespace MyVocaList.View.Behaviors
 
                 if (_isAnimating && !signatureChanged)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: SmartRebuildButtons IGNORADO - animação em progresso SEM mudança real");
+                    Console.WriteLine($"🎯 NavBarBehavior: SmartRebuildButtons IGNORADO - animação em progresso SEM mudança real");
                     return;
                 }
 
                 if (_isAnimating && signatureChanged)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: SmartRebuildButtons FORÇADO - mudança detectada DURANTE animação");
+                    Console.WriteLine($"🚀 NavBarBehavior: SmartRebuildButtons FORÇADO - mudança detectada DURANTE animação");
                     // Continua execução para permitir atualização crítica
                 }
 
@@ -431,30 +431,30 @@ namespace MyVocaList.View.Behaviors
                     !hasInvisibleButtons &&
                     _buttonViews.Count > 0)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons IGNORADO - assinatura inalterada E botões visíveis ({currentSignature})");
+                    Console.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons IGNORADO - assinatura inalterada E botões visíveis ({currentSignature})");
                     return;
                 }
 
                 if (!signatureChanged && hasInvisibleButtons)
                 {
-                    System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: SmartRebuildButtons FORÇADO - assinatura igual MAS botões invisíveis");
+                    Console.WriteLine($"🚀 NavBarBehavior: SmartRebuildButtons FORÇADO - assinatura igual MAS botões invisíveis");
                     // 🎯 IMPORTANTE: Não reconstrói, apenas força ShowAsync
                     _ = Task.Run(async () =>
                     {
                         try
                         {
                             await ShowAsync();
-                            System.Diagnostics.Debug.WriteLine($"✅ NavBarBehavior: ShowAsync forçado concluído para botões invisíveis");
+                            Console.WriteLine($"✅ NavBarBehavior: ShowAsync forçado concluído para botões invisíveis");
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"❌ NavBarBehavior: Erro ao forçar ShowAsync: {ex.Message}");
+                            Console.WriteLine($"❌ NavBarBehavior: Erro ao forçar ShowAsync: {ex.Message}");
                         }
                     });
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons EXECUTANDO - nova assinatura ({currentSignature})");
+                Console.WriteLine($"🛡️ NavBarBehavior: SmartRebuildButtons EXECUTANDO - nova assinatura ({currentSignature})");
 
                 // 🛡️ PROTEÇÃO 3: Atualiza cache ANTES de reconstruir
                 _lastButtonsSignature = currentSignature;
@@ -508,7 +508,7 @@ namespace MyVocaList.View.Behaviors
 
                 if (Buttons == null || Buttons.Count == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("NavBarBehavior: Nenhum botão configurado");
+                    Console.WriteLine("NavBarBehavior: Nenhum botão configurado");
                     return;
                 }
 
@@ -528,15 +528,20 @@ namespace MyVocaList.View.Behaviors
                         buttonsGrid.Children.Add(buttonView);
                         _buttonViews.Add(buttonView);
 
-                        // 🚀 MIGRAÇÃO: Registrar elemento no RobustAnimationManager
-                        if (buttonView is VisualElement visualElement)
+                        // ... register manager ...
+
+                        // ✅ FIX: Initialize based on the animation flag
+                        if (DISABLE_NAVBAR_ANIMATIONS)
                         {
-                            _robustAnimationManager?.RegisterAnimatedElement(visualElement);
+                            buttonView.Opacity = 1.0;
+                            buttonView.TranslationY = 0;
+                        }
+                        else
+                        {
+                            buttonView.Opacity = 0.0;
+                            buttonView.TranslationY = 60;
                         }
 
-                        // ✅ ESTADO INICIAL para animação
-                        buttonView.Opacity = 0.0;
-                        buttonView.TranslationY = 60;
                         buttonView.IsVisible = true;
                     }
                 }
@@ -545,15 +550,28 @@ namespace MyVocaList.View.Behaviors
                 if (_buttonViews.Count > 0)
                 {
                     _isShown = false;
-                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: _isShown resetado para FALSE após criar {_buttonViews.Count} novos botões");
+                    Console.WriteLine($"🎯 NavBarBehavior: _isShown resetado para FALSE após criar {_buttonViews.Count} novos botões");
                 }
 
-                _hasBeenInitialized = true;
-                System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: {_buttonViews.Count} botões criados e registrados no RobustAnimationManager");
+				// AFTER the loop, once all buttons are added:
+
+				// ✅ FORCE LAYOUT UPDATE
+				if (_associatedGrid != null)
+				{
+					// This tells MAUI: "My content changed size, please re-calculate everything"
+					if (_associatedGrid.Handler != null)
+					{
+						_associatedGrid.InvalidateMeasureNonVirtual(Microsoft.Maui.Controls.Internals.InvalidationTrigger.MeasureChanged);
+					}
+				}
+
+
+				_hasBeenInitialized = true;
+                Console.WriteLine($"🚀 NavBarBehavior: {_buttonViews.Count} botões criados e registrados no RobustAnimationManager");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao reconstruir botões: {ex.Message}");
+                Console.WriteLine($"Erro ao reconstruir botões: {ex.Message}");
             }
         }
 
@@ -638,7 +656,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao criar botão {index}: {ex.Message}");
+                Console.WriteLine($"Erro ao criar botão {index}: {ex.Message}");
                 return null;
             }
         }
@@ -648,11 +666,11 @@ namespace MyVocaList.View.Behaviors
             try
             {
                 ButtonClicked?.Invoke(this, new NavBarButtonClickedEventArgs(config, parameter));
-                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: Botão '{config.Text}' clicado");
+                Console.WriteLine($"NavBarBehavior: Botão '{config.Text}' clicado");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no evento de clique: {ex.Message}");
+                Console.WriteLine($"Erro no evento de clique: {ex.Message}");
             }
         }
 
@@ -667,7 +685,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao obter grid de botões: {ex.Message}");
+                Console.WriteLine($"Erro ao obter grid de botões: {ex.Message}");
             }
             return null;
         }
@@ -678,23 +696,23 @@ namespace MyVocaList.View.Behaviors
         public async Task ShowAsync()
         {
             var currentPageId = GetCurrentPageId();
-            System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: ShowAsync para página {currentPageId}");
+            Console.WriteLine($"🎯 NavBarBehavior: ShowAsync para página {currentPageId}");
 
             _ownerPageId = currentPageId;
-            System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Owner confirmado como {_ownerPageId}");
+            Console.WriteLine($"🎯 NavBarBehavior: Owner confirmado como {_ownerPageId}");
 
             // 🎯 CORREÇÃO: Verifica se precisa mostrar novos botões mesmo se já "shown"
             bool hasNewButtons = _buttonViews.Count > 0 && _buttonViews.Any(b => b.Opacity < 1.0 || !b.IsVisible);
 
             if (_isShown && !_isAnimating && !hasNewButtons && _associatedGrid != null)
             {
-                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync ignorado - já visível e sem novos botões");
+                Console.WriteLine($"NavBarBehavior: ShowAsync ignorado - já visível e sem novos botões");
                 return;
             }
 
             if (_isAnimating || _associatedGrid == null)
             {
-                System.Diagnostics.Debug.WriteLine($"NavBarBehavior: ShowAsync ignorado - _isAnimating={_isAnimating}");
+                Console.WriteLine($"NavBarBehavior: ShowAsync ignorado - _isAnimating={_isAnimating}");
                 return;
             }
 
@@ -702,20 +720,20 @@ namespace MyVocaList.View.Behaviors
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: ShowAsync INICIADO para {_ownerPageId}");
+                Console.WriteLine($"🎯 NavBarBehavior: ShowAsync INICIADO para {_ownerPageId}");
 
                 _associatedGrid.IsVisible = true;
 
                 // 🎯 CORREÇÃO: Garante que os botões existem E estão no estado correto
                 if (_buttonViews.Count == 0 && Buttons != null && Buttons.Any())
                 {
-                    System.Diagnostics.Debug.WriteLine("🎯 NavBarBehavior: Criando botões antes de mostrar");
+                    Console.WriteLine("🎯 NavBarBehavior: Criando botões antes de mostrar");
                     RebuildButtonsForced();
                 }
 
                 if (_buttonViews.Count == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("❌ NavBarBehavior: Nenhum botão para mostrar - abortando");
+                    Console.WriteLine("❌ NavBarBehavior: Nenhum botão para mostrar - abortando");
                     _isShown = true;
                     return;
                 }
@@ -723,10 +741,10 @@ namespace MyVocaList.View.Behaviors
                 // ✅ EARLY RETURN: Se animações desabilitadas, apenas torna visível sem animar
                 if (DISABLE_NAVBAR_ANIMATIONS)
                 {
-                    System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: Animações desabilitadas - aplicando estado final direto");
+                    Console.WriteLine("🚫 NavBarBehavior: Animações desabilitadas - aplicando estado final direto");
                     await ForceVisibleState();
                     _isShown = true;
-                    System.Diagnostics.Debug.WriteLine($"🚫 NavBarBehavior: ShowAsync CONCLUÍDO SEM ANIMAÇÕES para {_ownerPageId}");
+                    Console.WriteLine($"🚫 NavBarBehavior: ShowAsync CONCLUÍDO SEM ANIMAÇÕES para {_ownerPageId}");
                     return;
                 }
 
@@ -735,11 +753,11 @@ namespace MyVocaList.View.Behaviors
                 // ... resto da lógica de animação
 
                 _isShown = true;
-                System.Diagnostics.Debug.WriteLine($"🚀 NavBarBehavior: ShowAsync CONCLUÍDO para {_ownerPageId} com {_buttonViews.Count} botões VISÍVEIS");
+                Console.WriteLine($"🚀 NavBarBehavior: ShowAsync CONCLUÍDO para {_ownerPageId} com {_buttonViews.Count} botões VISÍVEIS");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ NavBarBehavior: ERRO em ShowAsync: {ex.Message}");
+                Console.WriteLine($"❌ NavBarBehavior: ERRO em ShowAsync: {ex.Message}");
                 await ForceVisibleState();
                 _isShown = true;
             }
@@ -764,13 +782,13 @@ namespace MyVocaList.View.Behaviors
                         buttonView.Opacity = 1.0;
                         buttonView.TranslationY = 0;
 
-                        System.Diagnostics.Debug.WriteLine($"🎯 Button FINAL: {buttonView.GetType().Name}, Visible={buttonView.IsVisible}, Opacity={buttonView.Opacity}, Y={buttonView.TranslationY}");
+                        Console.WriteLine($"🎯 Button FINAL: {buttonView.GetType().Name}, Visible={buttonView.IsVisible}, Opacity={buttonView.Opacity}, Y={buttonView.TranslationY}");
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao forçar estado visível: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao forçar estado visível: {ex.Message}");
             }
         }
 
@@ -788,13 +806,13 @@ namespace MyVocaList.View.Behaviors
                         buttonView.IsVisible = true;
                         buttonView.Opacity = 0.0;
                         buttonView.TranslationY = 60;
-                        System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: Estado inicial forçado - Opacity=0, TranslationY=60");
+                        Console.WriteLine($"🎯 NavBarBehavior: Estado inicial forçado - Opacity=0, TranslationY=60");
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao forçar estado inicial: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao forçar estado inicial: {ex.Message}");
             }
         }
 
@@ -819,16 +837,16 @@ namespace MyVocaList.View.Behaviors
                 if (currentPage != null)
                 {
                     var pageId = $"{currentPage.GetType().Name}_{currentPage.GetHashCode()}";
-                    System.Diagnostics.Debug.WriteLine($"🎯 NavBarBehavior: GetCurrentPageId = {pageId}");
+                    Console.WriteLine($"🎯 NavBarBehavior: GetCurrentPageId = {pageId}");
                     return pageId;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🛡️ NavBarBehavior: GetCurrentPageId = Unknown");
+                Console.WriteLine($"🛡️ NavBarBehavior: GetCurrentPageId = Unknown");
                 return "Unknown";
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Erro ao obter página atual: {ex.Message}");
+                Console.WriteLine($"❌ Erro ao obter página atual: {ex.Message}");
                 return "Error";
             }
         }
@@ -844,14 +862,14 @@ namespace MyVocaList.View.Behaviors
             // ✅ EARLY RETURN: Se animações desabilitadas, apenas esconde sem animar
             if (DISABLE_NAVBAR_ANIMATIONS)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: HideAsync - animações desabilitadas, escondendo direto");
+                Console.WriteLine("🚫 NavBarBehavior: HideAsync - animações desabilitadas, escondendo direto");
                 _associatedGrid.IsVisible = false;
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: HideAsync concluído SEM ANIMAÇÕES");
+                Console.WriteLine("🚫 NavBarBehavior: HideAsync concluído SEM ANIMAÇÕES");
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync - parando animações com RobustAnimationManager");
+            Console.WriteLine("🛑 NavBarBehavior: HideAsync - parando animações com RobustAnimationManager");
 
             try
             {
@@ -889,11 +907,11 @@ namespace MyVocaList.View.Behaviors
 
                 _associatedGrid.IsVisible = false;
                 _isShown = false;
-                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: HideAsync concluído COMPLETAMENTE com RobustAnimationManager");
+                Console.WriteLine("🛑 NavBarBehavior: HideAsync concluído COMPLETAMENTE com RobustAnimationManager");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao esconder: {ex.Message}");
+                Console.WriteLine($"🛑 Erro ao esconder: {ex.Message}");
                 _associatedGrid.IsVisible = false;
                 _isShown = false;
             }
@@ -907,11 +925,11 @@ namespace MyVocaList.View.Behaviors
             // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
             if (DISABLE_NAVBAR_ANIMATIONS)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: StopAllAnimationsAsync - animações já desabilitadas");
+                Console.WriteLine("🚫 NavBarBehavior: StopAllAnimationsAsync - animações já desabilitadas");
                 return;
             }
 
-            System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: StopAllAnimationsAsync via RobustAnimationManager");
+            Console.WriteLine("🛑 NavBarBehavior: StopAllAnimationsAsync via RobustAnimationManager");
 
             try
             {
@@ -927,11 +945,11 @@ namespace MyVocaList.View.Behaviors
                 // ✅ CORREÇÃO 3: Para animações individuais dos botões
                 await StopButtonAnimations();
 
-                System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: TODAS as animações paradas via RobustAnimationManager");
+                Console.WriteLine("🛑 NavBarBehavior: TODAS as animações paradas via RobustAnimationManager");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 NavBarBehavior: Erro ao parar animações: {ex.Message}");
+                Console.WriteLine($"🛑 NavBarBehavior: Erro ao parar animações: {ex.Message}");
             }
         }
 
@@ -943,7 +961,7 @@ namespace MyVocaList.View.Behaviors
             // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
             if (DISABLE_NAVBAR_ANIMATIONS)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: StopSpecialAnimations - animações já desabilitadas");
+                Console.WriteLine("🚫 NavBarBehavior: StopSpecialAnimations - animações já desabilitadas");
                 return;
             }
 
@@ -965,18 +983,18 @@ namespace MyVocaList.View.Behaviors
                                 {
                                     // Para via behavior diretamente - acesso direto ao AnimationManager
                                     await behavior.StopAllAnimationsAsync();
-                                    System.Diagnostics.Debug.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado via behavior direto");
+                                    Console.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado via behavior direto");
                                 }
                                 else
                                 {
                                     // Fallback: tenta parar via métodos tradicionais
                                     await specialButton.StopAllAnimationsAsync();
-                                    System.Diagnostics.Debug.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado via fallback");
+                                    Console.WriteLine($"🛑 SpecialButton '{specialButton.Text}' parado via fallback");
                                 }
                             }
                             catch (Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar SpecialButton: {ex.Message}");
+                                Console.WriteLine($"🛑 Erro ao parar SpecialButton: {ex.Message}");
                             }
                         }));
                     }
@@ -988,11 +1006,11 @@ namespace MyVocaList.View.Behaviors
                             {
                                 // Para botões regulares, usa método padrão
                                 await regularButton.StopAllAnimationsAsync();
-                                System.Diagnostics.Debug.WriteLine($"🛑 NavButton '{regularButton.Text}' parado");
+                                Console.WriteLine($"🛑 NavButton '{regularButton.Text}' parado");
                             }
                             catch (Exception ex)
                             {
-                                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar NavButton: {ex.Message}");
+                                Console.WriteLine($"🛑 Erro ao parar NavButton: {ex.Message}");
                             }
                         }));
                     }
@@ -1008,17 +1026,17 @@ namespace MyVocaList.View.Behaviors
 
                     if (completedTask == timeoutTask)
                     {
-                        System.Diagnostics.Debug.WriteLine("🛑 NavBarBehavior: Timeout ao parar animações especiais - continuando");
+                        Console.WriteLine("🛑 NavBarBehavior: Timeout ao parar animações especiais - continuando");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"🛑 NavBarBehavior: {stopTasks.Count} animações especiais paradas");
+                        Console.WriteLine($"🛑 NavBarBehavior: {stopTasks.Count} animações especiais paradas");
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animações especiais: {ex.Message}");
+                Console.WriteLine($"🛑 Erro ao parar animações especiais: {ex.Message}");
             }
         }
 
@@ -1030,7 +1048,7 @@ namespace MyVocaList.View.Behaviors
             // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
             if (DISABLE_NAVBAR_ANIMATIONS)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarBehavior: StopButtonAnimations - animações já desabilitadas");
+                Console.WriteLine("🚫 NavBarBehavior: StopButtonAnimations - animações já desabilitadas");
                 return;
             }
 
@@ -1049,7 +1067,7 @@ namespace MyVocaList.View.Behaviors
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animação individual: {ex.Message}");
+                            Console.WriteLine($"🛑 Erro ao parar animação individual: {ex.Message}");
                         }
                     }));
                 }
@@ -1057,12 +1075,12 @@ namespace MyVocaList.View.Behaviors
                 if (stopTasks.Any())
                 {
                     await Task.WhenAll(stopTasks);
-                    System.Diagnostics.Debug.WriteLine($"🛑 NavBarBehavior: {stopTasks.Count} animações individuais paradas");
+                    Console.WriteLine($"🛑 NavBarBehavior: {stopTasks.Count} animações individuais paradas");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"🛑 Erro ao parar animações individuais: {ex.Message}");
+                Console.WriteLine($"🛑 Erro ao parar animações individuais: {ex.Message}");
             }
         }
 
@@ -1099,7 +1117,7 @@ namespace MyVocaList.View.Behaviors
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("NavBarBehavior: RebuildButtonsForced - forçando criação");
+                Console.WriteLine("NavBarBehavior: RebuildButtonsForced - forçando criação");
 
                 // 🛡️ PROTEÇÃO: Atualiza assinatura para forçar reconstrução
                 _lastButtonsSignature = string.Empty;
@@ -1108,7 +1126,7 @@ namespace MyVocaList.View.Behaviors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao forçar reconstrução de botões: {ex.Message}");
+                Console.WriteLine($"Erro ao forçar reconstrução de botões: {ex.Message}");
             }
         }
 
@@ -1128,7 +1146,7 @@ namespace MyVocaList.View.Behaviors
             // ✅ EARLY RETURN: Se animações desabilitadas, apenas verifica visibilidade
             if (DISABLE_NAVBAR_ANIMATIONS)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarExtensions: ShowAsync - animações desabilitadas");
+                Console.WriteLine("🚫 NavBarExtensions: ShowAsync - animações desabilitadas");
                 navGrid.IsVisible = true;
                 return;
             }
@@ -1143,7 +1161,7 @@ namespace MyVocaList.View.Behaviors
             // ✅ EARLY RETURN: Se animações desabilitadas, apenas esconde
             if (DISABLE_NAVBAR_ANIMATIONS)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarExtensions: HideAsync - animações desabilitadas");
+                Console.WriteLine("🚫 NavBarExtensions: HideAsync - animações desabilitadas");
                 navGrid.IsVisible = false;
                 return;
             }
@@ -1158,7 +1176,7 @@ namespace MyVocaList.View.Behaviors
             // ✅ EARLY RETURN: Se animações desabilitadas, não precisa parar nada
             if (DISABLE_NAVBAR_ANIMATIONS)
             {
-                System.Diagnostics.Debug.WriteLine("🚫 NavBarExtensions: StopAllAnimationsAsync - animações já desabilitadas");
+                Console.WriteLine("🚫 NavBarExtensions: StopAllAnimationsAsync - animações já desabilitadas");
                 return;
             }
 

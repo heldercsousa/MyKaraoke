@@ -28,7 +28,7 @@ namespace MyVocaList.View
         {
             if (IsProblematicDevice())
             {
-                System.Diagnostics.Debug.WriteLine(
+                Console.WriteLine(
                     $"[ANIMATION_LIFECYCLE] {DateTime.Now:HH:mm:ss.fff} - {eventName} - {context} - {DeviceInfo.Model}");
             }
         }

@@ -235,14 +235,14 @@ namespace MyVocaList.View.Interceptors
                 // 🛡️ SKIP: Comandos de migração do Entity Framework
                 if (IsMigrationOperation(sql))
                 {
-                    System.Diagnostics.Debug.WriteLine($"🛡️ DatabaseInterceptor: Comando de migração ignorado: {sql.Substring(0, Math.Min(50, sql.Length))}...");
+                    Console.WriteLine($"🛡️ DatabaseInterceptor: Comando de migração ignorado: {sql.Substring(0, Math.Min(50, sql.Length))}...");
                     return;
                 }
 
                 // 🛡️ SKIP: Operações muito rápidas que não precisam de loading
                 if (IsQuickOperation(sql))
                 {
-                    System.Diagnostics.Debug.WriteLine($"🏃 DatabaseInterceptor: Operação rápida - sem loading: {sql.Substring(0, Math.Min(50, sql.Length))}...");
+                    Console.WriteLine($"🏃 DatabaseInterceptor: Operação rápida - sem loading: {sql.Substring(0, Math.Min(50, sql.Length))}...");
                     return;
                 }
 
@@ -253,8 +253,8 @@ namespace MyVocaList.View.Interceptors
                 // ✅ SISTEMA CENTRALIZADO: Solicita loading com baixa prioridade
                 var requesterId = $"Database_{operation}_{DateTime.Now.Ticks}";
 
-                System.Diagnostics.Debug.WriteLine($"🔄 DatabaseInterceptor: Solicitando loading para {operation}: {message}");
-                System.Diagnostics.Debug.WriteLine($"🔍 SQL: {sql.Substring(0, Math.Min(100, sql.Length))}...");
+                Console.WriteLine($"🔄 DatabaseInterceptor: Solicitando loading para {operation}: {message}");
+                Console.WriteLine($"🔍 SQL: {sql.Substring(0, Math.Min(100, sql.Length))}...");
 
                 await GlobalLoadingOverlay.Instance.RequestShowAsync(
                     requesterId: requesterId,
@@ -270,7 +270,7 @@ namespace MyVocaList.View.Interceptors
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ DatabaseInterceptor: Erro ao solicitar loading: {ex.Message}");
+                Console.WriteLine($"❌ DatabaseInterceptor: Erro ao solicitar loading: {ex.Message}");
             }
         }
 
@@ -311,16 +311,16 @@ namespace MyVocaList.View.Interceptors
                 var requesterId = command.GetRequesterId();
                 if (string.IsNullOrEmpty(requesterId))
                 {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ DatabaseInterceptor: Comando sem requesterId para remoção");
+                    Console.WriteLine($"⚠️ DatabaseInterceptor: Comando sem requesterId para remoção");
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"🔄 DatabaseInterceptor: Removendo loading para {requesterId}");
+                Console.WriteLine($"🔄 DatabaseInterceptor: Removendo loading para {requesterId}");
                 await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ DatabaseInterceptor: Erro ao remover loading: {ex.Message}");
+                Console.WriteLine($"❌ DatabaseInterceptor: Erro ao remover loading: {ex.Message}");
             }
         }
 

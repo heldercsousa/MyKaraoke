@@ -49,7 +49,7 @@ namespace MyVocaList.View.Animations
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Erro ao fazer dispose de manager: {ex.Message}");
+                        Console.WriteLine($"Erro ao fazer dispose de manager: {ex.Message}");
                     }
                 });
 

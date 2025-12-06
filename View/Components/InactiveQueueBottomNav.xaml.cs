@@ -219,7 +219,6 @@ namespace MyVocaList.View.Components
 
                 System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: {buttons.Count} buttons created");
 
-                // ✅ BEHAVIOR: Configure buttons - WITHOUT subscribing duplicate events
                 navBarBehavior.Buttons = buttons;
 
                 // 🔧 FIX: DO NOT subscribe ButtonClicked to avoid duplicate events
@@ -383,42 +382,47 @@ namespace MyVocaList.View.Components
         /// ✅ DELEGADO: ShowAsync via NavBarBehavior
         /// 🎯 CORREÇÃO: Garante inicialização antes de mostrar (igual CrudNavBarComponent)
         /// </summary>
+        // InactiveQueueBottomNav.xaml.cs
+
         public async Task ShowAsync()
         {
-            try
+            // ✅ FIX: Force execution on Main Thread to ensure UI updates apply
+            await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: ShowAsync chamado - IsVisible={this.IsVisible}");
-
-                this.IsVisible = true;
-
-                // 🎯 CORREÇÃO CRÍTICA: Garante inicialização antes de mostrar (igual CrudNavBarComponent)
-                if (!_isInitialized)
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: Não inicializado - forçando inicialização");
-                    EnsureInitialization();
+                    System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: ShowAsync chamado - IsVisible={this.IsVisible}");
 
-                    // Aguarda um pouco para garantir que inicializou
-                    await Task.Delay(50);
+                    this.IsVisible = true;
+
+                    // Ensure initialization if it hasn't happened yet
+                    if (!_isInitialized)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"🎯 InactiveQueueBottomNav: Não inicializado - forçando inicialização");
+                        EnsureInitialization();
+                        // Give the UI a moment to construct the grid children
+                        await Task.Delay(50);
+                    }
+
+                    if (navBarBehavior != null)
+                    {
+                        var buttonCount = navBarBehavior.Buttons?.Count ?? 0;
+                        System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: Chamando navBarBehavior.ShowAsync() - Buttons.Count={buttonCount}");
+
+                        await navBarBehavior.ShowAsync();
+                        System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: navBarBehavior.ShowAsync() concluído");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: navBarBehavior é NULL - usando fallback");
+                        await NavBarExtensions.ShowAsync(navGrid);
+                    }
                 }
-
-                if (navBarBehavior != null)
+                catch (Exception ex)
                 {
-                    var buttonCount = navBarBehavior.Buttons?.Count ?? 0;
-                    System.Diagnostics.Debug.WriteLine($"🔧 InactiveQueueBottomNav: Chamando navBarBehavior.ShowAsync() - Buttons.Count={buttonCount}");
-
-                    await navBarBehavior.ShowAsync();
-                    System.Diagnostics.Debug.WriteLine($"✅ InactiveQueueBottomNav: navBarBehavior.ShowAsync() concluído");
+                    System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: Erro em ShowAsync: {ex.Message}");
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: navBarBehavior é NULL - usando fallback");
-                    await NavBarExtensions.ShowAsync(navGrid);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ InactiveQueueBottomNav: Erro em ShowAsync: {ex.Message}");
-            }
+            });
         }
 
         /// <summary>

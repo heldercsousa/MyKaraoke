@@ -81,7 +81,7 @@ namespace MyVocaList.View
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Erro durante cleanup UI: {ex.Message}");
+                        Console.WriteLine($"Erro durante cleanup UI: {ex.Message}");
                     }
                 });
 
@@ -94,14 +94,14 @@ namespace MyVocaList.View
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Erro ao fazer dispose: {ex.Message}");
+                        Console.WriteLine($"Erro ao fazer dispose: {ex.Message}");
                     }
                 }
                 _disposables.Clear();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro geral durante DisposeAsync: {ex.Message}");
+                Console.WriteLine($"Erro geral durante DisposeAsync: {ex.Message}");
             }
         }
     }

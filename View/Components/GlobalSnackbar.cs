@@ -85,7 +85,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar Error: {ex.Message}");
+                Console.WriteLine($"GlobalSnackbar Error: {ex.Message}");
             }
         }
 
@@ -160,7 +160,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar Injection Error: {ex.Message}");
+                Console.WriteLine($"GlobalSnackbar Injection Error: {ex.Message}");
             }
         }
 
@@ -181,7 +181,7 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GlobalSnackbar Removal Error: {ex.Message}");
+                Console.WriteLine($"GlobalSnackbar Removal Error: {ex.Message}");
             }
         }
 

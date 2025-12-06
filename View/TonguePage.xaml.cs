@@ -219,16 +219,52 @@ namespace MyVocaList.View
         #region Save/Cancel Handlers
         private async void OnSaveClicked(object sender, EventArgs e)
         {
-            await SaveLanguageAndNavigateAsync();
+            await ShowSaveConfirmationAsync();
         }
 
         private async void OnCancelClicked(object sender, EventArgs e)
         {
-            await CloseApplicationAsync();
+            await ShowExitConfirmationAsync();
         }
         #endregion
 
         #region Saving Logic
+        private async Task ShowSaveConfirmationAsync()
+        {
+            try
+            {
+                // Get selected language item
+                var selectedItem = languages.FirstOrDefault(l => l.IsSelected);
+                if (selectedItem == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("No language selected");
+                    return;
+                }
+
+                // Show confirmation popup with selected language
+                var popup = new ConfirmationPopup(
+                    "Confirm Language",
+                    $"Confirm {selectedItem.Name} as your preferred language?",
+                    "Confirm",
+                    "Cancel"
+                );
+
+                var confirmed = await popup.ShowAsync();
+                if (!confirmed)
+                {
+                    System.Diagnostics.Debug.WriteLine("Language selection cancelled by user");
+                    return;
+                }
+
+                // User confirmed - proceed with save
+                await SaveLanguageAndNavigateAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error showing save confirmation: {ex.Message}");
+            }
+        }
+
         private async Task SaveLanguageAndNavigateAsync()
         {
             try
@@ -253,7 +289,15 @@ namespace MyVocaList.View
             {
                 await GlobalLoadingOverlay.HideLoadingAsync();
                 System.Diagnostics.Debug.WriteLine($"[ERROR] Error saving language: {ex.Message}");
-                await DisplayAlert("Error", "Failed to save language selection", "OK");
+
+                // Show error using ConfirmationPopup (info-only, single button)
+                var errorPopup = new ConfirmationPopup(
+                    "Error",
+                    "Failed to save language selection. Please try again.",
+                    "OK",
+                    "OK"
+                );
+                await errorPopup.ShowAsync();
             }
         }
 
@@ -281,17 +325,19 @@ namespace MyVocaList.View
             }
         }
 
-        private async Task CloseApplicationAsync()
+        private async Task ShowExitConfirmationAsync()
         {
             try
             {
-                bool confirmed = await DisplayAlert(
-                    "Exit",
+                // Show confirmation popup for exit
+                var popup = new ConfirmationPopup(
+                    "Exit Application",
                     "Are you sure you want to exit the application?",
-                    "Yes",
-                    "No"
+                    "Exit",
+                    "Cancel"
                 );
 
+                var confirmed = await popup.ShowAsync();
                 if (confirmed)
                 {
                     // Close the application
@@ -300,7 +346,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error closing application: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error showing exit confirmation: {ex.Message}");
             }
         }
         #endregion

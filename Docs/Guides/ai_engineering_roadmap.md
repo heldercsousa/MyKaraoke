@@ -1,52 +1,52 @@
-# 🚀 Roadmap de Funcionalidades MyVocaList (Engenharia de IA)
+# 🚀 MyVocaList Feature Roadmap (AI Engineering)
 
-Este documento cataloga todas as funcionalidades de valor discutidas, separadas pelas áreas de foco (Eficiência, Performance e Social), servindo como base para as próximas etapas de planejamento e implementação da sua jornada como Engenheiro de IA.
-
----
-
-### I. 🎤 Valor para a Performance do Cantor (Foco: DSP e Áudio)
-
-Funcionalidades que transformam o app em uma ferramenta de aprimoramento vocal, aumentando o valor para o público focado em aprimoramento.
-
-| Funcionalidade | Descrição | Foco em Engenharia de IA |
-| :--- | :--- | :--- |
-| **1. Pontuação de IA (Auto-Score)** | Análise de voz (via microfone) em tempo real ou pós-gravação para determinar a precisão da afinação (*pitch*) e do ritmo (*timing*), gerando uma pontuação objetiva. | **DSP** (Processamento de Sinais), Modelos de Classificação/Regressão. |
-| **2. Críticas e Sugestões de Melhoria** | **LLM (Gemini) aplicado ao DSP:** Traduzir os dados de erro numérico de afinação em *feedback* textual útil e motivacional. | **Geração de Linguagem Natural (NLP),** Integração de LLM. |
-| **3. Modo Treinamento (Visualização de Notas)** | Detecção de notas em tempo real para exibir a melodia de referência contra a voz do cantor em um gráfico, permitindo a prática vocal guiada. | **DSP** (Pitch Detection/FFT), Engenharia de Frontend Otimizada (MAUI). |
-| **4. Detecção e Sincronização de Letras** | Buscar letras via catálogo interno ou API e sincronizar cada palavra com *timestamp* exato para o efeito "passar a cor" progressivamente. | **Engenharia de Conteúdo e Tempo,** Integração de APIs. |
-| **5. Separação de Áudio Integrada** | Usar APIs (como Moises) para remover a voz de faixas originais sob demanda, permitindo que músicos criem *backing tracks* personalizados (útil no modo Bandokê). | **Engenharia de Backend**, Integração de APIs de Processamento de Áudio. |
+This document catalogs all the high-value features discussed, separated by focus areas (Efficiency, Performance, and Social), serving as a foundation for the next planning and implementation steps of your journey as an AI Engineer.
 
 ---
 
-### II. 🧠 Valor para a Eficiência do Host (Foco: Previsão e UX)
+### I. 🎤 Value for Singer Performance (Focus: DSP and Audio)
 
-Funcionalidades que usam a IA e automação para otimizar a experiência do organizador do evento.
+Features that transform the app into a vocal improvement tool, increasing value for the audience focused on enhancement.
 
-| Funcionalidade | Descrição | Foco em Engenharia de IA |
+| Feature | Description | AI Engineering Focus |
 | :--- | :--- | :--- |
-| **6. Estimativa Inteligente de Espera** | **Previsão de Regressão:** Estimar o tempo de espera para o próximo cantor ou a duração do round, baseando-se em dados históricos e no número de participantes pendentes. | **Modelagem de Regressão** (Time Series Forecasting), MLOps. |
-| **7. Gerenciamento por Comando de Voz** | Permitir que o Host realize ações críticas na fila (ex: "Adicionar Marcos", "Próximo cantor") usando apenas comandos de voz. | **Processamento de Linguagem Natural** (ASR - Automatic Speech Recognition), Otimização de UX/Workflow. |
-| **8. Sugestão Inteligente de Próxima Música** | Sugerir a próxima música ou gênero a ser cantado, evitando repetições ou garantindo a variedade ideal para manter a energia da multidão. | **Sistemas de Recomendação** (Filtro Baseado em Conteúdo), Análise de Dados. |
+| **1. AI Score (Auto-Score)** | Real-time or post-recording voice analysis (via microphone) to determine pitch accuracy and timing precision, generating an objective score. | **DSP** (Digital Signal Processing), Classification/Regression Models. |
+| **2. Critiques and Improvement Suggestions** | **LLM (Gemini) applied to DSP:** Translate numerical pitch error data into useful and motivational textual *feedback*. | **Natural Language Generation (NLP),** LLM Integration. |
+| **3. Training Mode (Note Visualization)** | Real-time note detection to display the reference melody against the singer's voice on a graph, allowing for guided vocal practice. | **DSP** (Pitch Detection/FFT), Optimized Frontend Engineering (MAUI). |
+| **4. Lyrics Detection and Synchronization** | Fetch lyrics via internal catalog or API and synchronize each word with exact *timestamps* for the progressive "color passing" effect. | **Content and Timing Engineering,** API Integration. |
+| **5. Integrated Audio Separation** | Use APIs (like Moises) to remove vocals from original tracks on demand, allowing musicians to create personalized *backing tracks* (useful in Bandokê mode). | **Backend Engineering**, Audio Processing API Integration. |
 
 ---
 
-### III. 🧑‍🤝‍🧑 Valor para Engajamento Social (Foco: LLM e Comunidade)
+### II. 🧠 Value for Host Efficiency (Focus: Prediction and UX)
 
-Funcionalidades que cumprem o objetivo futuro de rede social, criando uma comunidade em torno do aplicativo.
+Features that use AI and automation to optimize the event organizer's experience.
 
-| Funcionalidade | Descrição | Foco em Engenharia de IA |
+| Feature | Description | AI Engineering Focus |
 | :--- | :--- | :--- |
-| **9. Geração de Persona Karaokê (LLM)** | O cantor insere *tags* (ex: gênero, humor), e a **API Gemini** gera uma biografia ou "Persona de Karaokê" única e envolvente para o perfil. | **LLM (Gemini API) Integration,** Engenharia de Prompt (Prompt Engineering). |
-| **10. Votação e Engajamento da Audiência** | Sistema de votação em tempo real que permite ao público interagir com o cantor e a performance (ex: 'Aplausos', 'Fogo'). | **Engenharia de Backend** (WebSockets/SignalR), Experiência de Usuário (UX) Social. |
-| **11. Folha de Pontuação/Cifra para Bandas** | No modo Bandokê, gerar ou transpor automaticamente uma folha de cifras ou partituras digitais para os músicos da banda, com base na música e no tom escolhidos. | **Engenharia de Automação de Conteúdo,** Processamento de Dados Musicais. |
+| **6. Smart Wait Time Estimation** | **Regression Prediction:** Estimate the wait time for the next singer or the round duration, based on historical data and the number of pending participants. | **Regression Modeling** (Time Series Forecasting), MLOps. |
+| **7. Voice Command Management** | Allow the Host to perform critical queue actions (e.g., "Add Marcos", "Next singer") using only voice commands. | **Natural Language Processing** (ASR - Automatic Speech Recognition), UX/Workflow Optimization. |
+| **8. Smart Next Song Suggestion** | Suggest the next song or genre to be sung, avoiding repetitions or ensuring optimal variety to keep the crowd's energy up. | **Recommender Systems** (Content-Based Filtering), Data Analysis. |
 
 ---
 
-### IV. 🛠️ Valor para a Equipe de Desenvolvimento (Foco: AIA-D)
+### III. 🧑‍🤝‍🧑 Value for Social Engagement (Focus: LLM and Community)
 
-Funcionalidades que garantem que o desenvolvimento seja eficiente, econômico e com alta qualidade de código.
+Features that fulfill the future social network goal, creating a community around the application.
 
-| Funcionalidade | Descrição | Foco em Engenharia de IA |
+| Feature | Description | AI Engineering Focus |
 | :--- | :--- | :--- |
-| **12. Agentes de Compliance MD3/Arquitetura** | Usar o Agente Gemini 3 Pro (Jules) para garantir que todas as telas sejam construídas seguindo 100% as diretrizes MD3 e a arquitetura .NET MAUI do `CLAUDE.md`. | **MLOps para Código,** Autonomia de Agente (Jules/Antigravity). |
-| **13. Otimização de Tokens** | Gerenciamento inteligente do contexto do agente para minimizar o consumo de tokens e o custo do desenvolvimento assistido por IA. | **Eficiência de Custo/Recursos,** Engenharia de Prompt. |
+| **9. Karaoke Persona Generation (LLM)** | The singer enters *tags* (e.g., genre, mood), and the **Gemini API** generates a unique and engaging biography or "Karaoke Persona" for the profile. | **LLM (Gemini API) Integration,** Prompt Engineering. |
+| **10. Audience Voting and Engagement** | Real-time voting system allowing the audience to interact with the singer and the performance (e.g., 'Applause', 'Fire'). | **Backend Engineering** (WebSockets/SignalR), Social User Experience (UX). |
+| **11. Score Sheet/Chords for Bands** | In Bandokê mode, automatically generate or transpose a digital chord sheet or score for band musicians, based on the chosen song and key. | **Content Automation Engineering,** Musical Data Processing. |
+
+---
+
+### IV. 🛠️ Value for Development Team (Focus: AIA-D)
+
+Features ensuring development is efficient, cost-effective, and of high code quality.
+
+| Feature | Description | AI Engineering Focus |
+| :--- | :--- | :--- |
+| **12. MD3 Compliance/Architecture Agents** | Use the Gemini 3 Pro Agent (Jules) to ensure all screens are built following 100% MD3 guidelines and the .NET MAUI architecture from `CLAUDE.md`. | **MLOps for Code,** Agent Autonomy (Jules/Antigravity). |
+| **13. Token Optimization** | Intelligent management of agent context to minimize token consumption and the cost of AI-assisted development. | **Cost/Resource Efficiency,** Prompt Engineering. |

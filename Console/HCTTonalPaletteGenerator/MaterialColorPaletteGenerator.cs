@@ -136,7 +136,12 @@ namespace MyVocaList.Console.HCTTonalPaletteGenerator
 
             foreach (var tone in STANDARD_TONES)
             {
-                uint argb = palette.Tone(tone);  // tone is already int, no cast needed
+                // palette.Tone returns an int (may be negative if high bit set).
+                // Cast to uint preserving bit pattern so HexFromArgb receives correct ARGB bits.
+                uint t  = 0;
+                if (tone > 0) t = uint.Parse(tone.ToString());
+                uint argb = palette.Tone(t);
+
                 string hex = HexFromArgb(argb);
                 string toneName = $"{colorName}{tone}";
 

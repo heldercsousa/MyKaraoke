@@ -187,18 +187,20 @@
     <!-- NEW NeutralVariant30 - Deep purple-gray -->
     <Color x:Key="OnSurfaceVariant">#FFD1BFD6</Color>
     <!-- NEW NeutralVariant80 - Light purple-gray -->
+    
     <Color x:Key="SurfaceContainer">#FF312A36</Color>
-    <!-- NEW Neutral20 - for headers/elevated surfaces -->
+    <Color x:Key="SurfaceContainerHigh">#FF47404D</Color>
+    <!-- Neutral20 -->
+    <Color x:Key="SurfaceContainerHighest">#FF5F5765</Color>
     <Color x:Key="SurfaceDim">#FF000000</Color>
     <!-- Neutral0 - unchanged -->
     <Color x:Key="SurfaceBright">#FF312A36</Color>
-    <!-- NEW Neutral20 -->
+    <!-- Neutral30 -->
 
-    <!-- Outline & Borders (DARK MODE) -->
     <Color x:Key="Outline">#FF9A899F</Color>
-    <!-- NEW NeutralVariant60 -->
+    <!-- NeutralVariant60 -->
     <Color x:Key="OutlineVariant">#FF4E3F53</Color>
-    <!-- NEW NeutralVariant30 -->
+    <!-- NeutralVariant30 -->
 
     <!-- Inverse Colors (DARK MODE) -->
     <Color x:Key="InverseSurface">#FFE6DDEA</Color>

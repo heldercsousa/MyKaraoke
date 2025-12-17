@@ -266,7 +266,19 @@ namespace MyVocaList.View.Components
                 {
                     buttonLabel.Text = Text;
                     buttonLabel.IsVisible = true; // ✅ FIX: Ensure label is visible
-                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: Label text '{Text}' configured, IsVisible={buttonLabel.IsVisible}, Opacity={buttonLabel.Opacity}");
+
+                    // ✅ FIX: Manually apply style to ensure TextColor is correct (White)
+                    if (Application.Current.Resources.TryGetValue("NavButtonLabelStyle", out var labelStyleObj) && labelStyleObj is Style labelStyle)
+                    {
+                        buttonLabel.Style = labelStyle;
+                    }
+                    // 🛡️ FALLBACK: Force White color if style fails or doesn't set it effectively
+                    if (buttonLabel.TextColor == null || buttonLabel.TextColor == Colors.Transparent)
+                    {
+                        buttonLabel.TextColor = Colors.White; 
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: Label text '{Text}' configured, IsVisible={buttonLabel.IsVisible}, Opacity={buttonLabel.Opacity}, TextColor={buttonLabel.TextColor}");
                 }
                 else
                 {

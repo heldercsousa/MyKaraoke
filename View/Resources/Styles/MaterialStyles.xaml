@@ -223,7 +223,7 @@
 
     <!-- Filled Card (with background tint) -->
     <Style x:Key="FilledCard" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceVariant}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceContainerHighest}" />
         <Setter Property="BorderColor" Value="Transparent" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="HasShadow" Value="False" />

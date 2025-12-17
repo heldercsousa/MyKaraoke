@@ -60,6 +60,27 @@ namespace MyVocaList.Infra.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> SearchWithHasEventsAsync(string? query)
+        {
+            var q = _context.Estabelecimentos.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                query = query.Trim();
+                q = q.Where(e => e.Nome.Contains(query));
+            }
+
+            return await q
+                .Select(e => new
+                {
+                    Estabelecimento = e,
+                    HasEvents = e.Eventos.Any()
+                })
+                .OrderBy(x => x.Estabelecimento.Nome)
+                .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetAllWithHasEventsAsync()
         {
             return await _context.Estabelecimentos

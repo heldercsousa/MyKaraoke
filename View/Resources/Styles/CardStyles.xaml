@@ -43,15 +43,10 @@
     <!-- BACKGROUND GRADIENTS -->
     <!-- ============================================================================ -->
 
-    <LinearGradientBrush x:Key="AppBackgroundGradient" StartPoint="0,0" EndPoint="1,0">
-        <GradientStop Color="#1A1024" Offset="0.0" />
-        <GradientStop Color="#2D1B69" Offset="1.0" />
-    </LinearGradientBrush>
+    <!-- BACKGROUND GRADIENTS -->
+    <!-- ============================================================================ -->
 
-    <LinearGradientBrush x:Key="CardBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#33275d" Offset="0.0" />
-        <GradientStop Color="#513486" Offset="1.0" />
-    </LinearGradientBrush>
+    <!-- Removed Duplicate Gradients (Moved to MaterialColors.xaml) -->
 
     <LinearGradientBrush x:Key="SelectedButtonGradient" StartPoint="0,0" EndPoint="1,0">
         <GradientStop Color="#e52067" Offset="0.0" />
@@ -79,27 +74,6 @@
         <GradientStop Color="#572564" Offset="0.0" />
         <GradientStop Color="#613b93" Offset="1.0" />
     </LinearGradientBrush>
-
-    <!-- ============================================================================ -->
-    <!-- CARD LIST ITEM STYLES -->
-    <!-- ============================================================================ -->
-
-    <Style x:Key="CardListItemBackgroundStyle" TargetType="Frame">
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="BorderColor" Value="#5e3f84" />
-        <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="HasShadow" Value="False" />
-        <Setter Property="Padding" Value="15" />
-        <Setter Property="Margin" Value="0,5" />
-        <Setter Property="Background" Value="{StaticResource CardNormalGradient}" />
-    </Style>
-
-    <Style x:Key="CardListItemSubTextIconStyle" TargetType="Image">
-        <Setter Property="HeightRequest" Value="16" />
-        <Setter Property="WidthRequest" Value="16" />
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="HorizontalOptions" Value="Start" />
-    </Style>
 
     <Style x:Key="CardListItemMainTextStyle" TargetType="Label">
         <Setter Property="FontSize" Value="16" />

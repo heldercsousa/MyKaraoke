@@ -10,7 +10,8 @@ namespace MyVocaList.View
 {
     public partial class TonguePage : ContentPage
     {
-        private ObservableCollection<LanguageItem> languages;
+        public ObservableCollection<LanguageItem> Languages { get; private set; }
+
         private ILanguageService? _languageService;
         private ServiceProvider? _serviceProvider;
         private string selectedLanguage = "en"; // Default language
@@ -19,14 +20,32 @@ namespace MyVocaList.View
         // Lifecycle Command
         public ICommand LoadDataCommand { get; }
 
+        private LanguageItem _selectedLanguageItem;
+        public LanguageItem SelectedLanguageItem
+        {
+            get => _selectedLanguageItem;
+            set
+            {
+                if (_selectedLanguageItem != value)
+                {
+                    _selectedLanguageItem = value;
+                    OnPropertyChanged(nameof(SelectedLanguageItem));
+                }
+            }
+        }
+
+        public ICommand LanguageSelectedCommand { get; }
+
         public TonguePage()
         {
             LoadDataCommand = new Command(async () => await InitializeDataAsync());
+            LanguageSelectedCommand = new Command<LanguageItem>(async (item) => await OnLanguageSelectedAsync(item));
+            
             InitializeComponent();
             this.BindingContext = this;
 
             // Initialize the list of languages - ONLY 6 SUPPORTED LANGUAGES
-            languages = new ObservableCollection<LanguageItem>
+            Languages = new ObservableCollection<LanguageItem>
             {
                 new LanguageItem { Code = "en", Name = "English", Countries = "United States / United Kingdom", Flag = "🇺🇸 🇬🇧", IsSelected = true },
                 new LanguageItem { Code = "pt", Name = "Português", Countries = "Brasil / Portugal", Flag = "🇧🇷 🇵🇹" },
@@ -59,161 +78,59 @@ namespace MyVocaList.View
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            // Load language buttons when page appears
-            CreateLanguageButtons();
+            // No manual UI creation needed anymore
         }
 
         // Called by SmartPageLifecycleBehavior via Command
         private async Task InitializeDataAsync()
         {
-            // Data init logic...
-            await Task.Delay(50);
-        }
-
-        private void CreateLanguageButtons()
-        {
-            try
+             try
             {
-                // Clear existing buttons
-                if (languagesContainer != null)
+                // Init selection from preferences or service
+                var currentCode = Preferences.Get("UserLanguage", "en");
+                if (_isInitialized && _languageService != null)
                 {
-                    languagesContainer.Children.Clear();
-
-                    // Create language buttons with Material Design styling
-                    foreach (var language in languages)
-                    {
-                        var frame = new Frame
-                        {
-                            Margin = new Thickness(0, 4),
-                            Padding = new Thickness(16, 12),
-                            HasShadow = false,
-                            CornerRadius = 12
-                        };
-
-                        // Apply Material Design style based on selection
-                        if (language.IsSelected)
-                        {
-                            // Selected state: use SecondaryContainer and Primary border
-                            object secondaryContainerResource = null;
-                            object primaryResource = null;
-
-                            if (Application.Current?.Resources.TryGetValue("SecondaryContainer", out secondaryContainerResource) == true)
-                                frame.BackgroundColor = secondaryContainerResource as Color;
-
-                            if (Application.Current?.Resources.TryGetValue("Primary", out primaryResource) == true)
-                                frame.BorderColor = primaryResource as Color;
-                            else
-                                frame.BorderColor = Colors.Transparent;
-                        }
-                        else
-                        {
-                            // Unselected state: use Surface (same as ElevatedCard style)
-                            object surfaceResource = null;
-                            if (Application.Current?.Resources.TryGetValue("Surface", out surfaceResource) == true)
-                                frame.BackgroundColor = surfaceResource as Color;
-
-                            frame.BorderColor = Colors.Transparent;
-                        }
-
-                        var grid = new Grid
-                        {
-                            ColumnDefinitions =
-                            {
-                                new ColumnDefinition { Width = GridLength.Auto },
-                                new ColumnDefinition { Width = GridLength.Star },
-                                new ColumnDefinition { Width = GridLength.Auto }
-                            },
-                            ColumnSpacing = 16
-                        };
-
-                        // Flag icon (left)
-                        var flagLabel = new Label
-                        {
-                            Text = language.Flag,
-                            FontSize = 24,
-                            HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center
-                        };
-
-                        // Language name (center)
-                        var nameLabel = new Label
-                        {
-                            Text = language.Name,
-                            HorizontalOptions = LayoutOptions.Start,
-                            VerticalOptions = LayoutOptions.Center,
-                            LineBreakMode = LineBreakMode.TailTruncation
-                        };
-
-                        // Apply TitleMedium style
-                        object titleMediumStyle = null;
-                        if (Application.Current?.Resources.TryGetValue("TitleMedium", out titleMediumStyle) == true && titleMediumStyle is Style style)
-                            nameLabel.Style = style;
-
-                        // Selection indicator (right) - only shown when selected
-                        var checkLabel = new Label
-                        {
-                            Text = "✓",
-                            FontSize = 20,
-                            FontAttributes = FontAttributes.Bold,
-                            HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center,
-                            IsVisible = language.IsSelected
-                        };
-
-                        // Apply Primary color to check
-                        object primaryColor = null;
-                        if (Application.Current?.Resources.TryGetValue("Primary", out primaryColor) == true)
-                            checkLabel.TextColor = primaryColor as Color;
-
-                        // Add elements to grid
-                        grid.Add(flagLabel, 0, 0);
-                        grid.Add(nameLabel, 1, 0);
-                        grid.Add(checkLabel, 2, 0);
-
-                        // Configure frame with grid
-                        frame.Content = grid;
-
-                        // Add tap recognizer
-                        var languageCode = language.Code;
-                        var tapGesture = new TapGestureRecognizer();
-                        tapGesture.Tapped += async (s, e) =>
-                        {
-                            await SelectLanguage(languageCode);
-                        };
-                        frame.GestureRecognizers.Add(tapGesture);
-
-                        // Add frame to container
-                        languagesContainer.Children.Add(frame);
-                    }
+                    // Optionally fetch from service if needed
                 }
+
+                selectedLanguage = currentCode;
+
+                foreach (var lang in Languages)
+                {
+                    lang.IsSelected = (lang.Code == currentCode);
+                }
+                
+                // Trigger update
+                OnPropertyChanged(nameof(Languages));
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error creating language buttons: {ex.Message}\nStack: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"Error initializing data: {ex.Message}");
             }
+            await Task.Delay(50);
         }
 
-        private async Task SelectLanguage(string languageCode)
+        private async Task OnLanguageSelectedAsync(LanguageItem item)
         {
+            if (item == null) return;
+
             try
             {
-                // Update language selection
-                foreach (var language in languages)
+                // Update selection state
+                foreach (var lang in Languages)
                 {
-                    language.IsSelected = (language.Code == languageCode);
-                    if (language.IsSelected)
-                    {
-                        selectedLanguage = language.Code;
-                    }
+                    lang.IsSelected = (lang.Code == item.Code);
                 }
 
-                // Recreate buttons to reflect the new visual selection
-                CreateLanguageButtons();
+                selectedLanguage = item.Code;
+                
+                // Force UI update if needed (though ObservableCollection + INotifyPropertyChanged handles it)
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error selecting language: {ex.Message}");
             }
+            await Task.Delay(50); // Small delay for visual feedback
         }
 
         #region Save/Cancel Handlers
@@ -234,7 +151,7 @@ namespace MyVocaList.View
             try
             {
                 // Get selected language item
-                var selectedItem = languages.FirstOrDefault(l => l.IsSelected);
+                var selectedItem = Languages.FirstOrDefault(l => l.IsSelected);
                 if (selectedItem == null)
                 {
                     System.Diagnostics.Debug.WriteLine("No language selected");

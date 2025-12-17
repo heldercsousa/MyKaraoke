@@ -299,6 +299,22 @@ namespace MyVocaList.Services
             }
         }
 
+        public async Task<IEnumerable<EstabelecimentoListItemDto>> SearchEstabelecimentosForListAsync(string query)
+        {
+            try
+            {
+                var searchResults = await _estabelecimentoRepository.SearchWithHasEventsAsync(query);
+
+                return searchResults.Select(x =>
+                    EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Erro ao pesquisar estabelecimentos: {ex.Message}");
+                return new List<EstabelecimentoListItemDto>();
+            }
+        }
+
 
         #region Utilitários
 

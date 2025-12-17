@@ -36,7 +36,6 @@
         <!-- Card usando CardWrapperComponent -->
         <Grid Grid.Row="1" x:Name="mainContentGrid">
             <components:CardWrapperComponent TitleText="Queue" 
-                                           IconPath="stack_purple.png" 
                                            BadgeIsVisible="True"
                                            BadgeText="{Binding QueueStatusText}">
                 <components:CardWrapperComponent.CardContent>

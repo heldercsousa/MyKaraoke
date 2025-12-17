@@ -1,5 +1,6 @@
 # ============================================
 # .claudeignore - MyVocaList
+# Updated: December 16, 2025
 # ============================================
 
 # Standard .NET build artifacts
@@ -141,8 +142,23 @@ Console/**
 **/[Dd]ocs/**/*.svg
 **/[Dd]ocs/[Cc]hangelog/[Aa]rchive/**
 **/[Dd]ocs/[Ss]ocial [Nn]etworks/**
+
+# ============================================
+# AI LEARNING DOCUMENTATION (Helder's personal learning - not needed by Claude Code)
+# These files are for learning Python/ML, not for MAUI development
+# Claude Code should read CLAUDE.md for AI integration overview
+# ============================================
+**/[Dd]ocs/[Gg]uides/[Aa][Ii]/**
+
+# Exception: Keep MAUI_INTEGRATION_GUIDE.md accessible if implementing AI services
+# Uncomment line below when actively implementing AI integration:
+# !**/[Dd]ocs/[Gg]uides/[Aa][Ii]/MAUI_INTEGRATION_GUIDE.md
+
+# Other Guides (keep most excluded, allow specific ones as needed)
 **/[Dd]ocs/[Gg]uides/**             
 !Docs/Guides/MyVocalist_migration_material_design_guide.md  # temporary needed guide
+
+# Resources
 **/[Vv]iew/[Rr]esources/AppIcon/*.resx
 **/[Vv]iew/[Rr]esources/**/*.png
 **/[Vv]iew/[Rr]esources/**/*.jpg

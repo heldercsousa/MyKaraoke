@@ -6,6 +6,7 @@
              xmlns:components="clr-namespace:MyVocaList.View.Components"
              xmlns:behaviors="clr-namespace:MyVocaList.View.Behaviors"
              xmlns:converters="clr-namespace:MyVocaList.View.Converters"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MyVocaList.View.SpotPage"
              x:DataType="local:SpotPage"
              Background="{StaticResource Background}"
@@ -35,134 +36,201 @@
             DebounceMilliseconds="500" />
     </ContentPage.Behaviors>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
 
         <components:HeaderComponent Grid.Row="0" Title="Venues" />
 
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout x:Name="mainContentStack" Style="{StaticResource PageContainer}">
+        <VerticalStackLayout Grid.Row="1" Spacing="8" Padding="16,8">
+            <Border StrokeShape="RoundRectangle 24"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource SurfaceContainerHighest}"
+                    HeightRequest="48"
+                    Padding="8,0">
+                <Grid ColumnDefinitions="Auto, *">
+                    <!-- Search Icon -->
+                    <components:StatefulIcon Grid.Column="0"
+                                           IconName="search"
+                                           Size="Medium"
+                                           ActiveColor="{StaticResource OnSurfaceVariant}"
+                                           InactiveColor="{StaticResource OnSurfaceVariant}"
+                                           Margin="12,0,0,0"
+                                           VerticalOptions="Center" />
 
-                <Label Text="{Binding Locais.Count, StringFormat='{0} Venues'}"
-                       Style="{StaticResource LabelMedium}"
-                       TextColor="{StaticResource OnSurfaceVariant}"
-                       Margin="16,8,16,8"
-                       IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}" />
+                    <!-- Input Field -->
+                    <SearchBar Grid.Column="1"
+                               Placeholder="Search venues..."
+                               PlaceholderColor="{StaticResource OnSurfaceVariant}"
+                               TextColor="{StaticResource OnSurface}"
+                               CancelButtonColor="{StaticResource Primary}"
+                               BackgroundColor="Transparent"
+                               VerticalOptions="Center"
+                               TextChanged="OnSearchTextChanged"
+                               SearchButtonPressed="OnSearchButtonPressed" />
+                </Grid>
+            </Border>
 
-                <CollectionView x:Name="locaisCollectionView"
-                                ItemsSource="{Binding Locais}"
-                                SelectionMode="None"
-                                BackgroundColor="Transparent"
-                                IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}">
+            <Label Text="{Binding Locais.Count, StringFormat='{0} Venues'}"
+                   Style="{StaticResource LabelSmall}"
+                   TextColor="{StaticResource OnSurfaceVariant}"
+                   Margin="4,0,0,0"
+                   IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}" />
+        </VerticalStackLayout>
 
-                    <CollectionView.Footer>
-                        <BoxView HeightRequest="88" Color="Transparent" />
-                    </CollectionView.Footer>
+        <CollectionView Grid.Row="2"
+                        x:Name="locaisCollectionView"
+                        ItemsSource="{Binding Locais}"
+                        SelectionMode="None"
+                        BackgroundColor="Transparent"
+                        IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}">
 
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="contracts:EstabelecimentoListItemDto">
-                            <SwipeView Threshold="100">
-                                <SwipeView.RightItems>
-                                    <SwipeItems Mode="Execute">
-                                        <SwipeItemView Command="{Binding Source={x:Reference locaisCollectionView}, Path=BindingContext.DeleteSingleCommand}"
-                                                       CommandParameter="{Binding .}">
-                                            <Frame BackgroundColor="{StaticResource Error}"
-                                                   CornerRadius="0"
-                                                   Padding="0"
-                                                   WidthRequest="80"
-                                                   HasShadow="False">
-                                                <components:StatefulIcon IconName="delete"
-                                                                       Size="Medium"
-                                                                       ActiveColor="{StaticResource OnError}"
-                                                                       InactiveColor="{StaticResource OnError}"
-                                                                       HorizontalOptions="Center"
-                                                                       VerticalOptions="Center"/>
-                                            </Frame>
-                                        </SwipeItemView>
-                                    </SwipeItems>
-                                </SwipeView.RightItems>
+            <CollectionView.Footer>
+                <Grid HeightRequest="60" Padding="12">
+                    <ActivityIndicator IsRunning="{Binding IsLoadingMore}"
+                                       IsVisible="{Binding IsLoadingMore}"
+                                       Color="{StaticResource Primary}"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                </Grid>
+            </CollectionView.Footer>
 
-                                <Frame Style="{StaticResource ElevatedCard}"
-                                       Margin="0,4"
-                                       Padding="16,12">
-
-                                    <Frame.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnItemTapped" />
-                                    </Frame.GestureRecognizers>
-
-                                    <Frame.Triggers>
-                                        <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="BackgroundColor" Value="{StaticResource SecondaryContainer}" />
-                                            <Setter Property="BorderColor" Value="{StaticResource Primary}" />
-                                        </DataTrigger>
-                                    </Frame.Triggers>
-
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
-
-                                        <components:StatefulIcon Grid.Column="0"
-                                                               IconName="nightlife"
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="contracts:EstabelecimentoListItemDto">
+                    <SwipeView Threshold="100">
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Execute">
+                                <SwipeItemView Command="{Binding Source={x:Reference locaisCollectionView}, Path=BindingContext.DeleteSingleCommand}"
+                                               CommandParameter="{Binding .}">
+                                    <Frame BackgroundColor="{StaticResource Error}"
+                                           CornerRadius="0"
+                                           Padding="0"
+                                           WidthRequest="80"
+                                           HasShadow="False">
+                                        <components:StatefulIcon IconName="delete"
                                                                Size="Medium"
-                                                               ActiveColor="{StaticResource Primary}"
-                                                               InactiveColor="{StaticResource Primary}" 
-                                                               VerticalOptions="Center" />
+                                                               ActiveColor="{StaticResource OnError}"
+                                                               InactiveColor="{StaticResource OnError}"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"/>
+                                    </Frame>
+                                </SwipeItemView>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
 
-                                        <Label Grid.Column="1"
-                                               Text="{Binding Nome}"
-                                               Style="{StaticResource TitleMedium}"
-                                               VerticalOptions="Center"
-                                               LineBreakMode="TailTruncation" />
+                        <Frame Style="{StaticResource ElevatedCard}"
+                               Margin="0,4"
+                               Padding="16,12">
 
-                                        <Frame Grid.Column="2"
-                                               BackgroundColor="{StaticResource TertiaryContainer}"
-                                               CornerRadius="8"
-                                               Padding="8,4"
-                                               IsVisible="{Binding HasEvents}"
-                                               HasShadow="False"
-                                               BorderColor="Transparent"
-                                               VerticalOptions="Center">
-                                            <Label Text="EVENT"
-                                                   Style="{StaticResource LabelSmall}"
-                                                   TextColor="{StaticResource OnTertiaryContainer}"
-                                                   FontAttributes="Bold"/>
-                                        </Frame>
-                                    </Grid>
+                            <Frame.Behaviors>
+                                <toolkit:TouchBehavior 
+                                    Command="{Binding Source={x:Reference locaisCollectionView}, Path=BindingContext.OpenItemCommand}"
+                                    CommandParameter="{Binding .}"
+                                    LongPressCommand="{Binding Source={x:Reference locaisCollectionView}, Path=BindingContext.ToggleSelectionCommand}"
+                                    LongPressCommandParameter="{Binding .}"
+                                    LongPressDuration="350"
+                                    DefaultAnimationDuration="100"
+                                    DefaultAnimationEasing="{x:Static Easing.CubicInOut}"
+                                    PressedOpacity="0.7" />
+                            </Frame.Behaviors>
+
+                            <Frame.Triggers>
+                                <DataTrigger TargetType="Frame" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource SecondaryContainer}" />
+                                    <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                </DataTrigger>
+                            </Frame.Triggers>
+
+                            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="16">
+
+                                <!-- Selection/Icon Column -->
+                                <Grid Grid.Column="0" WidthRequest="40" HeightRequest="40">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={x:Reference locaisCollectionView}, Path=BindingContext.ToggleSelectionCommand}"
+                                                              CommandParameter="{Binding .}"/>
+                                    </Grid.GestureRecognizers>
+
+                                    <!-- Normal Icon (Nightlife) - Visible when NOT selected -->
+                                    <components:StatefulIcon IconName="nightlife"
+                                                           Size="Medium"
+                                                           ActiveColor="{StaticResource Primary}"
+                                                           InactiveColor="{StaticResource Primary}" 
+                                                           VerticalOptions="Center"
+                                                           HorizontalOptions="Center"
+                                                           IsVisible="{Binding IsSelected, Converter={StaticResource IntToBool}, ConverterParameter=Inverse}" />
+
+                                    <!-- Selected Icon (Check) - Visible when Selected -->
+                                    <Frame CornerRadius="20"
+                                           HeightRequest="40"
+                                           WidthRequest="40"
+                                           Padding="0"
+                                           HasShadow="False"
+                                           BackgroundColor="{StaticResource Primary}"
+                                           IsVisible="{Binding IsSelected}">
+                                        <components:StatefulIcon IconName="check"
+                                                               Size="Medium"
+                                                               ActiveColor="{StaticResource OnPrimary}"
+                                                               InactiveColor="{StaticResource OnPrimary}" 
+                                                               VerticalOptions="Center"
+                                                               HorizontalOptions="Center" />
+                                    </Frame>
+                                </Grid>
+
+                                <Label Grid.Column="1"
+                                       Text="{Binding Nome}"
+                                       Style="{StaticResource TitleMedium}"
+                                       VerticalOptions="Center"
+                                       LineBreakMode="TailTruncation"
+                                       Grid.ColumnSpan="2" />
+
+                                <Frame Grid.Column="3"
+                                       BackgroundColor="{StaticResource TertiaryContainer}"
+                                       CornerRadius="8"
+                                       Padding="8,4"
+                                       IsVisible="{Binding HasEvents}"
+                                       HasShadow="False"
+                                       BorderColor="Transparent"
+                                       VerticalOptions="Center">
+                                    <Label Text="EVENT"
+                                           Style="{StaticResource LabelSmall}"
+                                           TextColor="{StaticResource OnTertiaryContainer}"
+                                           FontAttributes="Bold"/>
                                 </Frame>
-                            </SwipeView>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                            </Grid>
+                        </Frame>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-                <Frame x:Name="emptyStateFrame"
-                       IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}, ConverterParameter=Inverse}"
-                       Style="{StaticResource FilledCard}"
-                       Padding="24"
-                       Margin="0,16">
-                    <VerticalStackLayout Spacing="16">
-                        <components:StatefulIcon IconName="nightlife" Size="Large" HorizontalOptions="Center" />
-                        <Label Text="No venue registered" Style="{StaticResource TitleMedium}" HorizontalOptions="Center" />
-                        <Label HorizontalOptions="Center"
-                                   HorizontalTextAlignment="Center"
-                                   Style="{StaticResource BodyMedium}">
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span Text="• Touch button " />
-                                    <Span Text="+" TextColor="{StaticResource Tertiary}" FontAttributes="Bold" FontSize="18" />
-                                    <Span Text=" in the bottom right corner to register your first venue" />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                    </VerticalStackLayout>
-                </Frame>
-
+        <Frame x:Name="emptyStateFrame"
+               Grid.Row="2"
+               IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}, ConverterParameter=Inverse}"
+               Style="{StaticResource FilledCard}"
+               Padding="24"
+               Margin="16">
+            <VerticalStackLayout Spacing="16">
+                <components:StatefulIcon IconName="nightlife" Size="Large" HorizontalOptions="Center" />
+                <Label Text="No venue registered" Style="{StaticResource TitleMedium}" HorizontalOptions="Center" />
+                <Label HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           Style="{StaticResource BodyMedium}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="• Touch button " />
+                            <Span Text="+" TextColor="{StaticResource Tertiary}" FontAttributes="Bold" FontSize="18" />
+                            <Span Text=" in the bottom right corner to register your first venue" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
             </VerticalStackLayout>
-        </ScrollView>
+        </Frame>
 
         <!-- FAB Component -->
-        <components:FabButtonComponent Grid.Row="1"
+        <components:FabButtonComponent Grid.Row="2"
                                       x:Name="addFab"
                                       Clicked="OnAddFabClicked"
                                       ZIndex="9999" />
 
-        <components:CrudNavBarComponent Grid.Row="2"
+        <components:CrudNavBarComponent Grid.Row="3"
                                       x:Name="CrudNavBar"
                                       SelectionCount="{Binding SelectionCount}"
                                       ButtonClicked="OnCrudNavBarButtonClicked"/>

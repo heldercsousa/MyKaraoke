@@ -26,5 +26,6 @@ namespace MyVocaList.Services
         (string text, bool isWarning, bool isError) GetCharacterCounterInfo(int currentLength);
 
         Task<IEnumerable<EstabelecimentoListItemDto>> GetAllEstabelecimentosForListAsync();
+        Task<IEnumerable<EstabelecimentoListItemDto>> SearchEstabelecimentosForListAsync(string query);
     }
 }

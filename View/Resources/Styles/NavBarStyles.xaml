@@ -8,13 +8,16 @@
 
     <!-- Base Bottom Navigation Bar Frame - MD3 Light Theme -->
     <Style x:Key="BaseBottomNavBarStyle" TargetType="Frame">
+        <!-- MD3 Standard Bottom Nav Background -->
         <Setter Property="BackgroundColor" Value="{StaticResource SurfaceContainer}" />
+        <!-- Top Border as Divider -->
         <Setter Property="BorderColor" Value="{StaticResource OutlineVariant}" />
         <Setter Property="CornerRadius" Value="0" />
         <Setter Property="HasShadow" Value="False" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
-        <Setter Property="HeightRequest" Value="65" />
+        <!-- MD3 Standard Height is 80dp -->
+        <Setter Property="HeightRequest" Value="80" />
         <Setter Property="VerticalOptions" Value="End" />
         <Setter Property="Shadow">
             <Setter.Value>
@@ -41,7 +44,7 @@
     <Style x:Key="BaseNavButtonStyle" TargetType="StackLayout">
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="Spacing" Value="1" />
+        <Setter Property="Spacing" Value="4" />
         <Setter Property="Opacity" Value="1" />
     </Style>
 
@@ -51,18 +54,21 @@
         <Setter Property="HeightRequest" Value="24" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Start" />
-        <Setter Property="Margin" Value="0,8,0,2" />
+        <!-- Adjusted margins for 80dp height -->
+        <Setter Property="Margin" Value="0,12,0,4" />
     </Style>
 
     <!-- Label Style for navbar buttons -->
     <Style x:Key="NavButtonLabelStyle" TargetType="Label">
-        <!-- ✅ FIXED: Using MD3 OnSurfaceVariant instead of hardcoded #D1D5DB -->
-        <Setter Property="TextColor" Value="{StaticResource OnSurfaceVariant}" />
-        <Setter Property="FontSize" Value="10" />
+        <!-- MD3 Label Medium: 12sp, Medium Weight -->
+        <!-- Using OnSurface for high visibility (Active state approximation) -->
+        <Setter Property="TextColor" Value="{StaticResource OnSurface}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="End" />
         <Setter Property="HorizontalTextAlignment" Value="Center" />
-        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="Margin" Value="0,0,0,12" />
     </Style>
 
     <!-- Compact versions (aliases for compatibility) -->
@@ -89,9 +95,8 @@
 
     <Style x:Key="BottomNavButtonStyle" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <!-- ✅ FIXED: Using MD3 OnSurfaceVariant instead of hardcoded #D1D5DB -->
         <Setter Property="TextColor" Value="{StaticResource OnSurfaceVariant}" />
-        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="BorderWidth" Value="0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0" />
@@ -113,10 +118,10 @@
     <Style x:Key="TertiaryGradientFrameStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="BorderColor" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="CornerRadius" Value="16" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Margin" Value="0,4,0,0" />
-        <Setter Property="WidthRequest" Value="60" />
+        <Setter Property="WidthRequest" Value="64" />
         <Setter Property="HeightRequest" Value="32" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />

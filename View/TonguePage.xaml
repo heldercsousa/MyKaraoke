@@ -28,17 +28,69 @@
                                    CancelClicked="OnCancelClicked"
                                    SaveClicked="OnSaveClicked"/>
 
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout x:Name="mainContentStack"
-                               Style="{StaticResource PageContainer}">
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Languages}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedLanguageItem, Mode=TwoWay}"
+                        SelectionChangedCommand="{Binding LanguageSelectedCommand}"
+                        VerticalOptions="FillAndExpand">
+            
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
 
-                <!-- Language selection list -->
-                <VerticalStackLayout x:Name="languagesContainer" Spacing="8">
-                    <!-- Language buttons will be added programmatically -->
-                </VerticalStackLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:LanguageItem">
+                    <Frame Style="{StaticResource ElevatedCard}"
+                           Padding="16,12"
+                           HasShadow="False">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type local:TonguePage}}, Path=LanguageSelectedCommand}" 
+                                                  CommandParameter="{Binding .}" />
+                        </Frame.GestureRecognizers>
 
-            </VerticalStackLayout>
-        </ScrollView>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup Name="CommonStates">
+                                <VisualState Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Property="BorderColor" Value="Transparent" />
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Property="BorderColor" Value="{StaticResource Primary}" />
+                                        <Setter Property="BackgroundColor" Value="{StaticResource SecondaryContainer}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
 
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                            <!-- Flag -->
+                            <Label Grid.Column="0" 
+                                   Text="{Binding Flag}" 
+                                   FontSize="24" 
+                                   VerticalOptions="Center" />
+
+                            <!-- Name -->
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Name}" 
+                                   Style="{StaticResource TitleMedium}"
+                                   VerticalOptions="Center" />
+
+                            <!-- Checkmark (Visible only when selected) -->
+                            <Label Grid.Column="2"
+                                   Text="✓"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Primary}"
+                                   IsVisible="{Binding IsSelected}"
+                                   VerticalOptions="Center" />
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
     </Grid>
 </ContentPage>

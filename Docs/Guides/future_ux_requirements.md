@@ -84,4 +84,8 @@ The user requested a "Hamburger Menu" for Settings/Exit. However, with the new r
 1.  **Approve/Refine this Document**: Confirm these are the correct requirements.
 2.  **Database Updates**: Modify entities to support multiple queues and statuses.
 3.  **UI Implementation**: Build `QueuePage` and `AddQueuePage`.
-4.  **Refactor**: Transform `StackPage` into `QueueDetailsPage`.
+
+## 6. Technical Debt & Refactoring
+- **[ ] Style Refactoring**: Replace all inline XAML styles with reusable StaticResources in `MaterialStyles.xaml`.
+    - *Note*: Ensure safe extraction to avoid regressions (like the QueuePage card background issue).
+- **[ ] Navigation Refactoring**: Move `StackPage` bottom navigation buttons (History, Settings, etc.) to the future Hamburger Menu (Shell Flyout).

@@ -7,18 +7,18 @@
 
     <!-- MD3 FAB (Floating Action Button) -->
     <ImageButton x:Name="fabButton"
-                 Source="add_outlined"
-                 BackgroundColor="{StaticResource PrimaryContainer}"
-                 CornerRadius="16"
-                 WidthRequest="56"
-                 HeightRequest="56"
-                 Padding="16"
-                 HorizontalOptions="End"
-                 VerticalOptions="End"
-                 Margin="0,0,16,16"
-                 Clicked="OnFabClicked"
-                 IsVisible="True"
-                 Aspect="AspectFit">
+             Source="add_outlined"
+             BackgroundColor="{StaticResource PrimaryContainer}"
+             CornerRadius="16"
+             WidthRequest="56"
+             HeightRequest="56"
+             Padding="16"
+             HorizontalOptions="End"
+             VerticalOptions="End"
+             Margin="0,0,16,16"
+             Clicked="OnFabClicked"
+             IsVisible="True"
+             Aspect="AspectFit">
         <ImageButton.Behaviors>
             <toolkit:IconTintColorBehavior TintColor="{StaticResource OnPrimaryContainer}" />
         </ImageButton.Behaviors>
@@ -26,5 +26,16 @@
             <Shadow Brush="{StaticResource Shadow}" Offset="0,4" Radius="8" Opacity="0.4" />
         </ImageButton.Shadow>
     </ImageButton>
+    
+    <!-- MD3 FAB (Floating Action Button) -->
+    <!--<Frame x:Name="fabButton"
+           Style="{StaticResource FabContainerStyle}"
+           BorderColor="Transparent">
+        <Frame.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnFabClicked" />
+        </Frame.GestureRecognizers>
+        
+        <Label Style="{StaticResource FabIconStyle}" />
+    </Frame> -->
 
 </ContentView>

@@ -11,6 +11,7 @@ using System.Windows.Input;
 using MyVocaList.View.Interfaces;
 using MyVocaList.Contracts.DTOs.List;
 using MyVocaList.Services.Mappers;
+using System.Threading;
 using CommunityToolkit.Maui.Views;
 
 namespace MyVocaList.View
@@ -19,6 +20,7 @@ namespace MyVocaList.View
     {
         private IEstabelecimentoService _estabelecimentoService;
         public ObservableCollection<EstabelecimentoListItemDto> Locais { get; }
+        // private List<EstabelecimentoListItemDto> _allLocais = new(); // REMOVED
 
         private int _selectionCount;
         public int SelectionCount
@@ -47,11 +49,30 @@ namespace MyVocaList.View
 
         #endregion
 
+        public ICommand ToggleSelectionCommand { get; private set; }
+        public ICommand LoadMoreCommand { get; private set; }
+
+        private bool _isLoadingMore;
+        public bool IsLoadingMore
+        {
+            get => _isLoadingMore;
+            set
+            {
+                if (_isLoadingMore != value)
+                {
+                    _isLoadingMore = value;
+                    OnPropertyChanged(nameof(IsLoadingMore));
+                }
+            }
+        }
+
         public SpotPage()
         {
-            // ✅ INICIALIZAÇÃO CRÍTICA: Comandos ANTES do InitializeComponent
             LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
-            DeleteSingleCommand = new Command<EstabelecimentoListItemDto>(OnDeleteSingleItem); // ✅ Inicializa comando de Swipe
+            DeleteSingleCommand = new Command<EstabelecimentoListItemDto>(OnDeleteSingleItem);
+            OpenItemCommand = new Command<EstabelecimentoListItemDto>(OnOpenItem);
+            ToggleSelectionCommand = new Command<EstabelecimentoListItemDto>(OnToggleSelection);
+            LoadMoreCommand = new Command(async () => await LoadMoreItemsAsync());
 
             InitializeComponent();
 
@@ -153,13 +174,21 @@ namespace MyVocaList.View
             }
         }
 
+        // private List<EstabelecimentoListItemDto> _allLocais = new(); // REMOVED: In-memory cache not needed for DB search
+        private CancellationTokenSource _searchCts;
+
+        // ...
+
         private async Task LoadLocaisAsync()
         {
             if (_estabelecimentoService == null) return;
             try
             {
+                // Initial load: Get all (or first page)
                 var locaisViewModels = await _estabelecimentoService.GetAllEstabelecimentosForListAsync();
+                
                 Locais.Clear();
+
                 if (locaisViewModels != null)
                 {
                     foreach (var localViewModel in locaisViewModels)
@@ -175,6 +204,70 @@ namespace MyVocaList.View
                 MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
         }
+
+        #region Search Logic
+
+        private async void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+        {
+            await PerformSearchAsync(e.NewTextValue);
+        }
+
+        private async Task PerformSearchAsync(string query)
+        {
+            // Cancel previous search if typing continues
+            Interlocked.Exchange(ref _searchCts, new CancellationTokenSource())?.Cancel();
+            var cts = _searchCts;
+
+            try
+            {
+                await Task.Delay(300, cts.Token); // Debounce 300ms
+
+                if (_estabelecimentoService == null) return;
+
+                IEnumerable<EstabelecimentoListItemDto> results;
+
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    // If empty, load all
+                    results = await _estabelecimentoService.GetAllEstabelecimentosForListAsync();
+                }
+                else
+                {
+                    // Filter in Database
+                    results = await _estabelecimentoService.SearchEstabelecimentosForListAsync(query);
+                }
+
+                if (cts.Token.IsCancellationRequested) return;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Locais.Clear();
+                    foreach (var item in results)
+                    {
+                        Locais.Add(item);
+                    }
+                    UpdateUIState();
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when typing fast
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Search Error: {ex.Message}");
+            }
+        }
+
+        private void OnSearchButtonPressed(object sender, EventArgs e)
+        {
+            // Opcional: Esconder teclado
+            if (sender is SearchBar sb) sb.Unfocus();
+        }
+
+        // private void FilterList(string query) ... REMOVED
+
+        #endregion
 
         private void UpdateUIState()
         {
@@ -202,22 +295,50 @@ namespace MyVocaList.View
         }
 
         #region Interaction Handlers
+        
+        // Comandos expostos para Binding no XAML
+        public ICommand OpenItemCommand { get; private set; }
 
         private async void OnAddFabClicked(object sender, EventArgs e)
         {
             await NavigateToSpotFormPageAsync(isEditing: false, editingLocal: null);
         }
 
-        private void OnItemTapped(object sender, EventArgs e)
+        private async void OnOpenItem(EstabelecimentoListItemDto item)
         {
-            if (sender is Frame frame && frame.BindingContext is EstabelecimentoListItemDto item)
-            {
-                item.IsSelected = !item.IsSelected;
-                OnPropertyChanged(nameof(Locais));
+            if (item == null) return;
 
-                SelectionCount = Locais.Count(x => x.IsSelected);
-                UpdateUIState();
+            if (SelectionCount > 0)
+            {
+                // Se já estiver em modo de seleção, o Tap funciona como Toggle
+                OnToggleSelection(item);
             }
+            else
+            {
+                // Navegação normal (Abrir Detalhes/Edição)
+                // TODO: Futuramente separar ViewDetails de Edit. Por enquanto, abre o Form.
+                var entity = EstabelecimentoMapper.ToEntity(item);
+                await NavigateToSpotFormPageAsync(isEditing: true, editingLocal: entity);
+            }
+        }
+
+        private void OnToggleSelection(EstabelecimentoListItemDto item)
+        {
+            if (item == null) return;
+
+            try
+            {
+                HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+            }
+            catch { /* Ignorar erros de haptics em dispositivos não suportados */ }
+
+            item.IsSelected = !item.IsSelected;
+            // Notificar a mudança para a UI (se objeto não implementar INotifyPropertyChanged corretamente, 
+            // a CollectionView pode precisar de um refresh manual, mas DTOs costumam ter).
+            // No caso do DTO não ser observável, forçamos a atualização da view se necessário.
+            
+            SelectionCount = Locais.Count(x => x.IsSelected);
+            UpdateUIState();
         }
 
         private async void OnCrudNavBarButtonClicked(object sender, CrudButtonType buttonType)
@@ -368,6 +489,20 @@ namespace MyVocaList.View
         }
 
         #endregion
+
+        private async Task LoadMoreItemsAsync()
+        {
+            if (IsLoadingMore) return;
+            IsLoadingMore = true;
+
+            // Simulate delay for "Infinite Scroll" visual feedback
+            await Task.Delay(2000); 
+
+            // TODO: Implement actual pagination fetch logic here
+            // var moreItems = await _service.GetNextPageAsync(...) ...
+
+            IsLoadingMore = false;
+        }
 
         private void SetLoading(bool isLoading)
         {

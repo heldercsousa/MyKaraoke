@@ -1,8 +1,8 @@
 # CLAUDE.md - MyVocaList Project Context
 
 > **Living Documentation for AI-Assisted Development**  
-> Last Updated: October 14, 2025  
-> Version: 2.1 (Corrected)
+> Last Updated: December 16, 2025  
+> Version: 2.3
 
 ---
 
@@ -40,7 +40,6 @@ time (as long as the queue is still active). If a singer is going to sing a song
 the administrator can register the song the singer will perform just before the performance. If there's an internet connection 
 and the song lyrics are not available in local data, it will fetch the lyrics via third-party APIs.
 
--
 ### MVP Key Features (English-Only)
 - **Queue Management**: One active queue at a time with round-based progression
 - **Participation Tracking**: Admin registers singers and marks participation/absence when reaching position 1
@@ -60,18 +59,56 @@ and the song lyrics are not available in local data, it will fetch the lyrics vi
 - **Live Competitions**: Real-time voting, scoring, leaderboards
 - **Cloud Synchronization**: Multi-device support with cloud backend
 
----
+## 🤖 MVP AI Features (AI Lite)
 
-### Nice to Have & AI Roadmap (Future Vision)
+> **Philosophy:** Optional AI enhancements behind feature flags. Disabled by default.
+> **Full Documentation:** `Docs/Guides/AI/` folder
 
-**AI Engineering Roadmap Summary:**
-A comprehensive roadmap for integrating AI features is detailed in `Docs/Guides/ai_engineering_roadmap.md`. Key areas include:
-- **Singer Performance**: AI Score (Pitch/Timing), Real-time Feedback, Note Visualization, Lyrics Sync.
-- **Host Efficiency**: Wait Time Prediction, Voice Commands, Intelligent Song Suggestions.
-- **Social Engagement**: AI Persona Generation, Audience Voting, Band Score Generation.
-- **Development**: MD3 Compliance Agents, Token Optimization.
+### Quick Reference
 
-**Refer to `Docs/Guides/ai_engineering_roadmap.md` for the complete detailed roadmap.**
+| Priority | Feature | Time | Status |
+|----------|---------|------|--------|
+| 1 | Smart Wait Time Estimation | 1-2 wks | Planned |
+| 2 | Song Recommendations | 2-3 wks | Planned |
+| 3 | Smart Lyrics Search | 2-3 wks | Planned |
+
+### Feature Flags (All disabled by default)
+```csharp
+// Services/AI/Configuration/AIFeatureFlags.cs
+public static class AIFeatureFlags
+{
+    public static bool EnableAIFeatures => Preferences.Get("ai_features_enabled", false);
+    public static bool EnableSmartWaitTime => Preferences.Get("ai_smart_wait_time", false);
+    public static bool EnableSongRecommendations => Preferences.Get("ai_song_recommendations", false);
+    public static bool EnableLyricsSearch => Preferences.Get("ai_lyrics_search", false);
+}
+```
+
+### Architecture Overview
+- **Python microservices** (FastAPI) hosted on **AWS Lambda** (free tier)
+- **C# HTTP clients** in `Services/AI/` folder
+- **Graceful fallback** to non-AI when service unavailable
+
+### AI Documentation (Reading Order)
+```
+Docs/Guides/AI/
+├── 1. AI_ENGINEER_ROADMAP.md        ← Start here (master plan)
+├── 2. PYTHON_AI_CURRICULUM.md       ← Daily learning curriculum
+├── 3. WEEKLY_IMPLEMENTATION_PLAN.md ← Week-by-week tasks
+├── 4. AWS_SETUP_GUIDE.md            ← Cloud deployment
+├── 5. MAUI_INTEGRATION_GUIDE.md     ← C# integration patterns
+└── 6. QUICK_REFERENCE.md            ← Commands cheat sheet
+```
+
+### Development Timeline
+- **Month 1-2:** Learn Python/ML (while building core MVP pages)
+- **Month 3:** Implement Smart Wait Time (first AI feature)
+- **Month 4-5:** Song Recommendations + Lyrics Search
+- **Month 6:** Polish and enable features gradually
+
+### Future AI (Post-MVP v2.0)
+Pitch Detection, Facial Recognition, Voice Commands, Audience Voting
+→ Details in AI documentation folder
 
 ---
 
@@ -114,6 +151,11 @@ The development follows a structured approach where Helder provides strategic di
 - **SQLite**: Local database storage
 - **Entity Framework Core 9.0.6**: ORM for database operations with migrations
 
+### AI/ML Stack (AI Lite - Optional)
+- **Python 3.11**: AI service development
+- **FastAPI**: REST API framework
+- **AWS Lambda**: Serverless hosting (free tier)
+
 ### NuGet Packages
 ```plaintext
 - net8.0-android
@@ -127,6 +169,8 @@ The development follows a structured approach where Helder provides strategic di
 - Microsoft.Maui.Controls.Xaml (versão 8.0.100)
 - Microsoft.Maui.Controls.Capability (versão 8.0.100)
 - Microsoft.Extensions.DependencyInjection
+- Microsoft.Extensions.Http (for AI service clients)
+- Microsoft.Extensions.Http.Polly (for retry policies)
 ```
 
 ### Platform Support
@@ -157,6 +201,10 @@ MyVocaList.sln
 ├── MyVocaList.Domain/              # Pure entities
 ├── MyVocaList.Contracts/           # DTOs
 ├── MyVocaList.Services/            # Business logic
+│   └── AI/                         # AI service clients (when implemented)
+│       ├── Abstractions/
+│       ├── Implementation/
+│       └── Configuration/
 ├── MyVocaList.Infra.Data/          # EF Core + repositories
 └── MyVocaList.View/                # MAUI UI
     ├── Pages (at root, no subfolder!)
@@ -442,6 +490,6 @@ public partial class MyPage : ContentPage
 
 ---
 
-**Last Updated**: October 17, 2025  
-**Version**: 2.2
+**Last Updated**: December 16, 2025  
+**Version**: 2.3
 **Maintained by**: Helder (Architect) + Claude AI (Developer)

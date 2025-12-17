@@ -11,6 +11,7 @@
           HorizontalOptions="Center">
 
         <Frame Style="{StaticResource ElevatedCard}"
+               BackgroundColor="{StaticResource Surface}"
                WidthRequest="300"
                Padding="24"
                CornerRadius="28"

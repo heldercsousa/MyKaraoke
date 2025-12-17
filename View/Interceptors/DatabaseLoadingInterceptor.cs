@@ -17,13 +17,13 @@ namespace MyVocaList.View.Interceptors
     {
         private static readonly Dictionary<string, string> OperationMessages = new()
         {
-            { "SELECT", "Carregando dados..." },
-            { "INSERT", "Salvando..." },
-            { "UPDATE", "Atualizando..." },
-            { "DELETE", "Excluindo..." },
-            { "CREATE", "Criando..." },
-            { "DROP", "Removendo..." },
-            { "ALTER", "Modificando..." }
+            { "SELECT", "Loading data..." },
+            { "INSERT", "Saving..." },
+            { "UPDATE", "Updating..." },
+            { "DELETE", "Deleting..." },
+            { "CREATE", "Creating..." },
+            { "DROP", "Removing..." },
+            { "ALTER", "Modifying..." }
         };
 
         private static readonly HashSet<string> QuickOperations = new()
@@ -235,25 +235,25 @@ namespace MyVocaList.View.Interceptors
                 // 🛡️ SKIP: Comandos de migração do Entity Framework
                 if (IsMigrationOperation(sql))
                 {
-                    Console.WriteLine($"🛡️ DatabaseInterceptor: Comando de migração ignorado: {sql.Substring(0, Math.Min(50, sql.Length))}...");
+                    Console.WriteLine($"🛡️ DatabaseInterceptor: Migration command ignored: {sql.Substring(0, Math.Min(50, sql.Length))}...");
                     return;
                 }
 
                 // 🛡️ SKIP: Operações muito rápidas que não precisam de loading
                 if (IsQuickOperation(sql))
                 {
-                    Console.WriteLine($"🏃 DatabaseInterceptor: Operação rápida - sem loading: {sql.Substring(0, Math.Min(50, sql.Length))}...");
+                    Console.WriteLine($"🏃 DatabaseInterceptor: Quick operation - no loading needed: {sql.Substring(0, Math.Min(50, sql.Length))}...");
                     return;
                 }
 
                 // 🎯 DETECTA: Tipo de operação
                 var operation = GetOperationType(sql);
-                var message = OperationMessages.GetValueOrDefault(operation, "Processando...");
+                var message = OperationMessages.GetValueOrDefault(operation, "Processing...");
 
                 // ✅ SISTEMA CENTRALIZADO: Solicita loading com baixa prioridade
                 var requesterId = $"Database_{operation}_{DateTime.Now.Ticks}";
 
-                Console.WriteLine($"🔄 DatabaseInterceptor: Solicitando loading para {operation}: {message}");
+                Console.WriteLine($"🔄 DatabaseInterceptor: Requesting loading for {operation}: {message}");
                 Console.WriteLine($"🔍 SQL: {sql.Substring(0, Math.Min(100, sql.Length))}...");
 
                 await GlobalLoadingOverlay.Instance.RequestShowAsync(
@@ -311,16 +311,19 @@ namespace MyVocaList.View.Interceptors
                 var requesterId = command.GetRequesterId();
                 if (string.IsNullOrEmpty(requesterId))
                 {
-                    Console.WriteLine($"⚠️ DatabaseInterceptor: Comando sem requesterId para remoção");
+                    // Silent skip - no requesterId means loading was never shown
                     return;
                 }
 
-                Console.WriteLine($"🔄 DatabaseInterceptor: Removendo loading para {requesterId}");
+                Console.WriteLine($"🔄 DatabaseInterceptor: Removing loading for {requesterId}");
                 await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
+
+                // 🧹 CLEANUP: Remove requesterId after use to prevent duplicate removal attempts
+                command.ClearRequesterId();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ DatabaseInterceptor: Erro ao remover loading: {ex.Message}");
+                Console.WriteLine($"❌ DatabaseInterceptor: Error removing loading: {ex.Message}");
             }
         }
 
@@ -407,7 +410,7 @@ namespace MyVocaList.View.Interceptors
     }
 
     /// <summary>
-    /// Extension method para armazenar RequesterId no DbCommand
+    /// Extension methods to store RequesterId in DbCommand
     /// </summary>
     public static class DbCommandExtensions
     {
@@ -422,6 +425,11 @@ namespace MyVocaList.View.Interceptors
         {
             _requesterIds.TryGetValue(command, out var requesterId);
             return requesterId;
+        }
+
+        public static void ClearRequesterId(this DbCommand command)
+        {
+            _requesterIds.Remove(command);
         }
     }
 }

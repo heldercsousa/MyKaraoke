@@ -34,7 +34,7 @@ namespace MyVocaList.View.Components
         /// <summary>
         /// 🎯 REQUISITA: Loading com prioridade e contexto
         /// </summary>
-        public async Task RequestShowAsync(string requesterId, string message = "Carregando...", LoadingPriority priority = LoadingPriority.Navigation, LoadingContext context = LoadingContext.PageNavigation, bool isPersistent = false, TimeSpan? autoHideAfter = null)
+        public async Task RequestShowAsync(string requesterId, string message = "Loading...", LoadingPriority priority = LoadingPriority.Navigation, LoadingContext context = LoadingContext.PageNavigation, bool isPersistent = false, TimeSpan? autoHideAfter = null)
         {
             try
             {
@@ -433,7 +433,7 @@ namespace MyVocaList.View.Components
         /// <summary>
         /// 🔄 COMPATIBILIDADE: Método estático simples (usa Navigation como padrão)
         /// </summary>
-        public static async Task ShowLoadingAsync(string message = "Carregando...")
+        public static async Task ShowLoadingAsync(string message = "Loading...")
         {
             await Instance.RequestShowAsync("Legacy", message, LoadingPriority.Navigation, LoadingContext.PageNavigation);
         }
@@ -448,13 +448,13 @@ namespace MyVocaList.View.Components
 
         // Métodos específicos para diferentes contextos
         public static async Task ShowNavigatingAsync(string requesterId = "Navigation") =>
-            await Instance.RequestShowAsync(requesterId, "Navegando...", LoadingPriority.Navigation, LoadingContext.PageNavigation);
+            await Instance.RequestShowAsync(requesterId, "Navigating...", LoadingPriority.Navigation, LoadingContext.PageNavigation);
 
         public static async Task ShowLoadingDataAsync(string requesterId = "Database") =>
-            await Instance.RequestShowAsync(requesterId, "Carregando dados...", LoadingPriority.Database, LoadingContext.DatabaseOperation);
+            await Instance.RequestShowAsync(requesterId, "Loading data...", LoadingPriority.Database, LoadingContext.DatabaseOperation);
 
         public static async Task ShowWaitingNavBarAsync(string requesterId = "NavBarWait") =>
-            await Instance.RequestShowAsync(requesterId, "Carregando página...", LoadingPriority.NavBarWait, LoadingContext.ComponentLoading, isPersistent: true);
+            await Instance.RequestShowAsync(requesterId, "Loading page...", LoadingPriority.NavBarWait, LoadingContext.ComponentLoading, isPersistent: true);
 
         public static async Task HideNavigatingAsync(string requesterId = "Navigation") =>
             await Instance.RequestHideAsync(requesterId);

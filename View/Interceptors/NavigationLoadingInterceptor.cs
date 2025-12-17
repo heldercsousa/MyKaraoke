@@ -185,75 +185,75 @@ namespace MyVocaList.View.Interceptors
         #region Navigation Event Handlers
 
         /// <summary>
-        /// 🚀 PUSH: Página sendo adicionada ao stack
+        /// 🚀 PUSH: Page being added to navigation stack
         /// </summary>
         private static async void OnPagePushed(object sender, NavigationEventArgs e)
         {
             try
             {
-                var targetPageName = e.Page?.GetType().Name ?? "Desconhecida";
+                var targetPageName = e.Page?.GetType().Name ?? "Unknown";
                 var requesterId = $"Navigation_Push_{targetPageName}_{DateTime.Now.Ticks}";
 
-                Console.WriteLine($"🚀 NavigationInterceptor: PUSH para {targetPageName}");
+                Console.WriteLine($"🚀 NavigationInterceptor: PUSH to {targetPageName}");
 
-                // ✅ SISTEMA CENTRALIZADO: Solicita loading de navegação
+                // ✅ CENTRALIZED SYSTEM: Request navigation loading with auto-hide
                 await GlobalLoadingOverlay.Instance.RequestShowAsync(
                     requesterId: requesterId,
-                    message: $"Navegando para {GetFriendlyPageName(targetPageName)}...",
+                    message: $"Navigating to {GetFriendlyPageName(targetPageName)}...",
                     priority: LoadingPriority.Navigation,
                     context: LoadingContext.PageNavigation,
                     isPersistent: false,
-                    autoHideAfter: TimeSpan.FromSeconds(3) // Auto-hide por segurança
+                    autoHideAfter: TimeSpan.FromSeconds(2) // Auto-hide for safety - reduced from 3s
                 );
 
-                // 🕐 DELAY: Pequeno delay para garantir que loading apareça
-                await Task.Delay(300);
+                // ⚡ OPTIMIZED: Minimal delay to prevent UI freeze (reduced from 300ms to 100ms)
+                await Task.Delay(100);
 
-                // Remove loading após delay
+                // Remove loading after minimal delay
                 await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ NavigationInterceptor: Erro no PUSH: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Error in PUSH: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 🔙 POP: Página sendo removida do stack
+        /// 🔙 POP: Page being removed from stack
         /// </summary>
         private static async void OnPagePopped(object sender, NavigationEventArgs e)
         {
             try
             {
-                var sourcePage = e.Page?.GetType().Name ?? "Desconhecida";
+                var sourcePage = e.Page?.GetType().Name ?? "Unknown";
                 var requesterId = $"Navigation_Pop_{sourcePage}_{DateTime.Now.Ticks}";
 
-                Console.WriteLine($"🔙 NavigationInterceptor: POP de {sourcePage}");
+                Console.WriteLine($"🔙 NavigationInterceptor: POP from {sourcePage}");
 
-                // ✅ SISTEMA CENTRALIZADO: Solicita loading de volta
+                // ✅ CENTRALIZED SYSTEM: Request back navigation loading
                 await GlobalLoadingOverlay.Instance.RequestShowAsync(
                     requesterId: requesterId,
-                    message: "Voltando...",
+                    message: "Going back...",
                     priority: LoadingPriority.Navigation,
                     context: LoadingContext.PageNavigation,
                     isPersistent: false,
-                    autoHideAfter: TimeSpan.FromSeconds(2)
+                    autoHideAfter: TimeSpan.FromSeconds(1.5)
                 );
 
-                // 🕐 DELAY: Menor delay para voltar
-                await Task.Delay(200);
+                // ⚡ OPTIMIZED: Minimal delay (reduced from 200ms to 50ms)
+                await Task.Delay(50);
 
-                // Remove loading após delay
+                // Remove loading after minimal delay
                 await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ NavigationInterceptor: Erro no POP: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Error in POP: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 🏠 ROOT: Voltando para página raiz
+        /// 🏠 ROOT: Returning to root page
         /// </summary>
         private static async void OnPoppedToRoot(object sender, NavigationEventArgs e)
         {
@@ -261,13 +261,13 @@ namespace MyVocaList.View.Interceptors
             {
                 Console.WriteLine($"🏠 NavigationInterceptor: POP TO ROOT");
 
-                await GlobalLoadingOverlay.ShowLoadingAsync("Voltando ao início...");
-                await Task.Delay(300);
+                await GlobalLoadingOverlay.ShowLoadingAsync("Returning to start...");
+                await Task.Delay(100); // Reduced from 300ms
                 await GlobalLoadingOverlay.HideLoadingAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ NavigationInterceptor: Erro no POP TO ROOT: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Error in POP TO ROOT: {ex.Message}");
                 await GlobalLoadingOverlay.HideLoadingAsync();
             }
         }
@@ -315,35 +315,35 @@ namespace MyVocaList.View.Interceptors
         }
 
         /// <summary>
-        /// 🚀 SHELL: Navegação Shell iniciando
+        /// 🚀 SHELL: Shell navigation starting
         /// </summary>
         private static async void OnShellNavigating(object sender, ShellNavigatingEventArgs e)
         {
             try
             {
-                Console.WriteLine($"🚀 NavigationInterceptor: SHELL NAVIGATING para {e.Target}");
-                await GlobalLoadingOverlay.ShowLoadingAsync("Navegando...");
+                Console.WriteLine($"🚀 NavigationInterceptor: SHELL NAVIGATING to {e.Target}");
+                await GlobalLoadingOverlay.ShowLoadingAsync("Navigating...");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ NavigationInterceptor: Erro no SHELL NAVIGATING: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Error in SHELL NAVIGATING: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// ✅ SHELL: Navegação Shell concluída
+        /// ✅ SHELL: Shell navigation completed
         /// </summary>
         private static async void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
         {
             try
             {
-                Console.WriteLine($"✅ NavigationInterceptor: SHELL NAVIGATED para {e.Current}");
-                await Task.Delay(200);
+                Console.WriteLine($"✅ NavigationInterceptor: SHELL NAVIGATED to {e.Current}");
+                await Task.Delay(50); // Reduced from 200ms
                 await GlobalLoadingOverlay.HideLoadingAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ NavigationInterceptor: Erro no SHELL NAVIGATED: {ex.Message}");
+                Console.WriteLine($"❌ NavigationInterceptor: Error in SHELL NAVIGATED: {ex.Message}");
                 await GlobalLoadingOverlay.HideLoadingAsync();
             }
         }
@@ -353,21 +353,21 @@ namespace MyVocaList.View.Interceptors
         #region Helper Methods
 
         /// <summary>
-        /// 🎯 HELPER: Converte nome técnico da página em nome amigável
+        /// 🎯 HELPER: Convert technical page name to friendly name
         /// </summary>
         private static string GetFriendlyPageName(string technicalName)
         {
             return technicalName switch
             {
-                "SpotPage" => "Locais",
-                "SpotFormPage" => "Formulário",
-                "PersonPage" => "Participantes",
-                "PersonFormPage" => "Cadastro",
-                "StackPage" => "Fila",
-                "TonguePage" => "Idiomas",
-                "ConfigPage" => "Configurações",
-                "HistoryPage" => "Histórico",
-                _ => "página"
+                "SpotPage" => "Venues",
+                "SpotFormPage" => "Form",
+                "PersonPage" => "Participants",
+                "PersonFormPage" => "Registration",
+                "StackPage" => "Queue",
+                "TonguePage" => "Languages",
+                "ConfigPage" => "Settings",
+                "HistoryPage" => "History",
+                _ => "page"
             };
         }
 
@@ -397,7 +397,7 @@ namespace MyVocaList.View.Interceptors
         #region Public Methods for Manual Control
 
         /// <summary>
-        /// 🎯 MANUAL: Força loading para navegação customizada
+        /// 🎯 MANUAL: Force loading for custom navigation
         /// </summary>
         public static async Task ShowNavigationLoadingAsync(string destinationPageName)
         {
@@ -406,18 +406,18 @@ namespace MyVocaList.View.Interceptors
 
             await GlobalLoadingOverlay.Instance.RequestShowAsync(
                 requesterId: requesterId,
-                message: $"Navegando para {friendlyName}...",
+                message: $"Navigating to {friendlyName}...",
                 priority: LoadingPriority.Navigation,
                 context: LoadingContext.PageNavigation
             );
         }
 
         /// <summary>
-        /// 🎯 MANUAL: Esconde loading de navegação
+        /// 🎯 MANUAL: Hide navigation loading
         /// </summary>
         public static async Task HideNavigationLoadingAsync()
         {
-            // Limpa todas as requisições de navegação
+            // Clear all navigation requests
             await GlobalLoadingOverlay.Instance.ClearContextAsync(LoadingContext.PageNavigation);
         }
 

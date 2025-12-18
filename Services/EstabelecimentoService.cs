@@ -315,6 +315,30 @@ namespace MyVocaList.Services
             }
         }
 
+        public async Task<(IEnumerable<EstabelecimentoListItemDto> items, int totalCount)> GetPagedEstabelecimentosForListAsync(
+            int pageNumber,
+            int pageSize,
+            string? query = null)
+        {
+            try
+            {
+                Console.WriteLine($"📄 GetPagedEstabelecimentosForListAsync - Page {pageNumber}, Size {pageSize}, Query: '{query ?? "null"}'");
+
+                var (items, totalCount) = await _estabelecimentoRepository.GetPagedWithHasEventsAsync(pageNumber, pageSize, query);
+
+                var dtos = items.Select(x => EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
+
+                Console.WriteLine($"📄 Returned {dtos.Count} items out of {totalCount} total");
+
+                return (dtos, totalCount);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error in GetPagedEstabelecimentosForListAsync: {ex.Message}");
+                return (new List<EstabelecimentoListItemDto>(), 0);
+            }
+        }
+
 
         #region Utilitários
 

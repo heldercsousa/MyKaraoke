@@ -27,5 +27,17 @@ namespace MyVocaList.Services
 
         Task<IEnumerable<EstabelecimentoListItemDto>> GetAllEstabelecimentosForListAsync();
         Task<IEnumerable<EstabelecimentoListItemDto>> SearchEstabelecimentosForListAsync(string query);
+
+        /// <summary>
+        /// Gets a paginated list of establishments for display
+        /// </summary>
+        /// <param name="pageNumber">Page number (1-based)</param>
+        /// <param name="pageSize">Number of items per page</param>
+        /// <param name="query">Optional search query</param>
+        /// <returns>Tuple with list of DTOs and total count</returns>
+        Task<(IEnumerable<EstabelecimentoListItemDto> items, int totalCount)> GetPagedEstabelecimentosForListAsync(
+            int pageNumber,
+            int pageSize,
+            string? query = null);
     }
 }

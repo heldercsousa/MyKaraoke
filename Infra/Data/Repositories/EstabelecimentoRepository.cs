@@ -106,5 +106,42 @@ namespace MyVocaList.Infra.Data.Repositories
                 .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// Gets a paginated list of establishments with event information
+        /// Uses Skip/Take for efficient database pagination
+        /// </summary>
+        public async Task<(IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)> items, int totalCount)> GetPagedWithHasEventsAsync(
+            int pageNumber,
+            int pageSize,
+            string? query = null)
+        {
+            var q = _context.Estabelecimentos.AsQueryable();
+
+            // Apply search filter if provided
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                query = query.Trim();
+                q = q.Where(e => e.Nome.Contains(query));
+            }
+
+            // Get total count for pagination info (executes COUNT(*) query)
+            var totalCount = await q.CountAsync();
+
+            // Apply pagination with Skip/Take (LIMIT/OFFSET in SQL)
+            var items = await q
+                .OrderBy(e => e.Nome)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(e => new
+                {
+                    Estabelecimento = e,
+                    HasEvents = e.Eventos.Any()
+                })
+                .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
     }
 }

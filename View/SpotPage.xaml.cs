@@ -1,5 +1,6 @@
 ﻿using MyVocaList.Domain;
 using MyVocaList.Services;
+using MyVocaList.Services.Configuration;
 using MyVocaList.View.Components;
 using MyVocaList.View.Extensions;
 using MyVocaList.View.Behaviors;
@@ -20,7 +21,12 @@ namespace MyVocaList.View
     {
         private IEstabelecimentoService _estabelecimentoService;
         public ObservableCollection<EstabelecimentoListItemDto> Locais { get; }
-        // private List<EstabelecimentoListItemDto> _allLocais = new(); // REMOVED
+
+        // Pagination state
+        private int _currentPage = 1;
+        private int _totalCount = 0;
+        private bool _hasMoreItems = true;
+        private string _currentSearchQuery = null;
 
         private int _selectionCount;
         public int SelectionCount
@@ -174,8 +180,8 @@ namespace MyVocaList.View
             }
         }
 
-        // private List<EstabelecimentoListItemDto> _allLocais = new(); // REMOVED: In-memory cache not needed for DB search
         private CancellationTokenSource _searchCts;
+        private CancellationTokenSource _loadMoreCts;
 
         // ...
 
@@ -184,23 +190,37 @@ namespace MyVocaList.View
             if (_estabelecimentoService == null) return;
             try
             {
-                // Initial load: Get all (or first page)
-                var locaisViewModels = await _estabelecimentoService.GetAllEstabelecimentosForListAsync();
-                
+                // Reset pagination state
+                _currentPage = 1;
+                _hasMoreItems = true;
+                _currentSearchQuery = null;
+
+                // Load first page using pagination
+                var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
+                    _currentPage,
+                    PaginationSettings.PageSize,
+                    null);
+
+                _totalCount = totalCount;
+
                 Locais.Clear();
 
-                if (locaisViewModels != null)
+                if (items != null)
                 {
-                    foreach (var localViewModel in locaisViewModels)
+                    foreach (var item in items)
                     {
-                        Locais.Add(localViewModel);
+                        Locais.Add(item);
                     }
+
+                    // Check if there are more items to load
+                    _hasMoreItems = Locais.Count < _totalCount;
                 }
+
                 MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao carregar locais: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Error loading venues: {ex.Message}");
                 MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
         }
@@ -224,28 +244,30 @@ namespace MyVocaList.View
 
                 if (_estabelecimentoService == null) return;
 
-                IEnumerable<EstabelecimentoListItemDto> results;
+                // Reset pagination for new search
+                _currentPage = 1;
+                _currentSearchQuery = query;
 
-                if (string.IsNullOrWhiteSpace(query))
-                {
-                    // If empty, load all
-                    results = await _estabelecimentoService.GetAllEstabelecimentosForListAsync();
-                }
-                else
-                {
-                    // Filter in Database
-                    results = await _estabelecimentoService.SearchEstabelecimentosForListAsync(query);
-                }
+                var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
+                    _currentPage,
+                    PaginationSettings.PageSize,
+                    string.IsNullOrWhiteSpace(query) ? null : query);
 
                 if (cts.Token.IsCancellationRequested) return;
+
+                _totalCount = totalCount;
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     Locais.Clear();
-                    foreach (var item in results)
+                    foreach (var item in items)
                     {
                         Locais.Add(item);
                     }
+
+                    // Check if there are more items to load
+                    _hasMoreItems = Locais.Count < _totalCount;
+
                     UpdateUIState();
                 });
             }
@@ -492,16 +514,78 @@ namespace MyVocaList.View
 
         private async Task LoadMoreItemsAsync()
         {
-            if (IsLoadingMore) return;
-            IsLoadingMore = true;
+            // Prevent concurrent load more requests
+            if (IsLoadingMore || !_hasMoreItems || _estabelecimentoService == null) return;
 
-            // Simulate delay for "Infinite Scroll" visual feedback
-            await Task.Delay(2000); 
+            // Cancel any previous load more operation
+            Interlocked.Exchange(ref _loadMoreCts, new CancellationTokenSource())?.Cancel();
+            var cts = _loadMoreCts;
 
-            // TODO: Implement actual pagination fetch logic here
-            // var moreItems = await _service.GetNextPageAsync(...) ...
+            try
+            {
+                IsLoadingMore = true;
 
-            IsLoadingMore = false;
+                // Small debounce to prevent rapid-fire requests during fast scrolling
+                await Task.Delay(PaginationSettings.LoadMoreDebounceMs, cts.Token);
+
+                if (cts.Token.IsCancellationRequested) return;
+
+                // Load next page
+                _currentPage++;
+
+                var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
+                    _currentPage,
+                    PaginationSettings.PageSize,
+                    _currentSearchQuery);
+
+                if (cts.Token.IsCancellationRequested)
+                {
+                    _currentPage--; // Rollback page increment
+                    return;
+                }
+
+                _totalCount = totalCount;
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (items != null)
+                    {
+                        foreach (var item in items)
+                        {
+                            Locais.Add(item);
+                        }
+
+                        // Check if there are more items
+                        _hasMoreItems = Locais.Count < _totalCount;
+
+                        // Memory management: Remove old items if limit exceeded
+                        if (Locais.Count > PaginationSettings.MaxItemsInMemory)
+                        {
+                            var itemsToRemove = Locais.Count - PaginationSettings.MaxItemsInMemory;
+                            for (int i = 0; i < itemsToRemove; i++)
+                            {
+                                Locais.RemoveAt(0); // Remove from top (oldest)
+                            }
+                            System.Diagnostics.Debug.WriteLine($"✂️ SpotPage: Trimmed {itemsToRemove} old items to keep memory under {PaginationSettings.MaxItemsInMemory} items");
+                        }
+                    }
+
+                    UpdateUIState();
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                _currentPage--; // Rollback page increment
+            }
+            catch (Exception ex)
+            {
+                _currentPage--; // Rollback page increment
+                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Error loading more items: {ex.Message}");
+            }
+            finally
+            {
+                IsLoadingMore = false;
+            }
         }
 
         private void SetLoading(bool isLoading)

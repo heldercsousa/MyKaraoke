@@ -324,7 +324,7 @@ namespace MyVocaList.Services
             {
                 Console.WriteLine($"📄 GetPagedEstabelecimentosForListAsync - Page {pageNumber}, Size {pageSize}, Query: '{query ?? "null"}'");
 
-                var (items, totalCount) = await _estabelecimentoRepository.GetPagedWithHasEventsAsync(pageNumber, pageSize, query);
+                var (items, totalCount) = await _estabelecimentoRepository.GetPagedWithEventInfoAsync(pageNumber, pageSize, query);
 
                 var dtos = items.Select(x => EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
 

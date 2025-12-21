@@ -16,28 +16,32 @@ namespace MyVocaList.Infra.Data.Repositories
 
         public async Task<Pessoa> GetByNomeCompletoAsync(string nomeCompleto)
         {
+            Guard.AgainstNullOrWhiteSpace(nomeCompleto, nameof(nomeCompleto));
             return await _dbSet.FirstOrDefaultAsync(p => p.NomeCompleto == nomeCompleto);
         }
 
-        // FUNCIONALIDADE: Busca otimizada por nome normalizado
+        /// <summary>
+        /// Optimized search by normalized name
+        /// </summary>
         public async Task<List<Pessoa>> SearchByNameAsync(string searchTerm, int maxResults = 10)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            // Return empty list for invalid search (no exception for user input)
+            if (Guard.IsNullOrWhiteSpace(searchTerm))
                 return new List<Pessoa>();
 
-            // Normaliza o termo de busca usando o utilitário
-            var normalizedSearch = _textNormalizer.NormalizeName(searchTerm); // 🔄 MUDANÇA
+            // Normalize search term
+            var normalizedSearch = _textNormalizer.NormalizeName(searchTerm);
 
-            Console.WriteLine($"Buscando: '{searchTerm}' → normalizado: '{normalizedSearch}'");
+            Console.WriteLine($"Searching: '{searchTerm}' → normalized: '{normalizedSearch}'");
 
-            // Busca SUPER otimizada usando índice da coluna normalizada
+            // Optimized search using normalized column index
             var results = await _dbSet
                 .Where(p => p.NomeCompletoNormalizado.Contains(normalizedSearch))
-                .OrderBy(p => p.NomeCompleto) // Ordena alfabeticamente
+                .OrderBy(p => p.NomeCompleto)
                 .Take(maxResults)
                 .ToListAsync();
 
-            Console.WriteLine($"Encontrados {results.Count} resultados");
+            Console.WriteLine($"Found {results.Count} results");
 
             return results;
         }

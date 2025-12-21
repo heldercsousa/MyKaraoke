@@ -1,5 +1,6 @@
 ﻿using MyVocaList.Domain;
 using Microsoft.EntityFrameworkCore;
+using MyVocaList.Infra.Utils;
 
 namespace MyVocaList.Infra.Data.Repositories
 {
@@ -8,50 +9,56 @@ namespace MyVocaList.Infra.Data.Repositories
         public EstabelecimentoRepository(AppDbContext context) : base(context) { }
 
         /// <summary>
-        /// Busca estabelecimento por nome (case-insensitive via NOCASE collation)
+        /// Gets establishment by exact name match (case and accent insensitive)
+        /// Database-level collation handles case/accent insensitivity automatically
+        /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<Estabelecimento?> GetByNomeAsync(string nome)
         {
-            if (string.IsNullOrWhiteSpace(nome))
-                return null;
+            Guard.AgainstNullOrWhiteSpace(nome, nameof(nome));
 
-            // ✅ CORREÇÃO: Apenas trim - NOCASE já configurado no AppDbContext
             return await _context.Estabelecimentos
-                .FirstOrDefaultAsync(e => e.Nome == nome.Trim());
+                .FirstOrDefaultAsync(e => e.Nome == nome);
         }
 
         /// <summary>
-        /// Busca estabelecimentos por nome que começam com o termo
+        /// Searches establishments by name starting with the search term (case and accent insensitive)
+        /// Database-level collation handles case/accent insensitivity automatically
+        /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<Estabelecimento>> SearchByNomeStartsWithAsync(string searchTerm, int maxResults = 10)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            // Return empty list for invalid search (no exception for user input)
+            if (Guard.IsNullOrWhiteSpace(searchTerm))
                 return new List<Estabelecimento>();
 
             return await _context.Estabelecimentos
-                .Where(e => e.Nome.StartsWith(searchTerm.Trim()))
+                .Where(e => e.Nome.StartsWith(searchTerm))
                 .Take(maxResults)
                 .OrderBy(e => e.Nome)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// Busca estabelecimentos por nome que contém o termo
+        /// Searches establishments by name containing the search term (case and accent insensitive)
+        /// Database-level collation handles case/accent insensitivity automatically
+        /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<Estabelecimento>> SearchByNomeContainsAsync(string searchTerm, int maxResults = 10)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            // Return empty list for invalid search (no exception for user input)
+            if (Guard.IsNullOrWhiteSpace(searchTerm))
                 return new List<Estabelecimento>();
 
             return await _context.Estabelecimentos
-                .Where(e => e.Nome.Contains(searchTerm.Trim()))
+                .Where(e => e.Nome.Contains(searchTerm))
                 .Take(maxResults)
                 .OrderBy(e => e.Nome)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// Retorna todos os estabelecimentos ordenados por nome
+        /// Gets all establishments ordered by name
         /// </summary>
         public override async Task<IEnumerable<Estabelecimento>> GetAllAsync()
         {
@@ -60,14 +67,18 @@ namespace MyVocaList.Infra.Data.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Searches establishments with event information (case and accent insensitive)
+        /// Database-level collation handles case/accent insensitivity automatically
+        /// Trimming handled automatically by DatabaseLoadingInterceptor
+        /// </summary>
         public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> SearchWithHasEventsAsync(string? query)
         {
             var q = _context.Estabelecimentos.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                query = query.Trim().ToLower();
-                q = q.Where(e => e.Nome.ToLower().Contains(query));
+                q = q.Where(e => e.Nome.Contains(query));
             }
 
             return await q
@@ -108,21 +119,23 @@ namespace MyVocaList.Infra.Data.Repositories
         }
 
         /// <summary>
-        /// Gets a paginated list of establishments with event information
+        /// Gets a paginated list of ALL establishments with event information flag
+        /// Does NOT filter - returns all establishments with hasEvents boolean flag
         /// Uses Skip/Take for efficient database pagination
+        /// Search is case and accent insensitive (database-level collation)
+        /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
-        public async Task<(IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)> items, int totalCount)> GetPagedWithHasEventsAsync(
+        public async Task<(IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)> items, int totalCount)> GetPagedWithEventInfoAsync(
             int pageNumber,
             int pageSize,
             string? query = null)
         {
             var q = _context.Estabelecimentos.AsQueryable();
 
-            // Apply search filter if provided (case-insensitive using ToLower)
+            // Apply search filter if provided (case and accent insensitive via database collation)
             if (!string.IsNullOrWhiteSpace(query))
             {
-                query = query.Trim().ToLower();
-                q = q.Where(e => e.Nome.ToLower().Contains(query));
+                q = q.Where(e => e.Nome.Contains(query));
             }
 
             // Get total count for pagination info (executes COUNT(*) query)

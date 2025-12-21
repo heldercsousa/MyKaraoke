@@ -1,8 +1,8 @@
 # CLAUDE.md - MyVocaList Project Context
 
-> **Living Documentation for AI-Assisted Development**  
-> Last Updated: December 16, 2025  
-> Version: 2.3
+> **Living Documentation for AI-Assisted Development**
+> Last Updated: December 21, 2025
+> Version: 2.4
 
 ---
 
@@ -362,10 +362,207 @@ options.UseSqlite($"Data Source={dbPath}")
 ```
 
 ### Key Features
-- **DatabaseLoadingInterceptor**: Automatic loading indicators
+- **DatabaseLoadingInterceptor**: Automatic loading indicators + **Auto-trimming string parameters**
 - **Text Normalization**: Multilingual search (6 languages)
 - **Hybrid Validation**: Input (200 chars) + Database (250 chars)
 - **Homonym Handling**: Birthday/Email for disambiguation
+- **Case & Accent Insensitive Search**: Database-level collation (NOCASE_NOACCENT)
+
+### Database Best Practices
+
+**⚠️ CRITICAL: Do NOT manually trim strings in EF Core queries!**
+
+The `DatabaseLoadingInterceptor` **automatically trims all string parameters** before query execution. This means:
+
+```csharp
+// ❌ WRONG - Manual trimming (redundant and clutters code)
+var trimmedName = name.Trim();
+return await _context.Estabelecimentos
+    .Where(e => e.Nome == trimmedName);
+
+// ✅ CORRECT - Automatic trimming by interceptor
+return await _context.Estabelecimentos
+    .Where(e => e.Nome == name);  // Interceptor handles trimming!
+```
+
+**Why This Matters:**
+- ✅ **Cleaner code**: No repetitive `.Trim()` calls
+- ✅ **Developer-forget-proof**: Automatic for all queries
+- ✅ **Centralized**: Single point of control in interceptor
+- ✅ **Performance**: Client-side trimming (no database overhead)
+
+**Collation (Case & Accent Insensitive):**
+- **Configured in:** `AppDbContext.OnModelCreating()` via `SetDatabaseCollation()` method
+- **Automatic:** Applied to ALL string properties in ALL entities (developer-forget-proof)
+- **Current:** SQLite uses custom `NOCASE_NOACCENT` collation (registered in `RegisterCustomCollation()`)
+- **Supports:** "João" = "joao" = "JOAO" = "jOãO" (any case/accent combination)
+- **Future Migration:** When migrating to SQL Server, simply update `SetDatabaseCollation()`:
+  ```csharp
+  // SQLite (current)
+  property.SetCollation("NOCASE_NOACCENT");
+
+  // SQL Server (future migration)
+  property.SetCollation("Latin1_General_CI_AI");  // CI=Case Insensitive, AI=Accent Insensitive
+  ```
+- **⚠️ IMPORTANT:** All new string properties automatically inherit collation - no manual configuration needed!
+
+---
+
+## ⚡ Performance Best Practices
+
+### **🚫 CRITICAL: Avoid Runtime Reflection**
+
+**Reflection is EXPENSIVE and should NEVER run during user interactions!**
+
+#### **The Problem:**
+```csharp
+// ❌ BAD - Reflection on EVERY user action (slow!)
+public async Task ProcessUserAction(object data)
+{
+    var type = data.GetType();  // Reflection!
+    var properties = type.GetProperties();  // Reflection!
+
+    foreach (var prop in properties)  // Slow loop!
+    {
+        var value = prop.GetValue(data);  // Reflection!
+        await ProcessValue(value);
+    }
+}
+```
+
+**Performance Impact:**
+- ❌ **50-100x slower** than direct property access
+- ❌ **Garbage collection pressure** (allocations)
+- ❌ **Battery drain** on mobile devices
+- ❌ **UI lag** during user interactions
+
+#### **The Solution: Pre-compute at Startup**
+
+**✅ GOOD - Reflection ONCE at app startup, cache the results:**
+```csharp
+// Startup: MauiProgram.cs or App.xaml.cs
+public static class TypeCache
+{
+    private static readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new();
+
+    // ✅ Called ONCE during app initialization
+    public static void WarmUpCache()
+    {
+        var types = new[] { typeof(Pessoa), typeof(Estabelecimento), typeof(Evento) };
+
+        foreach (var type in types)
+        {
+            _propertyCache[type] = type.GetProperties();  // Reflection once!
+        }
+    }
+
+    // ✅ Fast lookup (no reflection!)
+    public static PropertyInfo[] GetProperties(Type type)
+    {
+        return _propertyCache.TryGetValue(type, out var props)
+            ? props
+            : type.GetProperties();  // Fallback (rare)
+    }
+}
+
+// Runtime: Fast cached access
+public async Task ProcessUserAction(object data)
+{
+    var type = data.GetType();
+    var properties = TypeCache.GetProperties(type);  // ✅ Cached! Fast!
+
+    foreach (var prop in properties)
+    {
+        var value = prop.GetValue(data);
+        await ProcessValue(value);
+    }
+}
+```
+
+#### **Alternatives to Reflection:**
+
+**Option 1: Source Generators (Best Performance)**
+```csharp
+// Zero reflection, compile-time code generation
+// Use Roslyn Source Generators for metadata
+```
+
+**Option 2: Expression Trees (Good Performance)**
+```csharp
+// Compiled lambdas - much faster than reflection
+var getter = CreateGetter<Pessoa>(p => p.Nome);
+```
+
+**Option 3: Pre-generated Mapping Files**
+```csharp
+// Generate mapping code at build time
+// No runtime reflection at all
+```
+
+#### **Guidelines:**
+
+| Scenario | Approach | Performance |
+|----------|----------|-------------|
+| **App startup** | ✅ Reflection OK | One-time cost |
+| **User interaction** | ❌ NO reflection | Must be instant |
+| **Background task** | ⚠️ Reflection acceptable | Not blocking UI |
+| **Hot path (loops)** | ❌ NO reflection | Critical path |
+
+#### **Mobile-Specific Concerns:**
+
+**Why This Matters More on Mobile:**
+- 📱 **Limited CPU**: Mobile processors are slower
+- 🔋 **Battery life**: Reflection consumes more power
+- 💾 **Memory pressure**: GC pressure affects performance
+- 📶 **User expectation**: Users expect instant response
+
+#### **Rule of Thumb:**
+
+```
+If code runs while user is waiting → NO REFLECTION
+If code runs at app startup → REFLECTION OK (cache results!)
+If code runs in background → REFLECTION OK (if needed)
+```
+
+**⚠️ NEVER use reflection in:**
+- UI event handlers (button clicks, text changes)
+- Data binding paths (called repeatedly)
+- Validation loops (input validation)
+- Search/filter operations (user is waiting)
+- Animation loops (performance critical)
+
+**✅ Reflection is OK in:**
+- App initialization (MauiProgram.cs)
+- Dependency injection setup (one-time)
+- Migration/seeding (background, one-time)
+- Debug/diagnostic tools (not production hot path)
+
+---
+
+## ✅ Validation Strategy
+
+### **Guard Pattern (Repositories/Services)**
+```csharp
+// ✅ Use Guard for parameter validation
+Guard.AgainstNullOrWhiteSpace(nome, nameof(nome));
+Guard.AgainstNegativeOrZero(id, nameof(id));
+```
+**Location:** `Infra/Utils/Guard.cs` | **When:** Method preconditions (fail-fast)
+
+### **FluentValidation (Complex Business Rules)**
+```csharp
+// ✅ Use for: Homonym validation, duplicate detection, complex DTOs
+public class PessoaDtoValidator : AbstractValidator<PessoaDto> { ... }
+```
+**When:** Cross-field validation, async rules, multiple errors needed | **API:** Essential post-MVP
+
+### **MAUI Behaviors (Simple UI)**
+```csharp
+// ✅ Use for: Character counters, required fields, basic input validation
+```
+**When:** UI-level validation, instant feedback
+
+**Rule:** Repository/Service = Guard | Business Logic = FluentValidation | UI = MAUI Behaviors
 
 ---
 
@@ -490,6 +687,6 @@ public partial class MyPage : ContentPage
 
 ---
 
-**Last Updated**: December 16, 2025  
-**Version**: 2.3
+**Last Updated**: December 21, 2025
+**Version**: 2.4
 **Maintained by**: Helder (Architect) + Claude AI (Developer)

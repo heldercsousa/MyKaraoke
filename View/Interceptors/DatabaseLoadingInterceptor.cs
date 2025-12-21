@@ -9,9 +9,10 @@ using System.Threading.Tasks;
 namespace MyVocaList.View.Interceptors
 {
     /// <summary>
-    /// ✅ INTERCEPTADOR: Mostra loading automaticamente em todas as operações de banco
-    /// 🎯 AUTOMÁTICO: Sem necessidade de código manual nos services
-    /// 🔄 INTELIGENTE: Detecta tipo de operação (SELECT, INSERT, UPDATE, DELETE)
+    /// ✅ INTERCEPTOR: Automatically shows loading for all database operations
+    /// 🎯 AUTOMATIC: No manual code needed in services
+    /// 🔄 INTELLIGENT: Detects operation type (SELECT, INSERT, UPDATE, DELETE)
+    /// ✂️ TRIMMING: Automatically trims all string parameters before query execution
     /// </summary>
     public class DatabaseLoadingInterceptor : DbCommandInterceptor
     {
@@ -47,16 +48,17 @@ namespace MyVocaList.View.Interceptors
         #region Command Execution Interception
 
         /// <summary>
-        /// 🎯 INTERCEPTA: Comandos síncronos
+        /// 🎯 INTERCEPTS: Synchronous commands
         /// </summary>
         public override InterceptionResult<DbDataReader> ReaderExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<DbDataReader> result)
         {
+            TrimStringParameters(command);  // ✂️ Auto-trim string parameters
             ShowLoadingForCommand(command);
             return result;
         }
 
         /// <summary>
-        /// 🎯 INTERCEPTA: Comandos assíncronos (mais comum no MAUI)
+        /// 🎯 INTERCEPTS: Asynchronous commands (most common in MAUI)
         /// </summary>
         public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
             DbCommand command,
@@ -64,21 +66,23 @@ namespace MyVocaList.View.Interceptors
             InterceptionResult<DbDataReader> result,
             CancellationToken cancellationToken = default)
         {
+            TrimStringParameters(command);  // ✂️ Auto-trim string parameters
             await ShowLoadingForCommandAsync(command);
             return result;
         }
 
         /// <summary>
-        /// 🎯 INTERCEPTA: Comandos NonQuery síncronos
+        /// 🎯 INTERCEPTS: NonQuery synchronous commands
         /// </summary>
         public override InterceptionResult<int> NonQueryExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<int> result)
         {
+            TrimStringParameters(command);  // ✂️ Auto-trim string parameters (SELECT only)
             ShowLoadingForCommand(command);
             return result;
         }
 
         /// <summary>
-        /// 🎯 INTERCEPTA: Comandos NonQuery assíncronos
+        /// 🎯 INTERCEPTS: NonQuery asynchronous commands
         /// </summary>
         public override async ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(
             DbCommand command,
@@ -86,21 +90,23 @@ namespace MyVocaList.View.Interceptors
             InterceptionResult<int> result,
             CancellationToken cancellationToken = default)
         {
+            TrimStringParameters(command);  // ✂️ Auto-trim string parameters (SELECT only)
             await ShowLoadingForCommandAsync(command);
             return result;
         }
 
         /// <summary>
-        /// 🎯 INTERCEPTA: Comandos Scalar síncronos
+        /// 🎯 INTERCEPTS: Scalar synchronous commands
         /// </summary>
         public override InterceptionResult<object> ScalarExecuting(DbCommand command, CommandEventData eventData, InterceptionResult<object> result)
         {
+            TrimStringParameters(command);  // ✂️ Auto-trim string parameters (SELECT only)
             ShowLoadingForCommand(command);
             return result;
         }
 
         /// <summary>
-        /// 🎯 INTERCEPTA: Comandos Scalar assíncronos
+        /// 🎯 INTERCEPTS: Scalar asynchronous commands
         /// </summary>
         public override async ValueTask<InterceptionResult<object>> ScalarExecutingAsync(
             DbCommand command,
@@ -108,6 +114,7 @@ namespace MyVocaList.View.Interceptors
             InterceptionResult<object> result,
             CancellationToken cancellationToken = default)
         {
+            TrimStringParameters(command);  // ✂️ Auto-trim string parameters (SELECT only)
             await ShowLoadingForCommandAsync(command);
             return result;
         }
@@ -404,6 +411,36 @@ namespace MyVocaList.View.Interceptors
             }
 
             return false;
+        }
+
+        #endregion
+
+        #region String Parameter Trimming
+
+        /// <summary>
+        /// ✂️ AUTO-TRIMS: All string parameters before query execution
+        /// This eliminates the need for manual .Trim() calls in repositories
+        /// Applies to SELECT queries only (not INSERT/UPDATE to preserve user input)
+        /// </summary>
+        private static void TrimStringParameters(DbCommand command)
+        {
+            if (command == null || command.CommandText == null)
+                return;
+
+            // Only trim for SELECT queries (read operations)
+            // Don't trim for INSERT/UPDATE to preserve exact user input during writes
+            var commandText = command.CommandText.TrimStart().ToUpperInvariant();
+            if (!commandText.StartsWith("SELECT"))
+                return;
+
+            // Trim all string parameters
+            foreach (DbParameter parameter in command.Parameters)
+            {
+                if (parameter.Value is string stringValue && !string.IsNullOrEmpty(stringValue))
+                {
+                    parameter.Value = stringValue.Trim();
+                }
+            }
         }
 
         #endregion

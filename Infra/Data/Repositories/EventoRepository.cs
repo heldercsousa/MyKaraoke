@@ -1,5 +1,6 @@
 ﻿using MyVocaList.Domain;
 using Microsoft.EntityFrameworkCore;
+using MyVocaList.Infra.Utils;
 
 namespace MyVocaList.Infra.Data.Repositories
 {
@@ -9,14 +10,16 @@ namespace MyVocaList.Infra.Data.Repositories
 
         public async Task<Evento> GetActiveEventAsync()
         {
-            return await _dbSet.Include(e => e.Estabelecimento) // Inclui o Estabelecimento
+            return await _dbSet.Include(e => e.Estabelecimento) // Include the Estabelecimento
                                .FirstOrDefaultAsync(e => e.FilaAtiva);
         }
 
         public async Task SetActiveEventAsync(int eventId)
         {
+            Guard.AgainstNegativeOrZero(eventId, nameof(eventId));
+
             var currentActive = await _dbSet.FirstOrDefaultAsync(e => e.FilaAtiva);
-            if (currentActive != null && currentActive.Id != eventId) // Evitar desativar se já é o ativo
+            if (currentActive != null && currentActive.Id != eventId) // Avoid deactivating if already active
             {
                 currentActive.FilaAtiva = false;
                 _dbSet.Update(currentActive);
@@ -32,11 +35,12 @@ namespace MyVocaList.Infra.Data.Repositories
         }
 
         /// <summary>
-        /// Verifica se há eventos associados a um estabelecimento
-        /// Adicionar esta método à interface IEventoRepository e implementação EventoRepository
+        /// Checks if there are events associated with an establishment
         /// </summary>
         public async Task<bool> HasEventsByEstabelecimentoAsync(int estabelecimentoId)
         {
+            Guard.AgainstNegativeOrZero(estabelecimentoId, nameof(estabelecimentoId));
+
             return await _context.Eventos
                 .AnyAsync(e => e.EstabelecimentoId == estabelecimentoId);
         }

@@ -81,7 +81,9 @@
                         ItemsSource="{Binding Locais}"
                         SelectionMode="None"
                         BackgroundColor="Transparent"
-                        IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}">
+                        IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}"
+                        RemainingItemsThreshold="5"
+                        RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
 
             <CollectionView.Footer>
                 <Grid HeightRequest="60" Padding="12">

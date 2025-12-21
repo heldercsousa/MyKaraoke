@@ -66,8 +66,8 @@ namespace MyVocaList.Infra.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                query = query.Trim();
-                q = q.Where(e => e.Nome.Contains(query));
+                query = query.Trim().ToLower();
+                q = q.Where(e => e.Nome.ToLower().Contains(query));
             }
 
             return await q
@@ -118,11 +118,11 @@ namespace MyVocaList.Infra.Data.Repositories
         {
             var q = _context.Estabelecimentos.AsQueryable();
 
-            // Apply search filter if provided
+            // Apply search filter if provided (case-insensitive using ToLower)
             if (!string.IsNullOrWhiteSpace(query))
             {
-                query = query.Trim();
-                q = q.Where(e => e.Nome.Contains(query));
+                query = query.Trim().ToLower();
+                q = q.Where(e => e.Nome.ToLower().Contains(query));
             }
 
             // Get total count for pagination info (executes COUNT(*) query)

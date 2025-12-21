@@ -34,6 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Social Networks", "Social N
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Guides", "Guides", "{0709C129-31CD-405F-8869-290CFE0B6FA6}"
 	ProjectSection(SolutionItems) = preProject
+		Docs\Guides\DotNet Developer Roadmap 2025.jpg = Docs\Guides\DotNet Developer Roadmap 2025.jpg
+		Docs\Guides\DotNet Developer Roadmap 2025.txt = Docs\Guides\DotNet Developer Roadmap 2025.txt
 		Docs\Guides\future_ux_requirements.md = Docs\Guides\future_ux_requirements.md
 		Docs\Guides\helders_guides_migrate_to_md3.md = Docs\Guides\helders_guides_migrate_to_md3.md
 		Docs\Guides\MyVocalist - Official Brand Name Registration.md = Docs\Guides\MyVocalist - Official Brand Name Registration.md
@@ -61,6 +63,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyVocaList.Tests", "Tests\MyVocaList.Tests.csproj", "{A371EE88-DD54-0DCC-7364-842D0977EC24}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "temp", "temp", "{FCC7A049-5AF6-4454-9D28-2EE77B645BF7}"
+	ProjectSection(SolutionItems) = preProject
+		debug_log.txt = debug_log.txt
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AI", "AI", "{15A623C8-767A-4185-9415-2FC8CF13E727}"
 	ProjectSection(SolutionItems) = preProject

@@ -1,14 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet test:*)",
-      "Bash(Select-String -Pattern \"(Aprovado|Com falha|Total de testes)\" -Context 0,1)",
-      "Bash(dotnet build:*)",
-      "Bash(dotnet clean:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(Select-String -Pattern \"(Aprovado|Com falha|Total de testes|Erro\\(s\\)|Aviso\\(s\\))\" -Context 0,1)"
+      "Bash(Select-String -Pattern \"Error|error CS|Build succeeded|Build FAILED|warning CS\")",
+      "Bash(Select-Object -First 50)"
     ],
     "deny": [],
     "ask": []

@@ -140,6 +140,7 @@ Console/**
 **/[Dd]ocs/**/*.jpeg
 **/[Dd]ocs/**/*.gif
 **/[Dd]ocs/**/*.svg
+**/[Dd]ocs/**/*.txt
 **/[Dd]ocs/[Cc]hangelog/[Aa]rchive/**
 **/[Dd]ocs/[Ss]ocial [Nn]etworks/**
 

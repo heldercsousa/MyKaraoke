@@ -1,0 +1,55 @@
+.Net Developer Roadmap 2025
+
+General Development Skills
+Problem solving, software design principles, version control (Git), clean code, debugging, refactoring, testing strategies.
+
+ASP.NET Core (Server-side)
+Building APIs, MVC patterns, routing, dependency injection, middleware, authentication and authorization, REST vs GraphQL, gRPC.
+
+Client-side .NET / Blazor
+Blazor WebAssembly, Blazor Server, components, JavaScript interop, state management, UI frameworks.
+
+Data & Databases
+SQL, Entity Framework Core, migrations, performance tuning, Dapper, NoSQL basics, data access patterns.
+
+Cloud & Deployment
+Microsoft Azure basics, hosting ASP.NET apps, App Services, Functions, containers (Docker), Kubernetes, CI/CD pipelines.
+
+Testing & Quality Assurance
+Unit testing (xUnit, NUnit), integration testing, mocks (Moq), test-driven development patterns.
+
+Logging, Monitoring & Observability
+Structured logging, log aggregation (Serilog, Seq), metrics (Prometheus), tracing (OpenTelemetry), dashboards.
+
+Security
+Secure coding practices, authentication/authorization models, OAuth2, OpenID Connect, JWTs, secure storage.
+
+Background Tasks & Scheduling
+Hosted services, background processing, queues (Azure Storage Queue, RabbitMQ), cron-like schedulers.
+
+Messaging & Communications
+REST/gRPC, WebSocket, SignalR for real-time features, messaging patterns.
+
+Microservices / Architecture
+Service orientation, bounded contexts, API gateways, event-driven design, inter-service communication.
+
+Cloud-Native / Observability
+Containers, cloud-native design, monitoring, tracing, scalability, cost optimization.
+
+Caching
+In-memory caching, distributed caches (Redis), cache invalidation strategies.
+
+.NET Libraries & Tooling
+Core framework vs .NET 6/7/8+ features, performance improvements, GC tuning, span-based APIs.
+
+Continuous Integration / Delivery
+Build pipelines, release automation, environment management, feature flags.
+
+AI & Machine Learning (optional in modern roadmaps)
+ML.NET basics, data pipelines, model integration into apps.
+
+.NET Libraries: Cloud / Windows vs Cross-platform
+WPF/WinUI for Windows, MAUI for cross-platform UI, cross-platform considerations.
+
+Best Practices & Soft Skills
+Architecture decision records, documenting decisions, collaboration, mentoring, code reviews.

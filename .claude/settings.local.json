@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(Select-String -Pattern \"Error|error CS|Build succeeded|Build FAILED|warning CS\")",
-      "Bash(Select-Object -First 50)"
+      "Bash(Select-Object -First 50)",
+      "Bash(dotnet build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: resolve case-insensitive search and pagination issues in venue list\n\n- Add explicit .ToLower\\(\\) comparison in EstabelecimentoRepository search queries  \n- Add RemainingItemsThreshold to SpotPage CollectionView for pagination trigger\n- Update changelog with fix details\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(Get-Content \"C:\\\\Users\\\\helde\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-helde-source-repos-MyVocaList\\\\tasks\\\\b5c7ff1.output\")",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet ef database:*)",
+      "Bash(git commit:*)",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\helde\\\\source\\\\repos\\\\MyVocaList\\\\Infra\\\\Data\\\\Migrations\" -Filter \"*.cs\")",
+      "Bash(Sort-Object LastWriteTime -Descending)",
+      "Bash(Select-Object -First 3 Name)"
     ],
     "deny": [],
     "ask": []

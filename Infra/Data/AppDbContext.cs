@@ -41,6 +41,7 @@ public class AppDbContext : DbContext
     /// <summary>
     /// Registers custom SQLite collation for case and accent insensitive text comparison
     /// This enables searching "João" by typing "joao", "JOAO", "João", etc.
+    /// CRITICAL: Connection must be OPEN before CreateCollation() is called
     /// </summary>
     private void RegisterCustomCollation()
     {
@@ -53,6 +54,13 @@ public class AppDbContext : DbContext
                     var connection = Database.GetDbConnection() as SqliteConnection;
                     if (connection != null)
                     {
+                        // ✅ CRITICAL: Connection must be OPEN before CreateCollation
+                        // SQLite requires an active connection to register custom collations
+                        if (connection.State != System.Data.ConnectionState.Open)
+                        {
+                            connection.Open();
+                        }
+
                         // Register NOCASE_NOACCENT collation
                         // This collation removes accents and converts to lowercase for comparison
                         connection.CreateCollation("NOCASE_NOACCENT", (x, y) =>

@@ -1,10 +1,13 @@
 ﻿using MyVocaList.Services;
 using MyVocaList.View.Interceptors;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class App : Application
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<App>();
+
         private static bool _isInitialized = false;
         private readonly object _initLock = new object();
 
@@ -14,7 +17,7 @@ namespace MyVocaList.View
             {
                 if (_isInitialized)
                 {
-                    System.Diagnostics.Debug.WriteLine("[App] App já foi inicializada, ignorando");
+                    Logger.Warning("App already initialized, ignoring");
                     return;
                 }
                 _isInitialized = true;
@@ -22,13 +25,13 @@ namespace MyVocaList.View
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] === INICIANDO APLICAÇÃO MyVocaList ===");
+                Logger.Information("=== STARTING MyVocaList APPLICATION ===");
 
                 // Configurações de ambiente antes da inicialização
                 ConfigureEnvironment();
 
                 // Inicializa componentes XAML
-                System.Diagnostics.Debug.WriteLine("[App] Inicializando componentes XAML...");
+                Logger.Information("Initializing XAML components");
                 InitializeComponent();
 
                 // Inicializa serviços essenciais
@@ -37,12 +40,11 @@ namespace MyVocaList.View
                 // Define a página inicial
                 SetInitialPage();
 
-                System.Diagnostics.Debug.WriteLine("[App] === APLICAÇÃO INICIADA COM SUCESSO ===");
+                Logger.Information("=== APPLICATION STARTED SUCCESSFULLY ===");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO CRÍTICO na inicialização: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[App] Stack trace: {ex.StackTrace}");
+                Logger.Fatal(ex, "CRITICAL ERROR during initialization");
                 CreateFallbackPage();
             }
         }
@@ -51,7 +53,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] Configurando ambiente de execução...");
+                Logger.Debug("Configuring runtime environment");
 
                 // Configurações de GC para reduzir problemas de memória
                 System.Environment.SetEnvironmentVariable("MONO_GC_PARAMS", "major=marksweep-conc,nursery-size=8m");
@@ -68,11 +70,11 @@ namespace MyVocaList.View
                 // System.GC.Collect();
                 // System.GC.WaitForPendingFinalizers();
 
-                System.Diagnostics.Debug.WriteLine("[App] Ambiente configurado com sucesso");
+                Logger.Debug("Environment configured successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO ao configurar ambiente: {ex.Message}");
+                Logger.Error(ex, "Error configuring environment");
             }
         }
 
@@ -80,12 +82,12 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] Inicializando serviços essenciais...");
+                Logger.Debug("Initializing essential services");
 
                 // Verifica se o ServiceProvider está disponível
                 if (MauiProgram.Services != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[App] ServiceProvider disponível");
+                    Logger.Debug("ServiceProvider available");
 
                     // Inicializa serviços críticos de forma proativa
                     try
@@ -93,24 +95,24 @@ namespace MyVocaList.View
                         var languageService = MauiProgram.Services.GetService<ILanguageService>();
                         if (languageService != null)
                         {
-                            System.Diagnostics.Debug.WriteLine("[App] LanguageService inicializado");
+                            Logger.Debug("LanguageService initialized");
                         }
                     }
                     catch (Exception serviceEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[App] AVISO: Erro ao inicializar serviços: {serviceEx.Message}");
+                        Logger.Warning(serviceEx, "Error initializing services");
                     }
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[App] AVISO: ServiceProvider não disponível ainda");
+                    Logger.Warning("ServiceProvider not available yet");
                 }
 
-                System.Diagnostics.Debug.WriteLine("[App] Serviços essenciais inicializados");
+                Logger.Debug("Essential services initialized");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO ao inicializar serviços: {ex.Message}");
+                Logger.Error(ex, "Error initializing services");
             }
         }
 
@@ -118,17 +120,17 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] Definindo página inicial...");
+                Logger.Debug("Setting initial page");
 
                 // Tenta carregar SplashLoadingPage primeiro
                 var splashLoadingPage = new SplashLoadingPage();
                 MainPage = splashLoadingPage;
 
-                System.Diagnostics.Debug.WriteLine("[App] SplashLoadingPage definida como página inicial");
+                Logger.Debug("SplashLoadingPage set as initial page");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO ao definir página inicial: {ex.Message}");
+                Logger.Error(ex, "Error setting initial page");
 
                 // Fallback para página de emergência
                 CreateFallbackPage();
@@ -139,7 +141,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] Criando página de fallback...");
+                Logger.Warning("Creating fallback page");
 
                 MainPage = new ContentPage
                 {
@@ -190,11 +192,11 @@ namespace MyVocaList.View
                     }
                 };
 
-                System.Diagnostics.Debug.WriteLine("[App] Página de fallback criada com sucesso");
+                Logger.Information("Fallback page created successfully");
             }
             catch (Exception criticalEx)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO CRÍTICO no fallback: {criticalEx.Message}");
+                Logger.Fatal(criticalEx, "CRITICAL ERROR in fallback");
 
                 // Último recurso - página super simples
                 try
@@ -213,11 +215,11 @@ namespace MyVocaList.View
                         }
                     };
 
-                    System.Diagnostics.Debug.WriteLine("[App] Página de emergência simples criada");
+                    Logger.Information("Simple emergency page created");
                 }
                 catch (Exception ultimateEx)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[App] FALHA TOTAL: {ultimateEx.Message}");
+                    Logger.Fatal(ultimateEx, "TOTAL FAILURE");
                 }
             }
         }
@@ -226,14 +228,14 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] Botão Continuar pressionado");
+                Logger.Information("Continue button pressed");
 
                 // Tenta navegar para a aplicação principal
                 await AttemptMainNavigation();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO OnContinueClicked: {ex.Message}");
+                Logger.Error(ex, "Error in OnContinueClicked");
             }
         }
 
@@ -241,7 +243,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] Tentando navegação principal...");
+                Logger.Debug("Attempting main navigation");
 
                 // Aguarda um pouco para garantir que tudo esteja carregado
                 await Task.Delay(500);
@@ -249,21 +251,21 @@ namespace MyVocaList.View
                 // Tenta diferentes opções de navegação
                 if (await TryNavigateToSplashPage())
                 {
-                    System.Diagnostics.Debug.WriteLine("[App] Navegação para SplashPage bem-sucedida");
+                    Logger.Information("Navigation to SplashPage successful");
                     return;
                 }
 
                 if (await TryNavigateToTonguePage())
                 {
-                    System.Diagnostics.Debug.WriteLine("[App] Navegação para TonguePage bem-sucedida");
+                    Logger.Information("Navigation to TonguePage successful");
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine("[App] AVISO: Todas as tentativas de navegação falharam");
+                Logger.Warning("All navigation attempts failed");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO AttemptMainNavigation: {ex.Message}");
+                Logger.Error(ex, "Error in AttemptMainNavigation");
             }
         }
 
@@ -278,7 +280,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] Falha ao navegar para SplashPage: {ex.Message}");
+                Logger.Warning(ex, "Failed to navigate to SplashPage");
                 return false;
             }
         }
@@ -294,7 +296,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] Falha ao navegar para TonguePage: {ex.Message}");
+                Logger.Warning(ex, "Failed to navigate to TonguePage");
                 return false;
             }
         }
@@ -303,7 +305,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] OnStart chamado");
+                Logger.Debug("OnStart called");
                 base.OnStart();
 
                 //// 🔄 AGORA: Inicializa interceptors com app rodando
@@ -315,7 +317,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO OnStart: {ex.Message}");
+                Logger.Error(ex, "Error in OnStart");
             }
         }
 
@@ -323,12 +325,12 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] OnSleep chamado - aplicação entrando em segundo plano");
+                Logger.Debug("OnSleep called - application going to background");
                 base.OnSleep();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO OnSleep: {ex.Message}");
+                Logger.Error(ex, "Error in OnSleep");
             }
         }
 
@@ -336,12 +338,12 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[App] OnResume chamado - aplicação retornando");
+                Logger.Debug("OnResume called - application returning");
                 base.OnResume();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[App] ERRO OnResume: {ex.Message}");
+                Logger.Error(ex, "Error in OnResume");
             }
         }
     }

@@ -14,11 +14,14 @@ using MyVocaList.Contracts.DTOs.List;
 using MyVocaList.Services.Mappers;
 using System.Threading;
 using CommunityToolkit.Maui.Views;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class SpotPage : ContentPage, IManipulableDataPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<SpotPage>();
+
         private IEstabelecimentoService _estabelecimentoService;
         public ObservableCollection<EstabelecimentoListItemDto> Locais { get; }
 
@@ -114,7 +117,7 @@ namespace MyVocaList.View
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em OnHandlerChanged: {ex.Message}");
+                    Logger.Error(ex, "Error in OnHandlerChanged");
                 }
             }
         }
@@ -131,7 +134,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro ao inicializar EstabelecimentoService: {ex.Message}");
+                Logger.Error(ex, "Error initializing EstabelecimentoService");
             }
         }
 
@@ -152,7 +155,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro em InitializeAndLoadDataAsync: {ex.Message}");
+                Logger.Error(ex, "Error in InitializeAndLoadDataAsync");
                 MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
         }
@@ -220,7 +223,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Error loading venues: {ex.Message}");
+                Logger.Error(ex, "Error loading venues");
                 MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
             }
         }
@@ -277,7 +280,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Search Error: {ex.Message}");
+                Logger.Error(ex, "Search error");
             }
         }
 
@@ -312,7 +315,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ERRO em UpdateUIState: {ex.Message}");
+                Logger.Error(ex, "Error in UpdateUIState");
             }
         }
 
@@ -505,7 +508,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Erro na navegação segura/fallback: {ex.Message}");
+                Logger.Error(ex, "Error in safe/fallback navigation");
                 await DisplayAlert("Navigation Error", "Could not open form page.", "OK");
             }
         }
@@ -566,7 +569,7 @@ namespace MyVocaList.View
                             {
                                 Locais.RemoveAt(0); // Remove from top (oldest)
                             }
-                            System.Diagnostics.Debug.WriteLine($"✂️ SpotPage: Trimmed {itemsToRemove} old items to keep memory under {PaginationSettings.MaxItemsInMemory} items");
+                            Logger.Debug("Trimmed {ItemsRemoved} old items to keep memory under {MaxItems} items", itemsToRemove, PaginationSettings.MaxItemsInMemory);
                         }
                     }
 
@@ -580,7 +583,7 @@ namespace MyVocaList.View
             catch (Exception ex)
             {
                 _currentPage--; // Rollback page increment
-                System.Diagnostics.Debug.WriteLine($"❌ SpotPage: Error loading more items: {ex.Message}");
+                Logger.Error(ex, "Error loading more items");
             }
             finally
             {

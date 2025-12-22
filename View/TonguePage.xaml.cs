@@ -5,11 +5,14 @@ using MyVocaList.View.Components;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class TonguePage : ContentPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<TonguePage>();
+
         public ObservableCollection<LanguageItem> Languages { get; private set; }
 
         private ILanguageService? _languageService;
@@ -70,7 +73,7 @@ namespace MyVocaList.View
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"TonguePage Error: {ex.Message}");
+                    Logger.Error(ex, "Error in OnHandlerChanged");
                 }
             }
         }
@@ -105,7 +108,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error initializing data: {ex.Message}");
+                Logger.Error(ex, "Error initializing data");
             }
             await Task.Delay(50);
         }
@@ -128,7 +131,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error selecting language: {ex.Message}");
+                Logger.Error(ex, "Error selecting language");
             }
             await Task.Delay(50); // Small delay for visual feedback
         }
@@ -154,7 +157,7 @@ namespace MyVocaList.View
                 var selectedItem = Languages.FirstOrDefault(l => l.IsSelected);
                 if (selectedItem == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("No language selected");
+                    Logger.Warning("No language selected");
                     return;
                 }
 
@@ -169,7 +172,7 @@ namespace MyVocaList.View
                 var confirmed = await popup.ShowAsync();
                 if (!confirmed)
                 {
-                    System.Diagnostics.Debug.WriteLine("Language selection cancelled by user");
+                    Logger.Information("Language selection cancelled by user");
                     return;
                 }
 
@@ -178,7 +181,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error showing save confirmation: {ex.Message}");
+                Logger.Error(ex, "Error showing save confirmation");
             }
         }
 
@@ -196,7 +199,7 @@ namespace MyVocaList.View
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     Application.Current.MainPage = new NavigationPage(new StackPage());
-                    System.Diagnostics.Debug.WriteLine("[SUCCESS] Navigation to StackPage completed");
+                    Logger.Information("Navigation to StackPage completed");
                 });
 
                 // Hide loading
@@ -205,7 +208,7 @@ namespace MyVocaList.View
             catch (Exception ex)
             {
                 await GlobalLoadingOverlay.HideLoadingAsync();
-                System.Diagnostics.Debug.WriteLine($"[ERROR] Error saving language: {ex.Message}");
+                Logger.Error(ex, "Error saving language");
 
                 // Show error using ConfirmationPopup (info-only, single button)
                 var errorPopup = new ConfirmationPopup(
@@ -232,12 +235,12 @@ namespace MyVocaList.View
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Language service not available");
+                    Logger.Warning("Language service not available");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error saving language: {ex.Message}");
+                Logger.Error(ex, "Error saving language");
                 throw;
             }
         }
@@ -263,7 +266,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error showing exit confirmation: {ex.Message}");
+                Logger.Error(ex, "Error showing exit confirmation");
             }
         }
         #endregion

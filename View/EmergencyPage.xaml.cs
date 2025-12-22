@@ -1,9 +1,11 @@
 using Microsoft.Maui.Controls;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class EmergencyPage : ContentPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<EmergencyPage>();
         public EmergencyPage()
         {
             InitializeComponent();
@@ -13,15 +15,13 @@ namespace MyVocaList.View
         {
             try
             {
-                // Tenta recriar a SplashLoadingPage
                 var splashPage = new SplashLoadingPage();
                 Application.Current.MainPage = splashPage;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao tentar novamente: {ex.Message}");
-                
-                // Se falhar, tenta navegar para TonguePage diretamente
+                Logger.Error(ex, "Error trying again");
+
                 try
                 {
                     var tonguePage = new TonguePage();
@@ -29,11 +29,10 @@ namespace MyVocaList.View
                 }
                 catch (Exception ex2)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao carregar TonguePage: {ex2.Message}");
-                    
-                    // Como �ltimo recurso, mostra mensagem de erro mais detalhada
-                    await DisplayAlert("Erro Cr�tico", 
-                        "N�o foi poss�vel inicializar o aplicativo. Por favor, reinstale o app.", 
+                    Logger.Fatal(ex2, "Error loading TonguePage");
+
+                    await DisplayAlert("Critical Error",
+                        "Could not initialize the application. Please reinstall the app.",
                         "OK");
                 }
             }

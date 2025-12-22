@@ -4,11 +4,14 @@ using MyVocaList.View.Components;
 using MyVocaList.View.Extensions;
 using MyVocaList.View.Behaviors;
 using System.Windows.Input;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class SpotFormPage : ContentPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<SpotFormPage>();
+
         private IEstabelecimentoService _estabelecimentoService;
         private bool _isEditing = false;
         private Estabelecimento _editingLocal = null;
@@ -40,7 +43,7 @@ namespace MyVocaList.View
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"SpotFormPage Error: {ex.Message}");
+                    Logger.Error(ex, "Error in OnHandlerChanged");
                 }
             }
         }

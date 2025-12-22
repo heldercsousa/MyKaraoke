@@ -4,11 +4,13 @@ using MyVocaList.Infra.Utils;
 using MyVocaList.Services;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class PersonPage : ContentPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<PersonPage>();
         private IQueueService _queueService;
         private IPessoaService _pessoaService;
         private ITextNormalizer _textNormalizer;
@@ -86,7 +88,7 @@ namespace MyVocaList.View
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao inicializar serviços: {ex.Message}");
+                    Logger.Error(ex, "Error initializing services");
                 }
             }
         }
@@ -247,13 +249,13 @@ namespace MyVocaList.View
                     }
                     catch (Exception timerEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Erro no timer de busca: {timerEx.Message}");
+                        Logger.Error(timerEx, "Error in search timer");
                     }
                 }, null, SearchDelayMs, Timeout.Infinite);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro em OnNameTextChanged: {ex.Message}");
+                Logger.Error(ex, "Error in OnNameTextChanged");
 
                 try
                 {
@@ -261,7 +263,7 @@ namespace MyVocaList.View
                 }
                 catch
                 {
-                    System.Diagnostics.Debug.WriteLine("Erro crítico no fallback");
+                    Logger.Fatal("Critical error in fallback");
                 }
             }
         }
@@ -327,14 +329,14 @@ namespace MyVocaList.View
                     }
                     catch (Exception uiEx)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Erro na atualização da UI: {uiEx.Message}");
+                        Logger.Error(uiEx, "Error updating UI");
                         HideSuggestions();
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro na busca de sugestões: {ex.Message}");
+                Logger.Error(ex, "Error searching suggestions");
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     HideSuggestions();
@@ -424,7 +426,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao selecionar sugestão: {ex.Message}");
+                Logger.Error(ex, "Error selecting suggestion");
             }
         }
         private void OnNextButtonClicked(object sender, EventArgs e)
@@ -503,7 +505,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao verificar pessoa existente: {ex.Message}");
+                Logger.Error(ex, "Error checking existing person");
             }
         }
         private void UpdateDayPicker(int month)
@@ -657,8 +659,8 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao adicionar à fila: {ex.Message}");
-                validationMessageLabel.Text = "Erro interno";
+                Logger.Error(ex, "Error adding to queue");
+                validationMessageLabel.Text = "Internal error";
                 validationMessageLabel.IsVisible = true;
             }
         }
@@ -725,7 +727,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no contador de caracteres: {ex.Message}");
+                Logger.Error(ex, "Error in character counter");
                 characterCounterLabel.IsVisible = false;
             }
         }

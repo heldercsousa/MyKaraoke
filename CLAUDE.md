@@ -653,6 +653,33 @@ public partial class MyPage : ContentPage
     }
 }
 ```
+
+---
+
+## 🔧 Logging & Exception Handling
+
+### Logging (Serilog)
+```csharp
+// Services (DI):
+public class MyService(ILogger<MyService> logger) { }
+
+// Components (static):
+private static readonly Serilog.ILogger Logger = Log.ForContext<MyComponent>();
+
+// ALWAYS use structured templates:
+logger.LogDebug("Loading {Count} items", count);  // ✅
+logger.LogDebug($"Loading {count} items");        // ❌
+```
+
+### Exception Handling
+- NO `Debug.WriteLine` - use Serilog
+- NO catch-all try-catch that swallows exceptions
+- Let `GlobalExceptionHandler` catch unhandled exceptions
+- Catch ONLY specific exceptions with meaningful recovery
+- Use `throw;` not `throw ex;` when re-throwing
+
+---
+
 ## 🔄 Behaviors for Code Reuse
 
 **Avoid code duplication using Behaviors:**

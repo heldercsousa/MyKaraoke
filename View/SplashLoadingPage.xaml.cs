@@ -1,9 +1,11 @@
 using MyVocaList.Services;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class SplashLoadingPage : ContentPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<SplashLoadingPage>();
         private bool _isNavigating = false;
         private readonly object _navigationLock = new object();
 
@@ -11,14 +13,13 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando inicializa��o");
+                Logger.Information("Starting initialization");
                 InitializeComponent();
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] InitializeComponent completado");
+                Logger.Information("InitializeComponent completed");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO InitializeComponent: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] Stack trace: {ex.StackTrace}");
+                Logger.Error(ex, "Error in InitializeComponent");
                 CreateEmergencyUI();
             }
         }
@@ -27,17 +28,16 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] OnAppearing iniciado");
+                Logger.Information("OnAppearing started");
                 base.OnAppearing();
 
-                // Inicia o processo de carregamento automaticamente
                 Task.Run(async () => await SimulateLoading());
 
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] OnAppearing conclu�do");
+                Logger.Information("OnAppearing completed");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO OnAppearing: {ex.Message}");
+                Logger.Error(ex, "Error in OnAppearing");
             }
         }
 
@@ -57,62 +57,56 @@ namespace MyVocaList.View
                         {
                             LoadingProgressBar.Progress = Math.Min(1.0, Math.Max(0.0, progressPercentage));
                         }
-                        System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] {status} - {progressPercentage:P0}");
+                        Logger.Debug("{Status} - {Progress:P0}", status, progressPercentage);
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO UpdateStatus UI: {ex.Message}");
+                        Logger.Error(ex, "Error updating status UI");
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO UpdateStatus: {ex.Message}");
+                Logger.Error(ex, "Error in UpdateStatus");
             }
         }
 
         public async Task SimulateLoading()
         {
-            // Etapas de carregamento b�sicas
             string[] loadingSteps = new string[] {
-                "Verificando recursos...",
-                "Carregando assemblies...",
-                "Inicializando servi�os...",
-                "Configurando banco de dados...",
-                "Preparando interface...",
-                "Finalizando inicializa��o..."
+                "Checking resources...",
+                "Loading assemblies...",
+                "Initializing services...",
+                "Configuring database...",
+                "Preparing interface...",
+                "Finalizing initialization..."
             };
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando simula��o de carregamento");
+                Logger.Information("Starting loading simulation");
 
                 for (int i = 0; i < loadingSteps.Length; i++)
                 {
-                    // Atualiza status e barra de progresso
                     double progress = (double)(i + 1) / loadingSteps.Length;
                     UpdateStatus(loadingSteps[i], progress);
 
-                    // Simula tempo de processamento com varia��o
-                    int delay = i == 0 ? 500 : (200 + (i * 50)); // Primeiro step mais longo
+                    int delay = i == 0 ? 500 : (200 + (i * 50));
                     await Task.Delay(delay);
 
-                    System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] Step {i + 1}/{loadingSteps.Length} conclu�do");
+                    Logger.Debug("Step {Step}/{Total} completed", i + 1, loadingSteps.Length);
                 }
 
-                // Status final
-                UpdateStatus("Inicializa��o conclu�da!", 1.0);
+                UpdateStatus("Initialization completed!", 1.0);
                 await Task.Delay(300);
 
-                // Navega para a pr�xima p�gina
                 await NavigateToNextPage();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO SimulateLoading: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] Stack trace: {ex.StackTrace}");
+                Logger.Error(ex, "Error in SimulateLoading");
 
-                UpdateStatus("Erro detectado - continuando...", 1.0);
+                UpdateStatus("Error detected - continuing...", 1.0);
                 await Task.Delay(1000);
                 await NavigateToNextPage();
             }
@@ -124,7 +118,7 @@ namespace MyVocaList.View
             {
                 if (_isNavigating)
                 {
-                    System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Navega��o j� em andamento, ignorando");
+                    Logger.Debug("Navigation already in progress, ignoring");
                     return;
                 }
                 _isNavigating = true;
@@ -132,43 +126,39 @@ namespace MyVocaList.View
 
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Iniciando navega��o para pr�xima p�gina");
+                Logger.Information("Starting navigation to next page");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
                     try
                     {
-                        // Tenta navegar para SplashPage primeiro
                         var splashPage = new SplashPage();
                         Application.Current.MainPage = splashPage;
-                        System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Navega��o para SplashPage realizada com sucesso");
+                        Logger.Information("Navigation to SplashPage completed successfully");
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO ao navegar para SplashPage: {ex.Message}");
+                        Logger.Error(ex, "Error navigating to SplashPage");
 
-                        // Fallback para TonguePage se SplashPage falhar
                         try
                         {
                             var tonguePage = new TonguePage();
                             Application.Current.MainPage = new NavigationPage(tonguePage);
-                            System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Fallback para TonguePage realizado");
+                            Logger.Information("Fallback to TonguePage completed");
                         }
                         catch (Exception fallbackEx)
                         {
-                            System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO CR�TICO no fallback: {fallbackEx.Message}");
+                            Logger.Fatal(fallbackEx, "Critical error in fallback");
 
-                            // �ltimo recurso - p�gina de emerg�ncia
                             Application.Current.MainPage = CreateEmergencyPage();
-                            System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] P�gina de emerg�ncia carregada");
+                            Logger.Information("Emergency page loaded");
                         }
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO FATAL na navega��o: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] Stack trace: {ex.StackTrace}");
+                Logger.Fatal(ex, "Fatal error in navigation");
             }
         }
 
@@ -176,7 +166,7 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Criando UI de emerg�ncia");
+                Logger.Information("Creating emergency UI");
 
                 Content = new Grid
                 {
@@ -207,7 +197,7 @@ namespace MyVocaList.View
                                 },
                                 new Label
                                 {
-                                    Text = "Carregando...",
+                                    Text = "Loading...",
                                     TextColor = Color.FromHex("#b0a8c7"),
                                     FontSize = 16,
                                     HorizontalTextAlignment = TextAlignment.Center,
@@ -218,11 +208,11 @@ namespace MyVocaList.View
                     }
                 };
 
-                System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] UI de emerg�ncia criada com sucesso");
+                Logger.Information("Emergency UI created successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashLoadingPage] ERRO CR�TICO na UI de emerg�ncia: {ex.Message}");
+                Logger.Fatal(ex, "Critical error in emergency UI");
             }
         }
 
@@ -249,7 +239,7 @@ namespace MyVocaList.View
                         },
                         new Label
                         {
-                            Text = "Erro na inicializa��o",
+                            Text = "Initialization error",
                             TextColor = Color.FromHex("#ff6b6b"),
                             FontSize = 18,
                             HorizontalTextAlignment = TextAlignment.Center,
@@ -257,7 +247,7 @@ namespace MyVocaList.View
                         },
                         new Button
                         {
-                            Text = "Tentar Novamente",
+                            Text = "Try Again",
                             BackgroundColor = Color.FromHex("#e91e63"),
                             TextColor = Colors.White,
                             CornerRadius = 8,
@@ -269,7 +259,6 @@ namespace MyVocaList.View
                                 }
                                 catch
                                 {
-                                    // Se mesmo isso falhar, pelo menos tenta TonguePage
                                     Application.Current.MainPage = new NavigationPage(new TonguePage());
                                 }
                             })
@@ -279,11 +268,10 @@ namespace MyVocaList.View
             };
         }
 
-        // Impede o bot�o voltar durante o loading
         protected override bool OnBackButtonPressed()
         {
-            System.Diagnostics.Debug.WriteLine("[SplashLoadingPage] Bot�o voltar bloqueado durante carregamento");
-            return true; // Bloqueia o bot�o voltar
+            Logger.Debug("Back button blocked during loading");
+            return true;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using MyVocaList.Contracts.Models;
+using MyVocaList.Contracts.Models;
 using MyVocaList.Domain;
 using MyVocaList.Services;
 using MyVocaList.View.Extensions;
@@ -7,11 +7,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Windows.Input;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class StackPage : ContentPage, IManipulableDataPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<StackPage>();
+
         private IQueueService _queueService;
         private ServiceProvider _serviceProvider;
         private ObservableCollection<PessoaListItemDto> _fila;
@@ -32,8 +35,8 @@ namespace MyVocaList.View
             }
         }
 
-        #region IManipulableDataPage Members 
-        
+        #region IManipulableDataPage Members
+
         public ICommand LoadDataCommand { get; private set; }
         public string FriendlyName => "Fila";
         public event PropertyChangedEventHandler PropertyChanged;
@@ -58,7 +61,7 @@ namespace MyVocaList.View
                 filaCollectionView.ReorderCompleted += OnFilaReorderCompleted;
             }
 
-            System.Diagnostics.Debug.WriteLine($"StackPage Constructor - bottomNav: {bottomNav != null}");
+            Logger.Debug("StackPage Constructor - bottomNav: {BottomNavExists}", bottomNav != null);
         }
 
         protected override void OnHandlerChanged()
@@ -103,16 +106,16 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine($"🎯 StackPage: OnAppearingBypass executado");
+                Logger.Debug("OnAppearingBypass executed");
 
                 // ✅ SIMPLES: Usa extension method padrão
                 await this.ExecuteStandardBypass();
 
-                System.Diagnostics.Debug.WriteLine($"✅ StackPage: OnAppearingBypass concluído com sucesso");
+                Logger.Debug("OnAppearingBypass completed successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ StackPage: Erro no OnAppearingBypass: {ex.Message}");
+                Logger.Error(ex, "Error in OnAppearingBypass");
             }
         }
 
@@ -122,14 +125,14 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("StackPage: InitializeAndLoadDataAsync - Starting");
+                Logger.Debug("InitializeAndLoadDataAsync - Starting");
                 LoadActiveQueueState();
                 await Task.Delay(100);
                 await CheckActiveQueueAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"StackPage: InitializeAndLoadDataAsync - Error: {ex.Message}");
+                Logger.Error(ex, "Error in InitializeAndLoadDataAsync");
                 ShowEmptyQueueState();
             }
         }
@@ -160,41 +163,41 @@ namespace MyVocaList.View
 
         private async Task CheckActiveQueueAsync()
         {
-            System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - Starting");
+            Logger.Debug("CheckActiveQueueAsync - Starting");
 
             try
             {
                 if (_queueService == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - QueueService is null, showing empty state");
+                    Logger.Warning("CheckActiveQueueAsync - QueueService is null, showing empty state");
                     ShowEmptyQueueState();
                     return;
                 }
 
                 var activeEvent = await _queueService.GetActiveEventAsync();
-                System.Diagnostics.Debug.WriteLine($"StackPage: CheckActiveQueueAsync - ActiveEvent: {activeEvent?.Id}, FilaAtiva: {activeEvent?.FilaAtiva}");
+                Logger.Debug("CheckActiveQueueAsync - ActiveEvent: {EventId}, FilaAtiva: {FilaAtiva}", activeEvent?.Id, activeEvent?.FilaAtiva);
 
                 if (activeEvent == null || !activeEvent.FilaAtiva)
                 {
-                    System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - No active event, showing empty state");
+                    Logger.Debug("CheckActiveQueueAsync - No active event, showing empty state");
                     ShowEmptyQueueState();
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("StackPage: CheckActiveQueueAsync - Active event found, showing active state");
+                    Logger.Debug("CheckActiveQueueAsync - Active event found, showing active state");
                     ShowActiveQueueState();
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"StackPage: CheckActiveQueueAsync - Error: {ex.Message}");
+                Logger.Error(ex, "Error in CheckActiveQueueAsync");
                 ShowEmptyQueueState();
             }
         }
 
         private async void ShowEmptyQueueState()
         {
-            System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - Starting");
+            Logger.Debug("ShowEmptyQueueState - Starting");
 
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
@@ -203,28 +206,28 @@ namespace MyVocaList.View
                     if (emptyQueueMessage != null)
                     {
                         emptyQueueMessage.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - emptyQueueMessage set to visible");
+                        Logger.Debug("ShowEmptyQueueState - emptyQueueMessage set to visible");
                     }
 
                     if (filaCollectionView != null)
                     {
                         filaCollectionView.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - filaCollectionView set to hidden");
+                        Logger.Debug("ShowEmptyQueueState - filaCollectionView set to hidden");
                     }
 
                     QueueStatusText = "---";
-                    System.Diagnostics.Debug.WriteLine("StackPage: ShowEmptyQueueState - QueueStatusText set to ---");
+                    Logger.Debug("ShowEmptyQueueState - QueueStatusText set to ---");
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"StackPage: ShowEmptyQueueState - Exception: {ex.Message}");
+                    Logger.Error(ex, "Exception in ShowEmptyQueueState");
                 }
             });
         }
 
         private async void ShowActiveQueueState()
         {
-            System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - Starting");
+            Logger.Debug("ShowActiveQueueState - Starting");
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
@@ -233,28 +236,28 @@ namespace MyVocaList.View
                     if (emptyQueueMessage != null)
                     {
                         emptyQueueMessage.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - emptyQueueMessage set to hidden");
+                        Logger.Debug("ShowActiveQueueState - emptyQueueMessage set to hidden");
                     }
 
                     if (filaCollectionView != null)
                     {
                         filaCollectionView.IsVisible = true;
-                        System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - filaCollectionView set to visible");
+                        Logger.Debug("ShowActiveQueueState - filaCollectionView set to visible");
                     }
 
                     if (bottomNav != null)
                     {
                         bottomNav.IsVisible = false;
-                        System.Diagnostics.Debug.WriteLine("StackPage: ShowActiveQueueState - bottomNav set to HIDDEN");
+                        Logger.Debug("ShowActiveQueueState - bottomNav set to HIDDEN");
                     }
 
                     int participantCount = _fila?.Count ?? 0;
                     QueueStatusText = participantCount.ToString();
-                    System.Diagnostics.Debug.WriteLine($"StackPage: ShowActiveQueueState - QueueStatusText set to {participantCount}");
+                    Logger.Debug("ShowActiveQueueState - QueueStatusText set to {ParticipantCount}", participantCount);
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"StackPage: ShowActiveQueueState - Exception: {ex.Message}");
+                    Logger.Error(ex, "Exception in ShowActiveQueueState");
                 }
             });
         }
@@ -272,7 +275,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"StackPage: OnParticipouClicked - Error: {ex.Message}");
+                Logger.Error(ex, "Error in OnParticipouClicked");
             }
         }
 
@@ -287,7 +290,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"StackPage: OnAusenteClicked - Error: {ex.Message}");
+                Logger.Error(ex, "Error in OnAusenteClicked");
             }
         }
 
@@ -305,7 +308,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"StackPage: OnMoveToBottomClicked - Error: {ex.Message}");
+                Logger.Error(ex, "Error in OnMoveToBottomClicked");
             }
         }
 
@@ -317,7 +320,7 @@ namespace MyVocaList.View
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"StackPage: OnFilaReorderCompleted - Error: {ex.Message}");
+                Logger.Error(ex, "Error in OnFilaReorderCompleted");
             }
         }
 

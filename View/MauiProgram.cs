@@ -6,6 +6,7 @@ using MyVocaList.Infra.Utils;
 using Microsoft.EntityFrameworkCore;
 using MyVocaList.View.Interceptors;
 using CommunityToolkit.Maui;
+using Serilog;
 
 namespace MyVocaList.View;
 
@@ -15,24 +16,19 @@ public static class MauiProgram
 
     public static MauiApp CreateMauiApp()
     {
+        // Initialize global exception handler FIRST
+        GlobalExceptionHandler.Initialize();
+
         var builder = MauiApp.CreateBuilder();
 
         builder
             .UseMauiApp<App>()
+            .ConfigureSerilog()
             .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
-
-        // === CONFIGURAÇÕES DE DEBUG ===
-#if DEBUG
-        builder.Services.AddLogging(logging =>
-        {
-            logging.AddDebug();
-            logging.SetMinimumLevel(LogLevel.Information);
-        });
-#endif
 
         // === BANCO DE DADOS ===
         var dbPath = Path.Combine(FileSystem.AppDataDirectory, "myvocalist.db");
@@ -75,13 +71,14 @@ public static class MauiProgram
             var app = builder.Build();
             Services = app.Services;
 
-            Console.WriteLine("[MauiProgram] Aplicação construída com interceptadores de loading automático");
+            Log.Information("=== MyVocaList Started ===");
+            Log.Information("Application built with automatic loading interceptors");
+
             return app;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MauiProgram] ERRO ao construir aplicação: {ex.Message}");
-            Console.WriteLine($"[MauiProgram] Stack trace: {ex.StackTrace}");
+            Log.Fatal(ex, "Failed to build application");
             throw;
         }
     }

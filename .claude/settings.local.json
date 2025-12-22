@@ -13,7 +13,12 @@
       "Bash(git commit:*)",
       "Bash(Get-ChildItem \"C:\\\\Users\\\\helde\\\\source\\\\repos\\\\MyVocaList\\\\Infra\\\\Data\\\\Migrations\" -Filter \"*.cs\")",
       "Bash(Sort-Object LastWriteTime -Descending)",
-      "Bash(Select-Object -First 3 Name)"
+      "Bash(Select-Object -First 3 Name)",
+      "Bash(dotnet add package Serilog --version 4.0.0)",
+      "Bash(dotnet add:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

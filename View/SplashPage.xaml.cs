@@ -1,11 +1,13 @@
 ﻿using MyVocaList.Services;
 using Microsoft.EntityFrameworkCore;
 using MyVocaList.Infra.Data;
+using Serilog;
 
 namespace MyVocaList.View
 {
     public partial class SplashPage : ContentPage
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<SplashPage>();
         private ServiceProvider _serviceProvider;
         private IDatabaseService _databaseService;
         private ILanguageService _languageService;
@@ -16,11 +18,11 @@ namespace MyVocaList.View
             try
             {
                 InitializeComponent();
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Iniciado com sucesso");
+                Logger.Information("Started successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] ERRO InitializeComponent: {ex.Message}");
+                Logger.Error(ex, "Error in InitializeComponent");
                 throw;
             }
         }
@@ -33,21 +35,20 @@ namespace MyVocaList.View
             {
                 try
                 {
-                    // Inicializa o ServiceProvider quando o Handler estiver disponível
                     _serviceProvider = ServiceProvider.FromPage(this);
-                    System.Diagnostics.Debug.WriteLine("[SplashPage] ServiceProvider inicializado");
+                    Logger.Information("ServiceProvider initialized");
 
                     _databaseService = _serviceProvider.GetService<IDatabaseService>();
                     _languageService = _serviceProvider.GetService<ILanguageService>();
 
-                    System.Diagnostics.Debug.WriteLine($"[SplashPage] DatabaseService: {(_databaseService != null ? "OK" : "NULL")}");
-                    System.Diagnostics.Debug.WriteLine($"[SplashPage] LanguageService: {(_languageService != null ? "OK" : "NULL")}");
+                    Logger.Information("DatabaseService: {Status}", _databaseService != null ? "OK" : "NULL");
+                    Logger.Information("LanguageService: {Status}", _languageService != null ? "OK" : "NULL");
 
                     _isInitialized = true;
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SplashPage] ERRO OnHandlerChanged: {ex.Message}");
+                    Logger.Error(ex, "Error in OnHandlerChanged");
                 }
             }
         }
@@ -55,9 +56,7 @@ namespace MyVocaList.View
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            System.Diagnostics.Debug.WriteLine("[SplashPage] OnAppearing chamado");
-
-            // Inicia o processo de carregamento
+            Logger.Information("OnAppearing called");
             await StartLoadingProcess();
         }
 
@@ -65,27 +64,19 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Iniciando processo de loading");
+                Logger.Information("Starting loading process");
 
-                // 1. Aguarda serviços estarem disponíveis
                 await EnsureServicesReady();
-
-                // 2. Executa a inicialização do banco de dados
                 await InitializeDatabaseAsync();
 
-                // 3. Mostra a imagem por um tempo (experiência visual)
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Aguardando 2 segundos para experiência visual");
+                Logger.Debug("Waiting 2 seconds for visual experience");
                 await Task.Delay(2000);
 
-                // 4. Navega para próxima página
                 await NavigateToNextPage();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] ERRO StartLoadingProcess: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] Stack trace: {ex.StackTrace}");
-
-                // Em caso de erro, vai direto para TonguePage como fallback
+                Logger.Error(ex, "Error in StartLoadingProcess");
                 await NavigateToNextPage();
             }
         }
@@ -97,18 +88,18 @@ namespace MyVocaList.View
 
             while (!_isInitialized && attempts < maxAttempts)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] Aguardando serviços... tentativa {attempts + 1}/{maxAttempts}");
+                Logger.Debug("Waiting for services... attempt {Attempt}/{MaxAttempts}", attempts + 1, maxAttempts);
                 await Task.Delay(200);
                 attempts++;
             }
 
             if (!_isInitialized)
             {
-                System.Diagnostics.Debug.WriteLine("[SplashPage] AVISO: Serviços não inicializados após timeout");
+                Logger.Warning("Services not initialized after timeout");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("[SplashPage] ✅ Serviços prontos para uso");
+                Logger.Information("Services ready for use");
             }
         }
 
@@ -116,50 +107,37 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashPage] === INICIANDO INICIALIZAÇÃO DO BANCO ===");
+                Logger.Information("Starting database initialization");
 
                 if (_databaseService == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("[SplashPage] ⚠️ DatabaseService não disponível - tentando via contexto direto");
+                    Logger.Warning("DatabaseService not available - trying direct context");
                     await InitializeDatabaseFallback();
                     return;
                 }
 
-                // Execução em thread de fundo para não bloquear UI
                 await Task.Run(async () =>
                 {
-                    try
-                    {
-                        System.Diagnostics.Debug.WriteLine("[SplashPage] Chamando DatabaseService.InitializeDatabaseAsync()");
-                        await _databaseService.InitializeDatabaseAsync();
-                        System.Diagnostics.Debug.WriteLine("[SplashPage] ✅ DatabaseService.InitializeDatabaseAsync() concluído");
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[SplashPage] ❌ ERRO DatabaseService: {ex.Message}");
-                        throw;
-                    }
+                    Logger.Debug("Calling DatabaseService.InitializeDatabaseAsync()");
+                    await _databaseService.InitializeDatabaseAsync();
+                    Logger.Information("DatabaseService.InitializeDatabaseAsync() completed");
                 });
 
-                // Verifica se o banco está realmente disponível
                 bool isAvailable = await _databaseService.IsDatabaseAvailableAsync();
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] Banco disponível após inicialização: {isAvailable}");
+                Logger.Information("Database available after initialization: {IsAvailable}", isAvailable);
 
                 if (!isAvailable)
                 {
-                    System.Diagnostics.Debug.WriteLine("[SplashPage] ⚠️ Banco não disponível - tentando fallback");
+                    Logger.Warning("Database not available - trying fallback");
                     await InitializeDatabaseFallback();
                 }
 
-                System.Diagnostics.Debug.WriteLine("[SplashPage] === BANCO INICIALIZADO COM SUCESSO ===");
+                Logger.Information("Database initialized successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] ❌ ERRO CRÍTICO na inicialização do banco: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] Stack trace: {ex.StackTrace}");
-
-                // Tenta fallback antes de desistir
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Tentando fallback de inicialização...");
+                Logger.Error(ex, "Critical error in database initialization");
+                Logger.Information("Trying initialization fallback");
                 await InitializeDatabaseFallback();
             }
         }
@@ -168,30 +146,29 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Executando fallback de inicialização do banco");
+                Logger.Information("Executing database initialization fallback");
 
                 using var scope = MauiProgram.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Fallback: Executando EnsureCreated");
+                Logger.Debug("Fallback: Executing EnsureCreated");
                 await context.Database.EnsureCreatedAsync();
 
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Fallback: Testando conexão");
+                Logger.Debug("Fallback: Testing connection");
                 bool canConnect = await context.Database.CanConnectAsync();
 
                 if (canConnect)
                 {
-                    System.Diagnostics.Debug.WriteLine("[SplashPage] ✅ Fallback bem-sucedido");
+                    Logger.Information("Fallback successful");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("[SplashPage] ❌ Fallback falhou - banco não conecta");
+                    Logger.Error("Fallback failed - database cannot connect");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] ❌ ERRO no fallback: {ex.Message}");
-                // Não propaga erro - aplicação continua sem banco se necessário
+                Logger.Error(ex, "Error in fallback");
             }
         }
 
@@ -199,9 +176,8 @@ namespace MyVocaList.View
         {
             try
             {
-                System.Diagnostics.Debug.WriteLine("[SplashPage] Navegando para próxima página");
+                Logger.Information("Navigating to next page");
 
-                // Verifica se o idioma já foi selecionado
                 bool languageSelected = false;
 
                 try
@@ -209,67 +185,55 @@ namespace MyVocaList.View
                     if (_languageService != null)
                     {
                         languageSelected = _languageService.IsLanguageSelected();
-                        System.Diagnostics.Debug.WriteLine($"[SplashPage] Idioma selecionado via service: {languageSelected}");
+                        Logger.Information("Language selected via service: {LanguageSelected}", languageSelected);
                     }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SplashPage] AVISO: Erro ao verificar idioma via service: {ex.Message}");
-                    // Fallback para preferências locais
+                    Logger.Warning(ex, "Error checking language via service");
                     languageSelected = Preferences.ContainsKey("UserLanguage");
-                    System.Diagnostics.Debug.WriteLine($"[SplashPage] Idioma selecionado via preferences: {languageSelected}");
+                    Logger.Information("Language selected via preferences: {LanguageSelected}", languageSelected);
                 }
 
-                // Navega para a página apropriada
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    try
+                    if (languageSelected)
                     {
-                        if (languageSelected)
-                        {
-                            System.Diagnostics.Debug.WriteLine("[SplashPage] Navegando diretamente para StackPage (idioma já selecionado)");
-                            Application.Current.MainPage = new NavigationPage(new StackPage());
-                            System.Diagnostics.Debug.WriteLine("[SplashPage] ✅ Navegação para StackPage concluída");
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine("[SplashPage] Navegando para TonguePage (sem idioma selecionado)");
-                            Application.Current.MainPage = new NavigationPage(new TonguePage());
-                            System.Diagnostics.Debug.WriteLine("[SplashPage] ✅ Navegação para TonguePage concluída");
-                        }
+                        Logger.Information("Navigating directly to StackPage (language already selected)");
+                        Application.Current.MainPage = new NavigationPage(new StackPage());
+                        Logger.Information("Navigation to StackPage completed");
                     }
-                    catch (Exception navEx)
+                    else
                     {
-                        System.Diagnostics.Debug.WriteLine($"[SplashPage] ERRO na navegação MainThread: {navEx.Message}");
-                        throw;
+                        Logger.Information("Navigating to TonguePage (no language selected)");
+                        Application.Current.MainPage = new NavigationPage(new TonguePage());
+                        Logger.Information("Navigation to TonguePage completed");
                     }
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[SplashPage] ERRO ao navegar da SplashPage: {ex.Message}");
+                Logger.Error(ex, "Error navigating from SplashPage");
 
-                // Fallback final para TonguePage
                 try
                 {
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         Application.Current.MainPage = new NavigationPage(new TonguePage());
-                        System.Diagnostics.Debug.WriteLine("[SplashPage] ✅ Navegação fallback para TonguePage concluída");
+                        Logger.Information("Fallback navigation to TonguePage completed");
                     });
                 }
                 catch (Exception fallbackEx)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SplashPage] ❌ ERRO CRÍTICO no fallback de navegação: {fallbackEx.Message}");
+                    Logger.Fatal(fallbackEx, "Critical error in navigation fallback");
                 }
             }
         }
 
-        // Impede o botão voltar durante o loading
         protected override bool OnBackButtonPressed()
         {
-            System.Diagnostics.Debug.WriteLine("[SplashPage] Botão voltar bloqueado durante carregamento");
-            return true; // Bloqueia o botão voltar
+            Logger.Debug("Back button blocked during loading");
+            return true;
         }
     }
 }

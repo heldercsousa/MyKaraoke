@@ -34,6 +34,7 @@ public class AppDbContext : DbContext
         {
             // Design-time/migrations only - use temporary path
             var tempPath = Path.Combine(Path.GetTempPath(), "myvocalist_design.db");
+
             optionsBuilder.UseSqlite($"Data Source={tempPath}");
         }
     }
@@ -149,5 +150,25 @@ public class AppDbContext : DbContext
         }
 
         Console.WriteLine("✅ Database default collation set: NOCASE_NOACCENT (case and accent insensitive)");
+    }
+
+    /// <summary>
+    /// Debug method to get the actual database file path
+    /// </summary>
+    public string GetDatabasePath()
+    {
+        var connection = Database.GetDbConnection();
+        return connection.DataSource;
+    }
+
+    /// <summary>
+    /// Debug method to log database information
+    /// </summary>
+    public void LogDatabaseInfo()
+    {
+        var connection = Database.GetDbConnection();
+        Console.WriteLine($"🗃️ Database Path: {connection.DataSource}");
+        Console.WriteLine($"🗃️ Connection State: {connection.State}");
+        Console.WriteLine($"🗃️ Database Type: {Database.ProviderName}");
     }
 }

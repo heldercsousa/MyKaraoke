@@ -12,9 +12,23 @@ namespace MyVocaList.Infra.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             var sqlBuilder = new StringBuilder();
-            
-            // Generate 1000 venues for testing pagination
-            for (int i = 1; i <= 100; i++)
+
+            //Generate some ACCENTED and equivalent NO-ACCENTED entries for testing
+            var accentNames = new[]
+            {
+                "Café Central",
+                "São Paulo Bistro",
+                "Japão Grill",
+                "Cafe Bistro"
+            };
+
+            for (int i = 0; i < accentNames.Length; i++)
+            {
+                sqlBuilder.AppendLine($"INSERT INTO Estabelecimentos (Nome) VALUES ('{accentNames[i]}');");
+            }
+
+            // Generate 500 venues for testing pagination]
+            for (int i = 1; i <= 500; i++)
             {
                 // Escape single quotes if necessary, though simpler here
                 sqlBuilder.AppendLine($"INSERT INTO Estabelecimentos (Nome) VALUES ('Venue {i}');");
@@ -26,7 +40,7 @@ namespace MyVocaList.Infra.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DELETE FROM Estabelecimentos WHERE Nome LIKE 'Venue %';");
+            migrationBuilder.Sql("DELETE FROM Estabelecimentos");
         }
     }
 }

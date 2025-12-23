@@ -62,6 +62,9 @@ namespace MyVocaList.View
             }
 
             Logger.Debug("StackPage Constructor - bottomNav: {BottomNavExists}", bottomNav != null);
+
+            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "myvocalist.db");
+            System.Diagnostics.Debug.WriteLine($"🗃️ DB Path: {dbPath}");
         }
 
         protected override void OnHandlerChanged()

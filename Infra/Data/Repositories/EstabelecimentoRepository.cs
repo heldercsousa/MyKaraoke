@@ -23,7 +23,8 @@ namespace MyVocaList.Infra.Data.Repositories
 
         /// <summary>
         /// Searches establishments by name starting with the search term (case and accent insensitive)
-        /// Database-level collation handles case/accent insensitivity automatically
+        /// IMPORTANT: SQLite LIKE operator (from StartsWith) doesn't respect custom collations
+        /// Solution: Use explicit .ToLower() for case/accent insensitive search
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<Estabelecimento>> SearchByNomeStartsWithAsync(string searchTerm, int maxResults = 10)
@@ -32,8 +33,10 @@ namespace MyVocaList.Infra.Data.Repositories
             if (Guard.IsNullOrWhiteSpace(searchTerm))
                 return new List<Estabelecimento>();
 
+            // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
+            var searchTermLower = searchTerm.ToLower();
             return await _context.Estabelecimentos
-                .Where(e => e.Nome.StartsWith(searchTerm))
+                .Where(e => e.Nome.ToLower().StartsWith(searchTermLower))
                 .Take(maxResults)
                 .OrderBy(e => e.Nome)
                 .ToListAsync();
@@ -41,7 +44,8 @@ namespace MyVocaList.Infra.Data.Repositories
 
         /// <summary>
         /// Searches establishments by name containing the search term (case and accent insensitive)
-        /// Database-level collation handles case/accent insensitivity automatically
+        /// IMPORTANT: SQLite LIKE operator (from Contains) doesn't respect custom collations
+        /// Solution: Use explicit .ToLower() for case/accent insensitive search
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<Estabelecimento>> SearchByNomeContainsAsync(string searchTerm, int maxResults = 10)
@@ -50,8 +54,10 @@ namespace MyVocaList.Infra.Data.Repositories
             if (Guard.IsNullOrWhiteSpace(searchTerm))
                 return new List<Estabelecimento>();
 
+            // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
+            var searchTermLower = searchTerm.ToLower();
             return await _context.Estabelecimentos
-                .Where(e => e.Nome.Contains(searchTerm))
+                .Where(e => e.Nome.ToLower().Contains(searchTermLower))
                 .Take(maxResults)
                 .OrderBy(e => e.Nome)
                 .ToListAsync();
@@ -69,7 +75,8 @@ namespace MyVocaList.Infra.Data.Repositories
 
         /// <summary>
         /// Searches establishments with event information (case and accent insensitive)
-        /// Database-level collation handles case/accent insensitivity automatically
+        /// IMPORTANT: SQLite LIKE operator (from Contains) doesn't respect custom collations
+        /// Solution: Use explicit .ToLower() for case/accent insensitive search
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> SearchWithHasEventsAsync(string? query)
@@ -78,7 +85,9 @@ namespace MyVocaList.Infra.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                q = q.Where(e => e.Nome.Contains(query));
+                // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
+                var queryLower = query.ToLower();
+                q = q.Where(e => e.Nome.ToLower().Contains(queryLower));
             }
 
             return await q
@@ -122,7 +131,8 @@ namespace MyVocaList.Infra.Data.Repositories
         /// Gets a paginated list of ALL establishments with event information flag
         /// Does NOT filter - returns all establishments with hasEvents boolean flag
         /// Uses Skip/Take for efficient database pagination
-        /// Search is case and accent insensitive (database-level collation)
+        /// IMPORTANT: SQLite LIKE operator (from Contains) doesn't respect custom collations
+        /// Solution: Use explicit .ToLower() for case/accent insensitive search
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<(IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)> items, int totalCount)> GetPagedWithEventInfoAsync(
@@ -132,10 +142,12 @@ namespace MyVocaList.Infra.Data.Repositories
         {
             var q = _context.Estabelecimentos.AsQueryable();
 
-            // Apply search filter if provided (case and accent insensitive via database collation)
+            // Apply search filter if provided (explicit .ToLower() for case-insensitive search)
             if (!string.IsNullOrWhiteSpace(query))
             {
-                q = q.Where(e => e.Nome.Contains(query));
+                // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
+                var queryLower = query.ToLower();
+                q = q.Where(e => e.Nome.ToLower().Contains(queryLower));
             }
 
             // Get total count for pagination info (executes COUNT(*) query)

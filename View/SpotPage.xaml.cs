@@ -45,6 +45,20 @@ namespace MyVocaList.View
             }
         }
 
+        private int _totalItemsCount;
+        public int TotalItemsCount
+        {
+            get => _totalItemsCount;
+            set
+            {
+                if (_totalItemsCount != value)
+                {
+                    _totalItemsCount = value;
+                    OnPropertyChanged(nameof(TotalItemsCount));
+                }
+            }
+        }
+
         private bool _isSearching;
         public bool IsSearching
         {
@@ -235,6 +249,7 @@ namespace MyVocaList.View
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
+                    TotalItemsCount = _totalCount; // Update total items count for binding
                     IsSearching = false; // Clear search state when loading all venues
                     UpdateUIState();
                 });
@@ -298,6 +313,8 @@ namespace MyVocaList.View
 
                     // Check if there are more items to load
                     _hasMoreItems = Locais.Count < _totalCount;
+
+                    TotalItemsCount = _totalCount; // Update total items count for binding
 
                     UpdateUIState();
                 });
@@ -600,6 +617,8 @@ namespace MyVocaList.View
                             Logger.Debug("Trimmed {ItemsRemoved} old items to keep memory under {MaxItems} items", itemsToRemove, PaginationSettings.MaxItemsInMemory);
                         }
                     }
+
+                    TotalItemsCount = _totalCount; // Update total items count for binding
 
                     UpdateUIState();
                 });

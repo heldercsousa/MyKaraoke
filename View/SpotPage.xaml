@@ -69,11 +69,11 @@
                 </Grid>
             </Border>
 
-            <Label Text="{Binding Locais.Count, StringFormat='{0} Venues'}"
+            <Label Text="{Binding TotalItemsCount, StringFormat='{0} Venues'}"
                    Style="{StaticResource LabelSmall}"
                    TextColor="{StaticResource OnSurfaceVariant}"
                    Margin="4,0,0,0"
-                   IsVisible="{Binding Locais.Count, Converter={StaticResource IntToBool}}" />
+                   IsVisible="{Binding TotalItemsCount, Converter={StaticResource IntToBool}}" />
         </VerticalStackLayout>
 
         <CollectionView Grid.Row="2"

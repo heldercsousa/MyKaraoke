@@ -20,7 +20,7 @@ namespace MyVocaList.View
         private ObservableCollection<PessoaListItemDto> _fila;
         private const string ActiveQueueKey = "ActiveFilaDeCQueue";
 
-        // Propriedade para o badge do card
+        // Property for card badge
         private string _queueStatusText = "---";
         public string QueueStatusText
         {
@@ -38,7 +38,7 @@ namespace MyVocaList.View
         #region IManipulableDataPage Members
 
         public ICommand LoadDataCommand { get; private set; }
-        public string FriendlyName => "Fila";
+        public string FriendlyName => "Queue";
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
@@ -64,7 +64,7 @@ namespace MyVocaList.View
             Logger.Debug("StackPage Constructor - bottomNav: {BottomNavExists}", bottomNav != null);
 
             var dbPath = Path.Combine(FileSystem.AppDataDirectory, "myvocalist.db");
-            System.Diagnostics.Debug.WriteLine($"🗃️ DB Path: {dbPath}");
+            Logger.Debug("Database path: {DbPath}", dbPath);
         }
 
         protected override void OnHandlerChanged()
@@ -76,7 +76,7 @@ namespace MyVocaList.View
                 _serviceProvider = ServiceProvider.FromPage(this);
                 _queueService = _serviceProvider.GetService<IQueueService>();
 
-                // ✅ SIMPLIFICADO: Sem evento manual - SafeNavigationBehavior cuida da navegação
+                // ✅ SIMPLIFIED: No manual event - SafeNavigationBehavior handles navigation
                 // bottomNav.LocaisClicked -= OnBottomNavLocaisClicked;
                 // bottomNav.LocaisClicked += OnBottomNavLocaisClicked;
 
@@ -100,44 +100,29 @@ namespace MyVocaList.View
             base.OnDisappearing();
         }
 
-        // ===== MÉTODO DE BYPASS PARA SMARTPAGELIFECYCLEBEHAVIOR =====
+        // ===== BYPASS METHOD FOR SMARTPAGELIFECYCLEBEHAVIOR =====
 
         /// <summary>
-        /// 🎯 BYPASS: Método que o SmartPageLifecycleBehavior chamará se necessário
+        /// BYPASS: Method that SmartPageLifecycleBehavior will call if necessary
         /// </summary>
         private async Task OnAppearingBypass()
         {
-            try
-            {
-                Logger.Debug("OnAppearingBypass executed");
+            Logger.Debug("OnAppearingBypass executed");
 
-                // ✅ SIMPLES: Usa extension method padrão
-                await this.ExecuteStandardBypass();
+            // Standard bypass using extension method
+            await this.ExecuteStandardBypass();
 
-                Logger.Debug("OnAppearingBypass completed successfully");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in OnAppearingBypass");
-            }
+            Logger.Debug("OnAppearingBypass completed successfully");
         }
 
-        // ===== MÉTODOS ORIGINAIS PRESERVADOS =====
+        // ===== ORIGINAL METHODS PRESERVED =====
 
         private async Task InitializeAndLoadDataAsync()
         {
-            try
-            {
-                Logger.Debug("InitializeAndLoadDataAsync - Starting");
-                LoadActiveQueueState();
-                await Task.Delay(100);
-                await CheckActiveQueueAsync();
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in InitializeAndLoadDataAsync");
-                ShowEmptyQueueState();
-            }
+            Logger.Debug("InitializeAndLoadDataAsync - Starting");
+            LoadActiveQueueState();
+            await Task.Delay(100);
+            await CheckActiveQueueAsync();
         }
 
         private void LoadActiveQueueState()
@@ -168,33 +153,25 @@ namespace MyVocaList.View
         {
             Logger.Debug("CheckActiveQueueAsync - Starting");
 
-            try
+            if (_queueService == null)
             {
-                if (_queueService == null)
-                {
-                    Logger.Warning("CheckActiveQueueAsync - QueueService is null, showing empty state");
-                    ShowEmptyQueueState();
-                    return;
-                }
-
-                var activeEvent = await _queueService.GetActiveEventAsync();
-                Logger.Debug("CheckActiveQueueAsync - ActiveEvent: {EventId}, FilaAtiva: {FilaAtiva}", activeEvent?.Id, activeEvent?.FilaAtiva);
-
-                if (activeEvent == null || !activeEvent.FilaAtiva)
-                {
-                    Logger.Debug("CheckActiveQueueAsync - No active event, showing empty state");
-                    ShowEmptyQueueState();
-                }
-                else
-                {
-                    Logger.Debug("CheckActiveQueueAsync - Active event found, showing active state");
-                    ShowActiveQueueState();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in CheckActiveQueueAsync");
+                Logger.Warning("CheckActiveQueueAsync - QueueService is null, showing empty state");
                 ShowEmptyQueueState();
+                return;
+            }
+
+            var activeEvent = await _queueService.GetActiveEventAsync();
+            Logger.Debug("CheckActiveQueueAsync - ActiveEvent: {EventId}, QueueActive: {QueueActive}", activeEvent?.Id, activeEvent?.FilaAtiva);
+
+            if (activeEvent == null || !activeEvent.FilaAtiva)
+            {
+                Logger.Debug("CheckActiveQueueAsync - No active event, showing empty state");
+                ShowEmptyQueueState();
+            }
+            else
+            {
+                Logger.Debug("CheckActiveQueueAsync - Active event found, showing active state");
+                ShowActiveQueueState();
             }
         }
 
@@ -204,27 +181,20 @@ namespace MyVocaList.View
 
             await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                try
+                if (emptyQueueMessage != null)
                 {
-                    if (emptyQueueMessage != null)
-                    {
-                        emptyQueueMessage.IsVisible = true;
-                        Logger.Debug("ShowEmptyQueueState - emptyQueueMessage set to visible");
-                    }
-
-                    if (filaCollectionView != null)
-                    {
-                        filaCollectionView.IsVisible = false;
-                        Logger.Debug("ShowEmptyQueueState - filaCollectionView set to hidden");
-                    }
-
-                    QueueStatusText = "---";
-                    Logger.Debug("ShowEmptyQueueState - QueueStatusText set to ---");
+                    emptyQueueMessage.IsVisible = true;
+                    Logger.Debug("ShowEmptyQueueState - emptyQueueMessage set to visible");
                 }
-                catch (Exception ex)
+
+                if (filaCollectionView != null)
                 {
-                    Logger.Error(ex, "Exception in ShowEmptyQueueState");
+                    filaCollectionView.IsVisible = false;
+                    Logger.Debug("ShowEmptyQueueState - filaCollectionView set to hidden");
                 }
+
+                QueueStatusText = "---";
+                Logger.Debug("ShowEmptyQueueState - QueueStatusText set to ---");
             });
         }
 
@@ -234,97 +204,62 @@ namespace MyVocaList.View
 
             await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                try
+                if (emptyQueueMessage != null)
                 {
-                    if (emptyQueueMessage != null)
-                    {
-                        emptyQueueMessage.IsVisible = false;
-                        Logger.Debug("ShowActiveQueueState - emptyQueueMessage set to hidden");
-                    }
-
-                    if (filaCollectionView != null)
-                    {
-                        filaCollectionView.IsVisible = true;
-                        Logger.Debug("ShowActiveQueueState - filaCollectionView set to visible");
-                    }
-
-                    if (bottomNav != null)
-                    {
-                        bottomNav.IsVisible = false;
-                        Logger.Debug("ShowActiveQueueState - bottomNav set to HIDDEN");
-                    }
-
-                    int participantCount = _fila?.Count ?? 0;
-                    QueueStatusText = participantCount.ToString();
-                    Logger.Debug("ShowActiveQueueState - QueueStatusText set to {ParticipantCount}", participantCount);
+                    emptyQueueMessage.IsVisible = false;
+                    Logger.Debug("ShowActiveQueueState - emptyQueueMessage set to hidden");
                 }
-                catch (Exception ex)
+
+                if (filaCollectionView != null)
                 {
-                    Logger.Error(ex, "Exception in ShowActiveQueueState");
+                    filaCollectionView.IsVisible = true;
+                    Logger.Debug("ShowActiveQueueState - filaCollectionView set to visible");
                 }
+
+                if (bottomNav != null)
+                {
+                    bottomNav.IsVisible = false;
+                    Logger.Debug("ShowActiveQueueState - bottomNav set to HIDDEN");
+                }
+
+                int participantCount = _fila?.Count ?? 0;
+                QueueStatusText = participantCount.ToString();
+                Logger.Debug("ShowActiveQueueState - QueueStatusText set to {ParticipantCount}", participantCount);
             });
         }
 
-        // ===== RESTO DOS MÉTODOS ORIGINAIS =====
+        // ===== REMAINING ORIGINAL METHODS =====
 
         private async void OnParticipouClicked(object sender, EventArgs e)
         {
-            try
-            {
-                PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
-                await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Presente);
-                pessoaDto.IncrementarParticipacoes();
-                SaveActiveQueueState(_fila.ToList());
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in OnParticipouClicked");
-            }
+            PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
+            await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Presente);
+            pessoaDto.IncrementarParticipacoes();
+            SaveActiveQueueState(_fila.ToList());
         }
 
         private async void OnAusenteClicked(object sender, EventArgs e)
         {
-            try
-            {
-                PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
-                await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Ausente);
-                pessoaDto.IncrementarAusencias();
-                SaveActiveQueueState(_fila.ToList());
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in OnAusenteClicked");
-            }
+            PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
+            await _queueService.RecordParticipationAsync(pessoaDto.Id, ParticipacaoStatus.Ausente);
+            pessoaDto.IncrementarAusencias();
+            SaveActiveQueueState(_fila.ToList());
         }
 
         private void OnMoveToBottomClicked(object sender, EventArgs e)
         {
-            try
+            PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
+            if (_fila.Contains(pessoaDto))
             {
-                PessoaListItemDto pessoaDto = (PessoaListItemDto)((Button)sender).CommandParameter;
-                if (_fila.Contains(pessoaDto))
-                {
-                    _fila.Remove(pessoaDto);
-                    _fila.Add(pessoaDto);
-                    SaveActiveQueueState(_fila.ToList());
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in OnMoveToBottomClicked");
+                _fila.Remove(pessoaDto);
+                _fila.Add(pessoaDto);
+                SaveActiveQueueState(_fila.ToList());
             }
         }
 
         private void OnFilaReorderCompleted(object sender, EventArgs e)
         {
-            try
-            {
-                SaveActiveQueueState(_fila.ToList());
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in OnFilaReorderCompleted");
-            }
+            SaveActiveQueueState(_fila.ToList());
         }
 
         private string GetString(string key, params object[] args)
@@ -332,12 +267,12 @@ namespace MyVocaList.View
             string value = "";
             switch (key)
             {
-                case "fila_vazia": value = "Não há participantes na fila para chamar."; break;
-                case "call_next_participant": value = "Chamar Próximo Participante"; break;
-                case "confirm_presence": value = "Confirmar Presença?"; break;
-                case "present": value = "Presente"; break;
-                case "absent": value = "Ausente"; break;
-                case "call_next_participant_confirm": value = "Chamar {0}?"; break;
+                case "fila_vazia": value = "No participants in queue to call."; break;
+                case "call_next_participant": value = "Call Next Participant"; break;
+                case "confirm_presence": value = "Confirm Presence?"; break;
+                case "present": value = "Present"; break;
+                case "absent": value = "Absent"; break;
+                case "call_next_participant_confirm": value = "Call {0}?"; break;
                 default: value = key; break;
             }
 

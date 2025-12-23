@@ -913,10 +913,16 @@ catch (DbUpdateException ex)
 
 ---
 ## 📋 Documentation Standards
-**Changelog & Git Workflow:** See `changelog.md` file header for complete workflow documentation.
+
+**Changelog Location:** `Docs/Changelog/changelog.md`
+
+**CRITICAL Rules:**
+- ✅ **ALWAYS update changelog.md after completing ANY task** (no exceptions!)
+- ✅ **Create guide files in `Docs/Guides/`** and add to solution (like changelog.md)
+- ✅ **Format:** `- **MM/dd/yyyy** - Type - Description` (Type: Enhancement or Fix)
 
 ---
 
-**Last Updated**: December 22, 2025
+**Last Updated**: December 23, 2025
 **Version**: 2.5
 **Maintained by**: Helder (Architect) + Claude AI (Developer)

@@ -1,12 +1,15 @@
-﻿using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Controls.Compatibility;
 using System.Windows.Input;
 using MauiView = Microsoft.Maui.Controls.View;
 using MauiGrid = Microsoft.Maui.Controls.Grid;
+using Serilog;
 
 namespace MyVocaList.View.Components;
 
 public partial class CardWrapperComponent : ContentView
 {
+    private static readonly Serilog.ILogger Logger = Log.ForContext<CardWrapperComponent>();
+
     public static readonly BindableProperty IconPathProperty =
         BindableProperty.Create(nameof(IconPath), typeof(string), typeof(CardWrapperComponent), "stack_purple.png");
 
@@ -65,10 +68,10 @@ public partial class CardWrapperComponent : ContentView
 
         if (Handler != null)
         {
-            // Encontra o container após o handler estar disponível
+            // Find container after handler is available
             _contentContainer = this.FindByName<MauiGrid>("contentContainer");
 
-            // Atualiza o conteúdo se já foi definido
+            // Update content if already defined
             if (CardContent != null)
             {
                 UpdateContent();
@@ -88,33 +91,26 @@ public partial class CardWrapperComponent : ContentView
     {
         if (_contentContainer == null) return;
 
-        try
+        // FIX: Remove previous parent if exists
+        if (CardContent?.Parent != null)
         {
-            // CORREÇÃO: Remove parent anterior se existir
-            if (CardContent?.Parent != null)
+            if (CardContent.Parent is Layout<MauiView> parentLayout)
             {
-                if (CardContent.Parent is Layout<MauiView> parentLayout)
-                {
-                    parentLayout.Children.Remove(CardContent);
-                }
-                else if (CardContent.Parent is ContentView parentContentView)
-                {
-                    parentContentView.Content = null;
-                }
+                parentLayout.Children.Remove(CardContent);
             }
-
-            // Limpa container anterior
-            _contentContainer.Children.Clear();
-
-            // Adiciona novo conteúdo
-            if (CardContent != null)
+            else if (CardContent.Parent is ContentView parentContentView)
             {
-                _contentContainer.Children.Add(CardContent);
+                parentContentView.Content = null;
             }
         }
-        catch (Exception ex)
+
+        // Clear previous container
+        _contentContainer.Children.Clear();
+
+        // Add new content
+        if (CardContent != null)
         {
-            System.Diagnostics.Debug.WriteLine($"Error updating card content: {ex.Message}");
+            _contentContainer.Children.Add(CardContent);
         }
     }
 }

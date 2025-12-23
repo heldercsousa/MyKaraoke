@@ -1,18 +1,19 @@
-﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls;
 using MyVocaList.View.Animations;
 using MyVocaList.View.Behaviors;
 using System.Windows.Input;
 using System.Linq;
+using Serilog;
 
 namespace MyVocaList.View.Components
 {
     /// <summary>
-    /// ✅ LIMPO: Behavior substitui todas as funcionalidades repetitivas
-    /// Mantém apenas funcionalidades específicas do NavButton
+    /// CLEAN: Behavior replaces all repetitive functionalities
+    /// Maintains only NavButton-specific features
     /// </summary>
     public partial class NavButtonComponent : ContentView
     {
-        #region Bindable Properties - ESPECÍFICAS DO NAVBUTTON
+        #region Bindable Properties - NAVBUTTON SPECIFIC
 
         public static readonly BindableProperty IconSourceProperty =
             BindableProperty.Create(nameof(IconSource), typeof(string), typeof(NavButtonComponent), string.Empty, propertyChanged: OnIconSourceChanged);
@@ -40,7 +41,7 @@ namespace MyVocaList.View.Components
 
         #endregion
 
-        #region Properties - ESPECÍFICAS DO NAVBUTTON
+        #region Properties - NAVBUTTON SPECIFIC
 
         public string IconSource
         {
@@ -92,47 +93,42 @@ namespace MyVocaList.View.Components
 
         #endregion
 
-        #region Events - ESPECÍFICOS DO NAVBUTTON
+        #region Events - NAVBUTTON SPECIFIC
 
         public event EventHandler<NavButtonEventArgs> ButtonClicked;
 
         #endregion
 
+        private static readonly Serilog.ILogger Logger = Log.ForContext<NavButtonComponent>();
+
         public NavButtonComponent()
         {
-            // ✅ O BEHAVIOR já aplica o estado inicial e cria o AnimationManager
+            // Behavior already applies initial state and creates AnimationManager
             InitializeComponent();
 
-            // ✅ Aplica apenas propriedades específicas do NavButton
+            // Apply only NavButton-specific properties
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 ApplyInitialProperties();
             });
         }
 
-        #region Property Changed Handlers - ESPECÍFICOS DO NAVBUTTON
+        #region Property Changed Handlers - NAVBUTTON SPECIFIC
 
         private static void OnIconSourceChanged(BindableObject bindable, object oldValue, object newValue)
         {
             if (bindable is NavButtonComponent button && newValue is string iconSource)
             {
-                try
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
+                    if (button.buttonIcon != null && button.buttonIconMd3 != null)
                     {
-                        if (button.buttonIcon != null && button.buttonIconMd3 != null)
-                        {
-                            // PNG mode: show Image, hide StatefulIcon
-                            button.buttonIcon.Source = iconSource;
-                            button.buttonIcon.IsVisible = !string.IsNullOrEmpty(iconSource);
-                            button.buttonIconMd3.IsVisible = false;
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao definir IconSource: {ex.Message}");
-                }
+                        // PNG mode: show Image, hide StatefulIcon
+                        button.buttonIcon.Source = iconSource;
+                        button.buttonIcon.IsVisible = !string.IsNullOrEmpty(iconSource);
+                        button.buttonIconMd3.IsVisible = false;
+                    }
+                });
             }
         }
 
@@ -140,23 +136,16 @@ namespace MyVocaList.View.Components
         {
             if (bindable is NavButtonComponent button && newValue is string iconName)
             {
-                try
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
+                    if (button.buttonIcon != null && button.buttonIconMd3 != null)
                     {
-                        if (button.buttonIcon != null && button.buttonIconMd3 != null)
-                        {
-                            // MD3 mode: show StatefulIcon, hide Image
-                            button.buttonIconMd3.IconName = iconName;
-                            button.buttonIconMd3.IsVisible = !string.IsNullOrEmpty(iconName);
-                            button.buttonIcon.IsVisible = false;
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao definir IconName: {ex.Message}");
-                }
+                        // MD3 mode: show StatefulIcon, hide Image
+                        button.buttonIconMd3.IconName = iconName;
+                        button.buttonIconMd3.IsVisible = !string.IsNullOrEmpty(iconName);
+                        button.buttonIcon.IsVisible = false;
+                    }
+                });
             }
         }
 
@@ -164,141 +153,126 @@ namespace MyVocaList.View.Components
         {
             if (bindable is NavButtonComponent button && newValue is string text)
             {
-                try
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
+                    if (button.buttonLabel != null)
                     {
-                        if (button.buttonLabel != null)
-                        {
-                            button.buttonLabel.Text = text;
-                            button.buttonLabel.IsVisible = true; // ✅ FIX: Ensure label is visible
-                            System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: Label text set to '{text}', IsVisible={button.buttonLabel.IsVisible}, Opacity={button.buttonLabel.Opacity}, TextColor={button.buttonLabel.TextColor}");
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine($"❌ NavButtonComponent: buttonLabel is NULL when trying to set text '{text}'");
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao definir Text: {ex.Message}");
-                }
-            }
-        }
-
-        #endregion
-
-        #region Event Handlers - ESPECÍFICOS DO NAVBUTTON
-
-        private async void OnButtonTapped(object sender, EventArgs e)
-        {
-            try
-            {
-                // ✅ USA BEHAVIOR: Tap effect via Extension
-                if (IsAnimated && buttonContainer != null && HardwareDetector.SupportsAnimations)
-                {
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        await this.AnimateTapEffect(); // Extension do Behavior
-                    });
-                }
-
-                // ✅ ESPECÍFICO: Comando do NavButton
-                if (Command?.CanExecute(CommandParameter) == true)
-                {
-                    Command.Execute(CommandParameter);
-                }
-
-                // ✅ ESPECÍFICO: Evento do NavButton
-                ButtonClicked?.Invoke(this, new NavButtonEventArgs(Text, IconSource, CommandParameter));
-
-                System.Diagnostics.Debug.WriteLine($"NavButtonComponent '{Text ?? "sem nome"}' clicado");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro no tap do NavButtonComponent '{Text ?? "sem nome"}': {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region Private Methods - ESPECÍFICOS DO NAVBUTTON
-
-        private void    ApplyInitialProperties()
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 NavButtonComponent: ApplyInitialProperties STARTED - Text='{Text}', IconName='{IconName}', IconSource='{IconSource}'");
-
-                // ✅ FIX: Manually apply the style from App Resources
-                if (buttonContainer != null)
-                {
-                    if (Application.Current.Resources.TryGetValue("BaseNavButtonStyle", out var styleObj) && styleObj is Style navStyle)
-                    {
-                        buttonContainer.Style = navStyle;
+                        button.buttonLabel.Text = text;
+                        button.buttonLabel.IsVisible = true;
+                        Logger.Debug("NavButtonComponent: Label text set to {Text}, IsVisible={IsVisible}, Opacity={Opacity}, TextColor={TextColor}",
+                            text, button.buttonLabel.IsVisible, button.buttonLabel.Opacity, button.buttonLabel.TextColor);
                     }
                     else
                     {
-                        // Fallback if style is missing (Safety net)
-                        buttonContainer.Orientation = StackOrientation.Vertical;
-                        buttonContainer.HorizontalOptions = LayoutOptions.Center;
-                        buttonContainer.Spacing = 1;
+                        Logger.Warning("NavButtonComponent: buttonLabel is NULL when trying to set text {Text}", text);
                     }
-                }
-                // MD3 icons have priority over PNG
-                if (!string.IsNullOrEmpty(IconName) && buttonIconMd3 != null && buttonIcon != null)
-                {
-                    buttonIconMd3.IconName = IconName;
-                    buttonIconMd3.IsVisible = true;
-                    buttonIcon.IsVisible = false;
-                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: MD3 icon '{IconName}' configured");
-                }
-                else if (!string.IsNullOrEmpty(IconSource) && buttonIcon != null && buttonIconMd3 != null)
-                {
-                    buttonIcon.Source = IconSource;
-                    buttonIcon.IsVisible = true;
-                    buttonIconMd3.IsVisible = false;
-                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: PNG icon '{IconSource}' configured");
-                }
-
-                if (buttonLabel != null && !string.IsNullOrEmpty(Text))
-                {
-                    buttonLabel.Text = Text;
-                    buttonLabel.IsVisible = true; // ✅ FIX: Ensure label is visible
-
-                    // ✅ FIX: Manually apply style to ensure TextColor is correct (White)
-                    if (Application.Current.Resources.TryGetValue("NavButtonLabelStyle", out var labelStyleObj) && labelStyleObj is Style labelStyle)
-                    {
-                        buttonLabel.Style = labelStyle;
-                    }
-                    // 🛡️ FALLBACK: Force White color if style fails or doesn't set it effectively
-                    if (buttonLabel.TextColor == null || buttonLabel.TextColor == Colors.Transparent)
-                    {
-                        buttonLabel.TextColor = Colors.White; 
-                    }
-
-                    System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: Label text '{Text}' configured, IsVisible={buttonLabel.IsVisible}, Opacity={buttonLabel.Opacity}, TextColor={buttonLabel.TextColor}");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"⚠️ NavButtonComponent: Label NOT configured - buttonLabel={buttonLabel != null}, Text='{Text}'");
-                }
-
-                System.Diagnostics.Debug.WriteLine($"✅ NavButtonComponent: ApplyInitialProperties COMPLETED");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar propriedades iniciais: {ex.Message}");
+                });
             }
         }
 
         #endregion
 
-        #region Métodos de Animação - DELEGADOS PARA O BEHAVIOR
+        #region Event Handlers - NAVBUTTON SPECIFIC
+
+        private async void OnButtonTapped(object sender, EventArgs e)
+        {
+            // Tap effect via Behavior Extension
+            if (IsAnimated && buttonContainer != null && HardwareDetector.SupportsAnimations)
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await this.AnimateTapEffect();
+                });
+            }
+
+            // NavButton Command
+            if (Command?.CanExecute(CommandParameter) == true)
+            {
+                Command.Execute(CommandParameter);
+            }
+
+            // NavButton Event
+            ButtonClicked?.Invoke(this, new NavButtonEventArgs(Text, IconSource, CommandParameter));
+
+            Logger.Debug("NavButtonComponent {Text} clicked", Text ?? "unnamed");
+        }
+
+        #endregion
+
+        #region Private Methods - NAVBUTTON SPECIFIC
+
+        private void ApplyInitialProperties()
+        {
+            Logger.Debug("NavButtonComponent: ApplyInitialProperties STARTED - Text={Text}, IconName={IconName}, IconSource={IconSource}",
+                Text, IconName, IconSource);
+
+            // Manually apply the style from App Resources
+            if (buttonContainer != null)
+            {
+                if (Application.Current.Resources.TryGetValue("BaseNavButtonStyle", out var styleObj) && styleObj is Style navStyle)
+                {
+                    buttonContainer.Style = navStyle;
+                }
+                else
+                {
+                    // Fallback if style is missing (Safety net)
+                    buttonContainer.Orientation = StackOrientation.Vertical;
+                    buttonContainer.HorizontalOptions = LayoutOptions.Center;
+                    buttonContainer.Spacing = 1;
+                }
+            }
+
+            // MD3 icons have priority over PNG
+            if (!string.IsNullOrEmpty(IconName) && buttonIconMd3 != null && buttonIcon != null)
+            {
+                buttonIconMd3.IconName = IconName;
+                buttonIconMd3.IsVisible = true;
+                buttonIcon.IsVisible = false;
+                Logger.Debug("NavButtonComponent: MD3 icon {IconName} configured", IconName);
+            }
+            else if (!string.IsNullOrEmpty(IconSource) && buttonIcon != null && buttonIconMd3 != null)
+            {
+                buttonIcon.Source = IconSource;
+                buttonIcon.IsVisible = true;
+                buttonIconMd3.IsVisible = false;
+                Logger.Debug("NavButtonComponent: PNG icon {IconSource} configured", IconSource);
+            }
+
+            if (buttonLabel != null && !string.IsNullOrEmpty(Text))
+            {
+                buttonLabel.Text = Text;
+                buttonLabel.IsVisible = true;
+
+                // Manually apply style to ensure TextColor is correct (White)
+                if (Application.Current.Resources.TryGetValue("NavButtonLabelStyle", out var labelStyleObj) && labelStyleObj is Style labelStyle)
+                {
+                    buttonLabel.Style = labelStyle;
+                }
+
+                // FALLBACK: Force White color if style fails or doesn't set it effectively
+                if (buttonLabel.TextColor == null || buttonLabel.TextColor == Colors.Transparent)
+                {
+                    buttonLabel.TextColor = Colors.White;
+                }
+
+                Logger.Debug("NavButtonComponent: Label text {Text} configured, IsVisible={IsVisible}, Opacity={Opacity}, TextColor={TextColor}",
+                    Text, buttonLabel.IsVisible, buttonLabel.Opacity, buttonLabel.TextColor);
+            }
+            else
+            {
+                Logger.Warning("NavButtonComponent: Label NOT configured - buttonLabel={HasButtonLabel}, Text={Text}",
+                    buttonLabel != null, Text);
+            }
+
+            Logger.Debug("NavButtonComponent: ApplyInitialProperties COMPLETED");
+        }
+
+        #endregion
+
+        #region Animation Methods - DELEGATED TO BEHAVIOR
 
         /// <summary>
-        /// ✅ DELEGADO: ShowAsync via Behavior
+        /// DELEGATED: ShowAsync via Behavior
         /// </summary>
         public async Task ShowAsync()
         {
@@ -306,7 +280,7 @@ namespace MyVocaList.View.Components
         }
 
         /// <summary>
-        /// ✅ DELEGADO: HideAsync via Behavior
+        /// DELEGATED: HideAsync via Behavior
         /// </summary>
         public async Task HideAsync()
         {
@@ -314,29 +288,22 @@ namespace MyVocaList.View.Components
         }
 
         /// <summary>
-        /// ✅ ESPECÍFICO: StartSpecialAnimationAsync para NavButton (pulse padrão)
+        /// SPECIFIC: StartSpecialAnimationAsync for NavButton (default pulse)
         /// </summary>
         public async Task StartSpecialAnimationAsync()
         {
             if (!IsAnimated || !HardwareDetector.SupportsAnimations)
                 return;
 
-            try
+            if (AnimationTypeHelper.HasFlag(AnimationTypes, NavButtonAnimationType.Pulse))
             {
-                if (AnimationTypeHelper.HasFlag(AnimationTypes, NavButtonAnimationType.Pulse))
-                {
-                    // ✅ ESPECÍFICO: NavButton usa pulse padrão via Behavior
-                    await AnimatedButtonExtensions.StartSpecialAnimationAsync(this);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro na animação especial: {ex.Message}");
+                // NavButton uses default pulse via Behavior
+                await AnimatedButtonExtensions.StartSpecialAnimationAsync(this);
             }
         }
 
         /// <summary>
-        /// ✅ DELEGADO: StopAllAnimationsAsync via Behavior
+        /// DELEGATED: StopAllAnimationsAsync via Behavior
         /// </summary>
         public async Task StopAllAnimationsAsync()
         {
@@ -345,7 +312,7 @@ namespace MyVocaList.View.Components
 
         #endregion
 
-        #region Lifecycle Methods - DELEGADOS PARA O BEHAVIOR
+        #region Lifecycle Methods - DELEGATED TO BEHAVIOR
 
         protected override void OnHandlerChanged()
         {
@@ -353,22 +320,15 @@ namespace MyVocaList.View.Components
 
             if (Handler == null)
             {
-                // ✅ O BEHAVIOR já limpa os recursos
+                // Behavior already cleans up resources
             }
             else
             {
-                // ✅ USA BEHAVIOR: Handler changed via Extension
+                // Handler changed via Extension
                 this.HandleHandlerChanged();
 
-                // ✅ ESPECÍFICO: Atualiza propriedades do NavButton
-                try
-                {
-                    ApplyInitialProperties();
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao atualizar propriedades no OnHandlerChanged: {ex.Message}");
-                }
+                // Update NavButton properties
+                ApplyInitialProperties();
             }
         }
 
@@ -376,7 +336,7 @@ namespace MyVocaList.View.Components
         {
             base.OnBindingContextChanged();
 
-            // ✅ USA BEHAVIOR: Binding context changed via Extension
+            // Binding context changed via Extension
             this.HandleBindingContextChanged();
         }
 

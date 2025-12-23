@@ -1,5 +1,5 @@
 using MyVocaList.View.Components;
-using System.Diagnostics;
+using Serilog;
 
 namespace MyVocaList.View.Extensions
 {
@@ -10,6 +10,7 @@ namespace MyVocaList.View.Extensions
     /// </summary>
     public static class NavBarExtensions
     {
+        private static readonly ILogger Logger = Log.ForContext(typeof(NavBarExtensions));
         /// <summary>
         /// Attached property to store the page's navbar instance
         /// </summary>
@@ -40,11 +41,11 @@ namespace MyVocaList.View.Extensions
             {
                 if (newValue is IAnimatableNavBar navBar)
                 {
-                    Debug.WriteLine($"✅ NavBarExtensions: {navBar.GetType().Name} registered with {page.GetType().Name}");
+                    Logger.Debug("NavBarExtensions: {NavBarType} registered with {PageType}", navBar.GetType().Name, page.GetType().Name);
                 }
                 else if (oldValue != null)
                 {
-                    Debug.WriteLine($"🔄 NavBarExtensions: NavBar unregistered from {page.GetType().Name}");
+                    Logger.Debug("NavBarExtensions: NavBar unregistered from {PageType}", page.GetType().Name);
                 }
             }
         }

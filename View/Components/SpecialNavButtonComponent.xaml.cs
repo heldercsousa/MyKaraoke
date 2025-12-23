@@ -3,16 +3,19 @@ using MyVocaList.View.Animations;
 using MyVocaList.View.Behaviors;
 using System.Windows.Input;
 using System.Linq;
+using Serilog;
 
 namespace MyVocaList.View.Components
 {
     /// <summary>
-    /// ✅ LIMPO: Behavior substitui todas as funcionalidades repetitivas
-    /// Mantém apenas funcionalidades específicas do SpecialNavButton
+    /// ✅ CLEAN: Behavior replaces all repetitive functionalities
+    /// Maintains only specific functionalities of SpecialNavButton
     /// </summary>
     public partial class SpecialNavButtonComponent : ContentView
     {
-        #region Bindable Properties - ESPECÍFICAS DO SPECIALNAVBUTTON
+        private static readonly ILogger Logger = Log.ForContext<SpecialNavButtonComponent>();
+
+        #region Bindable Properties - SPECIFIC TO SPECIALNAVBUTTON
 
         public static readonly BindableProperty TextProperty =
             BindableProperty.Create(nameof(Text), typeof(string), typeof(SpecialNavButtonComponent), string.Empty, propertyChanged: OnTextChanged);
@@ -43,7 +46,7 @@ namespace MyVocaList.View.Components
 
         #endregion
 
-        #region Properties - ESPECÍFICAS DO SPECIALNAVBUTTON
+        #region Properties - SPECIFIC TO SPECIALNAVBUTTON
 
         public string Text
         {
@@ -101,7 +104,7 @@ namespace MyVocaList.View.Components
 
         #endregion
 
-        #region Events - ESPECÍFICOS DO SPECIALNAVBUTTON
+        #region Events - SPECIFIC TO SPECIALNAVBUTTON
 
         public event EventHandler<SpecialNavButtonEventArgs> ButtonClicked;
 
@@ -109,118 +112,90 @@ namespace MyVocaList.View.Components
 
         public SpecialNavButtonComponent()
         {
-            // ✅ O BEHAVIOR já aplica o estado inicial e cria o AnimationManager
+            // ✅ The BEHAVIOR already applies initial state and creates AnimationManager
             InitializeComponent();
 
-            // ✅ Aplica apenas propriedades específicas do SpecialNavButton
+            // ✅ Apply only specific properties of SpecialNavButton
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 ApplyInitialProperties();
             });
         }
 
-        #region Private Methods - ESPECÍFICOS DO SPECIALNAVBUTTON
+        #region Private Methods - SPECIFIC TO SPECIALNAVBUTTON
 
         private void ApplyInitialProperties()
         {
-            try
+            UpdateCenterContent();
+            UpdateGradientStyle(GradientStyle);
+            if (buttonLabel != null && !string.IsNullOrEmpty(Text))
             {
-                UpdateCenterContent();
-                UpdateGradientStyle(GradientStyle);
-                if (buttonLabel != null && !string.IsNullOrEmpty(Text))
-                {
-                    buttonLabel.Text = Text;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao aplicar propriedades iniciais: {ex.Message}");
+                buttonLabel.Text = Text;
             }
         }
 
         private void UpdateCenterContent()
         {
-            try
-            {
-                if (contentImage == null || contentLabel == null) return;
+            if (contentImage == null || contentLabel == null) return;
 
-                if (!string.IsNullOrEmpty(CenterIconSource))
-                {
-                    // Usa ícone
-                    contentImage.Source = CenterIconSource;
-                    contentImage.IsVisible = true;
-                    contentLabel.IsVisible = false;
-                }
-                else
-                {
-                    // Usa texto/símbolo
-                    contentLabel.Text = CenterContent;
-                    contentLabel.IsVisible = true;
-                    contentImage.IsVisible = false;
-                }
-            }
-            catch (Exception ex)
+            if (!string.IsNullOrEmpty(CenterIconSource))
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar conteúdo central: {ex.Message}");
+                // Use icon
+                contentImage.Source = CenterIconSource;
+                contentImage.IsVisible = true;
+                contentLabel.IsVisible = false;
+            }
+            else
+            {
+                // Use text/symbol
+                contentLabel.Text = CenterContent;
+                contentLabel.IsVisible = true;
+                contentImage.IsVisible = false;
             }
         }
 
         private void UpdateGradientStyle(SpecialButtonGradientType gradientType)
         {
+            if (gradientFrame == null) return;
+
+            Style targetStyle = null;
             try
             {
-                if (gradientFrame == null) return;
-
-                Style targetStyle = null;
-                try
+                targetStyle = gradientType switch
                 {
-                    targetStyle = gradientType switch
-                    {
-                        SpecialButtonGradientType.Yellow => (Style)Application.Current.Resources["YellowGradientFrameStyle"],
-                        SpecialButtonGradientType.Purple => (Style)Application.Current.Resources["PurpleGradientFrameStyle"],
-                        _ => (Style)Application.Current.Resources["YellowGradientFrameStyle"]
-                    };
-                }
-                catch
-                {
-                    // Fallback se os estilos não estiverem disponíveis
-                    System.Diagnostics.Debug.WriteLine($"Estilo {gradientType} não encontrado, usando fallback");
-                    return;
-                }
-
-                if (targetStyle != null)
-                {
-                    gradientFrame.Style = targetStyle;
-                }
+                    SpecialButtonGradientType.Yellow => (Style)Application.Current.Resources["YellowGradientFrameStyle"],
+                    SpecialButtonGradientType.Purple => (Style)Application.Current.Resources["PurpleGradientFrameStyle"],
+                    _ => (Style)Application.Current.Resources["YellowGradientFrameStyle"]
+                };
             }
-            catch (Exception ex)
+            catch
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao atualizar estilo do gradiente: {ex.Message}");
+                // Fallback if styles are not available
+                Logger.Debug("Style {GradientType} not found, using fallback", gradientType);
+                return;
+            }
+
+            if (targetStyle != null)
+            {
+                gradientFrame.Style = targetStyle;
             }
         }
 
         #endregion
 
-        #region Property Changed Handlers - ESPECÍFICOS DO SPECIALNAVBUTTON
+        #region Property Changed Handlers - SPECIFIC TO SPECIALNAVBUTTON
 
         private static void OnTextChanged(BindableObject bindable, object oldValue, object newValue)
         {
             if (bindable is SpecialNavButtonComponent button && newValue is string text)
             {
-                try
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
+                    if (button.buttonLabel != null)
                     {
-                        if (button.buttonLabel != null)
-                        {
-                            button.buttonLabel.Text = text;
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erro ao definir Text: {ex.Message}");
-                }
+                        button.buttonLabel.Text = text;
+                    }
+                });
             }
         }
 
@@ -250,50 +225,43 @@ namespace MyVocaList.View.Components
 
         #endregion
 
-        #region Event Handlers - ESPECÍFICOS DO SPECIALNAVBUTTON
+        #region Event Handlers - SPECIFIC TO SPECIALNAVBUTTON
 
         private async void OnButtonTapped(object sender, EventArgs e)
         {
-            try
+            // ✅ SPECIFIC: Stop special animation when clicked
+            if (IsAnimated)
             {
-                // ✅ ESPECÍFICO: Para a animação especial quando clicado
-                if (IsAnimated)
-                {
-                    await StopSpecialAnimationAsync();
-                }
-
-                // ✅ USA BEHAVIOR: Tap effect via Extension (usando gradientFrame como container)
-                if (IsAnimated && gradientFrame != null && HardwareDetector.SupportsAnimations)
-                {
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        await this.AnimateTapEffect(); // Extension do Behavior
-                    });
-                }
-
-                // ✅ ESPECÍFICO: Comando do SpecialNavButton
-                if (Command?.CanExecute(CommandParameter) == true)
-                {
-                    Command.Execute(CommandParameter);
-                }
-
-                // ✅ ESPECÍFICO: Evento do SpecialNavButton
-                ButtonClicked?.Invoke(this, new SpecialNavButtonEventArgs(Text, CenterContent, CenterIconSource, CommandParameter));
-
-                System.Diagnostics.Debug.WriteLine($"SpecialNavButtonComponent '{Text ?? "sem nome"}' clicado");
+                await StopSpecialAnimationAsync();
             }
-            catch (Exception ex)
+
+            // ✅ USE BEHAVIOR: Tap effect via Extension (using gradientFrame as container)
+            if (IsAnimated && gradientFrame != null && HardwareDetector.SupportsAnimations)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro no tap do SpecialNavButtonComponent '{Text ?? "sem nome"}': {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await this.AnimateTapEffect(); // Extension from Behavior
+                });
             }
+
+            // ✅ SPECIFIC: SpecialNavButton command
+            if (Command?.CanExecute(CommandParameter) == true)
+            {
+                Command.Execute(CommandParameter);
+            }
+
+            // ✅ SPECIFIC: SpecialNavButton event
+            ButtonClicked?.Invoke(this, new SpecialNavButtonEventArgs(Text, CenterContent, CenterIconSource, CommandParameter));
+
+            Logger.Debug("SpecialNavButtonComponent {ButtonText} clicked", Text ?? "unnamed");
         }
 
         #endregion
 
-        #region Métodos de Animação - DELEGADOS PARA O BEHAVIOR + ESPECÍFICOS
+        #region Animation Methods - DELEGATED TO BEHAVIOR + SPECIFIC
 
         /// <summary>
-        /// ✅ DELEGADO: ShowAsync via Behavior
+        /// ✅ DELEGATED: ShowAsync via Behavior
         /// </summary>
         public async Task ShowAsync()
         {
@@ -301,7 +269,7 @@ namespace MyVocaList.View.Components
         }
 
         /// <summary>
-        /// ✅ DELEGADO: HideAsync via Behavior
+        /// ✅ DELEGATED: HideAsync via Behavior
         /// </summary>
         public async Task HideAsync()
         {
@@ -309,45 +277,31 @@ namespace MyVocaList.View.Components
         }
 
         /// <summary>
-        /// ✅ ESPECÍFICO: StartSpecialAnimationAsync para SpecialNavButton (pulse especial)
+        /// ✅ SPECIFIC: StartSpecialAnimationAsync for SpecialNavButton (special pulse)
         /// </summary>
         public async Task StartSpecialAnimationAsync()
         {
             if (!IsAnimated || !HardwareDetector.SupportsAnimations || buttonContainer == null)
                 return;
 
-            try
+            if (AnimationTypeHelper.HasFlag(AnimationTypes, SpecialButtonAnimationType.Pulse))
             {
-                if (AnimationTypeHelper.HasFlag(AnimationTypes, SpecialButtonAnimationType.Pulse))
-                {
-                    // ✅ ESPECÍFICO: SpecialNavButton usa pulse especial via Behavior
-                    await AnimatedButtonExtensions.StartSpecialAnimationAsync(this);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro na animação especial: {ex.Message}");
+                // ✅ SPECIFIC: SpecialNavButton uses special pulse via Behavior
+                await AnimatedButtonExtensions.StartSpecialAnimationAsync(this);
             }
         }
 
         /// <summary>
-        /// ✅ ESPECÍFICO: Para apenas a animação especial
+        /// ✅ SPECIFIC: Stop only special animation
         /// </summary>
         public async Task StopSpecialAnimationAsync()
         {
-            try
-            {
-                // ✅ USA BEHAVIOR: StopAllAnimationsAsync já para todas as animações
-                await AnimatedButtonExtensions.StopAllAnimationsAsync(this);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Erro ao parar animação especial: {ex.Message}");
-            }
+            // ✅ USE BEHAVIOR: StopAllAnimationsAsync already stops all animations
+            await AnimatedButtonExtensions.StopAllAnimationsAsync(this);
         }
 
         /// <summary>
-        /// ✅ DELEGADO: StopAllAnimationsAsync via Behavior
+        /// ✅ DELEGATED: StopAllAnimationsAsync via Behavior
         /// </summary>
         public async Task StopAllAnimationsAsync()
         {
@@ -356,7 +310,7 @@ namespace MyVocaList.View.Components
 
         #endregion
 
-        #region Lifecycle Methods - DELEGADOS PARA O BEHAVIOR
+        #region Lifecycle Methods - DELEGATED TO BEHAVIOR
 
         protected override void OnHandlerChanged()
         {
@@ -364,23 +318,16 @@ namespace MyVocaList.View.Components
 
             if (Handler == null)
             {
-                // ✅ O BEHAVIOR já limpa os recursos
+                // ✅ The BEHAVIOR already cleans up resources
             }
             else
             {
-                // ✅ USA BEHAVIOR: Handler changed via Extension
+                // ✅ USE BEHAVIOR: Handler changed via Extension
                 this.HandleHandlerChanged();
 
-                // ✅ ESPECÍFICO: Atualiza propriedades do SpecialNavButton
-                try
-                {
-                    UpdateCenterContent();
-                    UpdateGradientStyle(GradientStyle);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erro no OnHandlerChanged: {ex.Message}");
-                }
+                // ✅ SPECIFIC: Update SpecialNavButton properties
+                UpdateCenterContent();
+                UpdateGradientStyle(GradientStyle);
             }
         }
 
@@ -388,7 +335,7 @@ namespace MyVocaList.View.Components
         {
             base.OnBindingContextChanged();
 
-            // ✅ USA BEHAVIOR: Binding context changed via Extension
+            // ✅ USE BEHAVIOR: Binding context changed via Extension
             this.HandleBindingContextChanged();
         }
 

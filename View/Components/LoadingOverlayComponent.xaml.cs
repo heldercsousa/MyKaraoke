@@ -1,15 +1,18 @@
-﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls;
 using System;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace MyVocaList.View.Components
 {
     /// <summary>
-    /// ✅ MELHORADO: LoadingOverlay com auto-detecção e Z-index forçado
-    /// 🎯 CORRIGE: Problemas de visibilidade e posicionamento
+    /// IMPROVED: LoadingOverlay with auto-detection and forced Z-index
+    /// FIXES: Visibility and positioning issues
     /// </summary>
     public partial class LoadingOverlayComponent : ContentView
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<LoadingOverlayComponent>();
+
         public static readonly BindableProperty IsLoadingProperty =
             BindableProperty.Create(nameof(IsLoading), typeof(bool), typeof(LoadingOverlayComponent), false,
             propertyChanged: OnIsLoadingChanged);
@@ -24,17 +27,17 @@ namespace MyVocaList.View.Components
         {
             InitializeComponent();
 
-            // ✅ INICIAL: Começa invisível
+            // INITIAL: Starts invisible
             this.IsVisible = false;
 
-            // 🎯 Z-INDEX: Força ficar na frente
+            // Z-INDEX: Force to front
             this.ZIndex = 9999;
 
-            // 🎯 LAYOUT: Força ocupar toda a área disponível
+            // LAYOUT: Force to occupy full area
             this.HorizontalOptions = LayoutOptions.Fill;
             this.VerticalOptions = LayoutOptions.Fill;
 
-            System.Diagnostics.Debug.WriteLine($"🔄 LoadingOverlayComponent: Construtor - ZIndex={this.ZIndex}");
+            Logger.Debug("LoadingOverlayComponent: Constructor - ZIndex={ZIndex}", this.ZIndex);
         }
 
         protected override void OnHandlerChanged()
@@ -43,7 +46,7 @@ namespace MyVocaList.View.Components
 
             if (Handler != null)
             {
-                // 🎯 FORÇA: Posicionamento correto após Handler estar disponível
+                // FORCE: Correct positioning after Handler is available
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     ForceCorrectPositioning();
@@ -57,90 +60,75 @@ namespace MyVocaList.View.Components
             {
                 var isLoading = (bool)newValue;
 
-                System.Diagnostics.Debug.WriteLine($"🔄 LoadingOverlayComponent: IsLoading mudou para {isLoading}");
+                Logger.Debug("LoadingOverlayComponent: IsLoading changed to {IsLoading}", isLoading);
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    // ✅ VISIBILIDADE: Controla corretamente
+                    // VISIBILITY: Controls correctly
                     component.IsVisible = isLoading;
 
                     if (isLoading)
                     {
-                        // 🎯 FORÇA: Posicionamento na frente quando mostrar
+                        // FORCE: Positioning to front when showing
                         component.ForceCorrectPositioning();
-                        System.Diagnostics.Debug.WriteLine($"🔄 LoadingOverlayComponent: EXIBIDO");
+                        Logger.Debug("LoadingOverlayComponent: SHOWN");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"🔄 LoadingOverlayComponent: ESCONDIDO");
+                        Logger.Debug("LoadingOverlayComponent: HIDDEN");
                     }
                 });
             }
         }
 
         /// <summary>
-        /// 🎯 FORÇA: Posicionamento correto do overlay
+        /// FORCE: Correct positioning of overlay
         /// </summary>
         private void ForceCorrectPositioning()
         {
-            try
+            // Z-INDEX: Force to front
+            this.ZIndex = 9999;
+
+            // LAYOUT: Force to occupy full area
+            this.HorizontalOptions = LayoutOptions.Fill;
+            this.VerticalOptions = LayoutOptions.Fill;
+
+            // PARENT: If in Layout, force repositioning via removal/addition
+            if (this.Parent is Layout parentLayout)
             {
-                // 🎯 Z-INDEX: Força ficar na frente
-                this.ZIndex = 9999;
-
-                // 🎯 LAYOUT: Força ocupar toda a área
-                this.HorizontalOptions = LayoutOptions.Fill;
-                this.VerticalOptions = LayoutOptions.Fill;
-
-                // 🎯 PARENT: Se está em Layout, força reposicionamento via remoção/adição
-                if (this.Parent is Layout parentLayout)
+                // MAUI: Remove and add again to force position on top
+                var index = parentLayout.Children.IndexOf(this);
+                if (index >= 0)
                 {
-                    // ✅ MAUI: Remove e adiciona novamente para forçar posição no topo
-                    var index = parentLayout.Children.IndexOf(this);
-                    if (index >= 0)
-                    {
-                        parentLayout.Children.RemoveAt(index);
-                        parentLayout.Children.Add(this); // Adiciona no final (mais na frente)
-                        System.Diagnostics.Debug.WriteLine($"🎯 LoadingOverlayComponent: Reposicionado no layout");
-                    }
-                }
-
-                // 🎯 GRID: Se está em Grid, força última posição
-                if (this.Parent is Grid parentGrid)
-                {
-                    Grid.SetRow(this, 0);
-                    Grid.SetColumn(this, 0);
-                    Grid.SetRowSpan(this, Math.Max(1, parentGrid.RowDefinitions.Count));
-                    Grid.SetColumnSpan(this, Math.Max(1, parentGrid.ColumnDefinitions.Count));
-                    System.Diagnostics.Debug.WriteLine($"🎯 LoadingOverlayComponent: Grid spans configurados");
+                    parentLayout.Children.RemoveAt(index);
+                    parentLayout.Children.Add(this); // Add at end (most to front)
+                    Logger.Debug("LoadingOverlayComponent: Repositioned in layout");
                 }
             }
-            catch (Exception ex)
+
+            // GRID: If in Grid, force last position
+            if (this.Parent is Grid parentGrid)
             {
-                System.Diagnostics.Debug.WriteLine($"❌ LoadingOverlayComponent: Erro no posicionamento: {ex.Message}");
+                Grid.SetRow(this, 0);
+                Grid.SetColumn(this, 0);
+                Grid.SetRowSpan(this, Math.Max(1, parentGrid.RowDefinitions.Count));
+                Grid.SetColumnSpan(this, Math.Max(1, parentGrid.ColumnDefinitions.Count));
+                Logger.Debug("LoadingOverlayComponent: Grid spans configured");
             }
         }
 
         /// <summary>
-        /// 🎯 PÚBLICO: Método para teste manual
+        /// PUBLIC: Method for manual testing
         /// </summary>
         public async Task ShowTestLoadingAsync(int durationMs = 2000)
         {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"🧪 LoadingOverlayComponent: TESTE iniciado - {durationMs}ms");
+            Logger.Debug("LoadingOverlayComponent: TEST started - {Duration}ms", durationMs);
 
-                IsLoading = true;
-                await Task.Delay(durationMs);
-                IsLoading = false;
+            IsLoading = true;
+            await Task.Delay(durationMs);
+            IsLoading = false;
 
-                System.Diagnostics.Debug.WriteLine($"🧪 LoadingOverlayComponent: TESTE concluído");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"❌ LoadingOverlayComponent: Erro no teste: {ex.Message}");
-                IsLoading = false;
-            }
+            Logger.Debug("LoadingOverlayComponent: TEST completed");
         }
     }
 }

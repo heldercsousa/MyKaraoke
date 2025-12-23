@@ -1,4 +1,5 @@
 ﻿using MyVocaList.View.Behaviors;
+using Serilog;
 
 namespace MyVocaList.View.Components
 {
@@ -8,6 +9,7 @@ namespace MyVocaList.View.Components
     /// </summary>
     public partial class StatefulIcon : ContentView
     {
+        private static readonly ILogger Logger = Log.ForContext<StatefulIcon>();
         private bool _isSizeSetByUser = false;
 
         #region Bindable Properties
@@ -74,7 +76,7 @@ namespace MyVocaList.View.Components
         protected override void OnParentSet()
         {
             base.OnParentSet();
-            System.Diagnostics.Debug.WriteLine($"[StatefulIcon] OnParentSet called - IconName: {IconName}, Parent: {Parent?.GetType().Name}");
+            Logger.Debug("OnParentSet called - IconName: {IconName}, Parent: {ParentType}", IconName, Parent?.GetType().Name);
             DetectAndApplyContextualSize();
         }
 
@@ -86,7 +88,7 @@ namespace MyVocaList.View.Components
                 // This handles cases where IconName is set via binding (delayed initialization)
                 if (string.IsNullOrEmpty(oldValue as string) && !string.IsNullOrEmpty(newValue as string))
                 {
-                    System.Diagnostics.Debug.WriteLine($"[StatefulIcon] IconName changed from empty to '{newValue}' - Re-running size detection");
+                    Logger.Debug("IconName changed from empty to {NewValue} - Re-running size detection", newValue);
                     statefulIcon.DetectAndApplyContextualSize();
                 }
 
@@ -101,12 +103,13 @@ namespace MyVocaList.View.Components
                 var oldSize = oldValue as StatefulIconSize;
                 var newSize = newValue as StatefulIconSize;
 
-                System.Diagnostics.Debug.WriteLine($"[StatefulIcon] OnSizeChanged - IconName: '{statefulIcon.IconName}', Old: {oldSize?.Name ?? "null"}, New: {newSize?.Name ?? "null"}, Default: {(SizeProperty.DefaultValue as StatefulIconSize)?.Name}");
+                Logger.Debug("OnSizeChanged - IconName: {IconName}, Old: {OldSize}, New: {NewSize}, Default: {DefaultSize}",
+                    statefulIcon.IconName, oldSize?.Name ?? "null", newSize?.Name ?? "null", (SizeProperty.DefaultValue as StatefulIconSize)?.Name);
 
                 if (newValue != SizeProperty.DefaultValue)
                 {
                     statefulIcon._isSizeSetByUser = true;
-                    System.Diagnostics.Debug.WriteLine($"[StatefulIcon] Size set by user for '{statefulIcon.IconName}' - Auto-detection will be disabled");
+                    Logger.Debug("Size set by user for {IconName} - Auto-detection will be disabled", statefulIcon.IconName);
                 }
                 statefulIcon.UpdateIconDimensions();
             }
@@ -115,26 +118,18 @@ namespace MyVocaList.View.Components
         private void UpdateIconState()
         {
             if (string.IsNullOrEmpty(IconName)) return;
-            
-            try 
+
+            string source = IsSelected ? $"{IconName}_filled" : $"{IconName}_outlined";
+            Color tintColor = IsSelected ? ActiveColor : InactiveColor;
+
+            Logger.Debug("Setting source: {Source} for {IconName} (Selected={IsSelected})", source, IconName, IsSelected);
+
+            TheIcon.Source = source;
+
+            // Set tint color via the IconTintColorBehavior
+            if (tintBehavior != null)
             {
-                string source = IsSelected ? $"{IconName}_filled" : $"{IconName}_outlined";
-                Color tintColor = IsSelected ? ActiveColor : InactiveColor;
-
-                // 🛡️ LOG: Help debug Release issues
-                Console.WriteLine($"[StatefulIcon] Setting source: {source} for {IconName} (Selected={IsSelected})");
-
-                TheIcon.Source = source;
-
-                // Set tint color via the IconTintColorBehavior
-                if (tintBehavior != null)
-                {
-                    tintBehavior.TintColor = tintColor;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[StatefulIcon] Error updating state: {ex.Message}");
+                tintBehavior.TintColor = tintColor;
             }
         }
 
@@ -148,43 +143,43 @@ namespace MyVocaList.View.Components
             TheIcon.WidthRequest = dimension;
             TheIcon.HeightRequest = dimension;
 
-            System.Diagnostics.Debug.WriteLine($"[StatefulIcon] UpdateIconDimensions - IconName: {IconName}, Size: {Size?.Name ?? "null"}, Dimension: {dimension}dp");
+            Logger.Debug("UpdateIconDimensions - IconName: {IconName}, Size: {SizeName}, Dimension: {Dimension}dp", IconName, Size?.Name ?? "null", dimension);
         }
 
         private void DetectAndApplyContextualSize()
         {
             if (_isSizeSetByUser)
             {
-                System.Diagnostics.Debug.WriteLine($"[StatefulIcon] ⚠️ Skipping auto-detection for '{IconName}' - Size was set by user");
+                Logger.Debug("Skipping auto-detection for {IconName} - Size was set by user", IconName);
                 return;
             }
 
             Element currentParent = this.Parent;
             int depth = 0;
 
-            System.Diagnostics.Debug.WriteLine($"[StatefulIcon] DetectAndApplyContextualSize - IconName: '{IconName}', Starting parent: {currentParent?.GetType().Name}");
+            Logger.Debug("DetectAndApplyContextualSize - IconName: {IconName}, Starting parent: {ParentType}", IconName, currentParent?.GetType().Name);
 
             while (currentParent != null && depth < 10)
             {
-                System.Diagnostics.Debug.WriteLine($"[StatefulIcon] Depth {depth}: Checking parent {currentParent.GetType().Name}");
+                Logger.Debug("Depth {Depth}: Checking parent {ParentType}", depth, currentParent.GetType().Name);
 
                 if (currentParent is HeaderComponent)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[StatefulIcon] ✅ HeaderComponent found at depth {depth} - Setting Medium size for icon: {IconName}");
+                    Logger.Debug("HeaderComponent found at depth {Depth} - Setting Medium size for icon: {IconName}", depth, IconName);
                     this.Size = StatefulIconSize.Medium;
                     UpdateIconDimensions(); // Force dimension update
                     return;
                 }
                 if (currentParent is Grid grid && grid.Behaviors.OfType<NavBarBehavior>().Any())
                 {
-                    System.Diagnostics.Debug.WriteLine($"[StatefulIcon] ✅ NavBar Grid found at depth {depth} - Setting Medium size for icon: {IconName}");
+                    Logger.Debug("NavBar Grid found at depth {Depth} - Setting Medium size for icon: {IconName}", depth, IconName);
                     this.Size = StatefulIconSize.Medium;
                     UpdateIconDimensions(); // Force dimension update
                     return;
                 }
                 if (currentParent is ContentPage page && page.Behaviors.OfType<SmartPageLifecycleBehavior>().Any())
                 {
-                    System.Diagnostics.Debug.WriteLine($"[StatefulIcon] ✅ ContentPage found at depth {depth} - Setting Large size for icon: {IconName}");
+                    Logger.Debug("ContentPage found at depth {Depth} - Setting Large size for icon: {IconName}", depth, IconName);
                     this.Size = StatefulIconSize.Large;
                     UpdateIconDimensions(); // Force dimension update
                     return;
@@ -193,7 +188,7 @@ namespace MyVocaList.View.Components
                 depth++;
             }
 
-            System.Diagnostics.Debug.WriteLine($"[StatefulIcon] ⚠️ No context detected for icon: {IconName} - Using default Medium size");
+            Logger.Debug("No context detected for icon: {IconName} - Using default Medium size", IconName);
             UpdateIconDimensions(); // Force dimension update even for default size
         }
     }

@@ -53,13 +53,9 @@ namespace MyVocaList.View.Components
             base.OnHandlerChanged();
             if (Handler != null && !_isInitialized)
             {
-                try
-                {
-                    navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
-                    UpdateLayoutAndButtons();
-                    _isInitialized = true;
-                }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
+                navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
+                UpdateLayoutAndButtons();
+                _isInitialized = true;
             }
         }
 
@@ -96,71 +92,64 @@ namespace MyVocaList.View.Components
 
         private void UpdateLayoutAndButtons()
         {
-            try
+            if (navBarBehavior == null) return;
+
+            if (!_isInitialized && Handler != null)
             {
-                if (navBarBehavior == null) return;
+                navBarBehavior.ButtonClicked -= OnNavBarButtonClicked;
+                navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
+                _isInitialized = true;
+            }
 
-                if (!_isInitialized && Handler != null)
+            var currentCount = SelectionCount;
+            var visibleButtons = new List<NavButtonConfig>();
+
+            // FORM MODE: Hides Bar (Header handles actions)
+            if (IsFormMode)
+            {
+                visibleButtons.Clear();
+            }
+            else
+            {
+                // LIST MODE
+                if (currentCount == 0)
                 {
-                    navBarBehavior.ButtonClicked -= OnNavBarButtonClicked;
-                    navBarBehavior.ButtonClicked += OnNavBarButtonClicked;
-                    _isInitialized = true;
-                }
-
-                var currentCount = SelectionCount;
-                var visibleButtons = new List<NavButtonConfig>();
-
-                // FORM MODE: Hides Bar (Header handles actions)
-                if (IsFormMode)
-                {
+                    // 0 Selection -> Hide NavBar (FAB handles Add)
                     visibleButtons.Clear();
+                }
+                else if (currentCount == 1)
+                {
+                    // 1 Selection -> Edit + Delete
+                    visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
+                    visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
                 }
                 else
                 {
-                    // LIST MODE
-                    if (currentCount == 0)
-                    {
-                        // 0 Selection -> Hide NavBar (FAB handles Add)
-                        visibleButtons.Clear();
-                    }
-                    else if (currentCount == 1)
-                    {
-                        // 1 Selection -> Edit + Delete
-                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Editar]);
-                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                    }
-                    else
-                    {
-                        // >1 Selection -> Delete Only
-                        visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
-                    }
-                }
-
-                if (!ShouldRebuildButtons(currentCount) && !IsFormMode)
-                {
-                    UpdateNavBarVisibility();
-                    return;
-                }
-
-                var columnDefinitions = new ColumnDefinitionCollection();
-                foreach (var _ in visibleButtons) columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-
-                navBarBehavior.CustomColumnDefinitions = columnDefinitions;
-                navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
-
-                _lastProcessedSelectionCount = currentCount;
-                _hasProcessedFirstUpdate = true;
-
-                UpdateNavBarVisibility();
-
-                if (visibleButtons.Count > 0)
-                {
-                    _ = Task.Run(async () => await navBarBehavior.ShowAsync());
+                    // >1 Selection -> Delete Only
+                    visibleButtons.Add(_buttonConfigs[CrudButtonType.Excluir]);
                 }
             }
-            catch (Exception ex)
+
+            if (!ShouldRebuildButtons(currentCount) && !IsFormMode)
             {
-                System.Diagnostics.Debug.WriteLine($"Error UpdateLayout: {ex.Message}");
+                UpdateNavBarVisibility();
+                return;
+            }
+
+            var columnDefinitions = new ColumnDefinitionCollection();
+            foreach (var _ in visibleButtons) columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+
+            navBarBehavior.CustomColumnDefinitions = columnDefinitions;
+            navBarBehavior.Buttons = new ObservableCollection<NavButtonConfig>(visibleButtons);
+
+            _lastProcessedSelectionCount = currentCount;
+            _hasProcessedFirstUpdate = true;
+
+            UpdateNavBarVisibility();
+
+            if (visibleButtons.Count > 0)
+            {
+                _ = Task.Run(async () => await navBarBehavior.ShowAsync());
             }
         }
 

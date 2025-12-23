@@ -34,6 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Social Networks", "Social N
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Guides", "Guides", "{0709C129-31CD-405F-8869-290CFE0B6FA6}"
 	ProjectSection(SolutionItems) = preProject
+		Docs\Guides\CLEANUP_Bulk_GUIDE.md = Docs\Guides\CLEANUP_Bulk_GUIDE.md
+		Docs\Guides\CLEANUP_DoneByClaude_20251223022000_SUMMARY.md = Docs\Guides\CLEANUP_DoneByClaude_20251223022000_SUMMARY.md
 		Docs\Guides\DotNet Developer Roadmap 2025.jpg = Docs\Guides\DotNet Developer Roadmap 2025.jpg
 		Docs\Guides\DotNet Developer Roadmap 2025.txt = Docs\Guides\DotNet Developer Roadmap 2025.txt
 		Docs\Guides\future_ux_requirements.md = Docs\Guides\future_ux_requirements.md

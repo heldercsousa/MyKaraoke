@@ -1,40 +1,31 @@
 using System.Globalization;
 using Microsoft.Maui.Controls;
+using Serilog;
 
 namespace MyVocaList.View.Converters
 {
     public class BoolToStyleConverter : IValueConverter
     {
+        #region private Props
+        private static readonly ILogger Logger = Log.ForContext<BoolToStyleConverter>();
+        #endregion
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool isSelected && parameter is string styleNames)
             {
-                try
+                
+                var styles = styleNames.Split(',');
+                if (styles.Length >= 2)
                 {
-                    var styles = styleNames.Split(',');
-                    if (styles.Length >= 2)
-                    {
-                        var styleName = isSelected ? styles[0].Trim() : styles[1].Trim();
+                    var styleName = isSelected ? styles[0].Trim() : styles[1].Trim();
                         
-                        if (Application.Current?.Resources.TryGetValue(styleName, out var style) == true)
-                        {
-                            Console.WriteLine($"Style '{styleName}' found and applied");
-                            return style;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Style '{styleName}' not found in resources");
-                        }
-                    }
-                    else
+                    if (Application.Current?.Resources.TryGetValue(styleName, out var style) == true)
                     {
-                        Console.WriteLine($"Invalid style parameter format: '{styleNames}'. Expected 'trueStyle,falseStyle'");
+                        return style;
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error in BoolToStyleConverter: {ex.Message}");
-                }
+                
             }
             
             return null;
@@ -50,20 +41,11 @@ namespace MyVocaList.View.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            try
+            if (value is bool isSelected)
             {
-                if (value is bool isSelected)
-                {
-                    var color = isSelected ? Colors.Transparent : Color.FromArgb("#6c4794");
-                    Console.WriteLine($"BoolToBorderColorConverter: returning {(isSelected ? "Transparent" : "#6c4794")}");
-                    return color;
-                }
+                var color = isSelected ? Colors.Transparent : Color.FromArgb("#6c4794");
+                return color;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in BoolToBorderColorConverter: {ex.Message}");
-            }
-            
             return Color.FromArgb("#6c4794");
         }
 
@@ -77,18 +59,11 @@ namespace MyVocaList.View.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            try
+            if (value is bool isSelected)
             {
-                if (value is bool isSelected)
-                {
-                    var color = isSelected ? Color.FromArgb("#d5528a") : Color.FromArgb("#4c426f");
-                    Console.WriteLine($"BoolToColorConverter: returning {(isSelected ? "#d5528a" : "#4c426f")}");
-                    return color;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in BoolToColorConverter: {ex.Message}");
+                var color = isSelected ? Color.FromArgb("#d5528a") : Color.FromArgb("#4c426f");
+                Console.WriteLine($"BoolToColorConverter: returning {(isSelected ? "#d5528a" : "#4c426f")}");
+                return color;
             }
             
             return Color.FromArgb("#4c426f");

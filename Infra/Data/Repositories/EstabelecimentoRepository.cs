@@ -142,12 +142,12 @@ namespace MyVocaList.Infra.Data.Repositories
         {
             var q = _context.Estabelecimentos.AsQueryable();
 
-            // Apply search filter if provided (explicit .ToLower() for case-insensitive search)
+            // Apply search filter if provided (using COLLATE for accent-insensitive search)
             if (!string.IsNullOrWhiteSpace(query))
             {
-                // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
-                var queryLower = query.ToLower();
-                q = q.Where(e => e.Nome.ToLower().Contains(queryLower));
+                // Use EF.Functions.Collate to force NOCASE_NOACCENT collation for accent-insensitive search
+                q = q.Where(e => EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT").Contains(
+                    EF.Functions.Collate(query, "NOCASE_NOACCENT")));
             }
 
             // Get total count for pagination info (executes COUNT(*) query)

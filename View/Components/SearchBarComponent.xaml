@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:MyVocaList.View.Components"
+             x:Class="MyVocaList.View.Components.SearchBarComponent"
+             x:Name="this">
+
+    <VerticalStackLayout x:Name="searchContainer" Spacing="8">
+        <Border StrokeShape="RoundRectangle 28"
+                StrokeThickness="0"
+                BackgroundColor="{StaticResource SurfaceContainerHighest}"
+                HeightRequest="56"
+                Padding="16,0">
+            <Grid ColumnDefinitions="Auto, *">
+                <components:StatefulIcon Grid.Column="0"
+                                       IconName="search"
+                                       Size="Medium"
+                                       ActiveColor="{StaticResource OnSurfaceVariant}"
+                                       InactiveColor="{StaticResource OnSurfaceVariant}"
+                                       Margin="0,0,12,0"
+                                       VerticalOptions="Center" />
+
+                <SearchBar Grid.Column="1"
+                           x:Name="searchBar"
+                           Text="{Binding SearchText, Source={x:Reference this}, Mode=TwoWay}"
+                           Placeholder="{Binding Placeholder, Source={x:Reference this}}"
+                           PlaceholderColor="{StaticResource OnSurfaceVariant}"
+                           TextColor="{StaticResource OnSurface}"
+                           CancelButtonColor="{StaticResource Primary}"
+                           BackgroundColor="Transparent"
+                           VerticalOptions="Center"
+                           TextChanged="OnSearchTextChanged"
+                           SearchButtonPressed="OnSearchButtonPressed" />
+            </Grid>
+        </Border>
+
+        <Label x:Name="resultCountLabel"
+               Text="{Binding ResultCountText, Source={x:Reference this}}"
+               Style="{StaticResource LabelSmall}"
+               TextColor="{StaticResource OnSurfaceVariant}"
+               Margin="4,0,0,0"
+               IsVisible="{Binding ShowResultCount, Source={x:Reference this}}" />
+    </VerticalStackLayout>
+</ContentView>

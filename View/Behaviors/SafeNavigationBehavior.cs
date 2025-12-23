@@ -79,8 +79,6 @@ namespace MyVocaList.View.Behaviors
             base.OnAttachedTo(bindable);
             _associatedElement = bindable;
             AttachToAppropriateEvent();
-
-            Console.WriteLine($"✅ SafeNavigationBehavior anexado a {bindable.GetType().Name}");
         }
 
         protected override void OnDetachingFrom(VisualElement bindable)
@@ -145,177 +143,121 @@ namespace MyVocaList.View.Behaviors
 
         private async void OnElementActivated(object sender, EventArgs e)
         {
-            try
+            // 🛡️ DEBOUNCE SIMPLES: Proteção contra cliques múltiplos
+            var now = DateTime.Now;
+            var timeSinceLastNavigation = now - _lastNavigationTime;
+
+            if (timeSinceLastNavigation.TotalMilliseconds < DebounceMilliseconds)
             {
-                Console.WriteLine($"🎯 SafeNavigationBehavior: Navegação solicitada");
-
-                // 🛡️ DEBOUNCE SIMPLES: Proteção contra cliques múltiplos
-                var now = DateTime.Now;
-                var timeSinceLastNavigation = now - _lastNavigationTime;
-
-                if (timeSinceLastNavigation.TotalMilliseconds < DebounceMilliseconds)
-                {
-                    Console.WriteLine($"🚫 SafeNavigationBehavior: Navegação BLOQUEADA por debounce (gap: {timeSinceLastNavigation.TotalMilliseconds}ms)");
-                    return;
-                }
-
-                _lastNavigationTime = now;
-
-                // 🎯 PRIORIDADE 1: Comando customizado
-                if (NavigationCommand != null && NavigationCommand.CanExecute(null))
-                {
-                    Console.WriteLine($"🎯 SafeNavigationBehavior: Executando comando customizado");
-                    NavigationCommand.Execute(null);
-                    return;
-                }
-
-                // 🎯 PRIORIDADE 2: Navegação para página específica
-                if (TargetPageType != null)
-                {
-                    await ExecuteTargetPageNavigationAsync();
-                    return;
-                }
-
-                // 🧠 PRIORIDADE 3: Navegação inteligente por stack
-                if (EnableSmartStackNavigation)
-                {
-                    await ExecuteSmartStackNavigationAsync();
-                    return;
-                }
-
-                Console.WriteLine($"⚠️ SafeNavigationBehavior: Nenhuma estratégia de navegação aplicável");
+                return;
             }
-            catch (Exception ex)
+
+            _lastNavigationTime = now;
+
+            // 🎯 PRIORIDADE 1: Comando customizado
+            if (NavigationCommand != null && NavigationCommand.CanExecute(null))
             {
-                Console.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação: {ex.Message}");
+                NavigationCommand.Execute(null);
+                return;
+            }
+
+            // 🎯 PRIORIDADE 2: Navegação para página específica
+            if (TargetPageType != null)
+            {
+                await ExecuteTargetPageNavigationAsync();
+                return;
+            }
+
+            // 🧠 PRIORIDADE 3: Navegação inteligente por stack
+            if (EnableSmartStackNavigation)
+            {
+                await ExecuteSmartStackNavigationAsync();
+                return;
             }
         }
 
         private async Task ExecuteTargetPageNavigationAsync()
         {
-            try
+            ContentPage targetPage;
+            if (CreatePageFunc != null)
             {
-                Console.WriteLine($"🎯 SafeNavigationBehavior: Navegando para {TargetPageType.Name}");
-
-                ContentPage targetPage;
-                if (CreatePageFunc != null)
-                {
-                    targetPage = CreatePageFunc();
-                }
-                else
-                {
-                    targetPage = (ContentPage)Activator.CreateInstance(TargetPageType);
-                }
-
-                await ExecuteSafeNavigation(targetPage);
-
-                Console.WriteLine($"✅ SafeNavigationBehavior: Navegação concluída para {TargetPageType.Name}");
+                targetPage = CreatePageFunc();
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação específica: {ex.Message}");
-                throw;
+                targetPage = (ContentPage)Activator.CreateInstance(TargetPageType);
             }
+
+            await ExecuteSafeNavigation(targetPage);
         }
 
         private async Task ExecuteSmartStackNavigationAsync()
         {
-            try
+            var currentPage = GetCurrentPage();
+            if (currentPage == null)
             {
-                Console.WriteLine($"🧠 SafeNavigationBehavior: Executando navegação inteligente por stack");
-
-                var currentPage = GetCurrentPage();
-                if (currentPage == null)
-                {
-                    Console.WriteLine($"❌ SafeNavigationBehavior: Página atual não encontrada");
-                    return;
-                }
-
-                var navigation = currentPage.Navigation;
-                var navigationStack = navigation?.NavigationStack;
-
-                if (navigationStack == null || navigationStack.Count <= 1)
-                {
-                    Console.WriteLine($"🚪 SafeNavigationBehavior: Sem stack de navegação - não há para onde voltar");
-                    return;
-                }
-
-                // 🎯 SIMPLES: PopAsync é suficiente para maioria dos casos
-                await navigation.PopAsync();
-                Console.WriteLine($"✅ SafeNavigationBehavior: Navegação de volta concluída");
+                return;
             }
-            catch (Exception ex)
+
+            var navigation = currentPage.Navigation;
+            var navigationStack = navigation?.NavigationStack;
+
+            if (navigationStack == null || navigationStack.Count <= 1)
             {
-                Console.WriteLine($"❌ SafeNavigationBehavior: Erro na navegação inteligente: {ex.Message}");
+                return;
             }
+
+            await navigation.PopAsync();
         }
 
         private async Task ExecuteSafeNavigation(ContentPage targetPage)
         {
-            try
+            var currentPage = GetCurrentPage();
+            if (currentPage?.Navigation != null)
             {
-                var currentPage = GetCurrentPage();
-                if (currentPage?.Navigation != null)
-                {
-                    await currentPage.Navigation.PushAsync(targetPage);
-                    return;
-                }
-
-                if (Shell.Current != null)
-                {
-                    await Shell.Current.Navigation.PushAsync(targetPage);
-                    return;
-                }
-
-                if (Application.Current?.MainPage is NavigationPage navPage)
-                {
-                    await navPage.PushAsync(targetPage);
-                    return;
-                }
-
-                Console.WriteLine("❌ SafeNavigationBehavior: Nenhuma estratégia de navegação funcionou");
+                await currentPage.Navigation.PushAsync(targetPage);
+                return;
             }
-            catch (Exception ex)
+
+            if (Shell.Current != null)
             {
-                Console.WriteLine($"❌ SafeNavigationBehavior: Erro ao executar navegação: {ex.Message}");
-                throw;
+                await Shell.Current.Navigation.PushAsync(targetPage);
+                return;
             }
+
+            if (Application.Current?.MainPage is NavigationPage navPage)
+            {
+                await navPage.PushAsync(targetPage);
+                return;
+            }
+
         }
 
         private ContentPage GetCurrentPage()
         {
-            try
+            var mainPage = Application.Current?.MainPage;
+
+            if (mainPage is NavigationPage navPage && navPage.CurrentPage is ContentPage currentContentPage)
             {
-                var mainPage = Application.Current?.MainPage;
-
-                if (mainPage is NavigationPage navPage && navPage.CurrentPage is ContentPage currentContentPage)
-                {
-                    return currentContentPage;
-                }
-
-                if (mainPage is ContentPage directContentPage)
-                {
-                    return directContentPage;
-                }
-
-                if (Shell.Current?.CurrentPage is ContentPage shellContentPage)
-                {
-                    return shellContentPage;
-                }
-
-                return null;
+                return currentContentPage;
             }
-            catch (Exception ex)
+
+            if (mainPage is ContentPage directContentPage)
             {
-                Console.WriteLine($"❌ SafeNavigationBehavior: Erro ao obter página atual: {ex.Message}");
-                return null;
+                return directContentPage;
             }
+
+            if (Shell.Current?.CurrentPage is ContentPage shellContentPage)
+            {
+                return shellContentPage;
+            }
+
+            return null;
         }
 
         #endregion
 
         #region Public Methods
-
         public async Task NavigateToPageAsync()
         {
             OnElementActivated(this, EventArgs.Empty);

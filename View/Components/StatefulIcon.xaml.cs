@@ -10,6 +10,7 @@ namespace MyVocaList.View.Components
     public partial class StatefulIcon : ContentView
     {
         private static readonly ILogger Logger = Log.ForContext<StatefulIcon>();
+
         private bool _isSizeSetByUser = false;
 
         #region Bindable Properties

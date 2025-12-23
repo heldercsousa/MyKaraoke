@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using MyVocaList.View.Interceptors;
 using CommunityToolkit.Maui;
 using Serilog;
+using Microsoft.Extensions.Configuration;
+using MyVocaList.Services.Configuration;
+using System.Reflection;
 
 namespace MyVocaList.View;
 
@@ -21,6 +24,18 @@ public static class MauiProgram
         GlobalExceptionHandler.Initialize();
 
         var builder = MauiApp.CreateBuilder();
+
+        // Load appsettings.json
+        var assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream("MyVocaList.View.appsettings.json");
+
+        var config = new ConfigurationBuilder()
+            .AddJsonStream(stream!)
+            .Build();
+
+        // Register configuration sections
+        builder.Services.Configure<AppSettings>(appSettings => config.Bind(appSettings));
+        builder.Services.Configure<PaginationSettings>(paginationSettings => config.GetSection("Pagination").Bind(paginationSettings));
 
         builder
             .UseMauiApp<App>()

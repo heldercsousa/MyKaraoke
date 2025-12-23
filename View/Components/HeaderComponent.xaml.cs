@@ -1,4 +1,5 @@
 ﻿using MyVocaList.View.Behaviors;
+using Serilog;
 using System.Windows.Input;
 using MauiView = Microsoft.Maui.Controls.View;
 
@@ -6,6 +7,9 @@ namespace MyVocaList.View.Components
 {
     public partial class HeaderComponent : ContentView
     {
+        #region private Props
+        private static readonly ILogger Logger = Log.ForContext<HeaderComponent>();
+        #endregion
         #region Bindable Properties
 
         public static readonly BindableProperty TitleProperty =
@@ -109,64 +113,52 @@ namespace MyVocaList.View.Components
 
         private void UpdateHeaderMode()
         {
-            try
+            bool isFormMode = ShowCancelButton || ShowSaveButton;
+
+            if (isFormMode)
             {
-                bool isFormMode = ShowCancelButton || ShowSaveButton;
+                // FORM MODE
+                backArrowImage.IsVisible = false;
 
-                if (isFormMode)
+                // Cancel Button: Icon OR Text
+                if (ShowCancelButton)
                 {
-                    // FORM MODE
-                    backArrowImage.IsVisible = false;
-
-                    // Cancel Button: Icon OR Text
-                    if (ShowCancelButton)
-                    {
-                        cancelIconImage.IsVisible = UseCancelIcon;
-                        cancelTextLabel.IsVisible = !UseCancelIcon;
-                    }
-                    else
-                    {
-                        cancelIconImage.IsVisible = false;
-                        cancelTextLabel.IsVisible = false;
-                    }
-
-                    // Save Button: Icon OR Text
-                    if (ShowSaveButton)
-                    {
-                        saveIconImage.IsVisible = UseSaveIcon;
-                        saveTextLabel.IsVisible = !UseSaveIcon;
-                        rightButtonStack.IsVisible = true;
-                        rightSpacer.IsVisible = false;
-                    }
-                    else
-                    {
-                        saveIconImage.IsVisible = false;
-                        saveTextLabel.IsVisible = false;
-                        rightButtonStack.IsVisible = false;
-                        rightSpacer.IsVisible = true;
-                    }
-
-                    System.Diagnostics.Debug.WriteLine(
-                        $"HeaderComponent: Form Mode - Cancel={ShowCancelButton}(Icon={UseCancelIcon}), Save={ShowSaveButton}(Icon={UseSaveIcon})");
+                    cancelIconImage.IsVisible = UseCancelIcon;
+                    cancelTextLabel.IsVisible = !UseCancelIcon;
                 }
                 else
                 {
-                    // LIST MODE
-                    backArrowImage.IsVisible = true;
                     cancelIconImage.IsVisible = false;
                     cancelTextLabel.IsVisible = false;
+                }
 
-                    rightButtonStack.IsVisible = false;
+                // Save Button: Icon OR Text
+                if (ShowSaveButton)
+                {
+                    saveIconImage.IsVisible = UseSaveIcon;
+                    saveTextLabel.IsVisible = !UseSaveIcon;
+                    rightButtonStack.IsVisible = true;
+                    rightSpacer.IsVisible = false;
+                }
+                else
+                {
                     saveIconImage.IsVisible = false;
                     saveTextLabel.IsVisible = false;
+                    rightButtonStack.IsVisible = false;
                     rightSpacer.IsVisible = true;
-
-                    System.Diagnostics.Debug.WriteLine("HeaderComponent: List Mode activated");
                 }
             }
-            catch (Exception ex)
+            else
             {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Error updating mode: {ex.Message}");
+                // LIST MODE
+                backArrowImage.IsVisible = true;
+                cancelIconImage.IsVisible = false;
+                cancelTextLabel.IsVisible = false;
+
+                rightButtonStack.IsVisible = false;
+                saveIconImage.IsVisible = false;
+                saveTextLabel.IsVisible = false;
+                rightSpacer.IsVisible = true;
             }
         }
 
@@ -177,15 +169,12 @@ namespace MyVocaList.View.Components
         private async void OnLeftButtonClicked(object sender, EventArgs e)
         {
             try
-            {
+            { 
                 if (ShowCancelButton)
                 {
-                    System.Diagnostics.Debug.WriteLine("HeaderComponent: Cancel button clicked");
                     CancelClicked?.Invoke(this, EventArgs.Empty);
                     return;
                 }
-
-                System.Diagnostics.Debug.WriteLine("HeaderComponent: Back button clicked");
 
                 if (BackCommand != null && BackCommand.CanExecute(null))
                 {
@@ -209,23 +198,12 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: OnLeftButtonClicked - Error: {ex.Message}");
                 await HandleSpecialCaseNavigationAsync();
+                throw;
             }
         }
 
-        private void OnSaveButtonClicked(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine("HeaderComponent: Save button clicked");
-                SaveClicked?.Invoke(this, EventArgs.Empty);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: OnSaveButtonClicked - Error: {ex.Message}");
-            }
-        }
+        private void OnSaveButtonClicked(object sender, EventArgs e) => SaveClicked?.Invoke(this, EventArgs.Empty);
 
         #endregion
 
@@ -238,7 +216,6 @@ namespace MyVocaList.View.Components
                 var currentPage = GetCurrentPage();
                 if (currentPage == null)
                 {
-                    System.Diagnostics.Debug.WriteLine("HeaderComponent: Current page not found");
                     await HandleSpecialCaseNavigationAsync();
                     return;
                 }
@@ -246,58 +223,48 @@ namespace MyVocaList.View.Components
                 var backBehavior = FindBackNavigationBehavior(currentPage);
                 if (backBehavior != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"HeaderComponent: Delegating to SafeNavigationBehavior");
                     await backBehavior.NavigateToPageAsync();
                     return;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: No SafeNavigationBehavior found for {currentPage.GetType().Name}");
                 await HandleSpecialCaseNavigationAsync();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Delegation error: {ex.Message}");
                 await HandleSpecialCaseNavigationAsync();
+                throw;
             }
         }
 
         private SafeNavigationBehavior FindBackNavigationBehavior(ContentPage currentPage)
         {
-            try
+            var behaviors = currentPage.Behaviors?.OfType<SafeNavigationBehavior>();
+            if (behaviors == null || !behaviors.Any())
             {
-                var behaviors = currentPage.Behaviors?.OfType<SafeNavigationBehavior>();
-                if (behaviors == null || !behaviors.Any())
-                {
-                    return null;
-                }
-
-                var namedBackBehavior = currentPage.FindByName<SafeNavigationBehavior>("BackNavigationBehavior");
-                if (namedBackBehavior != null)
-                {
-                    return namedBackBehavior;
-                }
-
-                var behaviorsList = behaviors.ToList();
-                if (behaviorsList.Count == 1)
-                {
-                    return behaviorsList[0];
-                }
-
-                var nonFormBehavior = behaviorsList.FirstOrDefault(b =>
-                    b.TargetPageType != null && !b.TargetPageType.Name.Contains("Form"));
-                if (nonFormBehavior != null)
-                {
-                    return nonFormBehavior;
-                }
-
-                return behaviorsList.FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Error finding SafeNavigationBehavior: {ex.Message}");
                 return null;
             }
-        }
+
+            var namedBackBehavior = currentPage.FindByName<SafeNavigationBehavior>("BackNavigationBehavior");
+            if (namedBackBehavior != null)
+            {
+                return namedBackBehavior;
+            }
+
+            var behaviorsList = behaviors.ToList();
+            if (behaviorsList.Count == 1)
+            {
+                return behaviorsList[0];
+            }
+
+            var nonFormBehavior = behaviorsList.FirstOrDefault(b =>
+                b.TargetPageType != null && !b.TargetPageType.Name.Contains("Form"));
+            if (nonFormBehavior != null)
+            {
+                return nonFormBehavior;
+            }
+
+            return behaviorsList.FirstOrDefault();
+    }
 
         private async Task HandleSpecialCaseNavigationAsync()
         {
@@ -312,7 +279,6 @@ namespace MyVocaList.View.Components
                 if (currentPage.Navigation?.NavigationStack?.Count > 1)
                 {
                     await currentPage.Navigation.PopAsync();
-                    System.Diagnostics.Debug.WriteLine("HeaderComponent: PopAsync fallback executed");
                 }
                 else
                 {
@@ -321,55 +287,39 @@ namespace MyVocaList.View.Components
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Special case error: {ex.Message}");
                 await ExitApplicationAsync();
+                throw;
             }
         }
 
         private async Task ExitApplicationAsync()
         {
-            try
-            {
-                await Task.Delay(100);
-                Application.Current?.Quit();
-                System.Diagnostics.Debug.WriteLine("HeaderComponent: Application closed");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Exit error: {ex.Message}");
-            }
+           await Task.Delay(100);
+           Application.Current?.Quit();
         }
 
         private ContentPage GetCurrentPage()
         {
-            try
+            var element = this.Parent;
+            while (element != null)
             {
-                var element = this.Parent;
-                while (element != null)
-                {
-                    if (element is ContentPage page)
-                        return page;
-                    element = element.Parent;
-                }
-
-                if (Application.Current?.MainPage is NavigationPage navPage)
-                {
-                    return navPage.CurrentPage as ContentPage;
-                }
-
-                if (Application.Current?.MainPage is ContentPage mainPage)
-                    return mainPage;
-
-                if (Application.Current?.MainPage?.Navigation?.NavigationStack?.LastOrDefault() is ContentPage lastPage)
-                    return lastPage;
-
-                return null;
+                if (element is ContentPage page)
+                    return page;
+                element = element.Parent;
             }
-            catch (Exception ex)
+
+            if (Application.Current?.MainPage is NavigationPage navPage)
             {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: GetCurrentPage - Error: {ex.Message}");
-                return null;
+                return navPage.CurrentPage as ContentPage;
             }
+
+            if (Application.Current?.MainPage is ContentPage mainPage)
+                return mainPage;
+
+            if (Application.Current?.MainPage?.Navigation?.NavigationStack?.LastOrDefault() is ContentPage lastPage)
+                return lastPage;
+
+            return null;
         }
 
         #endregion
@@ -378,47 +328,29 @@ namespace MyVocaList.View.Components
 
         public void ConfigureSafeBackNavigation(Type? targetPageType = null, int debounceMs = 500)
         {
-            try
+            var safeBehavior = new SafeNavigationBehavior
             {
-                var safeBehavior = new SafeNavigationBehavior
-                {
-                    EnableSmartStackNavigation = true,
-                    DebounceMilliseconds = debounceMs
-                };
-                var logText = $"HeaderComponent: SafeNavigationBehavior configured for smart navigation";
+                EnableSmartStackNavigation = true,
+                DebounceMilliseconds = debounceMs
+            };
+            var logText = $"HeaderComponent: SafeNavigationBehavior configured for smart navigation";
 
-                var backButton = FindBackButton();
-                if (backButton != null && targetPageType != null)
-                {
-                    safeBehavior.TargetPageType = targetPageType;
-                    logText = $"HeaderComponent: SafeNavigationBehavior configured for {targetPageType.Name}";
-                }
-
-                if (backButton != null)
-                {
-                    backButton.Behaviors.Add(safeBehavior);
-                    System.Diagnostics.Debug.WriteLine(logText);
-                }
+            var backButton = FindBackButton();
+            if (backButton != null && targetPageType != null)
+            {
+                safeBehavior.TargetPageType = targetPageType;
+                logText = $"HeaderComponent: SafeNavigationBehavior configured for {targetPageType.Name}";
             }
-            catch (Exception ex)
+
+            if (backButton != null)
             {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Configuration error: {ex.Message}");
+                backButton.Behaviors.Add(safeBehavior);
+                System.Diagnostics.Debug.WriteLine(logText);
             }
         }
 
-        private VisualElement FindBackButton()
-        {
-            try
-            {
-                return FindBackButtonInContent(this.Content);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"HeaderComponent: Back button search error: {ex.Message}");
-                return null;
-            }
-        }
-
+        private VisualElement FindBackButton() => FindBackButtonInContent(this.Content);
+            
         private VisualElement FindBackButtonInContent(MauiView content)
         {
             if (content == null) return null;

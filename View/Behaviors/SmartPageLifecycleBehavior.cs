@@ -84,16 +84,10 @@ namespace MyVocaList.View.Behaviors
             if (NavBar == null)
             {
                 NavBar = AutoDiscoverNavBar(page);
-                if (NavBar != null)
-                {
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar auto-discovered: {NavBar.GetType().Name}");
-                }
             }
 
             _associatedPage.Appearing += OnPageAppearing;
             _associatedPage.Disappearing += OnPageDisappearing;
-
-            Console.WriteLine($"✅ SmartPageLifecycleBehavior: Anexado à {page.GetType().Name} (Hash: {page.GetHashCode()}) - UseGlobalLoading: {UseGlobalLoading}, NavBar: {NavBar?.GetType().Name ?? "NULL"}");
         }
 
         protected override void OnDetachingFrom(ContentPage page)
@@ -113,8 +107,6 @@ namespace MyVocaList.View.Behaviors
 
             base.OnDetachingFrom(page);
             _associatedPage = null;
-
-            Console.WriteLine($"✅ SmartPageLifecycleBehavior: Removido de {page.GetType().Name}");
         }
 
         #endregion
@@ -142,14 +134,12 @@ namespace MyVocaList.View.Behaviors
 
                 if (!shouldProcess)
                 {
-                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Já processando - ignorando");
                     return;
                 }
 
                 // 🎯 BYPASS: Verifica se deve fazer bypass
                 if (ShouldBypassBehavior())
                 {
-                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Bypass detectado - delegando para página");
                     await ExecutePageBypass();
                     return;
                 }
@@ -160,17 +150,14 @@ namespace MyVocaList.View.Behaviors
                 if (!success)
                 {
                     _failureCount++;
-                    Console.WriteLine($"❌ SmartPageLifecycleBehavior: Falha #{_failureCount} detectada");
 
                     if (EnableAutoBypass && _failureCount >= MaxFailuresBeforeBypass)
                     {
-                        Console.WriteLine($"🛡️ SmartPageLifecycleBehavior: AUTO-BYPASS ativado após {_failureCount} falhas");
                         await ExecutePageBypass();
                         return;
                     }
                     else
                     {
-                        Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Falha detectada - FORÇANDO exibição da NavBar");
                         await ForceShowNavBarAfterFailure();
                     }
                 }
@@ -178,84 +165,59 @@ namespace MyVocaList.View.Behaviors
                 {
                     _hasExecutedSuccessfully = true;
                     _failureCount = 0;
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal executado com sucesso");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageAppearing: {ex.Message}");
                 await ForceShowNavBarAfterFailure();
-            }
-            finally
-            {
+
                 lock (_lockObject)
                 {
                     _isProcessing = false;
                 }
+                throw;
             }
         }
 
         private async Task<bool> TryExecuteNormalCycle()
         {
+            var pageType = _associatedPage.GetType().Name;
+            var requesterId = $"NormalCycle_{pageType}_{_associatedPage.GetHashCode()}";
+
+            // ETAPA 1: Aguarda navbar estar pronta
+            var navBarReady = await WaitForNavBarReady();
+
+            // ETAPA 2: ✅ LOADING CENTRALIZADO - Solicita com prioridade de navegação
+            if (UseGlobalLoading)
+            {
+                await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                    requesterId: requesterId,
+                    message: LoadingMessage,
+                    priority: LoadingPriority.Navigation,
+                    context: LoadingContext.PageNavigation
+                );
+            }
+
             try
             {
-                var pageType = _associatedPage.GetType().Name;
-                var requesterId = $"NormalCycle_{pageType}_{_associatedPage.GetHashCode()}";
+                // ETAPA 3: Executa LoadDataCommand
+                var dataLoaded = await TryExecuteLoadDataCommand();
 
-                Console.WriteLine($"🧠 SmartPageLifecycleBehavior: Tentando ciclo normal - UseGlobalLoading: {UseGlobalLoading}");
-
-                // ETAPA 1: Aguarda navbar estar pronta
-                var navBarReady = await WaitForNavBarReady();
-                if (!navBarReady)
-                {
-                    Console.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta");
-                }
-
-                // ETAPA 2: ✅ LOADING CENTRALIZADO - Solicita com prioridade de navegação
+                // ETAPA 4: Aguarda navbar estar COMPLETAMENTE pronta após carregamento de dados
+                var navBarFullyReady = await WaitForNavBarFullyReady();
+                return true;
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                // ETAPA 5: ✅ LOADING CENTRALIZADO - Remove requisição
                 if (UseGlobalLoading)
                 {
-                    await GlobalLoadingOverlay.Instance.RequestShowAsync(
-                        requesterId: requesterId,
-                        message: LoadingMessage,
-                        priority: LoadingPriority.Navigation,
-                        context: LoadingContext.PageNavigation
-                    );
-                    Console.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading solicitado via sistema centralizado");
+                    await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
                 }
-
-                try
-                {
-                    // ETAPA 3: Executa LoadDataCommand
-                    var dataLoaded = await TryExecuteLoadDataCommand();
-                    if (!dataLoaded)
-                    {
-                        Console.WriteLine($"❌ SmartPageLifecycleBehavior: LoadDataCommand falhou");
-                    }
-
-                    // ETAPA 4: Aguarda navbar estar COMPLETAMENTE pronta após carregamento de dados
-                    var navBarFullyReady = await WaitForNavBarFullyReady();
-                    if (!navBarFullyReady)
-                    {
-                        Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta - continuando");
-                    }
-
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Ciclo normal concluído");
-                    return true;
-                }
-                finally
-                {
-                    // ETAPA 5: ✅ LOADING CENTRALIZADO - Remove requisição
-                    if (UseGlobalLoading)
-                    {
-                        await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
-                        Console.WriteLine($"🔄 SmartPageLifecycleBehavior: Loading removido via sistema centralizado");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no ciclo normal: {ex.Message}");
-                return false;
             }
         }
 
@@ -275,121 +237,84 @@ namespace MyVocaList.View.Behaviors
 
         private async Task ExecutePageBypass()
         {
+
+            var pageType = _associatedPage.GetType().Name;
+            var requesterId = $"PageBypass_{pageType}_{_associatedPage.GetHashCode()}";
+
+            // ✅ Get friendly page name if page implements IFriendlyPageName
+            var friendlyPageName = GetFriendlyPageName();
+            var loadingMessage = friendlyPageName != null
+                ? $"Loading {friendlyPageName}..."
+                : LoadingMessage;
+
+            // ✅ LOADING CENTRALIZADO: Solicita loading com alta prioridade até navbar estar pronta
+            await GlobalLoadingOverlay.Instance.RequestShowAsync(
+                requesterId: requesterId,
+                message: loadingMessage,
+                priority: LoadingPriority.NavBarWait,
+                context: LoadingContext.ComponentLoading,
+                isPersistent: true // Mantém até explicitamente removido
+            );
+
             try
             {
-                var pageType = _associatedPage.GetType().Name;
-                var requesterId = $"PageBypass_{pageType}_{_associatedPage.GetHashCode()}";
+                // ✅ CORREÇÃO: Aguarda NavBar estar pronta ANTES de executar qualquer comando
+                var navBarReady = await WaitForNavBarReady();
 
-                Console.WriteLine($"🛡️ SmartPageLifecycleBehavior: Executando bypass para {pageType}");
+                // ✅ EXECUTA: LoadDataCommand (DatabaseInterceptor pode mostrar seu próprio loading)
+                await TryExecuteLoadDataCommand();
 
-                // ✅ Get friendly page name if page implements IFriendlyPageName
-                var friendlyPageName = GetFriendlyPageName();
-                var loadingMessage = friendlyPageName != null
-                    ? $"Loading {friendlyPageName}..."
-                    : LoadingMessage;
+                // ✅ MÉTODO REFLEXIVO: Tenta encontrar método OnAppearingBypass na página
+                var pageTypeClass = _associatedPage.GetType();
+                var bypassMethod = pageTypeClass.GetMethod("OnAppearingBypass", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-                // ✅ LOADING CENTRALIZADO: Solicita loading com alta prioridade até navbar estar pronta
-                await GlobalLoadingOverlay.Instance.RequestShowAsync(
-                    requesterId: requesterId,
-                    message: loadingMessage,
-                    priority: LoadingPriority.NavBarWait,
-                    context: LoadingContext.ComponentLoading,
-                    isPersistent: true // Mantém até explicitamente removido
-                );
-
-                try
+                if (bypassMethod != null)
                 {
-                    // ✅ CORREÇÃO: Aguarda NavBar estar pronta ANTES de executar qualquer comando
-                    var navBarReady = await WaitForNavBarReady();
-                    if (!navBarReady)
+                    if (bypassMethod.ReturnType == typeof(Task))
                     {
-                        Console.WriteLine($"❌ SmartPageLifecycleBehavior: NavBar não ficou pronta no bypass");
-                    }
-
-                    // ✅ EXECUTA: LoadDataCommand (DatabaseInterceptor pode mostrar seu próprio loading)
-                    await TryExecuteLoadDataCommand();
-
-                    // ✅ MÉTODO REFLEXIVO: Tenta encontrar método OnAppearingBypass na página
-                    var pageTypeClass = _associatedPage.GetType();
-                    var bypassMethod = pageTypeClass.GetMethod("OnAppearingBypass", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-                    if (bypassMethod != null)
-                    {
-                        Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Chamando {pageTypeClass.Name}.OnAppearingBypass()");
-
-                        if (bypassMethod.ReturnType == typeof(Task))
-                        {
-                            await (Task)bypassMethod.Invoke(_associatedPage, null);
-                        }
-                        else
-                        {
-                            bypassMethod.Invoke(_associatedPage, null);
-                        }
+                        await (Task)bypassMethod.Invoke(_associatedPage, null);
                     }
                     else
                     {
-                        Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Método OnAppearingBypass não encontrado em {pageTypeClass.Name} - usando fallback padrão");
-                        await _associatedPage.ExecuteStandardBypass();
+                        bypassMethod.Invoke(_associatedPage, null);
                     }
-
-                    // ✅ AGUARDA: NavBar estar COMPLETAMENTE pronta
-                    await EnsureNavBarIsShownAfterBypass();
-
-                    _hasExecutedSuccessfully = true;
-                    _failureCount = 0;
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Bypass executado com sucesso");
                 }
-                finally
+                else
                 {
-                    // ✅ SEMPRE: Remove a requisição de loading persistente
-                    await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: Loading de bypass removido para {pageType}");
+                    await _associatedPage.ExecuteStandardBypass();
                 }
+
+                // ✅ AGUARDA: NavBar estar COMPLETAMENTE pronta
+                await EnsureNavBarIsShownAfterBypass();
+
+                _hasExecutedSuccessfully = true;
+                _failureCount = 0;
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro no bypass: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                // ✅ SEMPRE: Remove a requisição de loading persistente
+                await GlobalLoadingOverlay.Instance.RequestHideAsync(requesterId);
             }
         }
+           
 
         private async void OnPageDisappearing(object sender, EventArgs e)
         {
-            try
+            // ✅ LOADING SINGLETON: Esconde loading se página está saindo
+            if (UseGlobalLoading)
             {
-                Console.WriteLine($"🔄 SmartPageLifecycleBehavior: OnPageDisappearing para {_associatedPage.GetType().Name}");
-
-                // ✅ LOADING SINGLETON: Esconde loading se página está saindo
-                if (UseGlobalLoading)
-                {
-                    await GlobalLoadingOverlay.HideLoadingAsync();
-                }
-
-                if (NavBar != null)
-                {
-                    try
-                    {
-                        var hideTask = NavBar.HideAsync();
-                        var timeoutTask = Task.Delay(3000);
-                        var completedTask = await Task.WhenAny(hideTask, timeoutTask);
-
-                        if (completedTask == timeoutTask)
-                        {
-                            Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao esconder NavBar");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar escondida com sucesso");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao esconder NavBar: {ex.Message}");
-                    }
-                }
+                await GlobalLoadingOverlay.HideLoadingAsync();
             }
-            catch (Exception ex)
+
+            if (NavBar != null)
             {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em OnPageDisappearing: {ex.Message}");
+                var hideTask = NavBar.HideAsync();
+                var timeoutTask = Task.Delay(3000);
+                var completedTask = await Task.WhenAny(hideTask, timeoutTask);
             }
         }
 
@@ -399,28 +324,18 @@ namespace MyVocaList.View.Behaviors
 
         private bool ShouldBypassBehavior()
         {
-            try
+            var styleId = _associatedPage.StyleId;
+            if (styleId == "BYPASS_PAGELIFECYCLE")
             {
-                var styleId = _associatedPage.StyleId;
-                if (styleId == "BYPASS_PAGELIFECYCLE")
-                {
-                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Página marcada para bypass via StyleId");
-                    return true;
-                }
+                return true;
+            }
 
-                if (LoadDataCommand == null)
-                {
-                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: {_associatedPage.GetType().Name} com LoadDataCommand NULL - forçando bypass");
-                    return true;
-                }
-                
-                return false;
-            }
-            catch (Exception ex)
+            if (LoadDataCommand == null)
             {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em ShouldBypassBehavior: {ex.Message}");
-                return false;
+                return true;
             }
+                
+            return false;
         }
 
         /// <summary>
@@ -430,45 +345,26 @@ namespace MyVocaList.View.Behaviors
         {
             if (NavBar == null)
             {
-                Console.WriteLine($"✅ SmartPageLifecycleBehavior: Sem NavBar - considerando pronta");
                 return true;
             }
 
-            try
+            int attempts = 0;
+            const int maxAttempts = 30; // 3 segundos
+
+            while (attempts < maxAttempts)
             {
-                int attempts = 0;
-                const int maxAttempts = 30; // 3 segundos
+                await Task.Delay(100);
+                attempts++;
 
-                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar ficar COMPLETAMENTE pronta...");
+                var isFullyReady = await CheckIfNavBarIsFullyReady();
 
-                while (attempts < maxAttempts)
+                if (isFullyReady)
                 {
-                    await Task.Delay(100);
-                    attempts++;
-
-                    var isFullyReady = await CheckIfNavBarIsFullyReady();
-
-                    if (isFullyReady)
-                    {
-                        Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar COMPLETAMENTE pronta após {attempts} tentativas");
-                        return true;
-                    }
-
-                    // 🎯 DEBUG: Log a cada 5 tentativas
-                    if (attempts % 5 == 0)
-                    {
-                        Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Aguardando NavBar... tentativa {attempts}/{maxAttempts}");
-                    }
+                    return true;
                 }
+            }
 
-                Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout aguardando NavBar ficar completamente pronta");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro aguardando NavBar completamente pronta: {ex.Message}");
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
@@ -476,286 +372,168 @@ namespace MyVocaList.View.Behaviors
         /// </summary>
         private async Task<bool> CheckIfNavBarIsFullyReady()
         {
-            try
+            return await MainThread.InvokeOnMainThreadAsync(() =>
             {
-                return await MainThread.InvokeOnMainThreadAsync(() =>
+                    // 🎯 DETECÇÃO ESPECÍFICA: InactiveQueueBottomNav (StackPage)
+                if (NavBar is InactiveQueueBottomNav inactiveNav)
                 {
-                    try
+                    // Verifica se está inicializado E tem botões
+                    var diagnostics = inactiveNav.GetComponentDiagnostics();
+                    var isInitialized = (bool)(diagnostics["IsInitialized"] ?? false);
+                    var buttonCount = (int)(diagnostics["ButtonCount"] ?? 0);
+                    var hasNavBarBehavior = (bool)(diagnostics["HasNavBarBehavior"] ?? false);
+
+                    var isReady = isInitialized && buttonCount > 0 && hasNavBarBehavior;
+
+                    return isReady;
+                }
+
+                // 🎯 DETECÇÃO ESPECÍFICA: CrudNavBarComponent (SpotPage, etc.)
+                if (NavBar is CrudNavBarComponent crudNav)
+                {
+                    // Verifica se NavBarBehavior tem botões criados
+                    var navBarBehavior = crudNav.NavBarBehavior;
+                    if (navBarBehavior?.Buttons != null && navBarBehavior.Buttons.Count > 0)
                     {
-                        // 🎯 DETECÇÃO ESPECÍFICA: InactiveQueueBottomNav (StackPage)
-                        if (NavBar is InactiveQueueBottomNav inactiveNav)
-                        {
-                            // Verifica se está inicializado E tem botões
-                            var diagnostics = inactiveNav.GetComponentDiagnostics();
-                            var isInitialized = (bool)(diagnostics["IsInitialized"] ?? false);
-                            var buttonCount = (int)(diagnostics["ButtonCount"] ?? 0);
-                            var hasNavBarBehavior = (bool)(diagnostics["HasNavBarBehavior"] ?? false);
-
-                            var isReady = isInitialized && buttonCount > 0 && hasNavBarBehavior;
-
-                            if (!isReady)
-                            {
-                                Console.WriteLine($"🎯 InactiveQueueBottomNav: Init={isInitialized}, Buttons={buttonCount}, Behavior={hasNavBarBehavior}");
-                            }
-
-                            return isReady;
-                        }
-
-                        // 🎯 DETECÇÃO ESPECÍFICA: CrudNavBarComponent (SpotPage, etc.)
-                        if (NavBar is CrudNavBarComponent crudNav)
-                        {
-                            // Verifica se NavBarBehavior tem botões criados
-                            var navBarBehavior = crudNav.NavBarBehavior;
-                            if (navBarBehavior?.Buttons != null && navBarBehavior.Buttons.Count > 0)
-                            {
-                                return true;
-                            }
-
-                            Console.WriteLine($"🎯 CrudNavBarComponent: Buttons={navBarBehavior?.Buttons?.Count ?? 0}");
-                            return false;
-                        }
-
-                        // 🎯 DETECÇÃO GENÉRICA: Qualquer ContentView com Grid interno
-                        if (NavBar is ContentView contentView)
-                        {
-                            if (contentView.Content is Grid grid && grid.Children.Count > 0)
-                            {
-                                // Verifica se tem estrutura de botões dentro do grid
-                                foreach (var child in grid.Children)
-                                {
-                                    if (child is Frame frame && frame.Content is Grid innerGrid && innerGrid.Children.Count > 0)
-                                    {
-                                        return true; // Tem estrutura de navbar com botões
-                                    }
-                                }
-                            }
-                        }
-
-                        return false;
+                        return true;
                     }
-                    catch (Exception ex)
+
+                    return false;
+                }
+
+                // 🎯 DETECÇÃO GENÉRICA: Qualquer ContentView com Grid interno
+                if (NavBar is ContentView contentView)
+                {
+                    if (contentView.Content is Grid grid && grid.Children.Count > 0)
                     {
-                        Console.WriteLine($"❌ Erro ao verificar se NavBar está pronta: {ex.Message}");
-                        return false;
+                        // Verifica se tem estrutura de botões dentro do grid
+                        foreach (var child in grid.Children)
+                        {
+                            if (child is Frame frame && frame.Content is Grid innerGrid && innerGrid.Children.Count > 0)
+                            {
+                                return true; // Tem estrutura de navbar com botões
+                            }
+                        }
                     }
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao verificar NavBar: {ex.Message}");
+                }
+
                 return false;
-            }
+                    
+            });
         }
 
         private async Task<bool> WaitForNavBarReady()
         {
             if (NavBar == null) return true;
+            
+            int attempts = 0;
+            const int maxAttempts = 30;
 
-            try
+            while (attempts < maxAttempts)
             {
-                int attempts = 0;
-                const int maxAttempts = 30;
+                await Task.Delay(100);
+                attempts++;
 
-                while (attempts < maxAttempts)
+                if (NavBar is ContentView contentView)
                 {
-                    await Task.Delay(100);
-                    attempts++;
-
-                    if (NavBar is ContentView contentView)
+                    var hasContent = await MainThread.InvokeOnMainThreadAsync(() =>
                     {
-                        var hasContent = await MainThread.InvokeOnMainThreadAsync(() =>
+                        try
                         {
-                            try
+                            if (contentView.Content is Grid grid)
                             {
-                                if (contentView.Content is Grid grid)
-                                {
-                                    return grid.Children.Count > 0;
-                                }
-                                return contentView.Content != null;
+                                return grid.Children.Count > 0;
                             }
-                            catch
-                            {
-                                return false;
-                            }
-                        });
-
-                        if (hasContent)
-                        {
-                            Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar pronta após {attempts} tentativas");
-                            return true;
+                            return contentView.Content != null;
                         }
+                        catch
+                        {
+                            return false;
+                        }
+                    });
+
+                    if (hasContent)
+                    {
+                        return true;
                     }
                 }
+            }
 
-                Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout aguardando NavBar");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro aguardando NavBar: {ex.Message}");
-                return false;
-            }
+            return false;
         }
 
         private async Task<bool> TryExecuteLoadDataCommand()
         {
-            try
+            ICommand commandToExecute = LoadDataCommand;
+
+            if (commandToExecute == null && _associatedPage != null)
             {
-                ICommand commandToExecute = LoadDataCommand;
+                var pageType = _associatedPage.GetType();
+                var loadCommandProperty = pageType.GetProperty("LoadDataCommand");
 
-                if (commandToExecute == null && _associatedPage != null)
+                if (loadCommandProperty != null)
                 {
-                    Console.WriteLine($"🔍 SmartPageLifecycleBehavior: LoadDataCommand NULL - buscando via reflexão");
-
-                    var pageType = _associatedPage.GetType();
-                    var loadCommandProperty = pageType.GetProperty("LoadDataCommand");
-
-                    if (loadCommandProperty != null)
-                    {
-                        commandToExecute = loadCommandProperty.GetValue(_associatedPage) as ICommand;
-                        Console.WriteLine($"🔍 SmartPageLifecycleBehavior: LoadDataCommand encontrado via reflexão: {commandToExecute != null}");
-                    }
-                }
-
-                if (commandToExecute == null)
-                {
-                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand não encontrado - continuando sem erro");
-                    return true;
-                }
-
-                if (!commandToExecute.CanExecute(null))
-                {
-                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: LoadDataCommand.CanExecute = false - continuando sem erro");
-                    return true;
-                }
-
-                try
-                {
-                    Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Executando LoadDataCommand");
-                    commandToExecute.Execute(null);
-                    await Task.Delay(500); // Aguarda operações assíncronas internas
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: LoadDataCommand executado");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro executando LoadDataCommand: {ex.Message}");
-                    return false;
+                    commandToExecute = loadCommandProperty.GetValue(_associatedPage) as ICommand;
                 }
             }
-            catch (Exception ex)
+
+            if (commandToExecute.CanExecute(null))
             {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro em TryExecuteLoadDataCommand: {ex.Message}");
-                return false;
+                commandToExecute?.Execute(null);
+                await Task.Delay(500); // Aguarda operações assíncronas internas
+                return true;
+
             }
+            return false;
         }
 
         private async Task<bool> TryShowNavBar()
         {
             if (NavBar == null) return true;
+            
+            var showTask = NavBar.ShowAsync();
+            var timeoutTask = Task.Delay(5000);
+            var completedTask = await Task.WhenAny(showTask, timeoutTask);
 
-            try
+            if (completedTask == timeoutTask)
             {
-                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: Tentando mostrar NavBar");
-
-                var showTask = NavBar.ShowAsync();
-                var timeoutTask = Task.Delay(5000);
-                var completedTask = await Task.WhenAny(showTask, timeoutTask);
-
-                if (completedTask == timeoutTask)
-                {
-                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: Timeout ao mostrar NavBar");
-                    return false;
-                }
-
-                Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar mostrada com sucesso");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar: {ex.Message}");
                 return false;
             }
+
+            return true;
         }
 
         private async Task ForceShowNavBarAfterFailure()
         {
             if (NavBar == null) return;
 
-            try
-            {
-                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: FORÇA - Chamando NavBar.ShowAsync() após falha");
-
-                var showTask = NavBar.ShowAsync();
-                var timeoutTask = Task.Delay(5000);
-                var completedTask = await Task.WhenAny(showTask, timeoutTask);
-
-                if (completedTask == timeoutTask)
-                {
-                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após falha");
-                }
-                else
-                {
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após falha");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após falha: {ex.Message}");
-            }
+            var showTask = NavBar.ShowAsync();
+            var timeoutTask = Task.Delay(5000);
+            var completedTask = await Task.WhenAny(showTask, timeoutTask);
         }
 
         private async Task EnsureNavBarIsShownAfterBypass()
         {
             // 🎯 NOVA CORREÇÃO: Aguarda navbar estar completamente pronta antes de mostrar
             var navBarFullyReady = await WaitForNavBarFullyReady();
-            if (!navBarFullyReady)
-            {
-                Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: NavBar não ficou completamente pronta no bypass");
-            }
-
+            
             if (NavBar == null) return;
 
-            try
-            {
-                Console.WriteLine($"🎯 SmartPageLifecycleBehavior: BYPASS - Chamando NavBar.ShowAsync()");
-
-                var showTask = NavBar.ShowAsync();
-                var timeoutTask = Task.Delay(5000);
-                var completedTask = await Task.WhenAny(showTask, timeoutTask);
-
-                if (completedTask == timeoutTask)
-                {
-                    Console.WriteLine($"⚠️ SmartPageLifecycleBehavior: TIMEOUT ao mostrar NavBar após bypass");
-                }
-                else
-                {
-                    Console.WriteLine($"✅ SmartPageLifecycleBehavior: NavBar.ShowAsync() concluído após bypass");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao mostrar NavBar após bypass: {ex.Message}");
-            }
+            var showTask = NavBar.ShowAsync();
+            var timeoutTask = Task.Delay(5000);
+            var completedTask = await Task.WhenAny(showTask, timeoutTask);
         }
 
         private void SetLoadingState(bool isLoading)
         {
-            try
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    if (LoadingIndicator != null)
-                        LoadingIndicator.IsVisible = isLoading;
+                if (LoadingIndicator != null)
+                    LoadingIndicator.IsVisible = isLoading;
 
-                    if (MainContent != null)
-                        MainContent.IsVisible = !isLoading;
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Erro ao definir loading state: {ex.Message}");
-            }
+                if (MainContent != null)
+                    MainContent.IsVisible = !isLoading;
+            });
         }
 
         /// <summary>
@@ -765,34 +543,17 @@ namespace MyVocaList.View.Behaviors
         /// </summary>
         private IAnimatableNavBar AutoDiscoverNavBar(ContentPage page)
         {
-            try
+            // ✅ TIER 1: Self-registered navbar (AUTOMATIC via OnParentSet)
+            var navBar = MyVocaList.View.Extensions.NavBarExtensions.GetPageNavBar(page);
+            if (navBar != null)
             {
-                // ✅ TIER 1: Self-registered navbar (AUTOMATIC via OnParentSet)
-                var navBar = MyVocaList.View.Extensions.NavBarExtensions.GetPageNavBar(page);
-                if (navBar != null)
-                {
-                    Console.WriteLine($"✅ NavBar found via self-registration: {navBar.GetType().Name}");
-                    return navBar;
-                }
-
-                // ✅ TIER 2: Visual tree search (fallback for edge cases)
-                navBar = FindNavBarInVisualTree(page);
-                if (navBar != null)
-                {
-                    Console.WriteLine($"✅ NavBar found via visual tree search: {navBar.GetType().Name}");
-                }
-                else
-                {
-                    Console.WriteLine($"⚠️ No NavBar found in {page.GetType().Name}");
-                }
-
                 return navBar;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ SmartPageLifecycleBehavior: Error in AutoDiscoverNavBar: {ex.Message}");
-                return null;
-            }
+
+            // ✅ TIER 2: Visual tree search (fallback for edge cases)
+            navBar = FindNavBarInVisualTree(page);
+
+            return navBar;
         }
 
         /// <summary>

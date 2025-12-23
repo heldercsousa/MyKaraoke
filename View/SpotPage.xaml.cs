@@ -15,6 +15,7 @@ using MyVocaList.Services.Mappers;
 using System.Threading;
 using CommunityToolkit.Maui.Views;
 using Serilog;
+using Microsoft.Extensions.Options;
 
 namespace MyVocaList.View
 {
@@ -23,6 +24,7 @@ namespace MyVocaList.View
         private static readonly Serilog.ILogger Logger = Log.ForContext<SpotPage>();
 
         private IEstabelecimentoService _estabelecimentoService;
+        private PaginationSettings _paginationSettings;
         public ObservableCollection<EstabelecimentoListItemDto> Locais { get; }
 
         // Pagination state
@@ -30,6 +32,7 @@ namespace MyVocaList.View
         private int _totalCount = 0;
         private bool _hasMoreItems = true;
         private string _currentSearchQuery = null;
+        private int _firstLoadedItemIndex = 1; // Track the index of the first item in memory (1-based)
 
         private int _selectionCount;
         public int SelectionCount
@@ -73,6 +76,36 @@ namespace MyVocaList.View
             }
         }
 
+        public string VenuesCountText
+        {
+            get
+            {
+                if (TotalItemsCount == 0)
+                    return string.Empty;
+
+                if (IsSearching)
+                {
+                    var count = Locais.Count;
+                    return count == 1 ? "1 result" : $"{count} results";
+                }
+
+                if (Locais.Count < TotalItemsCount)
+                {
+                    // Show range when memory cleanup is active (first index > 1)
+                    if (_firstLoadedItemIndex > 1)
+                    {
+                        var lastIndex = _firstLoadedItemIndex + Locais.Count - 1;
+                        return $"{_firstLoadedItemIndex} to {lastIndex} of {TotalItemsCount}";
+                    }
+                    // Show simple count for initial loading
+                    return $"{Locais.Count} of {TotalItemsCount}";
+                }
+
+                var total = TotalItemsCount;
+                return total == 1 ? "1 venue" : $"{total} venues";
+            }
+        }
+
         #region IManipulableDataPage Members 
 
         public ICommand LoadDataCommand { get; private set; }
@@ -88,6 +121,7 @@ namespace MyVocaList.View
 
         public ICommand ToggleSelectionCommand { get; private set; }
         public ICommand LoadMoreCommand { get; private set; }
+        public ICommand PerformSearchCommand { get; private set; }
 
         private bool _isLoadingMore;
         public bool IsLoadingMore
@@ -110,6 +144,7 @@ namespace MyVocaList.View
             OpenItemCommand = new Command<EstabelecimentoListItemDto>(OnOpenItem);
             ToggleSelectionCommand = new Command<EstabelecimentoListItemDto>(OnToggleSelection);
             LoadMoreCommand = new Command(async () => await LoadMoreItemsAsync());
+            PerformSearchCommand = new Command<string>(async (query) => await PerformSearchAsync(query));
 
             InitializeComponent();
 
@@ -158,6 +193,10 @@ namespace MyVocaList.View
                 {
                     var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
                     _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+
+                    // Get pagination settings
+                    var paginationOptions = serviceProvider.GetService<IOptions<PaginationSettings>>();
+                    _paginationSettings = paginationOptions?.Value ?? new PaginationSettings();
                 }
             }
             catch (Exception ex)
@@ -225,11 +264,12 @@ namespace MyVocaList.View
                 _currentPage = 1;
                 _hasMoreItems = true;
                 _currentSearchQuery = null;
+                _firstLoadedItemIndex = 1; // Reset to first item
 
                 // Load first page using pagination
                 var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
                     _currentPage,
-                    PaginationSettings.PageSize,
+                    _paginationSettings.PageSize,
                     null);
 
                 _totalCount = totalCount;
@@ -250,6 +290,7 @@ namespace MyVocaList.View
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     TotalItemsCount = _totalCount; // Update total items count for binding
+                    OnPropertyChanged(nameof(VenuesCountText));
                     IsSearching = false; // Clear search state when loading all venues
                     UpdateUIState();
                 });
@@ -267,11 +308,6 @@ namespace MyVocaList.View
 
         #region Search Logic
 
-        private async void OnSearchTextChanged(object sender, TextChangedEventArgs e)
-        {
-            await PerformSearchAsync(e.NewTextValue);
-        }
-
         private async Task PerformSearchAsync(string query)
         {
             // Cancel previous search if typing continues
@@ -287,13 +323,14 @@ namespace MyVocaList.View
                 // Reset pagination for new search
                 _currentPage = 1;
                 _currentSearchQuery = query;
+                _firstLoadedItemIndex = 1; // Reset to first item
 
                 // Track whether we're actively searching
                 var isActiveSearch = !string.IsNullOrWhiteSpace(query);
 
                 var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
                     _currentPage,
-                    PaginationSettings.PageSize,
+                    _paginationSettings.PageSize,
                     isActiveSearch ? query : null);
 
                 if (cts.Token.IsCancellationRequested) return;
@@ -315,6 +352,7 @@ namespace MyVocaList.View
                     _hasMoreItems = Locais.Count < _totalCount;
 
                     TotalItemsCount = _totalCount; // Update total items count for binding
+                    OnPropertyChanged(nameof(VenuesCountText));
 
                     UpdateUIState();
                 });
@@ -328,14 +366,6 @@ namespace MyVocaList.View
                 Logger.Error(ex, "Search error");
             }
         }
-
-        private void OnSearchButtonPressed(object sender, EventArgs e)
-        {
-            // Opcional: Esconder teclado
-            if (sender is SearchBar sb) sb.Unfocus();
-        }
-
-        // private void FilterList(string query) ... REMOVED
 
         #endregion
 
@@ -574,7 +604,7 @@ namespace MyVocaList.View
                 IsLoadingMore = true;
 
                 // Small debounce to prevent rapid-fire requests during fast scrolling
-                await Task.Delay(PaginationSettings.LoadMoreDebounceMs, cts.Token);
+                await Task.Delay(_paginationSettings.LoadMoreDebounceMs, cts.Token);
 
                 if (cts.Token.IsCancellationRequested) return;
 
@@ -583,7 +613,7 @@ namespace MyVocaList.View
 
                 var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
                     _currentPage,
-                    PaginationSettings.PageSize,
+                    _paginationSettings.PageSize,
                     _currentSearchQuery);
 
                 if (cts.Token.IsCancellationRequested)
@@ -607,18 +637,24 @@ namespace MyVocaList.View
                         _hasMoreItems = Locais.Count < _totalCount;
 
                         // Memory management: Remove old items if limit exceeded
-                        if (Locais.Count > PaginationSettings.MaxItemsInMemory)
+                        if (Locais.Count > _paginationSettings.MaxItemsInMemory)
                         {
-                            var itemsToRemove = Locais.Count - PaginationSettings.MaxItemsInMemory;
+                            var itemsToRemove = Locais.Count - _paginationSettings.MaxItemsInMemory;
                             for (int i = 0; i < itemsToRemove; i++)
                             {
                                 Locais.RemoveAt(0); // Remove from top (oldest)
                             }
-                            Logger.Debug("Trimmed {ItemsRemoved} old items to keep memory under {MaxItems} items", itemsToRemove, PaginationSettings.MaxItemsInMemory);
+
+                            // Update first loaded item index to reflect removed items
+                            _firstLoadedItemIndex += itemsToRemove;
+
+                            Logger.Debug("Trimmed {ItemsRemoved} old items to keep memory under {MaxItems} items. First index now: {FirstIndex}",
+                                itemsToRemove, _paginationSettings.MaxItemsInMemory, _firstLoadedItemIndex);
                         }
                     }
 
                     TotalItemsCount = _totalCount; // Update total items count for binding
+                    OnPropertyChanged(nameof(VenuesCountText));
 
                     UpdateUIState();
                 });

@@ -40,41 +40,16 @@
 
         <components:HeaderComponent Grid.Row="0" Title="Venues" />
 
-        <VerticalStackLayout Grid.Row="1" Spacing="8" Padding="16,8">
-            <Border StrokeShape="RoundRectangle 24"
-                    StrokeThickness="0"
-                    BackgroundColor="{StaticResource SurfaceContainerHighest}"
-                    HeightRequest="48"
-                    Padding="8,0">
-                <Grid ColumnDefinitions="Auto, *">
-                    <!-- Search Icon -->
-                    <components:StatefulIcon Grid.Column="0"
-                                           IconName="search"
-                                           Size="Medium"
-                                           ActiveColor="{StaticResource OnSurfaceVariant}"
-                                           InactiveColor="{StaticResource OnSurfaceVariant}"
-                                           Margin="12,0,0,0"
-                                           VerticalOptions="Center" />
-
-                    <!-- Input Field -->
-                    <SearchBar Grid.Column="1"
-                               Placeholder="Search venues..."
-                               PlaceholderColor="{StaticResource OnSurfaceVariant}"
-                               TextColor="{StaticResource OnSurface}"
-                               CancelButtonColor="{StaticResource Primary}"
-                               BackgroundColor="Transparent"
-                               VerticalOptions="Center"
-                               TextChanged="OnSearchTextChanged"
-                               SearchButtonPressed="OnSearchButtonPressed" />
-                </Grid>
-            </Border>
-
-            <Label Text="{Binding TotalItemsCount, StringFormat='{0} Venues'}"
-                   Style="{StaticResource LabelSmall}"
-                   TextColor="{StaticResource OnSurfaceVariant}"
-                   Margin="4,0,0,0"
-                   IsVisible="{Binding TotalItemsCount, Converter={StaticResource IntToBool}}" />
-        </VerticalStackLayout>
+        <components:SearchBarComponent
+            Grid.Row="1"
+            x:Name="searchBarComponent"
+            Placeholder="Search venues..."
+            TargetCollectionView="{x:Reference locaisCollectionView}"
+            EnableScrollBehavior="True"
+            ResultCountText="{Binding VenuesCountText}"
+            ShowResultCount="True"
+            TextChangedCommand="{Binding PerformSearchCommand}"
+            Margin="16,8" />
 
         <CollectionView Grid.Row="2"
                         x:Name="locaisCollectionView"
@@ -118,6 +93,7 @@
                             </SwipeItems>
                         </SwipeView.RightItems>
 
+                        <VerticalStackLayout Spacing="0">
                         <Frame Style="{StaticResource ElevatedCard}"
                                Margin="0,4"
                                Padding="16,12">
@@ -198,6 +174,14 @@
                                 </Frame>
                             </Grid>
                         </Frame>
+
+                        <!-- MD3 Divider -->
+                        <BoxView HeightRequest="1"
+                                 Color="{StaticResource OnSurfaceVariant}"
+                                 Opacity="0.12"
+                                 Margin="72,0,16,0"
+                                 HorizontalOptions="FillAndExpand" />
+                        </VerticalStackLayout>
                     </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

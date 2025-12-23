@@ -1,8 +1,8 @@
 # CLAUDE.md - MyVocaList Project Context
 
 > **Living Documentation for AI-Assisted Development**
-> Last Updated: December 21, 2025
-> Version: 2.4
+> Last Updated: December 22, 2025
+> Version: 2.5
 
 ---
 
@@ -658,25 +658,228 @@ public partial class MyPage : ContentPage
 
 ## 🔧 Logging & Exception Handling
 
-### Logging (Serilog)
+### Logging (Serilog) - CRITICAL GUIDELINES
+
+#### **Logger Initialization Patterns**
+
 ```csharp
-// Services (DI):
+// Services (DI - PREFERRED):
 public class MyService(ILogger<MyService> logger) { }
 
-// Components (static):
+// Components/Pages (static - when DI not available):
 private static readonly Serilog.ILogger Logger = Log.ForContext<MyComponent>();
-
-// ALWAYS use structured templates:
-logger.LogDebug("Loading {Count} items", count);  // ✅
-logger.LogDebug($"Loading {count} items");        // ❌
 ```
 
+#### **Structured Logging (MANDATORY)**
+
+**ALWAYS use structured logging templates with placeholders, NEVER string interpolation:**
+
+```csharp
+// ✅ CORRECT - Structured logging (allows filtering, searching, analytics)
+logger.LogDebug("Loading {Count} items from {Source}", count, source);
+logger.LogInformation("User {UserId} created queue {QueueId}", userId, queueId);
+
+// ❌ WRONG - String interpolation (loses structured data)
+logger.LogDebug($"Loading {count} items from {source}");
+logger.LogInformation($"User {userId} created queue {queueId}");
+```
+
+#### **Log Level Guidelines - When to Use Each Level**
+
+**⚠️ CRITICAL RULE: Most logs should be Debug, Information is ONLY for business events!**
+
+---
+
+**🔍 Debug Level** - Routine operations, technical details (90% of your logs)
+
+**Use Debug for:**
+- ✅ Constructor execution: `"MyService initialized"`
+- ✅ Method entry/exit: `"Starting data load"`, `"Load completed"`
+- ✅ Navigation: `"Navigating to {PageName}"`, `"Navigation completed"`
+- ✅ Component initialization: `"XAML components initialized"`
+- ✅ Service initialization: `"Database service ready"`
+- ✅ Database operations: `"Executing query"`, `"Migration applied"`
+- ✅ Data loading: `"Loading {Count} items"`
+- ✅ UI state changes: `"Search mode activated"`
+- ✅ Configuration loading: `"Settings loaded"`
+- ✅ Cache operations: `"Cache hit for {Key}"`
+
+**Examples:**
+```csharp
+// Page lifecycle
+Logger.Debug("OnAppearing called");
+Logger.Debug("Handler initialized");
+Logger.Debug("Services resolved from DI");
+
+// Data operations
+_logger.LogDebug("Loading venues with search term: {SearchTerm}", searchTerm);
+_logger.LogDebug("Query returned {Count} results", results.Count);
+_logger.LogDebug("Database connection verified");
+
+// Navigation
+Logger.Debug("Navigating to {TargetPage}", nameof(SpotPage));
+Logger.Debug("Navigation to {Page} completed successfully", pageName);
+```
+
+---
+
+**📊 Information Level** - Business events, user actions (5-10% of your logs)
+
+**Use Information for:**
+- ✅ User actions: `"User {UserId} logged in"`
+- ✅ Business operations: `"Queue {QueueId} created by user {UserId}"`
+- ✅ Important state changes: `"Round {Round} started with {Count} participants"`
+- ✅ Business milestones: `"User {UserId} completed onboarding"`
+- ✅ Key business decisions: `"Language {Language} selected by user"`
+- ✅ Transaction completion: `"Order {OrderId} processed successfully"`
+
+**Examples:**
+```csharp
+// User actions (business-relevant)
+_logger.LogInformation("User {UserId} selected language: {Language}", userId, language);
+_logger.LogInformation("User {UserId} cancelled language selection", userId);
+
+// Business operations
+_logger.LogInformation("Queue {QueueId} created at venue {VenueId}", queueId, venueId);
+_logger.LogInformation("Singer {SingerId} registered for queue {QueueId}", singerId, queueId);
+_logger.LogInformation("Round {Round} completed with {Count} participants", round, count);
+```
+
+**⚠️ NEVER use Information for:**
+- ❌ Constructor calls: `"MyService initialized"` → Use Debug
+- ❌ Page navigation: `"Navigating to SpotPage"` → Use Debug
+- ❌ Data loading: `"Loading venues"` → Use Debug
+- ❌ Database operations: `"Migration applied"` → Use Debug
+- ❌ Service initialization: `"Database ready"` → Use Debug
+
+---
+
+**⚠️ Warning Level** - Recoverable issues, degraded functionality
+
+**Use Warning for:**
+- ✅ Fallback scenarios: `"Service unavailable, using cached data"`
+- ✅ Deprecated features: `"Using deprecated API, migrate to v2"`
+- ✅ Validation failures: `"Invalid input {Input}, using default"`
+- ✅ Configuration issues: `"Setting {Key} not found, using default"`
+- ✅ Performance issues: `"Query took {Duration}ms, consider optimization"`
+- ✅ Missing optional data: `"Profile picture not found for user {UserId}"`
+
+**Examples:**
+```csharp
+Logger.Warning("Service {ServiceName} not available, using fallback", serviceName);
+_logger.LogWarning("Database not initialized after {Attempts} attempts", attempts);
+Logger.Warning(ex, "Error checking language via service, falling back to preferences");
+```
+
+---
+
+**❌ Error Level** - Exceptions, failures requiring attention
+
+**Use Error for:**
+- ✅ Caught exceptions: `"Failed to save venue: {ErrorMessage}"`
+- ✅ Operation failures: `"Database migration failed"`
+- ✅ External service failures: `"API call to {Service} failed: {Error}"`
+- ✅ Data integrity issues: `"Duplicate entry detected for {Key}"`
+- ✅ User-impacting errors: `"Failed to load user profile"`
+
+**Examples:**
+```csharp
+Logger.Error(ex, "Failed to initialize database");
+_logger.LogError(ex, "Error saving venue {VenueId}", venueId);
+Logger.Error(ex, "Navigation to {Page} failed", pageName);
+```
+
+---
+
+**💀 Fatal Level** - Critical failures, application cannot continue
+
+**Use Fatal for:**
+- ✅ App initialization failures: `"Critical error during app startup"`
+- ✅ Unrecoverable errors: `"Database corrupted, cannot continue"`
+- ✅ Total failure scenarios: `"All fallback mechanisms failed"`
+
+**Examples:**
+```csharp
+Logger.Fatal(ex, "CRITICAL ERROR during application initialization");
+Logger.Fatal(ex, "Total failure in navigation fallback");
+Logger.Fatal(ex, "Database connection lost and recovery failed");
+```
+
+---
+
+#### **Quick Decision Tree**
+
+```
+Is this a user action or business event?
+  └─ YES → Information
+  └─ NO ↓
+
+Is this an exception or error?
+  └─ YES → Error (or Fatal if unrecoverable)
+  └─ NO ↓
+
+Is this a recoverable issue/fallback?
+  └─ YES → Warning
+  └─ NO ↓
+
+Is this routine operation/technical detail?
+  └─ YES → Debug
+```
+
+---
+
+#### **Real-World Examples from Codebase**
+
+```csharp
+// ✅ CORRECT Examples:
+
+// App.xaml.cs - Routine operations
+Logger.Debug("Configuring runtime environment");
+Logger.Debug("XAML components initialized");
+Logger.Debug("Essential services initialized");
+
+// SplashPage.xaml.cs - Database operations
+Logger.Debug("Starting database initialization");
+Logger.Debug("DatabaseService.InitializeDatabaseAsync() completed");
+Logger.Debug("Database initialized successfully");
+
+// TonguePage.xaml.cs - Business event vs routine operation
+Logger.Information("Language selection cancelled by user");  // Business event!
+Logger.Debug("Navigation to StackPage completed");           // Routine operation
+
+// DatabaseService.cs - Database operations
+_logger.LogDebug("Starting migration application");
+_logger.LogDebug("Migrations applied successfully");
+_logger.LogDebug("Database initialized successfully at: {DbPath}", dbPath);
+```
+
+---
+
 ### Exception Handling
-- NO `Debug.WriteLine` - use Serilog
-- NO catch-all try-catch that swallows exceptions
-- Let `GlobalExceptionHandler` catch unhandled exceptions
-- Catch ONLY specific exceptions with meaningful recovery
-- Use `throw;` not `throw ex;` when re-throwing
+
+**Best Practices:**
+- ❌ NO `Debug.WriteLine` - use Serilog
+- ❌ NO catch-all try-catch that swallows exceptions
+- ❌ NO empty catch blocks
+- ✅ Let `GlobalExceptionHandler` catch unhandled exceptions
+- ✅ Catch ONLY specific exceptions with meaningful recovery
+- ✅ Use `throw;` not `throw ex;` when re-throwing (preserves stack trace)
+- ✅ Always log exceptions with context: `Logger.Error(ex, "Context: {Data}", data)`
+
+**Example:**
+```csharp
+try
+{
+    await _service.ProcessDataAsync(data);
+}
+catch (DbUpdateException ex)
+{
+    // ✅ Specific exception, meaningful recovery
+    _logger.LogError(ex, "Database update failed for entity {EntityId}", data.Id);
+    throw;  // ✅ Preserves stack trace
+}
+// ❌ DO NOT catch (Exception ex) unless you have a specific fallback strategy
+```
 
 ---
 
@@ -714,6 +917,6 @@ logger.LogDebug($"Loading {count} items");        // ❌
 
 ---
 
-**Last Updated**: December 21, 2025
-**Version**: 2.4
+**Last Updated**: December 22, 2025
+**Version**: 2.5
 **Maintained by**: Helder (Architect) + Claude AI (Developer)

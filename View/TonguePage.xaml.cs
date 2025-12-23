@@ -199,7 +199,7 @@ namespace MyVocaList.View
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     Application.Current.MainPage = new NavigationPage(new StackPage());
-                    Logger.Information("Navigation to StackPage completed");
+                    Logger.Debug("Navigation to StackPage completed");
                 });
 
                 // Hide loading

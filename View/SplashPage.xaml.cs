@@ -18,7 +18,7 @@ namespace MyVocaList.View
             try
             {
                 InitializeComponent();
-                Logger.Information("Started successfully");
+                Logger.Debug("Started successfully");
             }
             catch (Exception ex)
             {
@@ -36,13 +36,13 @@ namespace MyVocaList.View
                 try
                 {
                     _serviceProvider = ServiceProvider.FromPage(this);
-                    Logger.Information("ServiceProvider initialized");
+                    Logger.Debug("ServiceProvider initialized");
 
                     _databaseService = _serviceProvider.GetService<IDatabaseService>();
                     _languageService = _serviceProvider.GetService<ILanguageService>();
 
-                    Logger.Information("DatabaseService: {Status}", _databaseService != null ? "OK" : "NULL");
-                    Logger.Information("LanguageService: {Status}", _languageService != null ? "OK" : "NULL");
+                    Logger.Debug("DatabaseService: {Status}", _databaseService != null ? "OK" : "NULL");
+                    Logger.Debug("LanguageService: {Status}", _languageService != null ? "OK" : "NULL");
 
                     _isInitialized = true;
                 }
@@ -56,7 +56,7 @@ namespace MyVocaList.View
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            Logger.Information("OnAppearing called");
+            Logger.Debug("OnAppearing called");
             await StartLoadingProcess();
         }
 
@@ -64,7 +64,7 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("Starting loading process");
+                Logger.Debug("Starting loading process");
 
                 await EnsureServicesReady();
                 await InitializeDatabaseAsync();
@@ -99,7 +99,7 @@ namespace MyVocaList.View
             }
             else
             {
-                Logger.Information("Services ready for use");
+                Logger.Debug("Services ready for use");
             }
         }
 
@@ -107,7 +107,7 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("Starting database initialization");
+                Logger.Debug("Starting database initialization");
 
                 if (_databaseService == null)
                 {
@@ -120,11 +120,11 @@ namespace MyVocaList.View
                 {
                     Logger.Debug("Calling DatabaseService.InitializeDatabaseAsync()");
                     await _databaseService.InitializeDatabaseAsync();
-                    Logger.Information("DatabaseService.InitializeDatabaseAsync() completed");
+                    Logger.Debug("DatabaseService.InitializeDatabaseAsync() completed");
                 });
 
                 bool isAvailable = await _databaseService.IsDatabaseAvailableAsync();
-                Logger.Information("Database available after initialization: {IsAvailable}", isAvailable);
+                Logger.Debug("Database available after initialization: {IsAvailable}", isAvailable);
 
                 if (!isAvailable)
                 {
@@ -132,12 +132,12 @@ namespace MyVocaList.View
                     await InitializeDatabaseFallback();
                 }
 
-                Logger.Information("Database initialized successfully");
+                Logger.Debug("Database initialized successfully");
             }
             catch (Exception ex)
             {
                 Logger.Error(ex, "Critical error in database initialization");
-                Logger.Information("Trying initialization fallback");
+                Logger.Debug("Trying initialization fallback");
                 await InitializeDatabaseFallback();
             }
         }
@@ -146,7 +146,7 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("Executing database initialization fallback");
+                Logger.Debug("Executing database initialization fallback");
 
                 using var scope = MauiProgram.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -159,7 +159,7 @@ namespace MyVocaList.View
 
                 if (canConnect)
                 {
-                    Logger.Information("Fallback successful");
+                    Logger.Debug("Fallback successful");
                 }
                 else
                 {
@@ -176,7 +176,7 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("Navigating to next page");
+                Logger.Debug("Navigating to next page");
 
                 bool languageSelected = false;
 
@@ -185,29 +185,29 @@ namespace MyVocaList.View
                     if (_languageService != null)
                     {
                         languageSelected = _languageService.IsLanguageSelected();
-                        Logger.Information("Language selected via service: {LanguageSelected}", languageSelected);
+                        Logger.Debug("Language selected via service: {LanguageSelected}", languageSelected);
                     }
                 }
                 catch (Exception ex)
                 {
                     Logger.Warning(ex, "Error checking language via service");
                     languageSelected = Preferences.ContainsKey("UserLanguage");
-                    Logger.Information("Language selected via preferences: {LanguageSelected}", languageSelected);
+                    Logger.Debug("Language selected via preferences: {LanguageSelected}", languageSelected);
                 }
 
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     if (languageSelected)
                     {
-                        Logger.Information("Navigating directly to StackPage (language already selected)");
+                        Logger.Debug("Navigating directly to StackPage (language already selected)");
                         Application.Current.MainPage = new NavigationPage(new StackPage());
-                        Logger.Information("Navigation to StackPage completed");
+                        Logger.Debug("Navigation to StackPage completed");
                     }
                     else
                     {
-                        Logger.Information("Navigating to TonguePage (no language selected)");
+                        Logger.Debug("Navigating to TonguePage (no language selected)");
                         Application.Current.MainPage = new NavigationPage(new TonguePage());
-                        Logger.Information("Navigation to TonguePage completed");
+                        Logger.Debug("Navigation to TonguePage completed");
                     }
                 });
             }
@@ -220,7 +220,7 @@ namespace MyVocaList.View
                     await MainThread.InvokeOnMainThreadAsync(() =>
                     {
                         Application.Current.MainPage = new NavigationPage(new TonguePage());
-                        Logger.Information("Fallback navigation to TonguePage completed");
+                        Logger.Debug("Fallback navigation to TonguePage completed");
                     });
                 }
                 catch (Exception fallbackEx)

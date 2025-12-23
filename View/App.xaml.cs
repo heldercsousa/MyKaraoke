@@ -31,7 +31,7 @@ namespace MyVocaList.View
                 ConfigureEnvironment();
 
                 // Inicializa componentes XAML
-                Logger.Information("Initializing XAML components");
+                Logger.Debug("Initializing XAML components");
                 InitializeComponent();
 
                 // Inicializa serviços essenciais
@@ -192,7 +192,7 @@ namespace MyVocaList.View
                     }
                 };
 
-                Logger.Information("Fallback page created successfully");
+                Logger.Debug("Fallback page created successfully");
             }
             catch (Exception criticalEx)
             {
@@ -215,7 +215,7 @@ namespace MyVocaList.View
                         }
                     };
 
-                    Logger.Information("Simple emergency page created");
+                    Logger.Debug("Simple emergency page created");
                 }
                 catch (Exception ultimateEx)
                 {
@@ -228,7 +228,7 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("Continue button pressed");
+                Logger.Debug("Continue button pressed");
 
                 // Tenta navegar para a aplicação principal
                 await AttemptMainNavigation();
@@ -251,13 +251,13 @@ namespace MyVocaList.View
                 // Tenta diferentes opções de navegação
                 if (await TryNavigateToSplashPage())
                 {
-                    Logger.Information("Navigation to SplashPage successful");
+                    Logger.Debug("Navigation to SplashPage successful");
                     return;
                 }
 
                 if (await TryNavigateToTonguePage())
                 {
-                    Logger.Information("Navigation to TonguePage successful");
+                    Logger.Debug("Navigation to TonguePage successful");
                     return;
                 }
 

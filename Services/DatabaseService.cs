@@ -26,25 +26,25 @@ namespace MyVocaList.Services
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
-                    _logger.LogInformation($"Diretório criado: {directory}");
+                    _logger.LogDebug("Directory created: {Directory}", directory);
                 }
 
                 // Verificar permissões de escrita
                 await VerifyWritePermissionsAsync(directory);
 
                 // **APLICAR MIGRAÇÕES - RESPONSABILIDADE DO DATABASE SERVICE**
-                _logger.LogInformation("Iniciando aplicação de migrações...");
+                _logger.LogDebug("Starting migration application");
                 await _context.Database.MigrateAsync();
-                _logger.LogInformation("Migrações aplicadas com sucesso");
+                _logger.LogDebug("Migrations applied successfully");
 
-                _logger.LogInformation($"Banco de dados inicializado com sucesso em: {dbPath}");
+                _logger.LogDebug("Database initialized successfully at: {DbPath}", dbPath);
 
                 // Testar conexão
                 await TestConnectionAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao inicializar banco de dados");
+                _logger.LogError(ex, "Error initializing database");
                 throw;
             }
         }
@@ -56,11 +56,11 @@ namespace MyVocaList.Services
             {
                 await File.WriteAllTextAsync(testFile, "test");
                 File.Delete(testFile);
-                _logger.LogInformation("Permissões de escrita verificadas");
+                _logger.LogDebug("Write permissions verified");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro de permissão de escrita no diretório");
+                _logger.LogError(ex, "Write permission error in directory");
                 throw;
             }
         }
@@ -70,11 +70,11 @@ namespace MyVocaList.Services
             try
             {
                 await _context.Database.CanConnectAsync();
-                _logger.LogInformation("Conexão com banco testada com sucesso");
+                _logger.LogDebug("Database connection tested successfully");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao testar conexão com banco");
+                _logger.LogError(ex, "Error testing database connection");
                 throw;
             }
         }

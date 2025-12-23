@@ -13,9 +13,9 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("Starting initialization");
+                Logger.Debug("Starting initialization");
                 InitializeComponent();
-                Logger.Information("InitializeComponent completed");
+                Logger.Debug("InitializeComponent completed");
             }
             catch (Exception ex)
             {
@@ -28,12 +28,12 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("OnAppearing started");
+                Logger.Debug("OnAppearing started");
                 base.OnAppearing();
 
                 Task.Run(async () => await SimulateLoading());
 
-                Logger.Information("OnAppearing completed");
+                Logger.Debug("OnAppearing completed");
             }
             catch (Exception ex)
             {
@@ -84,7 +84,7 @@ namespace MyVocaList.View
 
             try
             {
-                Logger.Information("Starting loading simulation");
+                Logger.Debug("Starting loading simulation");
 
                 for (int i = 0; i < loadingSteps.Length; i++)
                 {
@@ -126,7 +126,7 @@ namespace MyVocaList.View
 
             try
             {
-                Logger.Information("Starting navigation to next page");
+                Logger.Debug("Starting navigation to next page");
 
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
@@ -134,7 +134,7 @@ namespace MyVocaList.View
                     {
                         var splashPage = new SplashPage();
                         Application.Current.MainPage = splashPage;
-                        Logger.Information("Navigation to SplashPage completed successfully");
+                        Logger.Debug("Navigation to SplashPage completed successfully");
                     }
                     catch (Exception ex)
                     {
@@ -144,14 +144,14 @@ namespace MyVocaList.View
                         {
                             var tonguePage = new TonguePage();
                             Application.Current.MainPage = new NavigationPage(tonguePage);
-                            Logger.Information("Fallback to TonguePage completed");
+                            Logger.Debug("Fallback to TonguePage completed");
                         }
                         catch (Exception fallbackEx)
                         {
                             Logger.Fatal(fallbackEx, "Critical error in fallback");
 
                             Application.Current.MainPage = CreateEmergencyPage();
-                            Logger.Information("Emergency page loaded");
+                            Logger.Debug("Emergency page loaded");
                         }
                     }
                 });
@@ -166,7 +166,7 @@ namespace MyVocaList.View
         {
             try
             {
-                Logger.Information("Creating emergency UI");
+                Logger.Debug("Creating emergency UI");
 
                 Content = new Grid
                 {
@@ -208,7 +208,7 @@ namespace MyVocaList.View
                     }
                 };
 
-                Logger.Information("Emergency UI created successfully");
+                Logger.Debug("Emergency UI created successfully");
             }
             catch (Exception ex)
             {

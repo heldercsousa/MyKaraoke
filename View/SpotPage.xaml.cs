@@ -45,6 +45,20 @@ namespace MyVocaList.View
             }
         }
 
+        private bool _isSearching;
+        public bool IsSearching
+        {
+            get => _isSearching;
+            set
+            {
+                if (_isSearching != value)
+                {
+                    _isSearching = value;
+                    OnPropertyChanged(nameof(IsSearching));
+                }
+            }
+        }
+
         #region IManipulableDataPage Members 
 
         public ICommand LoadDataCommand { get; private set; }
@@ -219,12 +233,20 @@ namespace MyVocaList.View
                     _hasMoreItems = Locais.Count < _totalCount;
                 }
 
-                MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    IsSearching = false; // Clear search state when loading all venues
+                    UpdateUIState();
+                });
             }
             catch (Exception ex)
             {
                 Logger.Error(ex, "Error loading venues");
-                MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    IsSearching = false;
+                    UpdateUIState();
+                });
             }
         }
 
@@ -251,10 +273,13 @@ namespace MyVocaList.View
                 _currentPage = 1;
                 _currentSearchQuery = query;
 
+                // Track whether we're actively searching
+                var isActiveSearch = !string.IsNullOrWhiteSpace(query);
+
                 var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
                     _currentPage,
                     PaginationSettings.PageSize,
-                    string.IsNullOrWhiteSpace(query) ? null : query);
+                    isActiveSearch ? query : null);
 
                 if (cts.Token.IsCancellationRequested) return;
 
@@ -262,6 +287,9 @@ namespace MyVocaList.View
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
+                    // Update search state BEFORE updating the list
+                    IsSearching = isActiveSearch;
+
                     Locais.Clear();
                     foreach (var item in items)
                     {

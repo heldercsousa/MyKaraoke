@@ -210,19 +210,37 @@
                Padding="24"
                Margin="16">
             <VerticalStackLayout Spacing="16">
+                <!-- Icon (same for both states) -->
                 <components:StatefulIcon IconName="nightlife" Size="Large" HorizontalOptions="Center" />
-                <Label Text="No venue registered" Style="{StaticResource TitleMedium}" HorizontalOptions="Center" />
-                <Label HorizontalOptions="Center"
+
+                <!-- Empty State: No venues registered at all -->
+                <VerticalStackLayout Spacing="16" IsVisible="{Binding IsSearching, Converter={StaticResource IntToBool}, ConverterParameter=Inverse}">
+                    <Label Text="No venue registered"
+                           Style="{StaticResource TitleMedium}"
+                           HorizontalOptions="Center" />
+                    <Label HorizontalOptions="Center"
                            HorizontalTextAlignment="Center"
                            Style="{StaticResource BodyMedium}">
-                    <Label.FormattedText>
-                        <FormattedString>
-                            <Span Text="• Touch button " />
-                            <Span Text="+" TextColor="{StaticResource Tertiary}" FontAttributes="Bold" FontSize="18" />
-                            <Span Text=" in the bottom right corner to register your first venue" />
-                        </FormattedString>
-                    </Label.FormattedText>
-                </Label>
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="• Touch button " />
+                                <Span Text="+" TextColor="{StaticResource Tertiary}" FontAttributes="Bold" FontSize="18" />
+                                <Span Text=" in the bottom right corner to register your first venue" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </VerticalStackLayout>
+
+                <!-- Search State: No results found with current search term -->
+                <VerticalStackLayout Spacing="16" IsVisible="{Binding IsSearching}">
+                    <Label Text="No venue found"
+                           Style="{StaticResource TitleMedium}"
+                           HorizontalOptions="Center" />
+                    <Label Text="No venues match your search term. Try a different search or clear the search field to see all venues."
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           Style="{StaticResource BodyMedium}" />
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </Frame>
 

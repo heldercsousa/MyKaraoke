@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MyVocaList.Infra.Data;
 using MyVocaList.Infra.Data.Repositories;
+using MyVocaList.Infra.Data.Interceptors;
 using MyVocaList.Services;
 using MyVocaList.Infra.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,9 @@ public static class MauiProgram
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSqlite($"Data Source={dbPath}")
-            .AddInterceptors(new DatabaseLoadingInterceptor());
+            .AddInterceptors(
+                new CollationInterceptor(),          // ✅ Register collation on every connection
+                new DatabaseLoadingInterceptor());   // ✅ Auto-loading + string trimming
 #if DEBUG
             // options.EnableSensitiveDataLogging();
             // options.LogTo(message => Console.WriteLine(message), LogLevel.Information);

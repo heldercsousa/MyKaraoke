@@ -16,13 +16,11 @@ public class AppDbContext : DbContext
     public DbSet<ParticipacaoEvento> ParticipacoesEventos { get; set; }
     public DbSet<ConfiguracaoSistema> ConfiguracoesSistema { get; set; }
 
-    private static bool _collationRegistered = false;
-    private static readonly object _collationLock = new object();
-
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
-        // Register custom SQLite collation for case and accent insensitive comparisons
-        RegisterCustomCollation();
+        // ✅ COLLATION REGISTRATION: Now handled automatically by CollationInterceptor
+        // The interceptor registers NOCASE_NOACCENT on every connection (including migrations)
+        // No need for manual registration here anymore
     }
 
     // Empty constructor for migrations only
@@ -39,73 +37,6 @@ public class AppDbContext : DbContext
         }
     }
 
-    /// <summary>
-    /// Registers custom SQLite collation for case and accent insensitive text comparison
-    /// This enables searching "João" by typing "joao", "JOAO", "João", etc.
-    /// CRITICAL: Connection must be OPEN before CreateCollation() is called
-    /// </summary>
-    private void RegisterCustomCollation()
-    {
-        if (Database.IsSqlite())
-        {
-            lock (_collationLock)
-            {
-                if (!_collationRegistered)
-                {
-                    var connection = Database.GetDbConnection() as SqliteConnection;
-                    if (connection != null)
-                    {
-                        // ✅ CRITICAL: Connection must be OPEN before CreateCollation
-                        // SQLite requires an active connection to register custom collations
-                        if (connection.State != System.Data.ConnectionState.Open)
-                        {
-                            connection.Open();
-                        }
-
-                        // Register NOCASE_NOACCENT collation
-                        // This collation removes accents and converts to lowercase for comparison
-                        connection.CreateCollation("NOCASE_NOACCENT", (x, y) =>
-                        {
-                            var normalizedX = NormalizeForCollation(x);
-                            var normalizedY = NormalizeForCollation(y);
-                            return string.Compare(normalizedX, normalizedY, StringComparison.OrdinalIgnoreCase);
-                        });
-
-                        _collationRegistered = true;
-                        Console.WriteLine("✅ Custom SQLite collation 'NOCASE_NOACCENT' registered successfully");
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Normalizes text for collation: removes accents and converts to lowercase
-    /// Supports Portuguese, Spanish, French, and other Latin-based languages
-    /// </summary>
-    private static string NormalizeForCollation(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return string.Empty;
-
-        // Remove accents using Unicode normalization
-        var normalizedString = text.Normalize(NormalizationForm.FormD);
-        var stringBuilder = new StringBuilder();
-
-        foreach (var c in normalizedString)
-        {
-            var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
-            // Keep only non-spacing marks (accents) removed
-            if (unicodeCategory != UnicodeCategory.NonSpacingMark)
-            {
-                stringBuilder.Append(c);
-            }
-        }
-
-        return stringBuilder.ToString()
-            .Normalize(NormalizationForm.FormC)
-            .ToLowerInvariant();
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -125,8 +56,11 @@ public class AppDbContext : DbContext
     }
 
     /// <summary>
-    /// Sets database-level default collation for all string columns
+    /// Sets database-level default collation for all string columns.
     /// SQLite: Custom NOCASE_NOACCENT collation (case + accent insensitive)
+    ///
+    /// REGISTRATION: The collation itself is registered by CollationInterceptor on every connection.
+    /// This method only tells EF Core to USE that collation for string comparisons.
     ///
     /// FUTURE: When migrating to SQL Server, use:
     /// - SQL Server: Latin1_General_CI_AI (CI = Case Insensitive, AI = Accent Insensitive)
@@ -135,7 +69,7 @@ public class AppDbContext : DbContext
     private void SetDatabaseCollation(ModelBuilder modelBuilder)
     {
         // For SQLite: Apply custom NOCASE_NOACCENT collation to all string properties
-        // This is registered in RegisterCustomCollation() method
+        // The collation is registered automatically by CollationInterceptor on every connection
 
         // Apply to all string properties in all entities
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
@@ -149,7 +83,7 @@ public class AppDbContext : DbContext
             }
         }
 
-        Console.WriteLine("✅ Database default collation set: NOCASE_NOACCENT (case and accent insensitive)");
+        Console.WriteLine("✅ Database collation configured: NOCASE_NOACCENT (registered by CollationInterceptor)");
     }
 
     /// <summary>

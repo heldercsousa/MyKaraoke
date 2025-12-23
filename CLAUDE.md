@@ -909,7 +909,68 @@ catch (DbUpdateException ex)
 **When to use:** Repeated code in 3+ pages, configurable via XAML
 **When NOT to use:** Page-specific logic, business rules
 
-**Detailed documentation:** Full examples and troubleshooting in project knowledge base. 
+**Detailed documentation:** Full examples and troubleshooting in project knowledge base.
+
+---
+
+## 🔄 Git Workflow & Commit Guidelines
+
+**CRITICAL: Always commit after successful build/testing!**
+
+### When to Commit
+
+**✅ MUST commit when:**
+1. **Build succeeds** - After running `dotnet build` with no errors
+2. **Tests pass** - After running tests successfully (when applicable)
+3. **Feature is complete** - After finishing a logical unit of work
+4. **Before switching tasks** - Before starting a different feature/fix
+
+**❌ DO NOT commit when:**
+- Build has errors
+- Tests are failing
+- Code is half-finished or broken
+- Local settings files are modified (`.claude/settings.local.json`)
+
+### Commit Process
+
+**Standard workflow:**
+```bash
+# 1. Verify build succeeds
+dotnet build
+
+# 2. Check what files changed
+git status
+
+# 3. Stage only relevant files (exclude local settings)
+git add <file1> <file2> <file3>
+
+# 4. Commit with descriptive message
+git commit -m "$(cat <<'EOF'
+<type>: <short summary>
+
+- <detailed change 1>
+- <detailed change 2>
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+**Commit message format:**
+- **Type**: `fix:`, `feat:`, `refactor:`, `docs:`, `perf:`, `test:`
+- **Short summary**: What changed (50 chars max)
+- **Details**: Bullet points explaining the changes
+- **Always include**: Claude Code attribution footer
+
+### Files to Exclude from Commits
+
+**NEVER commit these files:**
+- `.claude/settings.local.json` - Local Claude Code settings
+- `bin/`, `obj/` - Build output (already in .gitignore)
+- `.vs/` - Visual Studio settings (already in .gitignore)
+- User-specific IDE settings
 
 ---
 ## 📋 Documentation Standards
@@ -918,6 +979,7 @@ catch (DbUpdateException ex)
 
 **CRITICAL Rules:**
 - ✅ **ALWAYS update changelog.md after completing ANY task** (no exceptions!)
+- ✅ **ALWAYS commit changes after successful build** (no exceptions!)
 - ✅ **Create guide files in `Docs/Guides/`** and add to solution (like changelog.md)
 - ✅ **Format:** `- **MM/dd/yyyy** - Type - Description` (Type: Enhancement or Fix)
 

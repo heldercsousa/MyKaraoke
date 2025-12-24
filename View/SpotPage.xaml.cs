@@ -162,46 +162,38 @@ namespace MyVocaList.View
 
             if (Handler != null)
             {
-                try
-                {
-                    if (LoadDataCommand == null)
-                    {
-                        LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
-                        OnPropertyChanged(nameof(LoadDataCommand));
-                    }
+                Logger.Debug("Handler initialized");
 
-                    var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
-                    if (headerComponent != null)
-                    {
-                        headerComponent.ConfigureSafeBackNavigation(null, 500);
-                    }
-
-                    EnsureEstabelecimentoService();
-                }
-                catch (Exception ex)
+                if (LoadDataCommand == null)
                 {
-                    Logger.Error(ex, "Error in OnHandlerChanged");
+                    LoadDataCommand = new Command(async () => await InitializeAndLoadDataAsync());
+                    OnPropertyChanged(nameof(LoadDataCommand));
                 }
+
+                var headerComponent = this.FindByName<HeaderComponent>("headerComponent");
+                if (headerComponent != null)
+                {
+                    headerComponent.ConfigureSafeBackNavigation(null, 500);
+                }
+
+                EnsureEstabelecimentoService();
             }
         }
 
         private void EnsureEstabelecimentoService()
         {
-            try
+            if (_estabelecimentoService == null && Handler != null)
             {
-                if (_estabelecimentoService == null && Handler != null)
-                {
-                    var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
-                    _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+                Logger.Debug("Initializing EstabelecimentoService");
 
-                    // Get pagination settings
-                    var paginationOptions = serviceProvider.GetService<IOptions<PaginationSettings>>();
-                    _paginationSettings = paginationOptions?.Value ?? new PaginationSettings();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error initializing EstabelecimentoService");
+                var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
+                _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+
+                // Get pagination settings
+                var paginationOptions = serviceProvider.GetService<IOptions<PaginationSettings>>();
+                _paginationSettings = paginationOptions?.Value ?? new PaginationSettings();
+
+                Logger.Debug("EstabelecimentoService initialized successfully");
             }
         }
 
@@ -213,18 +205,14 @@ namespace MyVocaList.View
 
         private async Task InitializeAndLoadDataAsync()
         {
-            try
-            {
-                MainThread.BeginInvokeOnMainThread(() => SelectionCount = 0);
-                await EnsureHandlerAndServiceAvailable();
-                await LoadLocaisAsync();
-                MainThread.BeginInvokeOnMainThread(() => SelectionCount = 0);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in InitializeAndLoadDataAsync");
-                MainThread.BeginInvokeOnMainThread(() => UpdateUIState());
-            }
+            Logger.Debug("Starting data initialization and load");
+
+            MainThread.BeginInvokeOnMainThread(() => SelectionCount = 0);
+            await EnsureHandlerAndServiceAvailable();
+            await LoadLocaisAsync();
+            MainThread.BeginInvokeOnMainThread(() => SelectionCount = 0);
+
+            Logger.Debug("Data initialization and load completed");
         }
 
         private async Task EnsureHandlerAndServiceAvailable()
@@ -237,13 +225,9 @@ namespace MyVocaList.View
                 if (Handler != null && _estabelecimentoService != null) return;
                 if (Handler != null && _estabelecimentoService == null)
                 {
-                    try
-                    {
-                        var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
-                        _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
-                        if (_estabelecimentoService != null) return;
-                    }
-                    catch (Exception) { }
+                    var serviceProvider = new ServiceProvider(this.Handler.MauiContext.Services);
+                    _estabelecimentoService = serviceProvider.GetService<IEstabelecimentoService>();
+                    if (_estabelecimentoService != null) return;
                 }
                 await Task.Delay(100);
                 attempts++;
@@ -257,53 +241,50 @@ namespace MyVocaList.View
 
         private async Task LoadLocaisAsync()
         {
-            if (_estabelecimentoService == null) return;
-            try
+            if (_estabelecimentoService == null)
             {
-                // Reset pagination state
-                _currentPage = 1;
-                _hasMoreItems = true;
-                _currentSearchQuery = null;
-                _firstLoadedItemIndex = 1; // Reset to first item
+                Logger.Warning("Cannot load venues - EstabelecimentoService is null");
+                return;
+            }
 
-                // Load first page using pagination
-                var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
-                    _currentPage,
-                    _paginationSettings.PageSize,
-                    null);
+            Logger.Debug("Loading venues - first page");
 
-                _totalCount = totalCount;
+            // Reset pagination state
+            _currentPage = 1;
+            _hasMoreItems = true;
+            _currentSearchQuery = null;
+            _firstLoadedItemIndex = 1; // Reset to first item
 
-                Locais.Clear();
+            // Load first page using pagination
+            var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
+                _currentPage,
+                _paginationSettings.PageSize,
+                null);
 
-                if (items != null)
+            _totalCount = totalCount;
+
+            Locais.Clear();
+
+            if (items != null)
+            {
+                foreach (var item in items)
                 {
-                    foreach (var item in items)
-                    {
-                        Locais.Add(item);
-                    }
-
-                    // Check if there are more items to load
-                    _hasMoreItems = Locais.Count < _totalCount;
+                    Locais.Add(item);
                 }
 
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    TotalItemsCount = _totalCount; // Update total items count for binding
-                    OnPropertyChanged(nameof(VenuesCountText));
-                    IsSearching = false; // Clear search state when loading all venues
-                    UpdateUIState();
-                });
+                // Check if there are more items to load
+                _hasMoreItems = Locais.Count < _totalCount;
             }
-            catch (Exception ex)
+
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                Logger.Error(ex, "Error loading venues");
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    IsSearching = false;
-                    UpdateUIState();
-                });
-            }
+                TotalItemsCount = _totalCount; // Update total items count for binding
+                OnPropertyChanged(nameof(VenuesCountText));
+                IsSearching = false; // Clear search state when loading all venues
+                UpdateUIState();
+            });
+
+            Logger.Debug("Loaded {Count} venues out of {TotalCount}", Locais.Count, _totalCount);
         }
 
         #region Search Logic
@@ -318,7 +299,11 @@ namespace MyVocaList.View
             {
                 await Task.Delay(300, cts.Token); // Debounce 300ms
 
-                if (_estabelecimentoService == null) return;
+                if (_estabelecimentoService == null)
+                {
+                    Logger.Warning("Cannot perform search - EstabelecimentoService is null");
+                    return;
+                }
 
                 // Reset pagination for new search
                 _currentPage = 1;
@@ -327,6 +312,8 @@ namespace MyVocaList.View
 
                 // Track whether we're actively searching
                 var isActiveSearch = !string.IsNullOrWhiteSpace(query);
+
+                Logger.Debug("Performing search with query: {Query}", query ?? "(empty)");
 
                 var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
                     _currentPage,
@@ -356,14 +343,13 @@ namespace MyVocaList.View
 
                     UpdateUIState();
                 });
+
+                Logger.Debug("Search completed - found {Count} results out of {TotalCount}", Locais.Count, _totalCount);
             }
             catch (OperationCanceledException)
             {
-                // Expected when typing fast
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Search error");
+                // Expected when typing fast - user is still typing
+                Logger.Debug("Search cancelled - user still typing");
             }
         }
 
@@ -371,27 +357,22 @@ namespace MyVocaList.View
 
         private void UpdateUIState()
         {
-            try
-            {
-                VisualElement emptyStateFrame = this.FindByName<VisualElement>("emptyStateFrame");
-                VisualElement addFab = this.FindByName<VisualElement>("addFab");
+            VisualElement emptyStateFrame = this.FindByName<VisualElement>("emptyStateFrame");
+            VisualElement addFab = this.FindByName<VisualElement>("addFab");
 
-                bool hasLocais = Locais.Any();
+            bool hasLocais = Locais.Any();
 
-                if (emptyStateFrame != null) emptyStateFrame.IsVisible = !hasLocais;
-                locaisCollectionView.IsVisible = hasLocais;
+            if (emptyStateFrame != null) emptyStateFrame.IsVisible = !hasLocais;
+            locaisCollectionView.IsVisible = hasLocais;
 
-                var currentSelection = Locais.Count(x => x.IsSelected);
-                if (SelectionCount != currentSelection) SelectionCount = currentSelection;
+            var currentSelection = Locais.Count(x => x.IsSelected);
+            if (SelectionCount != currentSelection) SelectionCount = currentSelection;
 
-                // FAB Logic: Visible only when NO selection
-                bool shouldShowFab = SelectionCount == 0;
-                if (addFab != null) addFab.IsVisible = shouldShowFab;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "Error in UpdateUIState");
-            }
+            // FAB Logic: Visible only when NO selection
+            bool shouldShowFab = SelectionCount == 0;
+            if (addFab != null) addFab.IsVisible = shouldShowFab;
+
+            Logger.Debug("UI state updated - HasVenues: {HasVenues}, SelectionCount: {SelectionCount}", hasLocais, SelectionCount);
         }
 
         #region Interaction Handlers
@@ -511,42 +492,46 @@ namespace MyVocaList.View
 
         private async Task ConfirmAndDeleteAsync(List<EstabelecimentoListItemDto> itemsToDelete)
         {
-            if (!itemsToDelete.Any()) return;
-
-            try
+            if (!itemsToDelete.Any())
             {
-                var itemsWithEvents = itemsToDelete.Where(l => l.HasEvents).ToList();
-                var itemsWithoutEvents = itemsToDelete.Where(l => !l.HasEvents).ToList();
-
-                string confirmMessage;
-                string confirmTitle;
-
-                if (itemsWithEvents.Any())
-                {
-                    var count = itemsWithEvents.Count;
-                    var infoMessage = $"{(count == 1 ? "The selected venue has" : $"The {count} selected venues have")} registered events and cannot be deleted.";
-                    await DisplayAlert("Deletion Blocked", infoMessage, "OK");
-                    return;
-                }
-                else
-                {
-                    var count = itemsWithoutEvents.Count;
-                    confirmTitle = "Confirm Deletion";
-                    confirmMessage = count == 1
-                        ? "Are you sure you want to delete 1 venue?"
-                        : $"Are you sure you want to delete {count} selected venues?";
-                }
-
-                var popup = new ConfirmationPopup(confirmTitle, confirmMessage, "Delete", "Cancel");
-                var confirmed = await popup.ShowAsync();
-                if (!confirmed) return;
-
-                await ExecuteDeletionAsync(itemsWithoutEvents);
+                Logger.Debug("No items to delete");
+                return;
             }
-            catch (Exception ex)
+
+            Logger.Debug("Confirming deletion of {Count} items", itemsToDelete.Count);
+
+            var itemsWithEvents = itemsToDelete.Where(l => l.HasEvents).ToList();
+            var itemsWithoutEvents = itemsToDelete.Where(l => !l.HasEvents).ToList();
+
+            string confirmMessage;
+            string confirmTitle;
+
+            if (itemsWithEvents.Any())
             {
-                await DisplayAlert("Error", $"Error confirming deletion: {ex.Message}", "OK");
+                var count = itemsWithEvents.Count;
+                var infoMessage = $"{(count == 1 ? "The selected venue has" : $"The {count} selected venues have")} registered events and cannot be deleted.";
+                Logger.Debug("Deletion blocked - {Count} venues have events", count);
+                await DisplayAlert("Deletion Blocked", infoMessage, "OK");
+                return;
             }
+            else
+            {
+                var count = itemsWithoutEvents.Count;
+                confirmTitle = "Confirm Deletion";
+                confirmMessage = count == 1
+                    ? "Are you sure you want to delete 1 venue?"
+                    : $"Are you sure you want to delete {count} selected venues?";
+            }
+
+            var popup = new ConfirmationPopup(confirmTitle, confirmMessage, "Delete", "Cancel");
+            var confirmed = await popup.ShowAsync();
+            if (!confirmed)
+            {
+                Logger.Debug("Deletion cancelled by user");
+                return;
+            }
+
+            await ExecuteDeletionAsync(itemsWithoutEvents);
         }
 
         #endregion
@@ -555,37 +540,35 @@ namespace MyVocaList.View
 
         private async Task NavigateToSpotFormPageAsync(bool isEditing, Estabelecimento editingLocal = null)
         {
-            try
+            Logger.Debug("Navigating to SpotFormPage - IsEditing: {IsEditing}", isEditing);
+
+            var spotFormBehavior = this.Behaviors?.OfType<SafeNavigationBehavior>()
+                .FirstOrDefault(b => b.TargetPageType == typeof(SpotFormPage));
+
+            if (spotFormBehavior != null)
             {
-                var spotFormBehavior = this.Behaviors?.OfType<SafeNavigationBehavior>()
-                    .FirstOrDefault(b => b.TargetPageType == typeof(SpotFormPage));
-
-                if (spotFormBehavior != null)
+                spotFormBehavior.CreatePageFunc = () =>
                 {
-                    spotFormBehavior.CreatePageFunc = () =>
-                    {
-                        var spotFormPage = new SpotFormPage();
-                        if (isEditing && editingLocal != null) spotFormPage.ConfigureForEditing(editingLocal);
-                        else spotFormPage.ConfigureForAdding();
-                        return spotFormPage;
-                    };
-
-                    await spotFormBehavior.NavigateToPageAsync();
-                }
-                else
-                {
-                    // Fallback
                     var spotFormPage = new SpotFormPage();
                     if (isEditing && editingLocal != null) spotFormPage.ConfigureForEditing(editingLocal);
                     else spotFormPage.ConfigureForAdding();
-                    await Navigation.PushAsync(spotFormPage);
-                }
+                    return spotFormPage;
+                };
+
+                await spotFormBehavior.NavigateToPageAsync();
             }
-            catch (Exception ex)
+            else
             {
-                Logger.Error(ex, "Error in safe/fallback navigation");
-                await DisplayAlert("Navigation Error", "Could not open form page.", "OK");
+                Logger.Debug("SafeNavigationBehavior not found - using fallback navigation");
+
+                // Fallback
+                var spotFormPage = new SpotFormPage();
+                if (isEditing && editingLocal != null) spotFormPage.ConfigureForEditing(editingLocal);
+                else spotFormPage.ConfigureForAdding();
+                await Navigation.PushAsync(spotFormPage);
             }
+
+            Logger.Debug("Navigation to SpotFormPage completed");
         }
 
         #endregion
@@ -611,6 +594,8 @@ namespace MyVocaList.View
                 // Load next page
                 _currentPage++;
 
+                Logger.Debug("Loading more items - Page {PageNumber}", _currentPage);
+
                 var (items, totalCount) = await _estabelecimentoService.GetPagedEstabelecimentosForListAsync(
                     _currentPage,
                     _paginationSettings.PageSize,
@@ -619,6 +604,7 @@ namespace MyVocaList.View
                 if (cts.Token.IsCancellationRequested)
                 {
                     _currentPage--; // Rollback page increment
+                    Logger.Debug("Load more cancelled - rolling back to page {PageNumber}", _currentPage);
                     return;
                 }
 
@@ -658,15 +644,13 @@ namespace MyVocaList.View
 
                     UpdateUIState();
                 });
+
+                Logger.Debug("Loaded more items - Page {PageNumber} completed", _currentPage);
             }
             catch (OperationCanceledException)
             {
                 _currentPage--; // Rollback page increment
-            }
-            catch (Exception ex)
-            {
-                _currentPage--; // Rollback page increment
-                Logger.Error(ex, "Error loading more items");
+                Logger.Debug("Load more cancelled - rolling back to page {PageNumber}", _currentPage);
             }
             finally
             {

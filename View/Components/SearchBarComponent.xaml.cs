@@ -1,9 +1,11 @@
 using System.Windows.Input;
+using Serilog;
 
 namespace MyVocaList.View.Components
 {
     public partial class SearchBarComponent : ContentView
     {
+        private static readonly Serilog.ILogger Logger = Log.ForContext<SearchBarComponent>();
         #region Bindable Properties
 
         public static readonly BindableProperty SearchTextProperty =
@@ -204,15 +206,10 @@ namespace MyVocaList.View.Components
 
             _isSearchBarVisible = false;
 
-            try
-            {
-                var totalHeight = searchContainer.Height + searchContainer.Margin.Top + searchContainer.Margin.Bottom;
-                await searchContainer.TranslateTo(0, -totalHeight, ANIMATION_DURATION, Easing.CubicOut);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"SearchBarComponent: Hide animation error - {ex.Message}");
-            }
+            Logger.Debug("Hiding search bar");
+
+            var totalHeight = searchContainer.Height + searchContainer.Margin.Top + searchContainer.Margin.Bottom;
+            await searchContainer.TranslateTo(0, -totalHeight, ANIMATION_DURATION, Easing.CubicOut);
         }
 
         private async void ShowSearchBarAsync()
@@ -221,14 +218,9 @@ namespace MyVocaList.View.Components
 
             _isSearchBarVisible = true;
 
-            try
-            {
-                await searchContainer.TranslateTo(0, 0, ANIMATION_DURATION, Easing.CubicOut);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"SearchBarComponent: Show animation error - {ex.Message}");
-            }
+            Logger.Debug("Showing search bar");
+
+            await searchContainer.TranslateTo(0, 0, ANIMATION_DURATION, Easing.CubicOut);
         }
 
         #endregion

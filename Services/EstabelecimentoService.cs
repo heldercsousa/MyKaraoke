@@ -3,33 +3,38 @@ using MyVocaList.Infra.Data.Repositories;
 using MyVocaList.Infra.Utils;
 using MyVocaList.Services.Mappers;
 using MyVocaList.Contracts.DTOs.List;
+using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace MyVocaList.Services
 {
     /// <summary>
-    /// Serviço para operações de negócio relacionadas a estabelecimentos/locais
+    /// Service for business operations related to establishments/venues
     /// </summary>
     public class EstabelecimentoService : IEstabelecimentoService
     {
         private readonly IEstabelecimentoRepository _estabelecimentoRepository;
         private readonly IEventoRepository _eventoRepository;
         private readonly ITextNormalizer _textNormalizer;
+        private readonly ILogger<EstabelecimentoService> _logger;
 
-        // Constantes para validação
-        public int MaxInputLength => 30;  // Limite conforme configuração EF
-        public int ShowCounterAt => 25;   // Quando mostrar contador
+        // Validation constants
+        public int MaxInputLength => 30;  // Limit according to EF configuration
+        public int ShowCounterAt => 25;   // When to show counter
 
         public EstabelecimentoService(
             IEstabelecimentoRepository estabelecimentoRepository,
             IEventoRepository eventoRepository,
-            ITextNormalizer textNormalizer)
+            ITextNormalizer textNormalizer,
+            ILogger<EstabelecimentoService> logger)
         {
             _estabelecimentoRepository = estabelecimentoRepository;
             _eventoRepository = eventoRepository;
             _textNormalizer = textNormalizer;
+            _logger = logger;
         }
 
-        #region Validações
+        #region Validation
 
         public (bool isValid, string message) ValidateNameInput(string name)
         {
@@ -59,130 +64,108 @@ namespace MyVocaList.Services
 
         public async Task<(bool success, string message, Estabelecimento? estabelecimento)> CreateEstabelecimentoAsync(string nome)
         {
-            // Validação
+            // Validation
             var validation = ValidateNameInput(nome);
             if (!validation.isValid)
             {
                 return (false, validation.message, null);
             }
 
-            try
+            nome = nome.Trim();
+
+            // Check for duplicates
+            var existing = await _estabelecimentoRepository.GetByNomeAsync(nome);
+            if (existing != null)
             {
-                nome = nome.Trim();
-
-                // Verifica duplicação
-                var existing = await _estabelecimentoRepository.GetByNomeAsync(nome);
-                if (existing != null)
-                {
-                    return (false, "There is another venue registered with this name", null);
-                }
-
-                // Cria novo estabelecimento
-                var estabelecimento = new Estabelecimento { Nome = nome };
-
-                await _estabelecimentoRepository.AddAsync(estabelecimento);
-                await _estabelecimentoRepository.SaveChangesAsync();
-
-                return (true, $"Venue '{nome}' successfuly created!", estabelecimento);
+                return (false, "There is another venue registered with this name", null);
             }
-            catch (Exception ex)
-            {
-                return (false, $"Error while creating venue: {ex.Message}", null);
-            }
+
+            // Create new establishment
+            var estabelecimento = new Estabelecimento { Nome = nome };
+
+            await _estabelecimentoRepository.AddAsync(estabelecimento);
+            await _estabelecimentoRepository.SaveChangesAsync();
+
+            return (true, $"Venue '{nome}' successfully created!", estabelecimento);
         }
 
         public async Task<(bool success, string message)> UpdateEstabelecimentoAsync(int id, string novoNome)
         {
-            // Validação
+            Guard.AgainstNegativeOrZero(id, nameof(id));
+
+            // Validation
             var validation = ValidateNameInput(novoNome);
             if (!validation.isValid)
             {
                 return (false, validation.message);
             }
 
-            try
+            novoNome = novoNome.Trim();
+
+            // Find establishment
+            var estabelecimento = await _estabelecimentoRepository.GetByIdAsync(id);
+            if (estabelecimento == null)
             {
-                novoNome = novoNome.Trim();
-
-                // Busca estabelecimento
-                var estabelecimento = await _estabelecimentoRepository.GetByIdAsync(id);
-                if (estabelecimento == null)
-                {
-                    return (false, "Venue not found");
-                }
-
-                // Verifica duplicação (exceto o próprio)
-                var existing = await _estabelecimentoRepository.GetByNomeAsync(novoNome);
-                if (existing != null && existing.Id != id)
-                {
-                    return (false, "There is another venue registered with this name");
-                }
-
-                // Atualiza
-                estabelecimento.Nome = novoNome;
-                await _estabelecimentoRepository.UpdateAsync(estabelecimento);
-                await _estabelecimentoRepository.SaveChangesAsync();
-
-                return (true, $"Venue name successfully updated to '{novoNome}'!");
+                return (false, "Venue not found");
             }
-            catch (Exception ex)
+
+            // Check for duplicates (except itself)
+            var existing = await _estabelecimentoRepository.GetByNomeAsync(novoNome);
+            if (existing != null && existing.Id != id)
             {
-                return (false, $"Error while updating venue: {ex.Message}");
+                return (false, "There is another venue registered with this name");
             }
+
+            // Update
+            estabelecimento.Nome = novoNome;
+            await _estabelecimentoRepository.UpdateAsync(estabelecimento);
+            await _estabelecimentoRepository.SaveChangesAsync();
+
+            return (true, $"Venue name successfully updated to '{novoNome}'!");
         }
 
         public async Task<(bool success, string message)> DeleteEstabelecimentosAsync(IEnumerable<int> ids)
         {
-            if (ids == null || !ids.Any())
+            Guard.AgainstNull(ids, nameof(ids));
+
+            if (!ids.Any())
             {
-                return (false, "None venue was selected for removal.");
+                return (false, "No venue was selected for removal.");
             }
 
-            try
+            // Optimized query with EXISTS
+            var estabelecimentosWithEvents = await _estabelecimentoRepository.GetByIdsWithHasEventsAsync(ids);
+            var validationResults = new List<(int id, string nome, bool canDelete, string reason)>();
+
+            foreach (var (estabelecimento, hasEvents) in estabelecimentosWithEvents)
             {
-                // Query otimizada com EXISTS
-                var estabelecimentosWithEvents = await _estabelecimentoRepository.GetByIdsWithHasEventsAsync(ids);
-                var validationResults = new List<(int id, string nome, bool canDelete, string reason)>();
-
-                foreach (var (estabelecimento, hasEvents) in estabelecimentosWithEvents)
-                {
-                    validationResults.Add((estabelecimento.Id, estabelecimento.Nome, !hasEvents,
-                        hasEvents ? "has registered events" : ""));
-                }
-
-                var cannotDelete = validationResults.Where(v => !v.canDelete).ToList();
-                var canDelete = validationResults.Where(v => v.canDelete).ToList();
-
-                if (canDelete.Any())
-                {
-                    var entitiesToDelete = estabelecimentosWithEvents
-                        .Where(x => canDelete.Any(c => c.id == x.estabelecimento.Id))
-                        .Select(x => x.estabelecimento);
-
-                    await _estabelecimentoRepository.DeleteRangeAsync(entitiesToDelete);
-                    await _estabelecimentoRepository.SaveChangesAsync();
-                }
-
-                return BuildDeleteResultMessage(canDelete, cannotDelete);
+                validationResults.Add((estabelecimento.Id, estabelecimento.Nome, !hasEvents,
+                    hasEvents ? "has registered events" : ""));
             }
-            catch (Exception ex)
+
+            var cannotDelete = validationResults.Where(v => !v.canDelete).ToList();
+            var canDelete = validationResults.Where(v => v.canDelete).ToList();
+
+            if (canDelete.Any())
             {
-                return (false, $"Error while removing venue: {ex.Message}");
+                var entitiesToDelete = estabelecimentosWithEvents
+                    .Where(x => canDelete.Any(c => c.id == x.estabelecimento.Id))
+                    .Select(x => x.estabelecimento);
+
+                await _estabelecimentoRepository.DeleteRangeAsync(entitiesToDelete);
+                await _estabelecimentoRepository.SaveChangesAsync();
+
             }
+
+            return BuildDeleteResultMessage(canDelete, cannotDelete);
         }
 
-        /// <summary>
-        /// Constrói mensagem de resultado da exclusão seguindo padrão MD3 (count-based, não lista de nomes)
-        /// </summary>
         private (bool success, string message) BuildDeleteResultMessage(
             List<(int id, string nome, bool canDelete, string reason)> canDelete,
             List<(int id, string nome, bool canDelete, string reason)> cannotDelete)
         {
-            // ✅ MD3 PATTERN: Mensagens concisas com contagens, não listagens de nomes
-
             if (cannotDelete.Count == 0 && canDelete.Count > 0)
             {
-                // Todos os selecionados foram excluídos com sucesso
                 var count = canDelete.Count;
                 return (true, count == 1
                     ? "1 venue successfully removed!"
@@ -190,7 +173,6 @@ namespace MyVocaList.Services
             }
             else if (cannotDelete.Count > 0 && canDelete.Count > 0)
             {
-                // Exclusão parcial: alguns excluídos, outros bloqueados
                 var deleted = canDelete.Count;
                 var blocked = cannotDelete.Count;
                 var total = deleted + blocked;
@@ -209,134 +191,39 @@ namespace MyVocaList.Services
             }
         }
 
-        /// <summary>
-        /// REATORADO: O método de exclusão única agora reutiliza a lógica de exclusão em lote.
-        /// Isso garante que a regra de negócio seja a mesma e evita duplicação de código.
-        /// </summary>
-        public async Task<(bool success, string message)> DeleteEstabelecimentoAsync(int id)
-        {
-            // Simplesmente chama o novo método com uma coleção contendo um único ID.
-            return await DeleteEstabelecimentosAsync(new[] { id });
-        }
+        public async Task<(bool success, string message)> DeleteEstabelecimentoAsync(int id) => await DeleteEstabelecimentosAsync(new[] { id });
 
-        public async Task<IEnumerable<Estabelecimento>> GetAllEstabelecimentosAsync()
-        {
-            Console.WriteLine("📋 === GetAllEstabelecimentosAsync INICIADO ===");
-
-            try
-            {
-                Console.WriteLine($"📋 Repository disponível: {_estabelecimentoRepository != null}");
-
-                if (_estabelecimentoRepository == null)
-                {
-                    Console.WriteLine("❌ Repository é NULL!");
-                    return new List<Estabelecimento>();
-                }
-
-                Console.WriteLine("📋 Chamando GetAllAsync...");
-                var estabelecimentos = await _estabelecimentoRepository.GetAllAsync();
-
-                var list = estabelecimentos?.ToList() ?? new List<Estabelecimento>();
-                Console.WriteLine($"📋 Estabelecimentos encontrados: {list.Count}");
-
-                foreach (var est in list)
-                {
-                    Console.WriteLine($"📋 Encontrado: {est.Id} - '{est.Nome}'");
-                }
-
-                return list;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Erro ao buscar estabelecimentos: {ex.Message}");
-                Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-                return new List<Estabelecimento>();
-            }
-            finally
-            {
-                Console.WriteLine("📋 === GetAllEstabelecimentosAsync FINALIZADO ===");
-            }
-        }
+        public async Task<IEnumerable<Estabelecimento>> GetAllEstabelecimentosAsync() => await _estabelecimentoRepository.GetAllAsync();
 
         public async Task<Estabelecimento?> GetEstabelecimentoByIdAsync(int id)
         {
-            try
-            {
-                return await _estabelecimentoRepository.GetByIdAsync(id);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao buscar estabelecimento: {ex.Message}");
-                return null;
-            }
+            Guard.AgainstNegativeOrZero(id, nameof(id));
+            return await _estabelecimentoRepository.GetByIdAsync(id);
         }
 
         #endregion
 
-        public async Task<IEnumerable<EstabelecimentoListItemDto>> GetAllEstabelecimentosForListAsync()
-        {
-            try
-            {
-                Console.WriteLine("📋 === GetAllEstabelecimentosForListAsync INICIADO ===");
+        public async Task<IEnumerable<EstabelecimentoListItemDto>> GetAllEstabelecimentosForListAsync() =>
+             (await _estabelecimentoRepository.GetAllWithHasEventsAsync())
+            .Select(X => EstabelecimentoMapper.ToListDto(X.estabelecimento, X.hasEvents));
 
-                var estabelecimentosWithEvents = await _estabelecimentoRepository.GetAllWithHasEventsAsync();
-
-                var result = estabelecimentosWithEvents.Select(x =>
-                    EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
-
-                Console.WriteLine($"📋 Total mapeados: {result.Count}");
-                foreach (var item in result)
-                {
-                    Console.WriteLine($"📋 Mapeado: {item.Id} - '{item.Nome}' (HasEvents: {item.HasEvents})");
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Erro ao buscar estabelecimentos para lista: {ex.Message}");
-                return new List<EstabelecimentoListItemDto>();
-            }
-        }
-
-        public async Task<IEnumerable<EstabelecimentoListItemDto>> SearchEstabelecimentosForListAsync(string query)
-        {
-            try
-            {
-                var searchResults = await _estabelecimentoRepository.SearchWithHasEventsAsync(query);
-
-                return searchResults.Select(x =>
-                    EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Erro ao pesquisar estabelecimentos: {ex.Message}");
-                return new List<EstabelecimentoListItemDto>();
-            }
-        }
+        public async Task<IEnumerable<EstabelecimentoListItemDto>> SearchEstabelecimentosForListAsync(string query) => 
+            (await _estabelecimentoRepository.SearchWithHasEventsAsync(query))
+            .Select(x => EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents));
 
         public async Task<(IEnumerable<EstabelecimentoListItemDto> items, int totalCount)> GetPagedEstabelecimentosForListAsync(
             int pageNumber,
             int pageSize,
             string? query = null)
         {
-            try
-            {
-                Console.WriteLine($"📄 GetPagedEstabelecimentosForListAsync - Page {pageNumber}, Size {pageSize}, Query: '{query ?? "null"}'");
+            Guard.AgainstNegativeOrZero(pageNumber, nameof(pageNumber));
+            Guard.AgainstNegativeOrZero(pageSize, nameof(pageSize));
 
-                var (items, totalCount) = await _estabelecimentoRepository.GetPagedWithEventInfoAsync(pageNumber, pageSize, query);
+            var (items, totalCount) = await _estabelecimentoRepository.GetPagedWithEventInfoAsync(pageNumber, pageSize, query);
 
-                var dtos = items.Select(x => EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents)).ToList();
+            var dtos = items.Select(x => EstabelecimentoMapper.ToListDto(x.estabelecimento, x.hasEvents));
 
-                Console.WriteLine($"📄 Returned {dtos.Count} items out of {totalCount} total");
-
-                return (dtos, totalCount);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error in GetPagedEstabelecimentosForListAsync: {ex.Message}");
-                return (new List<EstabelecimentoListItemDto>(), 0);
-            }
+            return (dtos, totalCount);
         }
 
 

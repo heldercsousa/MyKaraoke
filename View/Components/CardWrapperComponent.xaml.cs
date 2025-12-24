@@ -10,8 +10,8 @@ public partial class CardWrapperComponent : ContentView
 {
     private static readonly Serilog.ILogger Logger = Log.ForContext<CardWrapperComponent>();
 
-    public static readonly BindableProperty IconPathProperty =
-        BindableProperty.Create(nameof(IconPath), typeof(string), typeof(CardWrapperComponent), "stack_purple.png");
+    //public static readonly BindableProperty IconPathProperty =
+    //    BindableProperty.Create(nameof(IconPath), typeof(string), typeof(CardWrapperComponent), "stack_purple.png");
 
     public static readonly BindableProperty TitleTextProperty =
         BindableProperty.Create(nameof(TitleText), typeof(string), typeof(CardWrapperComponent), "Card title");
@@ -27,11 +27,11 @@ public partial class CardWrapperComponent : ContentView
 
     private MauiGrid _contentContainer;
 
-    public string IconPath
-    {
-        get => (string)GetValue(IconPathProperty);
-        set => SetValue(IconPathProperty, value);
-    }
+    //public string IconPath
+    //{
+    //    get => (string)GetValue(IconPathProperty);
+    //    set => SetValue(IconPathProperty, value);
+    //}
 
     public string TitleText
     {

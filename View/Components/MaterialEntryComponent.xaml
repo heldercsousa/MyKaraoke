@@ -32,10 +32,18 @@
                          VerticalOptions="End"
                          Color="{StaticResource OnSurfaceVariant}">
 					<BoxView.Triggers>
+						<!-- Focused state: Primary blue line -->
 						<DataTrigger TargetType="BoxView"
                                      Binding="{Binding Source={x:Reference InnerEntry}, Path=IsFocused}"
                                      Value="True">
 							<Setter Property="Color" Value="{StaticResource Primary}" />
+							<Setter Property="HeightRequest" Value="2" />
+						</DataTrigger>
+						<!-- Error state: Error red line (higher priority - comes after focused) -->
+						<DataTrigger TargetType="BoxView"
+                                     Binding="{Binding Source={x:Reference this}, Path=HasError}"
+                                     Value="True">
+							<Setter Property="Color" Value="{StaticResource Error}" />
 							<Setter Property="HeightRequest" Value="2" />
 						</DataTrigger>
 					</BoxView.Triggers>

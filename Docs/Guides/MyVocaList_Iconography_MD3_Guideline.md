@@ -256,3 +256,9 @@ new NavButtonConfig
 - **Rationale:** For exiting the application or logging out.
 - [**Download `logout_outlined.svg`**](https://fonts.gstatic.com/s/i/materialiconsoutlined/logout/24px.svg)
 - [**Download `logout_filled.svg`**](https://fonts.gstatic.com/s/i/materialicons/logout/24px.svg)
+
+### Search  (Search Icon)
+- **Symbol Name:** `search`
+- **Rationale:** Search bars, search functionality, find features.
+- [**Download `search_outlined.svg`**](https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/search/materialsymbolsoutlined/search_24px.svg)
+- [**Download `search_filled.svg`**](https://raw.githubusercontent.com/google/material-design-icons/master/symbols/web/search/materialsymbolsoutlined/search_fill1_24px.svg)

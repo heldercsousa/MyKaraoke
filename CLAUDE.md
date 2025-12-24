@@ -1,8 +1,8 @@
 # CLAUDE.md - MyVocaList Project Context
 
 > **Living Documentation for AI-Assisted Development**
-> Last Updated: December 22, 2025
-> Version: 2.5
+> Last Updated: December 23, 2025
+> Version: 2.6
 
 ---
 
@@ -627,6 +627,241 @@ public void ValidateUser(string username)
         throw new Exception("Invalid username");
 }
 ```
+
+---
+
+## 🚨 CRITICAL CODING RULES - READ BEFORE WRITING ANY CODE
+
+**⚠️ THESE ARE THE MOST COMMON MISTAKES - NEVER MAKE THEM AGAIN!**
+
+### ❌ ANTIPATTERN #1: Using Console.WriteLine or Debug.WriteLine
+
+**ABSOLUTELY FORBIDDEN - NO EXCEPTIONS:**
+
+```csharp
+// ❌ NEVER DO THIS
+Console.WriteLine("Loading data...");
+Console.WriteLine($"Found {count} items");
+Debug.WriteLine($"Error: {ex.Message}");
+
+// ❌ NEVER DO THIS - String interpolation with Serilog
+_logger.LogDebug($"Loading {count} items");  // WRONG!
+
+// ✅ ALWAYS DO THIS - Serilog with structured logging
+_logger.LogDebug("Loading data");
+_logger.LogDebug("Found {Count} items", count);
+Logger.Debug("Error occurred: {ErrorMessage}", ex.Message);
+```
+
+**Why this matters:**
+- Console.WriteLine output is LOST on mobile devices
+- Debug.WriteLine only works in debug mode
+- Structured logging (Serilog) provides filtering, searching, and analytics
+- String interpolation loses structured data benefits
+
+**Rule:** If you type `Console.` or `Debug.` → STOP! Use Serilog instead!
+
+---
+
+### ❌ ANTIPATTERN #2: Unnecessary try-catch Blocks
+
+**DEFAULT RULE: NEVER USE try-catch BLOCKS!**
+
+**GlobalExceptionHandler** catches ALL unhandled exceptions and shows user-friendly messages. Using try-catch blocks **HIDES errors** and makes debugging impossible!
+
+```csharp
+// ❌ ANTIPATTERN - Hiding errors from GlobalExceptionHandler
+private async Task LoadDataAsync()
+{
+    try
+    {
+        var data = await _service.GetDataAsync();
+        UpdateUI(data);
+    }
+    catch (Exception ex)
+    {
+        Logger.Error(ex, "Error loading data");  // Just logging - not helping!
+    }
+}
+
+// ✅ CORRECT - Let GlobalExceptionHandler catch it
+private async Task LoadDataAsync()
+{
+    Logger.Debug("Loading data");
+
+    var data = await _service.GetDataAsync();
+    UpdateUI(data);
+
+    Logger.Debug("Data loaded successfully");
+}
+```
+
+**ONLY 4 Acceptable Use Cases for try-catch:**
+
+**1. Expected Operation Cancellation (debouncing)**
+```csharp
+try
+{
+    await Task.Delay(300, cancellationToken);
+    var results = await _service.SearchAsync(query);
+}
+catch (OperationCanceledException)
+{
+    // ✅ Expected - user is still typing
+    Logger.Debug("Search cancelled - user still typing");
+}
+// ❌ DO NOT add catch (Exception ex) here!
+```
+
+**2. Hardware-Specific Features (safe to swallow)**
+```csharp
+try
+{
+    HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+}
+catch
+{
+    // ✅ OK - Hardware not supported, safe to ignore
+}
+```
+
+**3. User Feedback with Cleanup**
+```csharp
+await GlobalLoadingOverlay.ShowLoadingAsync("Deleting...");
+try
+{
+    await _service.DeleteAsync(ids);
+    await GlobalSnackbar.ShowSuccessAsync("Deleted successfully!");
+}
+catch (Exception ex)
+{
+    // ✅ Acceptable - Show user feedback and cleanup UI
+    Logger.Error(ex, "Delete failed for IDs: {Ids}", ids);
+    await GlobalSnackbar.ShowErrorAsync($"Error: {ex.Message}");
+}
+finally
+{
+    await GlobalLoadingOverlay.HideLoadingAsync();  // ✅ Essential cleanup
+}
+```
+
+**4. Specific Exception with Recovery**
+```csharp
+try
+{
+    await _repository.SaveAsync(entity);
+}
+catch (DbUpdateConcurrencyException ex)
+{
+    // ✅ Specific exception, specific recovery
+    Logger.Warning(ex, "Concurrency conflict - reloading entity {Id}", entity.Id);
+    await _repository.ReloadAsync(entity);
+    throw;  // Re-throw after recovery attempt
+}
+// ❌ DO NOT add catch (Exception ex) here!
+```
+
+**Quick Decision Rule:**
+- If you're writing `catch (Exception ex)` → **STOP! You're doing it wrong!**
+- Let GlobalExceptionHandler handle errors (that's why it exists!)
+- Only use try-catch for the 4 specific cases above
+
+**Common try-catch Antipatterns to AVOID:**
+```csharp
+// ❌ ANTIPATTERN #1: Catch-and-log (useless!)
+try { await DoSomething(); }
+catch (Exception ex) { Logger.Error(ex, "Error"); }
+
+// ❌ ANTIPATTERN #2: Empty catch blocks
+try { await DoSomething(); }
+catch { }  // Silent failure - NEVER!
+
+// ❌ ANTIPATTERN #3: Catch-and-return-default
+try { return await GetData(); }
+catch { return new List<Data>(); }  // Hiding errors!
+
+// ❌ ANTIPATTERN #4: Using throw ex (loses stack trace)
+catch (Exception ex) { throw ex; }  // ❌ WRONG
+catch (Exception ex) { throw; }     // ✅ CORRECT
+```
+
+---
+
+### ❌ ANTIPATTERN #3: Manual Parameter Validation
+
+**ALWAYS use Guard pattern for parameter validation - NEVER manual null checks!**
+
+```csharp
+// ❌ ANTIPATTERN - Manual validation
+public async Task UpdateVenueAsync(int id, string name)
+{
+    if (id <= 0)
+        throw new ArgumentException("ID must be positive");
+    if (string.IsNullOrWhiteSpace(name))
+        throw new ArgumentException("Name required");
+
+    // ... business logic
+}
+
+// ✅ CORRECT - Guard pattern
+public async Task UpdateVenueAsync(int id, string name)
+{
+    Guard.AgainstNegativeOrZero(id, nameof(id));
+    Guard.AgainstNullOrWhiteSpace(name, nameof(name));
+
+    // ... business logic
+}
+```
+
+**Why Guard pattern matters:**
+- ✅ Consistent validation across entire codebase
+- ✅ Cleaner, more readable code
+- ✅ Standard error messages
+- ✅ Less boilerplate code
+- ✅ Centralized validation logic
+
+**Available Guard methods:**
+```csharp
+Guard.AgainstNull(value, nameof(value));
+Guard.AgainstNullOrWhiteSpace(text, nameof(text));
+Guard.AgainstNegativeOrZero(number, nameof(number));
+Guard.IsNullOrWhiteSpace(text);  // Returns bool (no exception)
+```
+
+**Exception: Validation methods that return tuples:**
+```csharp
+// ✅ This is OK - validation method returns result, doesn't throw
+public (bool isValid, string message) ValidateInput(string input)
+{
+    if (string.IsNullOrWhiteSpace(input))
+        return (false, "Input is required");  // ✅ Returns validation result
+
+    return (true, "");
+}
+```
+
+---
+
+### 🎯 Before Writing ANY Code - Checklist
+
+**Ask yourself these 3 questions:**
+
+1. **Am I using Console.WriteLine or Debug.WriteLine?**
+   - ❌ YES → STOP! Use Serilog instead
+   - ✅ NO → Continue
+
+2. **Am I writing a try-catch block?**
+   - ❌ YES → Is it one of the 4 acceptable cases? If NO, remove it!
+   - ✅ NO → Continue
+
+3. **Am I manually validating parameters (if/throw)?**
+   - ❌ YES → STOP! Use Guard pattern instead
+   - ✅ NO → Continue
+
+**If you answered ❌ to ANY question → FIX IT BEFORE CONTINUING!**
+
+---
+
 ### ServiceProvider Pattern (Critical!)
 
 ```csharp
@@ -855,31 +1090,238 @@ _logger.LogDebug("Database initialized successfully at: {DbPath}", dbPath);
 
 ---
 
-### Exception Handling
+### Exception Handling - CRITICAL ANTIPATTERN PREVENTION
 
-**Best Practices:**
-- ❌ NO `Debug.WriteLine` - use Serilog
-- ❌ NO catch-all try-catch that swallows exceptions
-- ❌ NO empty catch blocks
-- ✅ Let `GlobalExceptionHandler` catch unhandled exceptions
-- ✅ Catch ONLY specific exceptions with meaningful recovery
-- ✅ Use `throw;` not `throw ex;` when re-throwing (preserves stack trace)
-- ✅ Always log exceptions with context: `Logger.Error(ex, "Context: {Data}", data)`
+**⚠️ ABSOLUTE RULES - NO EXCEPTIONS (literally!):**
 
-**Example:**
+#### **1. NEVER Use try-catch Blocks (Default Rule)**
+
+**The problem:** Try-catch blocks hide errors from GlobalExceptionHandler, making debugging impossible!
+
+❌ **WRONG - Unnecessary try-catch:**
+```csharp
+// ❌ BAD - Hiding errors from global handler
+private async Task LoadDataAsync()
+{
+    try
+    {
+        var data = await _service.GetDataAsync();
+        UpdateUI(data);
+    }
+    catch (Exception ex)
+    {
+        Logger.Error(ex, "Error loading data");  // Just logging - not helping!
+    }
+}
+```
+
+✅ **CORRECT - Let GlobalExceptionHandler catch it:**
+```csharp
+// ✅ GOOD - Clean code, errors go to global handler
+private async Task LoadDataAsync()
+{
+    Logger.Debug("Loading data");
+
+    var data = await _service.GetDataAsync();
+    UpdateUI(data);
+
+    Logger.Debug("Data loaded successfully");
+}
+```
+
+**Why this matters:**
+- GlobalExceptionHandler shows user-friendly error messages
+- Stack traces are preserved for debugging
+- Cleaner, more maintainable code
+- No silent failures
+
+---
+
+#### **2. ONLY Use try-catch for These Specific Cases**
+
+**✅ Acceptable try-catch scenarios (RARE!):**
+
+**A. Expected Operation Cancellation (debouncing, cancellation tokens):**
 ```csharp
 try
 {
-    await _service.ProcessDataAsync(data);
+    await Task.Delay(300, cancellationToken);
+    var results = await _service.SearchAsync(query);
 }
-catch (DbUpdateException ex)
+catch (OperationCanceledException)
 {
-    // ✅ Specific exception, meaningful recovery
-    _logger.LogError(ex, "Database update failed for entity {EntityId}", data.Id);
+    // ✅ Expected - user is still typing
+    Logger.Debug("Search cancelled - user still typing");
+}
+// ❌ DO NOT add catch (Exception ex) here!
+```
+
+**B. Hardware-Specific Features (haptics, sensors - acceptable to swallow):**
+```csharp
+try
+{
+    HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+}
+catch
+{
+    // ✅ OK - Hardware not supported, safe to ignore
+}
+```
+
+**C. User Feedback with Cleanup (loading overlays, UI feedback):**
+```csharp
+await GlobalLoadingOverlay.ShowLoadingAsync("Deleting...");
+try
+{
+    await _service.DeleteAsync(ids);
+    await GlobalSnackbar.ShowSuccessAsync("Deleted successfully!");
+}
+catch (Exception ex)
+{
+    // ✅ Acceptable - Show user feedback and cleanup UI
+    Logger.Error(ex, "Delete failed for IDs: {Ids}", ids);
+    await GlobalSnackbar.ShowErrorAsync($"Error: {ex.Message}");
+}
+finally
+{
+    await GlobalLoadingOverlay.HideLoadingAsync();  // ✅ Essential cleanup
+}
+```
+
+**D. Specific Exception with Recovery Strategy:**
+```csharp
+try
+{
+    await _repository.SaveAsync(entity);
+}
+catch (DbUpdateConcurrencyException ex)
+{
+    // ✅ Specific exception, specific recovery
+    Logger.Warning(ex, "Concurrency conflict - reloading entity {Id}", entity.Id);
+    await _repository.ReloadAsync(entity);
+    throw;  // Re-throw after recovery attempt
+}
+// ❌ DO NOT add catch (Exception ex) here!
+```
+
+---
+
+#### **3. NEVER Use Console.WriteLine or Debug.WriteLine - ALWAYS Use Serilog**
+
+**❌ FORBIDDEN:**
+```csharp
+// ❌ NEVER use Console.WriteLine
+Console.WriteLine($"Loading {count} items");
+
+// ❌ NEVER use Debug.WriteLine
+System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
+
+// ❌ NEVER use string interpolation with Serilog
+_logger.LogDebug($"Loading {count} items");  // Loses structured data!
+```
+
+**✅ ALWAYS use Serilog with structured logging:**
+```csharp
+// ✅ Correct - Structured logging
+_logger.LogDebug("Loading {Count} items", count);
+Logger.Debug("Search completed - found {ResultCount} results", results.Count);
+
+// ✅ Correct - Exception logging with context
+_logger.LogError(ex, "Failed to save entity {EntityId}", entity.Id);
+```
+
+---
+
+#### **4. ALWAYS Use Guard Pattern for Parameter Validation**
+
+**❌ WRONG - Manual null checks:**
+```csharp
+public async Task UpdateVenueAsync(int id, string name)
+{
+    if (id <= 0) throw new ArgumentException("ID must be positive");
+    if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name required");
+
+    // ... business logic
+}
+```
+
+**✅ CORRECT - Guard pattern:**
+```csharp
+public async Task UpdateVenueAsync(int id, string name)
+{
+    Guard.AgainstNegativeOrZero(id, nameof(id));
+    Guard.AgainstNullOrWhiteSpace(name, nameof(name));
+
+    // ... business logic
+}
+```
+
+**⚠️ Exception: Validation methods that return tuples:**
+```csharp
+// ✅ This is OK - validation method returns result, doesn't throw
+public (bool isValid, string message) ValidateInput(string input)
+{
+    if (string.IsNullOrWhiteSpace(input))
+        return (false, "Input is required");  // ✅ Returns validation result
+
+    // ... more validation
+    return (true, "");
+}
+```
+
+---
+
+#### **5. Common Antipattern Examples to AVOID**
+
+**❌ ANTIPATTERN #1: Catch-and-log (useless!):**
+```csharp
+try { await DoSomething(); }
+catch (Exception ex) { Logger.Error(ex, "Error"); }  // ❌ Just logging? Let global handler do it!
+```
+
+**❌ ANTIPATTERN #2: Empty catch blocks:**
+```csharp
+try { await DoSomething(); }
+catch { }  // ❌ Silent failure - NEVER acceptable (except hardware features)
+```
+
+**❌ ANTIPATTERN #3: Catch-and-return-default:**
+```csharp
+try { return await GetData(); }
+catch { return new List<Data>(); }  // ❌ Hiding errors!
+```
+
+**❌ ANTIPATTERN #4: Using throw ex (loses stack trace):**
+```csharp
+catch (Exception ex) { throw ex; }  // ❌ Loses original stack trace
+```
+
+**✅ CORRECT - Use throw; to preserve stack trace:**
+```csharp
+catch (SpecificException ex)
+{
+    Logger.Error(ex, "Context");
     throw;  // ✅ Preserves stack trace
 }
-// ❌ DO NOT catch (Exception ex) unless you have a specific fallback strategy
 ```
+
+---
+
+#### **Quick Reference - When Can I Use try-catch?**
+
+| Scenario | Use try-catch? | Why? |
+|----------|---------------|------|
+| **General business logic** | ❌ NO | Let GlobalExceptionHandler handle it |
+| **Database operations** | ❌ NO | Let GlobalExceptionHandler handle it |
+| **Service calls** | ❌ NO | Let GlobalExceptionHandler handle it |
+| **Navigation** | ❌ NO | Let GlobalExceptionHandler handle it |
+| **UI updates** | ❌ NO | Let GlobalExceptionHandler handle it |
+| **OperationCanceledException** | ✅ YES | Expected for debouncing |
+| **Haptic/sensor features** | ✅ YES | Hardware-specific, safe to ignore |
+| **With loading overlay cleanup** | ✅ YES | Need to hide overlay + show feedback |
+| **Specific exception with recovery** | ✅ YES | DbUpdateConcurrency, network retry, etc. |
+
+**Rule of thumb:** If you're writing `catch (Exception ex)` → **STOP! You're doing it wrong!**
 
 ---
 
@@ -986,5 +1428,5 @@ EOF
 ---
 
 **Last Updated**: December 23, 2025
-**Version**: 2.5
+**Version**: 2.6
 **Maintained by**: Helder (Architect) + Claude AI (Developer)

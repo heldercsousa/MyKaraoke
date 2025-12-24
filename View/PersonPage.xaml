@@ -16,9 +16,8 @@
         <!-- Card Wrapper Component -->
         <components:CardWrapperComponent Grid.Row="1" 
             TitleText="Informe o nome"
-            IconPath="cantores.png"
             BadgeIsVisible="False">
-
+            
             <components:CardWrapperComponent.CardContent>
                 <!-- Conteúdo do Card -->
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*">

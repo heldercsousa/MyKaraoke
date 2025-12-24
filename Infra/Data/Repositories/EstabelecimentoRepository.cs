@@ -1,6 +1,7 @@
 ﻿using MyVocaList.Domain;
 using Microsoft.EntityFrameworkCore;
 using MyVocaList.Infra.Utils;
+using System.Diagnostics;
 
 namespace MyVocaList.Infra.Data.Repositories
 {
@@ -9,55 +10,49 @@ namespace MyVocaList.Infra.Data.Repositories
         public EstabelecimentoRepository(AppDbContext context) : base(context) { }
 
         /// <summary>
-        /// Gets establishment by exact name match (case and accent insensitive)
-        /// Database-level collation handles case/accent insensitivity automatically
+        /// Gets establishment by exact name match.
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
-        public async Task<Estabelecimento?> GetByNomeAsync(string nome)
-        {
-            Guard.AgainstNullOrWhiteSpace(nome, nameof(nome));
-
-            return await _context.Estabelecimentos
-                .FirstOrDefaultAsync(e => e.Nome == nome);
-        }
+        public async Task<Estabelecimento?> GetByNomeAsync(string nome) => await ( Guard.IsNullOrWhiteSpace(nome) ? 
+            Task.FromResult<Estabelecimento?>(null) : _context.Estabelecimentos.FirstOrDefaultAsync(e => e.Nome == nome));
 
         /// <summary>
-        /// Searches establishments by name starting with the search term (case and accent insensitive)
-        /// IMPORTANT: SQLite LIKE operator (from StartsWith) doesn't respect custom collations
-        /// Solution: Use explicit .ToLower() for case/accent insensitive search
+        /// Searches establishments by name starting with the search term (case and accent insensitive).
+        /// SQLite-specific: LIKE ignores column collation, so we must explicitly COLLATE both operands.
+        /// When migrating to SQL Server: replace with simple StartsWith() which respects column collation.
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<Estabelecimento>> SearchByNomeStartsWithAsync(string searchTerm, int maxResults = 10)
         {
-            // Return empty list for invalid search (no exception for user input)
             if (Guard.IsNullOrWhiteSpace(searchTerm))
                 return new List<Estabelecimento>();
 
-            // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
-            var searchTermLower = searchTerm.ToLower();
+            // SQLite workaround: LIKE ignores collation, so we explicitly COLLATE both sides
             return await _context.Estabelecimentos
-                .Where(e => e.Nome.ToLower().StartsWith(searchTermLower))
+                .Where(e => EF.Functions.Like(
+                    EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT"),
+                    EF.Functions.Collate(searchTerm, "NOCASE_NOACCENT") + "%"))
                 .Take(maxResults)
                 .OrderBy(e => e.Nome)
                 .ToListAsync();
         }
 
         /// <summary>
-        /// Searches establishments by name containing the search term (case and accent insensitive)
-        /// IMPORTANT: SQLite LIKE operator (from Contains) doesn't respect custom collations
-        /// Solution: Use explicit .ToLower() for case/accent insensitive search
+        /// Searches establishments by name containing the search term (case and accent insensitive).
+        /// SQLite-specific: LIKE ignores column collation, so we must explicitly COLLATE both operands.
+        /// When migrating to SQL Server: replace with simple Contains() which respects column collation.
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<Estabelecimento>> SearchByNomeContainsAsync(string searchTerm, int maxResults = 10)
         {
-            // Return empty list for invalid search (no exception for user input)
             if (Guard.IsNullOrWhiteSpace(searchTerm))
                 return new List<Estabelecimento>();
 
-            // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
-            var searchTermLower = searchTerm.ToLower();
+            // SQLite workaround: LIKE ignores collation, so we explicitly COLLATE both sides
             return await _context.Estabelecimentos
-                .Where(e => e.Nome.ToLower().Contains(searchTermLower))
+                .Where(e => EF.Functions.Like(
+                    EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT"),
+                    "%" + EF.Functions.Collate(searchTerm, "NOCASE_NOACCENT") + "%"))
                 .Take(maxResults)
                 .OrderBy(e => e.Nome)
                 .ToListAsync();
@@ -66,28 +61,27 @@ namespace MyVocaList.Infra.Data.Repositories
         /// <summary>
         /// Gets all establishments ordered by name
         /// </summary>
-        public override async Task<IEnumerable<Estabelecimento>> GetAllAsync()
-        {
-            return await _context.Estabelecimentos
+        public override async Task<IEnumerable<Estabelecimento>> GetAllAsync() =>
+            await _context.Estabelecimentos
                 .OrderBy(e => e.Nome)
                 .ToListAsync();
-        }
 
         /// <summary>
-        /// Searches establishments with event information (case and accent insensitive)
-        /// IMPORTANT: SQLite LIKE operator (from Contains) doesn't respect custom collations
-        /// Solution: Use explicit .ToLower() for case/accent insensitive search
+        /// Searches establishments with event information (case and accent insensitive).
+        /// SQLite-specific: LIKE ignores column collation, so we must explicitly COLLATE both operands.
+        /// When migrating to SQL Server: replace with simple Contains() which respects column collation.
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> SearchWithHasEventsAsync(string? query)
         {
             var q = _context.Estabelecimentos.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(query))
+            if (!Guard.IsNullOrWhiteSpace(query))
             {
-                // Explicit .ToLower() for case-insensitive search (SQLite LIKE doesn't respect custom collations)
-                var queryLower = query.ToLower();
-                q = q.Where(e => e.Nome.ToLower().Contains(queryLower));
+                // SQLite workaround: LIKE ignores collation, so we explicitly COLLATE both sides
+                q = q.Where(e => EF.Functions.Like(
+                    EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT"),
+                    "%" + EF.Functions.Collate(query, "NOCASE_NOACCENT") + "%"));
             }
 
             return await q
@@ -101,38 +95,32 @@ namespace MyVocaList.Infra.Data.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetAllWithHasEventsAsync()
-        {
-            return await _context.Estabelecimentos
+        public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetAllWithHasEventsAsync() =>
+            await _context.Estabelecimentos
                 .Select(e => new
                 {
                     Estabelecimento = e,
-                    HasEvents = e.Eventos.Any()
+                    HasEvents = e.Eventos.Count > 0
                 })
                 .OrderBy(x => x.Estabelecimento.Nome)
                 .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
                 .ToListAsync();
-        }
 
-        public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetByIdsWithHasEventsAsync(IEnumerable<int> ids)
-        {
-            return await _context.Estabelecimentos
+        public async Task<IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)>> GetByIdsWithHasEventsAsync(IEnumerable<int> ids) => 
+            await _context.Estabelecimentos
                 .Where(e => ids.Contains(e.Id))
                 .Select(e => new
                 {
                     Estabelecimento = e,
-                    HasEvents = e.Eventos.Any() // EXISTS otimizado
+                    HasEvents = e.Eventos.Count > 0
                 })
                 .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
                 .ToListAsync();
-        }
 
         /// <summary>
-        /// Gets a paginated list of ALL establishments with event information flag
-        /// Does NOT filter - returns all establishments with hasEvents boolean flag
-        /// Uses Skip/Take for efficient database pagination
-        /// IMPORTANT: SQLite LIKE operator (from Contains) doesn't respect custom collations
-        /// Solution: Use explicit .ToLower() for case/accent insensitive search
+        /// Gets a paginated list of establishments with event information flag (case and accent insensitive search).
+        /// SQLite-specific: LIKE ignores column collation, so we must explicitly COLLATE both operands.
+        /// When migrating to SQL Server: replace with simple Contains() which respects column collation.
         /// Trimming handled automatically by DatabaseLoadingInterceptor
         /// </summary>
         public async Task<(IEnumerable<(Estabelecimento estabelecimento, bool hasEvents)> items, int totalCount)> GetPagedWithEventInfoAsync(
@@ -142,18 +130,16 @@ namespace MyVocaList.Infra.Data.Repositories
         {
             var q = _context.Estabelecimentos.AsQueryable();
 
-            // Apply search filter if provided (using COLLATE for accent-insensitive search)
-            if (!string.IsNullOrWhiteSpace(query))
+            if (!Guard.IsNullOrWhiteSpace(query))
             {
-                // Use EF.Functions.Collate to force NOCASE_NOACCENT collation for accent-insensitive search
-                q = q.Where(e => EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT").Contains(
-                    EF.Functions.Collate(query, "NOCASE_NOACCENT")));
+                // SQLite workaround: LIKE ignores collation, so we explicitly COLLATE both sides
+                q = q.Where(e => EF.Functions.Like(
+                    EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT"),
+                    "%" + EF.Functions.Collate(query, "NOCASE_NOACCENT") + "%"));
             }
 
-            // Get total count for pagination info (executes COUNT(*) query)
             var totalCount = await q.CountAsync();
 
-            // Apply pagination with Skip/Take (LIMIT/OFFSET in SQL)
             var items = await q
                 .OrderBy(e => e.Nome)
                 .Skip((pageNumber - 1) * pageSize)
@@ -161,7 +147,7 @@ namespace MyVocaList.Infra.Data.Repositories
                 .Select(e => new
                 {
                     Estabelecimento = e,
-                    HasEvents = e.Eventos.Any()
+                    HasEvents = e.Eventos.Count > 0
                 })
                 .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
                 .ToListAsync();

@@ -33,11 +33,11 @@
                         Grid.Column="0"
                         BackgroundColor="Transparent">
 
-                        <Image Source="{Binding Source={x:Reference CardRoot}, Path=IconPath}"
+                        <!--<Image Source="{Binding Source={x:Reference CardRoot}, Path=IconPath}"
                            Aspect="AspectFit"
                            HorizontalOptions="Center"
                            VerticalOptions="Center" 
-                           BackgroundColor="Transparent"/>
+                           BackgroundColor="Transparent"/>-->
 
                     </Frame>
 

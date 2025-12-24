@@ -112,6 +112,73 @@ namespace MyVocaList.View.Components
             InitializeComponent();
         }
 
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+            if (searchBar?.Handler?.PlatformView != null)
+            {
+#if ANDROID
+                if (searchBar.Handler.PlatformView is AndroidX.AppCompat.Widget.SearchView platformSearchView)
+                {
+                    // Hide native search icon
+                    int searchMagIconId = platformSearchView.Context.Resources.GetIdentifier("android:id/search_mag_icon", null, null);
+                    if (searchMagIconId != 0)
+                    {
+                        var searchIcon = platformSearchView.FindViewById<Android.Widget.ImageView>(searchMagIconId);
+                        if (searchIcon != null)
+                        {
+                            searchIcon.Visibility = Android.Views.ViewStates.Gone;
+                            searchIcon.SetImageDrawable(null);
+                        }
+                    }
+
+                    // Hide native clear (close) button
+                    int searchCloseIconId = platformSearchView.Context.Resources.GetIdentifier("android:id/search_close_btn", null, null);
+                    if (searchCloseIconId != 0)
+                    {
+                        var closeIcon = platformSearchView.FindViewById<Android.Widget.ImageView>(searchCloseIconId);
+                        if (closeIcon != null)
+                        {
+                            closeIcon.Visibility = Android.Views.ViewStates.Gone;
+                        }
+                    }
+
+                    // Remove margins
+                    int searchPlateId = platformSearchView.Context.Resources.GetIdentifier("android:id/search_plate", null, null);
+                    if (searchPlateId != 0)
+                    {
+                        var searchPlate = platformSearchView.FindViewById<Android.Views.View>(searchPlateId);
+                        if (searchPlate != null)
+                        {
+                            var layoutParams = searchPlate.LayoutParameters as Android.Views.ViewGroup.MarginLayoutParams;
+                            if (layoutParams != null)
+                            {
+                                layoutParams.LeftMargin = 0;
+                                layoutParams.RightMargin = 0;
+                                searchPlate.LayoutParameters = layoutParams;
+                            }
+                        }
+                    }
+                }
+#elif IOS
+                if (searchBar.Handler.PlatformView is UIKit.UISearchBar platformSearchBar)
+                {
+                    // Hide native search icon
+                    platformSearchBar.SetShowsCancelButton(false, false);
+                    platformSearchBar.ShowsSearchResultsButton = false;
+
+                    // Set leftView to null to remove native icon
+                    var textField = platformSearchBar.ValueForKey(new Foundation.NSString("searchField")) as UIKit.UITextField;
+                    if (textField != null)
+                    {
+                        textField.LeftViewMode = UIKit.UITextFieldViewMode.Never;
+                    }
+                }
+#endif
+            }
+        }
+
         #region Event Handlers
 
         private void OnSearchTextChanged(object sender, TextChangedEventArgs e)

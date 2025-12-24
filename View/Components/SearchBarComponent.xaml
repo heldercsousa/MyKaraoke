@@ -26,7 +26,6 @@
                            Placeholder="{Binding Placeholder, Source={x:Reference this}}"
                            PlaceholderColor="{StaticResource OnSurfaceVariant}"
                            TextColor="{StaticResource OnSurface}"
-                           CancelButtonColor="{StaticResource Primary}"
                            BackgroundColor="Transparent"
                            VerticalOptions="Center"
                            TextChanged="OnSearchTextChanged"
@@ -38,7 +37,7 @@
                Text="{Binding ResultCountText, Source={x:Reference this}}"
                Style="{StaticResource LabelSmall}"
                TextColor="{StaticResource OnSurfaceVariant}"
-               Margin="4,0,0,0"
+               Margin="16,8,16,0"
                IsVisible="{Binding ShowResultCount, Source={x:Reference this}}" />
     </VerticalStackLayout>
 </ContentView>

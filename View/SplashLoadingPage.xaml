@@ -6,12 +6,12 @@
              NavigationPage.HasNavigationBar="False">
 
     <Grid RowDefinitions="*, Auto, Auto">
-        <!-- Logo ou Imagem Central -->
+        <!-- Logo ou Imagem Central --> 
         <Image Grid.Row="0" 
                Source="myvocalistsplashpage.jpg"
-               Aspect="AspectFit"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"
+               Aspect="AspectFill"
+               HorizontalOptions="Fill"
+               VerticalOptions="Fill"
                Opacity="0.5" />
 
         <!-- Indicador de Carregamento -->

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyVocaList.Infra.Utils;
 using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace MyVocaList.Infra.Data.Repositories
 {
@@ -133,14 +134,12 @@ namespace MyVocaList.Infra.Data.Repositories
             if (!Guard.IsNullOrWhiteSpace(query))
             {
                 // SQLite workaround: LIKE ignores collation, so we explicitly COLLATE both sides
-                q = q.Where(e => EF.Functions.Like(
-                    EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT"),
-                    "%" + EF.Functions.Collate(query, "NOCASE_NOACCENT") + "%"));
+                q = q.Where(e => EF.Functions.Like(EF.Functions.Collate(e.Nome, "NOCASE_NOACCENT"), "%" + EF.Functions.Collate(query, "NOCASE_NOACCENT") + "%"));
             }
 
             var totalCount = await q.CountAsync();
 
-            var items = await q
+            var itemsQ = q
                 .OrderBy(e => e.Nome)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -148,7 +147,12 @@ namespace MyVocaList.Infra.Data.Repositories
                 {
                     Estabelecimento = e,
                     HasEvents = e.Eventos.Count > 0
-                })
+                });
+           
+            Debug.WriteLine(">>>>>>> SQL estabelecimento paging and filtering");
+            Debug.WriteLine(itemsQ.ToQueryString());
+
+            var items = await itemsQ
                 .Select(x => ValueTuple.Create(x.Estabelecimento, x.HasEvents))
                 .ToListAsync();
 

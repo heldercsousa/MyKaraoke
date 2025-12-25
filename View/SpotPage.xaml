@@ -127,14 +127,15 @@
                                     </Grid.GestureRecognizers>
 
                                     <!-- Normal Icon (Nightlife) - Visible when NOT selected -->
-                                    <components:StatefulIcon IconName="nightlife"
+                                  <!--  <components:StatefulIcon IconName="nightlife"
                                                            Size="Medium"
                                                            ActiveColor="{StaticResource Primary}"
                                                            InactiveColor="{StaticResource Primary}" 
                                                            VerticalOptions="Center"
                                                            HorizontalOptions="Center"
                                                            IsVisible="{Binding IsSelected, Converter={StaticResource IntToBool}, ConverterParameter=Inverse}" />
-
+                                    -->
+                                    
                                     <!-- Selected Icon (Check) - Visible when Selected -->
                                     <Frame CornerRadius="20"
                                            HeightRequest="40"

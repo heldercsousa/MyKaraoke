@@ -83,6 +83,7 @@ namespace MyVocaList.View.Components
 
         private static void OnStateChanged(BindableObject bindable, object oldValue, object newValue)
         {
+            Logger.Debug("OnStateChanged trigger on {iconNm} by {}", newValue);
             if (bindable is StatefulIcon statefulIcon)
             {
                 // If IconName changed from null/empty to a value, re-run size detection

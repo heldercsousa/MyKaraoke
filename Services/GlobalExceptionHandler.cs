@@ -1,3 +1,36 @@
+/***
+
+REMINDER: Global Error Handling Enhancements
+1. Logic: Flatten AggregateExceptions
+
+Problem: Task-based errors often wrap the real cause in an AggregateException.
+
+Action: Update GlobalExceptionHandler.cs to use e.Exception.Flatten().
+
+Goal: Log the specific InnerExceptions (e.g., SqliteException) instead of generic "One or more errors occurred" messages.
+
+2. UX: Smart Error Responses
+
+Transient Errors (Network/Logic): * Use a Modal/Popup instead of navigating away.
+
+Include a "Try Again" button to re-trigger the failed command.
+
+Keep the user on the current page to preserve input data.
+
+Fatal Crashes: * Capture telemetry, then navigate to a Stable State (e.g., HomePage/SplashPage).
+
+Avoid "zombie" app states after a platform-level crash.
+
+3. Telemetry: Silent Reporting
+
+Mechanism: Integrate a Serilog Sink (e.g., Sentry, Seq, or AppCenter).
+
+Benefit: Handles "Immediate Send" vs. "Local Buffer" logic automatically when the device is offline.
+
+Solo Dev Goal: Receive automated crash reports with stack traces and breadcrumbs without manual user intervention.
+
+***/
+
 using Serilog;
 
 namespace MyVocaList.Services;
